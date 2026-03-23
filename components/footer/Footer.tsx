@@ -24,20 +24,20 @@ export default function Footer() {
       </div>
 
       {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-10">
+      <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
 
         {/* Logo + Contact */}
         <div>
-          <div className="relative w-20 h-20 mb-4">
+          <div className="relative w-24 h-24 mb-4">
             <Image
-              src="/images/logo.png"
+              src="/images/hba-logo.png"
               alt="High Bluff Academy Logo"
               fill
               className="object-contain"
             />
           </div>
 
-          <h3 className="text-xl font-bold mb-3">High Bluff Academy</h3>
+          <h3 className="text-2xl font-bold mb-3">High Bluff Academy</h3>
 
           <p className="text-sm leading-relaxed">
             5531 Cancha de Golf Ste #202<br />
@@ -47,7 +47,7 @@ export default function Footer() {
           </p>
 
           {/* Social Icons */}
-          <div className="flex gap-4 mt-4 text-xl">
+          <div className="flex gap-4 mt-5 text-2xl">
             <Link href="https://www.instagram.com/highbluffacademy" target="_blank">
               <FaInstagram className="hover:text-orange-300 transition-colors" />
             </Link>
@@ -60,9 +60,9 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* School Description */}
+        {/* About */}
         <div>
-          <h4 className="text-lg font-semibold mb-3">About HBA</h4>
+          <h4 className="text-xl font-semibold mb-4">About HBA</h4>
           <p className="text-sm leading-relaxed text-gray-200">
             High Bluff Academy is a private, WASC-accredited college-preparatory school
             serving grades 6–12. We provide a supportive, student-centered learning
@@ -70,9 +70,9 @@ export default function Footer() {
           </p>
         </div>
 
-        {/* Legal + Policies */}
+        {/* Policies */}
         <div>
-          <h4 className="text-lg font-semibold mb-3">Policies</h4>
+          <h4 className="text-xl font-semibold mb-4">Policies</h4>
           <ul className="space-y-2 text-sm text-gray-200">
             <li><Link href="/privacy" className="hover:text-orange-300">Privacy Policy</Link></li>
             <li><Link href="/terms" className="hover:text-orange-300">Terms of Use</Link></li>
@@ -82,8 +82,47 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Accreditation Row */}
+      <div className="bg-[#162d4d] py-8">
+        <div className="max-w-6xl mx-auto flex flex-wrap justify-center gap-10 px-6">
+
+          <div className="relative w-24 h-24">
+            <Image
+              src="/images/hba-logo-round.png"
+              alt="HBA Round Seal"
+              fill
+              className="object-contain opacity-90 hover:opacity-100 transition"
+            />
+          </div>
+
+          <div className="relative w-28 h-20">
+            <Image
+              src="/images/uc.png"
+              alt="UC A-G Approved"
+              fill
+              className="object-contain opacity-90 hover:opacity-100 transition"
+            />
+          </div>
+
+          <div className="relative w-28 h-20">
+            <Image
+              src="/images/wasc.png"
+              alt="WASC Accredited"
+              fill
+              className="object-contain opacity-90 hover:opacity-100 transition"
+            />
+          </div>
+
+          {/* Optional future badges */}
+          {/* <div className="relative w-28 h-20">
+            <Image src="/images/ncaa.png" alt="NCAA" fill className="object-contain" />
+          </div> */}
+
+        </div>
+      </div>
+
       {/* Bottom Bar */}
-      <div className="bg-[#162d4d] py-4 text-center text-sm text-gray-300">
+      <div className="bg-[#0f1f36] py-4 text-center text-sm text-gray-300">
         © {new Date().getFullYear()} High Bluff Academy. All rights reserved.
       </div>
     </footer>
