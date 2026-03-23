@@ -2,17 +2,22 @@
 
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { Bars3Icon } from "@heroicons/react/24/outline"
 import Dropdown from "./Dropdown"
+import MobileMenu from "./MobileMenu"
 import { navigation } from "@/lib/navigation"
 
 export default function Navbar() {
+  const [mobileOpen, setMobileOpen] = useState(false)
+
   return (
-    <div className="bg-[#1f3f66] text-white sticky top-0 z-[100] shadow-md">
+    <header className="bg-[#1f3f66] text-white sticky top-0 z-[100] shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
 
-        {/* LOGO + NAME */}
+        {/* Logo + Name */}
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
           <div className="relative w-12 h-12">
             <Image
@@ -23,15 +28,13 @@ export default function Navbar() {
               priority
             />
           </div>
-
           <span className="text-xl font-bold tracking-tight uppercase hidden sm:block">
             High Bluff Academy
           </span>
         </Link>
 
-        {/* NAVIGATION */}
-        <nav className="flex gap-8 items-center relative">
-
+        {/* Desktop Nav */}
+        <nav className="hidden lg:flex gap-8 items-center relative">
           {navigation.map((item) => (
             <Dropdown
               key={item.title}
@@ -41,17 +44,34 @@ export default function Navbar() {
             />
           ))}
 
-          {/* CTA */}
           <Link
             href="/apply"
             className="bg-[#f37021] text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
           >
             Apply
           </Link>
-
         </nav>
 
+        {/* Mobile Trigger */}
+        <div className="flex items-center gap-3 lg:hidden">
+          <Link
+            href="/apply"
+            className="hidden xs:inline-block bg-[#f37021] text-white px-4 py-1.5 rounded-sm font-semibold text-xs hover:bg-orange-600 transition-colors"
+          >
+            Apply
+          </Link>
+          <button
+            type="button"
+            className="inline-flex items-center justify-center rounded-md p-2 text-white hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-white"
+            onClick={() => setMobileOpen(true)}
+          >
+            <Bars3Icon className="h-7 w-7" aria-hidden="true" />
+            <span className="sr-only">Open main menu</span>
+          </button>
+        </div>
       </div>
-    </div>
+
+      <MobileMenu open={mobileOpen} onClose={() => setMobileOpen(false)} />
+    </header>
   )
 }

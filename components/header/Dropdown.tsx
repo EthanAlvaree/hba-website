@@ -13,7 +13,6 @@ interface DropdownProps {
 
 export default function Dropdown({ title, columns, align = "left" }: DropdownProps) {
   const [open, setOpen] = useState(false)
-
   const hasMenu = columns && columns.length > 0
 
   const alignmentClass =
@@ -29,12 +28,10 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
       onMouseEnter={() => hasMenu && setOpen(true)}
       onMouseLeave={() => hasMenu && setOpen(false)}
     >
-      {/* NAV BUTTON */}
       <button className="hover:text-orange-300 transition-colors duration-200 font-medium">
         {title}
       </button>
 
-      {/* DROPDOWN PANEL */}
       <div
         className={`
           absolute top-full pt-4 z-50 transition-all duration-200
@@ -45,13 +42,11 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
       >
         {hasMenu && (
           <div className="bg-white text-black shadow-2xl p-8 w-[560px] max-w-[90vw] grid grid-cols-2 gap-10 rounded-md border border-gray-200">
-
             {columns.map((col) => (
               <div key={col.heading}>
                 <h4 className="font-semibold text-xs tracking-wider uppercase text-[#1f3f66] mb-3 border-b pb-2">
                   {col.heading}
                 </h4>
-
                 <ul className="space-y-2">
                   {col.links.map((link) => (
                     <li
@@ -64,7 +59,6 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
                 </ul>
               </div>
             ))}
-
           </div>
         )}
       </div>

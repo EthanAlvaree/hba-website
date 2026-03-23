@@ -26,7 +26,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Admissions",
     align: "left",
@@ -41,7 +40,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Upper School",
     align: "center",
@@ -56,7 +54,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Student Life",
     align: "right",
@@ -71,7 +68,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Support HBA",
     align: "right",
