@@ -69,7 +69,7 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                                 />
                               </Disclosure.Button>
                               <Disclosure.Panel className="pl-2 pb-2 space-y-3">
-                                {item.columns.map((col) => (
+                                {item.columns?.map((col) => (
                                   <div key={col.heading}>
                                     <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-1">
                                       {col.heading}
