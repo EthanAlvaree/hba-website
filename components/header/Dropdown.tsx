@@ -1,3 +1,5 @@
+// components/header/Dropdown.tsx
+
 "use client"
 
 import { useState } from "react"
@@ -32,9 +34,14 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
         {title}
       </button>
 
-      {/* DROPDOWN */}
+      {/* DROPDOWN PANEL */}
       {open && hasMenu && (
-        <div className={`absolute top-full pt-4 z-50 ${alignmentClass}`}>
+        <div
+          className={`
+            absolute top-full pt-4 z-50 pointer-events-auto overflow-visible
+            ${alignmentClass}
+          `}
+        >
           <div className="bg-white text-black shadow-2xl p-8 w-[560px] grid grid-cols-2 gap-10 rounded-md border border-gray-200">
 
             {columns!.map((col) => (

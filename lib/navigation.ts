@@ -1,4 +1,16 @@
-export const navigation = [
+// lib/navigation.ts
+
+export interface NavColumn {
+  heading: string
+  links: string[]
+}
+
+export interface NavItem {
+  title: string
+  columns?: NavColumn[]
+}
+
+export const navigation: NavItem[] = [
   {
     title: "About",
     columns: [

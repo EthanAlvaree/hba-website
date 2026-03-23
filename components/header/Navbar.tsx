@@ -1,3 +1,5 @@
+// components/header/Navbar.tsx
+
 "use client"
 
 import Link from "next/link"
@@ -12,9 +14,7 @@ export default function Navbar() {
 
         {/* LOGO + NAME */}
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-
-          {/* Bigger logo WITHOUT increasing navbar height */}
-          <div className="relative w-12 h-12"> 
+          <div className="relative w-12 h-12">
             <Image
               src="/images/logo.png"
               alt="HBA Logo"
@@ -29,23 +29,20 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* NAV */}
+        {/* NAVIGATION */}
         <nav className="flex gap-8 items-center relative">
+          {navigation.map((item, index) => {
+            const isRightAligned = index >= navigation.length - 2
 
-          {navigation.map((item, index) => (
-            <Dropdown
-              key={item.title}
-              title={item.title}
-              columns={item.columns}
-              align={
-                index === navigation.length - 1
-                  ? "right"
-                  : index === navigation.length - 2
-                  ? "right"
-                  : "left"
-              }
-            />
-          ))}
+            return (
+              <Dropdown
+                key={item.title}
+                title={item.title}
+                columns={item.columns}
+                align={isRightAligned ? "right" : "left"}
+              />
+            )
+          })}
 
           {/* CTA */}
           <Link
@@ -54,8 +51,8 @@ export default function Navbar() {
           >
             Apply
           </Link>
-
         </nav>
+
       </div>
     </div>
   )
