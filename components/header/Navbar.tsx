@@ -28,7 +28,7 @@ export default function Navbar() {
         </Link>
 
         {/* NAV */}
-        <nav className="flex gap-8 items-center">
+        <nav className="flex gap-4 sm:gap-8 items-center">
 
           {navigation.map((item, index) => (
             <Dropdown

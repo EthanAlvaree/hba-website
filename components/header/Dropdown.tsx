@@ -45,11 +45,12 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
         <div
           className={`
             absolute top-full pt-4 z-50 transition-all duration-200
+            pointer-events-auto overflow-visible max-w-[90vw]
             ${alignmentClass}
             ${open ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-2 invisible"}
           `}
         >
-          <div className="bg-white text-black shadow-2xl p-8 w-[560px] grid grid-cols-2 gap-10 rounded-md border border-gray-200">
+          <div className="bg-white text-black shadow-2xl p-8 w-[560px] max-w-[90vw] grid grid-cols-2 gap-10 rounded-md border border-gray-200">
 
             {columns!.map((col) => (
               <div key={col.heading}>
