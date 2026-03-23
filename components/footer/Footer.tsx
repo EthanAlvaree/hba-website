@@ -27,7 +27,7 @@ export default function Footer() {
           <div>
             <div className="relative w-24 h-24 mb-4">
               <Image
-                src="/images/logo.png"
+                src="/images/hba-logo.png"
                 alt="High Bluff Academy Logo"
                 fill
                 className="object-contain"
