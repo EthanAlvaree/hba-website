@@ -15,8 +15,9 @@ export default function TopBar() {
           <a href="#">Alumni</a>
           <a href="#">School Store</a>
           <a href="#">Calendar</a>
+          <a href="#">Blog</a>
           <a href="#">Contact</a>
-          <a href="#" className="font-semibold">Apply</a>
+          
         </div>
 
       </div>
