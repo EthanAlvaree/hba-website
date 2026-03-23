@@ -6,14 +6,14 @@ interface PageHeroProps {
 export default function PageHero({ title, image }: PageHeroProps) {
   return (
     <div
-      className="h-[420px] bg-cover bg-center flex items-end"
-      style={{ backgroundImage: `url(${image})` }}
+      className="h-[500px] bg-cover bg-center flex items-center justify-center text-center relative"
+      /* Fixed syntax with backticks and quotes */
+      style={{ backgroundImage: `url("${image}")` }}
     >
-      <div className="bg-black/40 w-full p-10">
-        <h1 className="text-white text-5xl font-serif">
-          {title}
-        </h1>
-      </div>
+      <div className="absolute inset-0 bg-black/50" /> {/* Dark overlay for text readability */}
+      <h1 className="relative text-white text-6xl font-serif z-10 px-4">
+        {title}
+      </h1>
     </div>
   )
 }
