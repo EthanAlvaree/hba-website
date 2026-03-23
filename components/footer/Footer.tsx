@@ -82,7 +82,7 @@ export default function Footer() {
               {/* WASC */}
               <div className="relative w-20 h-20">
                 <Image
-                  src="/images/wasc.png"
+                  src="/images/wasc-round.png"
                   alt="WASC Accredited"
                   fill
                   className="object-contain"
