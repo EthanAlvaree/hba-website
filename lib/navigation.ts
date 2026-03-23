@@ -1,5 +1,3 @@
-// lib/navigation.ts
-
 export interface NavColumn {
   heading: string
   links: string[]
@@ -24,7 +22,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Admissions",
     columns: [
@@ -38,7 +35,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Upper School",
     columns: [
@@ -52,7 +48,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Student Life",
     columns: [
@@ -66,7 +61,6 @@ export const navigation: NavItem[] = [
       },
     ],
   },
-
   {
     title: "Support HBA",
     columns: [

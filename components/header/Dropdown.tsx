@@ -1,8 +1,7 @@
-// components/header/Dropdown.tsx
-
 "use client"
 
 import { useState } from "react"
+import { usePathname } from "next/navigation"
 import type { NavColumn } from "@/lib/navigation"
 
 interface DropdownProps {
@@ -13,8 +12,11 @@ interface DropdownProps {
 
 export default function Dropdown({ title, columns, align = "left" }: DropdownProps) {
   const [open, setOpen] = useState(false)
+  const pathname = usePathname()
 
   const hasMenu = columns && columns.length > 0
+
+  const isActive = pathname.toLowerCase().includes(title.toLowerCase())
 
   const alignmentClass =
     align === "right"
@@ -30,16 +32,21 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
       onMouseLeave={() => hasMenu && setOpen(false)}
     >
       {/* NAV BUTTON */}
-      <button className="hover:text-orange-300 transition-colors duration-200 font-medium">
+      <button
+        className={`transition-colors duration-200 font-medium ${
+          isActive ? "text-[#f37021]" : "hover:text-orange-300"
+        }`}
+      >
         {title}
       </button>
 
-      {/* DROPDOWN PANEL */}
-      {open && hasMenu && (
+      {/* DROPDOWN */}
+      {hasMenu && (
         <div
           className={`
-            absolute top-full pt-4 z-50 pointer-events-auto overflow-visible
+            absolute top-full pt-4 z-50 transition-all duration-200
             ${alignmentClass}
+            ${open ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-2 invisible"}
           `}
         >
           <div className="bg-white text-black shadow-2xl p-8 w-[560px] grid grid-cols-2 gap-10 rounded-md border border-gray-200">
