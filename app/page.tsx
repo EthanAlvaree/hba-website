@@ -7,7 +7,7 @@ export default function Home() {
       {/* HERO */}
       <PageHero
         title="A Community Where Students Thrive"
-        image="/campus-hero.jpg"
+        image="/images/campus-hero.jpg"
       />
 
       {/* WELCOME SECTION */}

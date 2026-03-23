@@ -1,4 +1,14 @@
-export const navigation = [
+export interface NavColumn {
+  heading: string
+  links: string[]
+}
+
+export interface NavItem {
+  title: string
+  columns?: NavColumn[]
+}
+
+export const navigation: NavItem[] = [
   {
     title: "About",
     columns: [
@@ -11,5 +21,17 @@ export const navigation = [
         links: ["Campus", "History", "Employment"],
       },
     ],
+  },
+  {
+    title: "Admissions",
+  },
+  {
+    title: "Upper School",
+  },
+  {
+    title: "Student Life",
+  },
+  {
+    title: "Support HBA",
   },
 ]

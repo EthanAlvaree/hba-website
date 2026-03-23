@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import Dropdown from "./Dropdown"
+import { navigation } from "@/lib/navigation"
 
 export default function Navbar() {
   return (
@@ -12,20 +13,27 @@ export default function Navbar() {
           High Bluff Academy
         </div>
 
-        <nav className="flex gap-8">
+        <nav className="flex gap-8 items-center">
+          {navigation.map((item) =>
+            item.columns ? (
+              <Dropdown
+                key={item.title}
+                title={item.title}
+                columns={item.columns}
+              />
+            ) : (
+              <button
+                key={item.title}
+                className="hover:text-orange-300 transition-colors duration-200"
+              >
+                {item.title}
+              </button>
+            )
+          )}
 
-          <Dropdown title="About" />
-
-          <Dropdown title="Admissions" />
-
-          <Dropdown title="Upper School" />
-
-          <Dropdown title="Student Life" />
-
-          <Dropdown title="Support HBA" />
-
-          <Link href="/blog">Blog</Link>
-
+          <Link href="/blog" className="hover:text-orange-300 transition-colors duration-200">
+            Blog
+          </Link>
         </nav>
 
       </div>
