@@ -1,17 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  /* This is where the 'Pro' look happens. We define colors as CSS variables. */
-  --color-hba-navy: #173a63;
+  /* Using the exact Navy and Orange tones from your inspiration site */
+  --color-hba-navy: #173a63; 
   --color-hba-blue: #1f3f66;
   --color-hba-orange: #f37021;
   
-  /* Adding a subtle shadow for the Mega Menu */
-  --shadow-mega: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* This creates the smooth, professional 'lifted' look for the menu */
+  --shadow-mega: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
 
 @layer base {
   body {
-    @apply antialiased text-slate-900;
+    @apply antialiased text-slate-900 bg-white;
   }
 }

@@ -1,14 +1,4 @@
-export interface NavColumn {
-  heading: string
-  links: string[]
-}
-
-export interface NavItem {
-  title: string
-  columns?: NavColumn[]
-}
-
-export const navigation: NavItem[] = [
+export const navigation = [
   {
     title: "About",
     columns: [
@@ -22,16 +12,60 @@ export const navigation: NavItem[] = [
       },
     ],
   },
+
   {
     title: "Admissions",
+    columns: [
+      {
+        heading: "Get Started",
+        links: ["Apply", "Tuition & Aid", "Visit Campus"],
+      },
+      {
+        heading: "Learn More",
+        links: ["Admissions Process", "FAQ"],
+      },
+    ],
   },
+
   {
     title: "Upper School",
+    columns: [
+      {
+        heading: "Academics",
+        links: ["Courses", "Departments", "Faculty"],
+      },
+      {
+        heading: "Programs",
+        links: ["STEM", "Arts", "College Prep"],
+      },
+    ],
   },
+
   {
     title: "Student Life",
+    columns: [
+      {
+        heading: "Experience",
+        links: ["Clubs", "Athletics", "Events"],
+      },
+      {
+        heading: "Community",
+        links: ["Student Support", "Advisory"],
+      },
+    ],
   },
+
   {
     title: "Support HBA",
+    columns: [
+      {
+        heading: "Giving",
+        links: ["Donate", "Annual Fund"],
+      },
+      {
+        heading: "Community",
+        links: ["Volunteering", "Alumni"],
+      },
+    ],
   },
 ]
