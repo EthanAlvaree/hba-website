@@ -12,7 +12,7 @@ export default function Navbar() {
 
         {/* LOGO */}
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <div className="relative w-12 h-12">
+          <div className="relative w-28 h-20">
             <Image
               src="/images/logo.png"
               alt="HBA Logo"
