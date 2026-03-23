@@ -1,3 +1,5 @@
+// lib/navigation.ts
+
 export interface NavColumn {
   heading: string
   links: string[]
@@ -5,12 +7,14 @@ export interface NavColumn {
 
 export interface NavItem {
   title: string
+  align: "left" | "center" | "right"
   columns?: NavColumn[]
 }
 
 export const navigation: NavItem[] = [
   {
     title: "About",
+    align: "left",
     columns: [
       {
         heading: "Overview",
@@ -22,8 +26,10 @@ export const navigation: NavItem[] = [
       },
     ],
   },
+
   {
     title: "Admissions",
+    align: "left",
     columns: [
       {
         heading: "Get Started",
@@ -35,8 +41,10 @@ export const navigation: NavItem[] = [
       },
     ],
   },
+
   {
     title: "Upper School",
+    align: "center",
     columns: [
       {
         heading: "Academics",
@@ -48,8 +56,10 @@ export const navigation: NavItem[] = [
       },
     ],
   },
+
   {
     title: "Student Life",
+    align: "right",
     columns: [
       {
         heading: "Experience",
@@ -61,8 +71,10 @@ export const navigation: NavItem[] = [
       },
     ],
   },
+
   {
     title: "Support HBA",
+    align: "right",
     columns: [
       {
         heading: "Giving",

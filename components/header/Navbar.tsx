@@ -1,3 +1,5 @@
+// components/header/Navbar.tsx
+
 "use client"
 
 import Link from "next/link"
@@ -10,9 +12,9 @@ export default function Navbar() {
     <div className="bg-[#1f3f66] text-white sticky top-0 z-[100] shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
 
-        {/* LOGO */}
+        {/* LOGO + NAME */}
         <Link href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
-          <div className="relative w-28 h-20">
+          <div className="relative w-12 h-12">
             <Image
               src="/images/logo.png"
               alt="HBA Logo"
@@ -27,20 +29,19 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* NAV */}
-        <nav className="flex gap-4 sm:gap-8 items-center">
+        {/* NAVIGATION */}
+        <nav className="flex gap-8 items-center relative">
 
-          {navigation.map((item, index) => (
+          {navigation.map((item) => (
             <Dropdown
               key={item.title}
               title={item.title}
               columns={item.columns}
-              align={
-                index >= navigation.length - 2 ? "right" : "left"
-              }
+              align={item.align}
             />
           ))}
 
+          {/* CTA */}
           <Link
             href="/apply"
             className="bg-[#f37021] text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
@@ -49,6 +50,7 @@ export default function Navbar() {
           </Link>
 
         </nav>
+
       </div>
     </div>
   )

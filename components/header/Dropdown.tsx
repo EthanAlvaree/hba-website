@@ -1,7 +1,8 @@
+// components/header/Dropdown.tsx
+
 "use client"
 
 import { useState } from "react"
-import { usePathname } from "next/navigation"
 import type { NavColumn } from "@/lib/navigation"
 
 interface DropdownProps {
@@ -12,11 +13,8 @@ interface DropdownProps {
 
 export default function Dropdown({ title, columns, align = "left" }: DropdownProps) {
   const [open, setOpen] = useState(false)
-  const pathname = usePathname()
 
   const hasMenu = columns && columns.length > 0
-
-  const isActive = pathname.toLowerCase().includes(title.toLowerCase())
 
   const alignmentClass =
     align === "right"
@@ -32,27 +30,23 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
       onMouseLeave={() => hasMenu && setOpen(false)}
     >
       {/* NAV BUTTON */}
-      <button
-        className={`transition-colors duration-200 font-medium ${
-          isActive ? "text-[#f37021]" : "hover:text-orange-300"
-        }`}
-      >
+      <button className="hover:text-orange-300 transition-colors duration-200 font-medium">
         {title}
       </button>
 
-      {/* DROPDOWN */}
-      {hasMenu && (
-        <div
-          className={`
-            absolute top-full pt-4 z-50 transition-all duration-200
-            pointer-events-auto overflow-visible max-w-[90vw]
-            ${alignmentClass}
-            ${open ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-2 invisible"}
-          `}
-        >
+      {/* DROPDOWN PANEL */}
+      <div
+        className={`
+          absolute top-full pt-4 z-50 transition-all duration-200
+          pointer-events-auto overflow-visible max-w-[90vw]
+          ${alignmentClass}
+          ${open ? "opacity-100 translate-y-0 visible" : "opacity-0 -translate-y-2 invisible"}
+        `}
+      >
+        {hasMenu && (
           <div className="bg-white text-black shadow-2xl p-8 w-[560px] max-w-[90vw] grid grid-cols-2 gap-10 rounded-md border border-gray-200">
 
-            {columns!.map((col) => (
+            {columns.map((col) => (
               <div key={col.heading}>
                 <h4 className="font-semibold text-xs tracking-wider uppercase text-[#1f3f66] mb-3 border-b pb-2">
                   {col.heading}
@@ -72,8 +66,8 @@ export default function Dropdown({ title, columns, align = "left" }: DropdownPro
             ))}
 
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
