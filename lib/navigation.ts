@@ -18,7 +18,7 @@ export const navigation: NavItem[] = [
     columns: [
       {
         heading: "Overview",
-        links: ["Our Approach", "Our Students", "Our Teachers", "Leadership"],
+        links: ["Mission and Approach", "Our Students", "Our Teachers", "School Leadership"],
       },
       {
         heading: "More",
@@ -41,7 +41,7 @@ export const navigation: NavItem[] = [
     ],
   },
   {
-    title: "Upper School",
+    title: "Programs",
     align: "center",
     columns: [
       {
@@ -49,7 +49,7 @@ export const navigation: NavItem[] = [
         links: ["Courses", "Departments", "Faculty"],
       },
       {
-        heading: "Programs",
+        heading: "Areas of Study",
         links: ["STEM", "Arts", "College Prep"],
       },
     ],
@@ -60,11 +60,11 @@ export const navigation: NavItem[] = [
     columns: [
       {
         heading: "Experience",
-        links: ["Clubs", "Athletics", "Events"],
+        links: ["Clubs", "Student Government (ASB)", "Model UN","Athletics", "Events"],
       },
       {
         heading: "Community",
-        links: ["Student Support", "Advisory"],
+        links: ["Community Service", "Academic Support & Advisory", "National Honor Society", "Community Partnerships"],
       },
     ],
   },
