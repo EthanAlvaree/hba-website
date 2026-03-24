@@ -62,7 +62,7 @@ export default function Footer() {
             <h4 className="text-xl font-semibold mb-4">About HBA</h4>
             <p className="text-sm leading-relaxed text-gray-200 mb-6">
               High Bluff Academy is a private, WASC-accredited college-preparatory school
-              serving grades 6–12. We provide a supportive, student-centered learning
+              serving grades 7–12. We provide a supportive, student-centered learning
               environment where every learner is known, challenged, and inspired.
             </p>
 
