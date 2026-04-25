@@ -1,5 +1,3 @@
-// app/layout.tsx
-
 import "./globals.css"
 import TopBar from "@/components/header/TopBar"
 import Navbar from "@/components/header/Navbar"

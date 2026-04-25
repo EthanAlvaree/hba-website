@@ -16,3 +16,5 @@ export default function PageHero({ title, image }: PageHeroProps) {
     </div>
   )
 }
+
+
