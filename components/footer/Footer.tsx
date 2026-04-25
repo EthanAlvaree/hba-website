@@ -1,3 +1,5 @@
+// components/footer/Footer.tsx
+
 import Image from "next/image"
 import Link from "next/link"
 import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa"
@@ -12,15 +14,16 @@ export default function Footer() {
           src="/images/campus.png"
           alt="High Bluff Academy Campus"
           fill
+          sizes="100vw"
           className="object-cover"
           priority
         />
       </div>
 
-      {/* Entire Footer Gradient */}
+      {/* Footer Gradient */}
       <div className="bg-gradient-to-b from-[#1f3f66] to-[#0f1f36] text-white">
 
-        {/* Main Footer Grid */}
+        {/* Main Grid */}
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
 
           {/* Logo + Contact */}
@@ -30,6 +33,7 @@ export default function Footer() {
                 src="/images/hba-logo.png"
                 alt="High Bluff Academy Logo"
                 fill
+                sizes="96px"
                 className="object-contain"
               />
             </div>
@@ -57,7 +61,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* About + Accreditation Badges */}
+          {/* About + Accreditation */}
           <div>
             <h4 className="text-xl font-semibold mb-4">About HBA</h4>
             <p className="text-sm leading-relaxed text-gray-200 mb-6">
@@ -66,39 +70,16 @@ export default function Footer() {
               environment where every learner is known, challenged, and inspired.
             </p>
 
-            {/* Accreditation Badges Row */}
             <div className="flex gap-6 items-center">
-
-              {/* HBA Round Seal */}
               <div className="relative w-20 h-20">
-                <Image
-                  src="/images/hba-logo-round.png"
-                  alt="HBA Seal"
-                  fill
-                  className="object-contain"
-                />
+                <Image src="/images/hba-logo-round.png" alt="HBA Seal" fill sizes="80px" className="object-contain"/>
               </div>
-
-              {/* WASC */}
               <div className="relative w-20 h-20">
-                <Image
-                  src="/images/wasc-round.png"
-                  alt="WASC Accredited"
-                  fill
-                  className="object-contain"
-                />
+                <Image src="/images/wasc-round.png" alt="WASC Accredited" fill sizes="80px" className="object-contain"/>
               </div>
-
-              {/* UC A-G */}
               <div className="relative w-20 h-20">
-                <Image
-                  src="/images/uc.png"
-                  alt="UC A-G Approved"
-                  fill
-                  className="object-contain"
-                />
+                <Image src="/images/uc.png" alt="UC A-G Approved" fill sizes="80px" className="object-contain"/>
               </div>
-
             </div>
           </div>
 
@@ -109,15 +90,17 @@ export default function Footer() {
               <li><Link href="/privacy" className="hover:text-orange-300">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-orange-300">Terms of Use</Link></li>
               <li><Link href="/accessibility" className="hover:text-orange-300">Accessibility</Link></li>
-              <li><Link href="/nondiscrimination" className="hover:text-orange-300">Non‑Discrimination Statement</Link></li>
+              <li><Link href="/nondiscrimination" className="hover:text-orange-300">Non-Discrimination Statement</Link></li>
             </ul>
           </div>
+
         </div>
 
         {/* Bottom Bar */}
         <div className="bg-[#0f1f36] py-6 text-center text-sm text-gray-300 border-t border-white/10">
           © {new Date().getFullYear()} High Bluff Academy. All rights reserved.
         </div>
+
       </div>
     </footer>
   )

@@ -1,3 +1,5 @@
+// app/layout.tsx
+
 import "./globals.css"
 import TopBar from "@/components/header/TopBar"
 import Navbar from "@/components/header/Navbar"
@@ -11,7 +13,7 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body className="overflow-x-hidden">
+      <body>
         <TopBar />
         <Navbar />
         {children}

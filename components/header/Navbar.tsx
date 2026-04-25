@@ -24,6 +24,7 @@ export default function Navbar() {
               src="/images/hba-logo.png"
               alt="HBA Logo"
               fill
+              sizes="(max-width: 768px) 180px, 220px"
               className="object-contain"
               priority
             />
