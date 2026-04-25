@@ -1,161 +1,243 @@
-// /app/admissions/page.tsx
+// app/admissions/page.tsx
 
-import PageLayout from "@/components/layout/PageLayout";
-import Section from "@/components/ui/Section";
-import Container from "@/components/ui/Container";
-import CTA from "@/components/ui/CTA";
-import Link from "next/link";
+import Image from "next/image"
+import PageHero from "@/components/ui/PageHero"
+import Breadcrumbs from "@/components/layout/Breadcrumbs"
 
 export default function AdmissionsPage() {
   return (
-    <PageLayout>
+    <main className="bg-gray-50 overflow-hidden">
       {/* HERO */}
-      <Section background="gray">
-        <Container className="max-w-3xl text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900">
-            Admissions
-          </h1>
-          <p className="mt-6 text-lg text-gray-700 leading-relaxed">
-            Joining the High Bluff Academy community is a personalized, welcoming
-            process. We’re here to help you every step of the way—from your first
-            visit to your first day of class.
-          </p>
-        </Container>
-      </Section>
+      <PageHero
+        title="Admissions at High Bluff Academy"
+        subtitle="A personalized, welcoming process designed to get to know your student as an individual."
+        image="/images/admissions-hero.jpg"
+      />
 
-      {/* APPLY */}
-      <Section>
-        <Container className="max-w-4xl space-y-6">
-          <h2 className="text-3xl font-semibold text-gray-900">How to Apply</h2>
-          <ol className="list-decimal pl-6 text-lg text-gray-700 space-y-3">
-            <li>
-              <span className="font-semibold">Schedule a campus tour.</span> Experience
-              life at HBA firsthand and see our classrooms, campus, and community.
-            </li>
-            <li>
-              <span className="font-semibold">Complete our online application.</span>{" "}
-              Submit your application and upload your unofficial transcripts.
-            </li>
-            <li>
-              <span className="font-semibold">Meet with an admissions officer.</span>{" "}
-              We’ll get to know your student, answer questions, and discuss the best
-              academic path forward.
-            </li>
-          </ol>
-          <p className="text-lg text-gray-700">
-            When you’re ready to begin, you can start your application online:
-          </p>
-          <Link
-            href="https://secure.gradelink.com/2962/enrollment"
-            className="inline-block mt-4 text-blue-700 font-semibold underline"
-            target="_blank"
-          >
-            Click here to start your application →
-          </Link>
-        </Container>
-      </Section>
+      <Breadcrumbs />
 
-      {/* TUITION & FEES */}
-      <Section background="gray">
-        <Container className="max-w-4xl space-y-6">
-          <h2 className="text-3xl font-semibold text-gray-900">
-            Tuition and Fees
-          </h2>
-
-          <div className="grid gap-8 md:grid-cols-2">
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                Domestic Students
-              </h3>
-              <ul className="space-y-2 text-lg text-gray-700">
-                <li>
-                  <span className="font-semibold">Tuition:</span> $28,000 per year
-                </li>
-                <li>
-                  <span className="font-semibold">Registration Fee:</span> $300
-                  (non-refundable)
-                </li>
-                <li>
-                  <span className="font-semibold">Graduation Fee (12th Grade):</span>{" "}
-                  $500 – includes cap and gown, senior activities, and the graduation
-                  luncheon
-                </li>
-              </ul>
+      {/* HOW TO APPLY – Conversion-Focused Steps */}
+      <section id="apply" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+          <div className="lg:col-span-7 space-y-8">
+            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+              Admissions Process
             </div>
 
-            <div className="bg-white rounded-lg shadow p-6">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">
-                International Students
-              </h3>
-              <ul className="space-y-2 text-lg text-gray-700">
-                <li>
-                  <span className="font-semibold">Tuition:</span> $45,580 per year
-                </li>
-                <li>
-                  <span className="font-semibold">Registration Fee:</span> $300
-                  (non-refundable)
-                </li>
-                <li>
-                  <span className="font-semibold">I-20 Issuing Deposit:</span>{" "}
-                  $10,000 (applied toward tuition when the student arrives on campus)
-                </li>
-              </ul>
+            <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+              A Thoughtful, Human Admissions Experience.
+            </h1>
+
+            <p className="text-lg text-gray-600 leading-relaxed font-light">
+              Joining the High Bluff Academy community is a personal, relational process.
+              We want to understand your student’s strengths, goals, and learning style so
+              we can determine the best path forward together.
+            </p>
+
+            <div className="grid gap-6 md:grid-cols-3 mt-8">
+              {[
+                {
+                  step: "Step 1",
+                  title: "Schedule a Tour",
+                  text: "Visit campus to experience our classrooms, community, and culture firsthand.",
+                },
+                {
+                  step: "Step 2",
+                  title: "Submit Application",
+                  text: "Complete our online application and upload recent transcripts.",
+                },
+                {
+                  step: "Step 3",
+                  title: "Meet with Admissions",
+                  text: "Have a personal conversation about fit, goals, and next steps.",
+                },
+              ].map((item) => (
+                <div
+                  key={item.step}
+                  className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm"
+                >
+                  <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+                    {item.step}
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {item.text}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-10 flex flex-wrap gap-4">
+              <a
+                href="https://secure.gradelink.com/2962/enrollment"
+                target="_blank"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              >
+                Start Online Application
+              </a>
+              <a
+                href="/contact"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+              >
+                Schedule a Campus Tour
+              </a>
             </div>
           </div>
 
-          <div className="mt-4">
-            <h3 className="text-2xl font-semibold text-gray-900 mb-3">
-              Homestay Information
-            </h3>
-            <p className="text-lg text-gray-700 leading-relaxed">
-              High Bluff Academy does not provide homestays directly but can assist
-              international students in finding a homestay through local providers.
-              Homestay fees vary and typically include transportation to and from
-              school and three meals per day. Please note that public transportation
-              is not available for commuting to and from school.
+          {/* Visual Panel */}
+          <div className="lg:col-span-5">
+            <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
+              <Image
+                src="/images/admissions-family.jpg"
+                alt="Family meeting with admissions"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
+              <div className="absolute bottom-6 left-6 right-6 text-white">
+                <p className="text-sm uppercase tracking-[0.2em] text-white/70">
+                  Personalized Admissions
+                </p>
+                <p className="mt-2 text-lg font-semibold">
+                  Every application is reviewed with care, context, and the whole student in mind.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TUITION & FEES – Premium Cards */}
+      <section id="tuition" className="py-24 bg-[#1f3f66] relative">
+        <div className="absolute inset-0 opacity-20">
+          <Image
+            src="/images/tuition-bg.jpg"
+            alt="Campus architecture"
+            fill
+            className="object-cover"
+          />
+        </div>
+
+        <div className="relative max-w-6xl mx-auto px-6 lg:px-12">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
+              Tuition & Financial Investment
+            </h2>
+            <p className="mt-4 text-white/80 text-lg max-w-2xl mx-auto font-light">
+              High Bluff Academy offers a highly personalized education with small class sizes,
+              expert faculty, and flexible pathways designed to support each student’s goals.
             </p>
           </div>
-        </Container>
-      </Section>
+
+          <div className="grid gap-8 md:grid-cols-2">
+            {/* Domestic */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 text-white shadow-2xl">
+              <h3 className="text-xl font-semibold mb-2">Domestic Students</h3>
+              <p className="text-3xl font-bold mb-4">$28,000</p>
+              <p className="text-sm text-white/80 mb-4">
+                Annual tuition for full-time domestic students.
+              </p>
+              <ul className="space-y-2 text-sm text-white/80">
+                <li>• Small class sizes and individualized instruction</li>
+                <li>• College-preparatory curriculum</li>
+                <li>• Academic support and tutoring options</li>
+              </ul>
+              <p className="mt-6 text-xs text-white/70">
+                Registration Fee: $300 (non-refundable)
+              </p>
+            </div>
+
+            {/* International */}
+            <div className="bg-white rounded-3xl p-8 text-gray-900 shadow-2xl border border-gray-100">
+              <h3 className="text-xl font-semibold mb-2">International Students</h3>
+              <p className="text-3xl font-bold mb-4">$45,580</p>
+              <p className="text-sm text-gray-600 mb-4">
+                Annual tuition for full-time international students (F-1 visa eligible).
+              </p>
+              <ul className="space-y-2 text-sm text-gray-700">
+                <li>• Full-time academic program</li>
+                <li>• Support for English language learners</li>
+                <li>• College counseling and academic planning</li>
+              </ul>
+              <p className="mt-4 text-xs text-gray-500">
+                Registration Fee: $300 (non-refundable)
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                I-20 Issuing Deposit: $10,000 (applied toward tuition upon arrival)
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-10 text-center text-sm text-white/80">
+            Graduation Fee (12th Grade): $500 — includes cap and gown, senior activities, and
+            the graduation luncheon.
+          </div>
+        </div>
+      </section>
 
       {/* FINANCIAL AID */}
-      <Section>
-        <Container className="max-w-4xl space-y-6">
-          <h2 className="text-3xl font-semibold text-gray-900">Financial Aid</h2>
-          <p className="text-lg text-gray-700 leading-relaxed">
-            We understand that investing in your student’s education is a
-            significant decision. If financial assistance is needed, please contact
-            our office. Our finance team will work with you to determine the support
-            options available to help your student succeed at High Bluff Academy.
+      <section className="py-20 bg-gray-50">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
+          <h2 className="text-3xl font-bold text-[#1f3f66] mb-4">Financial Aid & Support</h2>
+          <p className="text-lg text-gray-600 leading-relaxed font-light mb-6">
+            We recognize that an independent school education is a significant investment.
+            If financial assistance is needed, our team will work with your family to explore
+            available options and determine how we can best support your student’s success.
           </p>
-        </Container>
-      </Section>
+          <p className="text-sm text-gray-500">
+            Please contact our office to discuss financial aid opportunities and payment options.
+          </p>
+        </div>
+      </section>
 
-      {/* VISIT CAMPUS */}
-      <Section background="gray">
-        <Container className="max-w-4xl space-y-4">
-          <h2 className="text-3xl font-semibold text-gray-900">
-            Visit Our Campus
-          </h2>
-          <p className="text-lg text-gray-700 leading-relaxed">
-            The best way to get to know High Bluff Academy is to visit in person.
-            We invite you to tour our Rancho Santa Fe campus, meet our faculty, and
-            experience our learning environment firsthand.
-          </p>
-          <p className="text-lg text-gray-800">
-            <span className="font-semibold">Call us to schedule a tour:</span>{" "}
-            858-509-9101
-          </p>
-        </Container>
-      </Section>
+      {/* VISIT CAMPUS – Strong CTA */}
+      <section id="visit" className="py-24 bg-white">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 md:grid-cols-2 items-center">
+          <div className="space-y-6">
+            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+              Visit Campus
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              See High Bluff Academy in Person.
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed font-light">
+              The best way to understand our community is to experience it. Walk our campus,
+              visit classrooms, and meet the educators who will be working closely with your student.
+            </p>
+            <div className="space-y-2 text-gray-700 text-sm">
+              <p><strong>Phone:</strong> 858-509-9101</p>
+              <p><strong>Location:</strong> Rancho Santa Fe, California</p>
+            </div>
+            <div className="flex flex-wrap gap-4 pt-4">
+              <a
+                href="/contact"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              >
+                Schedule a Tour
+              </a>
+              <a
+                href="https://secure.gradelink.com/2962/enrollment"
+                target="_blank"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+              >
+                Start Application
+              </a>
+            </div>
+          </div>
 
-      {/* CTA */}
-      <CTA
-        title="Ready to Begin Your HBA Journey?"
-        description="Start your application or schedule a campus visit to learn how High Bluff Academy can support your student’s goals."
-        buttonText="Start Application"
-        buttonLink="https://secure.gradelink.com/2962/enrollment"
-      />
-    </PageLayout>
-  );
+          <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
+            <Image
+              src="/images/visit-campus.jpg"
+              alt="Families touring campus"
+              fill
+              className="object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-transparent" />
+          </div>
+        </div>
+      </section>
+    </main>
+  )
 }
