@@ -1,4 +1,4 @@
-import PageHero from "@/components/layout/PageHero"
+import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 
 export default function Page(){

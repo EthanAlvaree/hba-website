@@ -1,6 +1,6 @@
 // app/page.tsx
 
-import PageHero from "@/components/layout/PageHero"
+import PageHero from "@/components/ui/PageHero"
 import PageLayout from "@/components/layout/PageLayout"
 import Footer from "@/components/footer/Footer"
 
