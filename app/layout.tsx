@@ -1,7 +1,8 @@
+// app/layout.tsx
 import "./globals.css"
+import type { ReactNode } from "react"
 import TopBar from "@/components/header/TopBar"
 import Navbar from "@/components/header/Navbar"
-import type { ReactNode } from "react"
 
 export const metadata = {
   title: "High Bluff Academy",

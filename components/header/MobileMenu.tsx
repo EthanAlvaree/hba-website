@@ -1,18 +1,19 @@
 // components/header/MobileMenu.tsx
-
 "use client"
 
 import { Fragment } from "react"
 import { Dialog, Transition, Disclosure } from "@headlessui/react"
 import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline"
-import { navigation } from "@/lib/navigation"
+import Link from "next/link"
+import type { NavItem } from "@/lib/navigation"
 
 interface MobileMenuProps {
   open: boolean
   onClose: () => void
+  items: NavItem[]
 }
 
-export default function MobileMenu({ open, onClose }: MobileMenuProps) {
+export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-[200]" onClose={onClose}>
@@ -55,9 +56,13 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
 
                 <div className="flex-1 overflow-y-auto px-4 py-4">
                   <nav className="space-y-2">
-                    {navigation.map((item) =>
-                      item.columns && item.columns.length > 0 ? (
-                        <Disclosure key={item.title} as="div" className="border-b last:border-b-0 pb-2">
+                    {items.map((item) =>
+                      item.columns ? (
+                        <Disclosure
+                          key={item.title}
+                          as="div"
+                          className="border-b last:border-b-0 pb-2"
+                        >
                           {({ open }) => (
                             <>
                               <Disclosure.Button className="flex w-full items-center justify-between py-2 text-left text-base font-medium text-gray-900">
@@ -76,11 +81,14 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                                     </h4>
                                     <ul className="space-y-1">
                                       {col.links.map((link) => (
-                                        <li
-                                          key={link}
-                                          className="text-sm text-gray-700 py-1"
-                                        >
-                                          {link}
+                                        <li key={link.href}>
+                                          <Link
+                                            href={link.href}
+                                            className="text-sm text-gray-700 py-1 block"
+                                            onClick={onClose}
+                                          >
+                                            {link.label}
+                                          </Link>
                                         </li>
                                       ))}
                                     </ul>
@@ -92,17 +100,25 @@ export default function MobileMenu({ open, onClose }: MobileMenuProps) {
                         </Disclosure>
                       ) : (
                         <div key={item.title} className="border-b last:border-b-0">
-                          <button className="w-full text-left py-2 text-base font-medium text-gray-900">
+                          <Link
+                            href={item.href || "#"}
+                            className="w-full block py-2 text-base font-medium text-gray-900"
+                            onClick={onClose}
+                          >
                             {item.title}
-                          </button>
+                          </Link>
                         </div>
                       )
                     )}
 
                     <div className="pt-4">
-                      <button className="w-full bg-[#f37021] text-white py-2 rounded-sm font-semibold text-sm">
+                      <Link
+                        href="https://secure.gradelink.com/2962/enrollment"
+                        className="w-full block text-center bg-[#f37021] text-white py-2 rounded-sm font-semibold text-sm"
+                        onClick={onClose}
+                      >
                         Apply
-                      </button>
+                      </Link>
                     </div>
                   </nav>
                 </div>
