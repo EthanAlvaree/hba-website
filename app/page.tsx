@@ -91,8 +91,6 @@ export default function Home() {
         />
 
       </PageLayout>
-
-      <Footer />
     </>
   )
 }
