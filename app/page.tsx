@@ -50,12 +50,12 @@ export default function Home() {
               </div>
 
               <div className="bg-white p-10 shadow hover:shadow-lg transition rounded">
-                <h3 className="text-xl font-semibold mb-3">Upper School</h3>
+                <h3 className="text-xl font-semibold mb-3">Programs</h3>
                 <p className="text-gray-600 mb-4">
                   Discover our rigorous academic programs and supportive environment.
                 </p>
-                <a href="/upper-school" className="text-blue-700 font-medium">
-                  Visit Upper School →
+                <a href="/programs" className="text-blue-700 font-medium">
+                  Explore Programs →
                 </a>
               </div>
 

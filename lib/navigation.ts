@@ -76,7 +76,7 @@ export const navigation: NavItem[] = [
         heading: "Summer",
         links: [
           { label: "Summer 2026", href: "/summer-programs" },
-          { label: "Online Classes", href: "/programs/online" },
+          { label: "Online Classes", href: "/programs#online" },
         ],
       },
     ],
@@ -103,16 +103,8 @@ export const navigation: NavItem[] = [
       {
         heading: "Community",
         links: [
-          { label: "Community Service", href: "/community/service" },
-          { label: "Academic Support & Advisory", href: "/community/support" },
-        ],
-      },
-      {
-        heading: "Resources",
-        links: [
-          { label: "Parent/Guardian", href: "/community/parents" },
-          { label: "Alumni", href: "/community/alumni" },
-          { label: "School Store", href: "/community/store" },
+          { label: "Community Service", href: "/community#service" },
+          { label: "Academic Support & Advisory", href: "/community#advisory" },
         ],
       },
     ],

@@ -300,12 +300,6 @@ export default function ProgramsPage() {
               online through our virtual learning platform or taken one-on-one with an
               in-person teacher.
             </p>
-            <a
-              href="/programs/online"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
-            >
-              Explore Online Options
-            </a>
           </div>
         </div>
       </section>

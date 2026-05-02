@@ -61,7 +61,13 @@ export default function Dropdown({
             }
           `}
         >
-          <div className="bg-white text-black shadow-2xl p-8 w-[560px] max-w-[90vw] grid grid-cols-2 gap-10 rounded-md border border-gray-200">
+          <div
+            className={`bg-white text-black shadow-2xl p-8 max-w-[90vw] grid gap-10 rounded-md border border-gray-200 ${
+              columns.length === 1
+                ? "w-[280px] grid-cols-1"
+                : "w-[560px] grid-cols-2"
+            }`}
+          >
             {columns.map((col) => (
               <div key={col.heading}>
                 <h4 className="font-semibold text-xs tracking-wider uppercase text-[#1f3f66] mb-3 border-b pb-2">

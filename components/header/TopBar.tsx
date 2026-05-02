@@ -15,18 +15,6 @@ export default function TopBar() {
         </div>
 
         <div className="flex gap-6">
-          <Link href="/community/parents" className="hover:text-orange-300 transition-colors">
-            Parent/Guardian
-          </Link>
-          <Link href="/community/alumni" className="hover:text-orange-300 transition-colors">
-            Alumni
-          </Link>
-          <Link href="/community/store" className="hover:text-orange-300 transition-colors">
-            School Store
-          </Link>
-          <Link href="/calendar" className="hover:text-orange-300 transition-colors">
-            Calendar
-          </Link>
           <Link href="/contact" className="hover:text-orange-300 transition-colors">
             Contact
           </Link>

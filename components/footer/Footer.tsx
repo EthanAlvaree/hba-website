@@ -24,7 +24,7 @@ export default function Footer() {
       <div className="bg-gradient-to-b from-[#1f3f66] to-[#0f1f36] text-white">
 
         {/* Main Grid */}
-        <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
+        <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 gap-12">
 
           {/* Logo + Contact */}
           <div>
@@ -81,17 +81,6 @@ export default function Footer() {
                 <Image src="/images/uc.png" alt="UC A-G Approved" fill sizes="80px" className="object-contain"/>
               </div>
             </div>
-          </div>
-
-          {/* Policies */}
-          <div>
-            <h4 className="text-xl font-semibold mb-4">Policies</h4>
-            <ul className="space-y-2 text-sm text-gray-200">
-              <li><Link href="/privacy" className="hover:text-orange-300">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-orange-300">Terms of Use</Link></li>
-              <li><Link href="/accessibility" className="hover:text-orange-300">Accessibility</Link></li>
-              <li><Link href="/nondiscrimination" className="hover:text-orange-300">Non-Discrimination Statement</Link></li>
-            </ul>
           </div>
 
         </div>
