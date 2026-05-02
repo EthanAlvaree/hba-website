@@ -1,96 +1,128 @@
 // app/page.tsx
 
+import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
-import PageLayout from "@/components/layout/PageLayout"
-import Footer from "@/components/footer/Footer"
-
-import Section from "@/components/ui/Section"
-import Container from "@/components/ui/Container"
-import CTA from "@/components/ui/CTA"
 
 export default function Home() {
   return (
-    <>
-      <PageLayout>
+    <main className="bg-gray-50 overflow-hidden">
+      <PageHero
+        title="A community where students thrive"
+        image="/images/campus-hero.png"
+      />
 
-        <PageHero
-          title="A Community Where Students Thrive"
-          image="/images/campus-hero.png"
-        />
+      {/* WELCOME */}
+      <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            Welcome
+          </div>
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+            Welcome to High Bluff Academy.
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed font-light">
+            At High Bluff Academy, students discover their strengths, build confidence,
+            and grow into capable, compassionate young adults. Our small class sizes,
+            expert teachers, and personalized approach create a learning environment
+            where every student is seen, supported, and inspired.
+          </p>
+        </div>
+      </section>
 
-        {/* WELCOME */}
-        <Section>
-          <Container className="text-center max-w-3xl">
-            <h2 className="text-4xl font-serif text-gray-900">
-              Welcome to High Bluff Academy
-            </h2>
-
-            <p className="mt-6 text-lg leading-8 text-gray-700">
-              At High Bluff Academy, students discover their strengths, build confidence,
-              and grow into capable, compassionate young adults. Our small class sizes,
-              expert teachers, and personalized approach create a learning environment
-              where every student is seen, supported, and inspired.
-            </p>
-          </Container>
-        </Section>
-
-        {/* PATHWAYS */}
-        <Section background="gray">
-          <Container>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
-
-              <div className="bg-white p-10 shadow hover:shadow-lg transition rounded">
-                <h3 className="text-xl font-semibold mb-3">Admissions</h3>
-                <p className="text-gray-600 mb-4">
-                  Learn about our admissions process, tuition, and how to apply.
-                </p>
-                <a href="/admissions" className="text-blue-700 font-medium">
-                  Explore Admissions →
-                </a>
-              </div>
-
-              <div className="bg-white p-10 shadow hover:shadow-lg transition rounded">
-                <h3 className="text-xl font-semibold mb-3">Programs</h3>
-                <p className="text-gray-600 mb-4">
-                  Discover our rigorous academic programs and supportive environment.
-                </p>
-                <a href="/programs" className="text-blue-700 font-medium">
-                  Explore Programs →
-                </a>
-              </div>
-
-              <div className="bg-white p-10 shadow hover:shadow-lg transition rounded">
-                <h3 className="text-xl font-semibold mb-3">Student Life</h3>
-                <p className="text-gray-600 mb-4">
-                  Explore clubs, activities, and the vibrant community at HBA.
-                </p>
-                <a href="/student-life" className="text-blue-700 font-medium">
-                  Student Life →
-                </a>
-              </div>
-
+      {/* PATHWAYS */}
+      <section className="py-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+              Explore HBA
             </div>
-          </Container>
-        </Section>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              Find your path forward.
+            </h2>
+          </div>
 
-        {/* QUOTE */}
-        <Section>
-          <Container className="text-center max-w-4xl">
-            <blockquote className="text-3xl italic text-gray-700">
-              “At High Bluff Academy, students don’t just learn — they grow into confident, capable young adults.”
-            </blockquote>
-          </Container>
-        </Section>
+          <div className="grid gap-8 md:grid-cols-3">
+            {[
+              {
+                eyebrow: "Admissions",
+                title: "Begin your journey.",
+                description:
+                  "Learn about our admissions process, tuition, and how to apply.",
+                link: "/admissions",
+                cta: "Explore admissions",
+              },
+              {
+                eyebrow: "Programs",
+                title: "Rigorous academics.",
+                description:
+                  "Discover our college-preparatory curriculum and supportive environment.",
+                link: "/programs",
+                cta: "Explore programs",
+              },
+              {
+                eyebrow: "Student Life",
+                title: "A vibrant community.",
+                description:
+                  "Explore clubs, athletics, and the experiences that shape our students.",
+                link: "/student-life",
+                cta: "Explore student life",
+              },
+            ].map((p) => (
+              <Link
+                key={p.eyebrow}
+                href={p.link}
+                className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
+              >
+                <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+                  {p.eyebrow}
+                </div>
+                <h3 className="text-2xl font-extrabold text-[#1f3f66] mb-3">
+                  {p.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed mb-6">
+                  {p.description}
+                </p>
+                <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+                  {p.cta} →
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
 
-        {/* CTA */}
-        <CTA
-          title="Ready to Visit High Bluff Academy?"
-          description="Schedule a campus visit and discover how our personalized approach helps students thrive."
-          buttonText="Schedule a Visit"
-          buttonLink="/contact"
-        />
+      {/* QUOTE */}
+      <section className="py-24 bg-[#1f3f66]">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
+          <blockquote className="text-2xl lg:text-3xl italic text-white/90 leading-relaxed font-light">
+            “At High Bluff Academy, students don't just learn — they grow into confident, capable young adults.”
+          </blockquote>
+        </div>
+      </section>
 
-      </PageLayout>
-    </>
+      {/* CTA */}
+      <section className="py-24 bg-white">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            Visit
+          </div>
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            Ready to visit High Bluff Academy?
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
+            Schedule a campus visit and discover how our personalized approach helps
+            students thrive.
+          </p>
+          <div className="pt-4">
+            <Link
+              href="/contact"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+            >
+              Schedule a visit
+            </Link>
+          </div>
+        </div>
+      </section>
+    </main>
   )
 }

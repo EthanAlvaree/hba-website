@@ -25,7 +25,7 @@ Everything below is missing.
 
 | Path | What it should depict |
 | --- | --- |
-| `public/leadership.jpg` | Leadership page hero — Head of School / leadership team at the school. **Note:** this path is at the public root, not `/images/`. Recommend moving the reference to `/images/leadership-hero.jpg` for consistency with the rest of the site. |
+| `public/images/leadership-hero.jpg` | Leadership page hero — Head of School / leadership team at the school. |
 
 ## `app/admissions/page.tsx`
 
