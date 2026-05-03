@@ -63,6 +63,7 @@ export const navigation: NavItem[] = [
   {
     title: "Programs",
     href: "/programs",
+    align: "center",
     columns: [
       {
         heading: "Academics",
