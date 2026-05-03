@@ -111,6 +111,15 @@
       "category": "holiday"
     },
     {
+      "id": "2026-04-29-sd-zoo-field-trip",
+      "title": "San Diego Zoo field trip",
+      "start": "2026-04-29",
+      "allDay": true,
+      "category": "community",
+      "location": "San Diego Zoo",
+      "description": "All-school field trip to the San Diego Zoo."
+    },
+    {
       "id": "2026-05-18-semester-2-finals",
       "title": "Semester 2 Finals",
       "start": "2026-05-18",
@@ -146,6 +155,163 @@
       "id": "2026-07-03-independence-day",
       "title": "Independence Day (observed)",
       "start": "2026-07-03",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-08-17-inservice",
+      "title": "Teacher in-service",
+      "start": "2026-08-17",
+      "end": "2026-08-19",
+      "allDay": true,
+      "category": "faculty",
+      "description": "No school for students."
+    },
+    {
+      "id": "2026-08-19-first-day",
+      "title": "First day of school",
+      "start": "2026-08-19",
+      "allDay": true,
+      "category": "academics",
+      "description": "Classes begin for the 2026–2027 academic year."
+    },
+    {
+      "id": "2026-08-21-orientation",
+      "title": "Orientation Day",
+      "start": "2026-08-21",
+      "allDay": true,
+      "category": "community",
+      "description": "Orientation for new students and families."
+    },
+    {
+      "id": "2026-09-07-labor-day",
+      "title": "Labor Day",
+      "start": "2026-09-07",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-10-12-indigenous-peoples-day",
+      "title": "Indigenous Peoples’ Day",
+      "start": "2026-10-12",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-11-11-veterans-day",
+      "title": "Veterans Day",
+      "start": "2026-11-11",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-11-23-fall-break",
+      "title": "Fall Break",
+      "start": "2026-11-23",
+      "end": "2026-11-28",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-12-16-semester-1-finals",
+      "title": "Semester 1 Finals",
+      "start": "2026-12-16",
+      "end": "2026-12-19",
+      "allDay": true,
+      "category": "academics"
+    },
+    {
+      "id": "2026-12-17-inservice",
+      "title": "Teacher in-service",
+      "start": "2026-12-17",
+      "end": "2026-12-19",
+      "allDay": true,
+      "category": "faculty",
+      "description": "No school for students."
+    },
+    {
+      "id": "2026-12-21-winter-break",
+      "title": "Winter Break",
+      "start": "2026-12-21",
+      "end": "2027-01-02",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2027-01-04-inservice",
+      "title": "Teacher in-service",
+      "start": "2027-01-04",
+      "end": "2027-01-06",
+      "allDay": true,
+      "category": "faculty",
+      "description": "No school for students."
+    },
+    {
+      "id": "2027-01-06-semester-2-start",
+      "title": "First day of Semester 2",
+      "start": "2027-01-06",
+      "allDay": true,
+      "category": "academics"
+    },
+    {
+      "id": "2027-01-18-mlk-day",
+      "title": "Martin Luther King Jr. Day",
+      "start": "2027-01-18",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2027-02-15-presidents-day",
+      "title": "Presidents’ Day Holiday",
+      "start": "2027-02-15",
+      "end": "2027-02-17",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2027-03-29-spring-break",
+      "title": "Spring Break",
+      "start": "2027-03-29",
+      "end": "2027-04-03",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2027-05-17-semester-2-finals",
+      "title": "Semester 2 Finals",
+      "start": "2027-05-17",
+      "end": "2027-05-20",
+      "allDay": true,
+      "category": "academics"
+    },
+    {
+      "id": "2027-05-20-graduation",
+      "title": "Graduation",
+      "start": "2027-05-20",
+      "allDay": true,
+      "category": "community",
+      "description": "Class of 2027 graduation ceremony.",
+      "location": "Rancho Santa Fe campus"
+    },
+    {
+      "id": "2027-05-31-memorial-day",
+      "title": "Memorial Day",
+      "start": "2027-05-31",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2027-06-07-summer-classes-start",
+      "title": "First day of summer classes",
+      "start": "2027-06-07",
+      "allDay": true,
+      "category": "academics",
+      "description": "All summer programs begin for 2027."
+    },
+    {
+      "id": "2027-07-05-independence-day",
+      "title": "Independence Day (observed)",
+      "start": "2027-07-05",
       "allDay": true,
       "category": "holiday"
     }

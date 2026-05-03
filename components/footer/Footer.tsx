@@ -30,7 +30,7 @@ export default function Footer() {
           <div>
             <div className="relative w-24 h-24 mb-4">
               <Image
-                src="/images/hba-logo.png"
+                src="/images/hba-logo-color.png"
                 alt="High Bluff Academy Logo"
                 fill
                 sizes="96px"
