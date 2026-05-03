@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npm run *)",
+      "Bash(git -C C:/dev/hba-website ls-files public/images/faculty/)",
+      "Bash(git *)",
+      "Bash(gh auth *)",
+      "Bash(mkdir -p /tmp/docx-extract)",
+      "Bash(unzip -o \"Website content.docx\" -d /tmp/docx-extract)",
+      "Read(//tmp/docx-extract/**)",
+      "Bash(python -c ' *)",
+      "Bash(npm install *)",
+      "Bash(npm audit *)"
+    ]
+  }
+}
