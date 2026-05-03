@@ -107,6 +107,14 @@ export const navigation: NavItem[] = [
           { label: "Academic Support & Advisory", href: "/community#advisory" },
         ],
       },
+      {
+        heading: "Resources",
+        links: [
+          { label: "Parent/Guardian", href: "/community/parents" },
+          { label: "Alumni", href: "/community/alumni" },
+          { label: "School Store", href: "/community/store" },
+        ],
+      },
     ],
   },
 ]

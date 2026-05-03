@@ -27,6 +27,46 @@ Everything below is missing.
 | --- | --- |
 | `public/images/leadership-hero.jpg` | Leadership page hero — Head of School / leadership team at the school. |
 
+## `app/calendar/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/calendar/calendar-hero.jpg` | Calendar page hero — campus during a recognizable season, or an image evocative of school year rhythm |
+| `public/images/calendar/calendar-bg.jpg` | Tinted background for the categories section — broad campus shot |
+| `public/images/calendar/calendar-summer.jpg` | Summer 2026 callout image — students in a summer class context |
+
+## `app/community/parents/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/community/parents-hero.jpg` | Parents page hero — parents at a school event or family meeting with faculty |
+| `public/images/community/parents-meeting.jpg` | Tinted background — parent-teacher conference or family welcome event |
+| `public/images/community/parents-involved.jpg` | "Be part of the school" panel — parent volunteering, chaperoning, or attending a school event |
+
+## `app/community/alumni/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/community/alumni-hero.jpg` | Alumni page hero — graduation moment or alumni gathering |
+| `public/images/community/alumni-reunion.jpg` | Stay-connected panel — alumni event, gathering, or reunion |
+| `public/images/community/alumni-mentor.jpg` | Tinted background for "Give back" — alumnus speaking to or mentoring current students |
+
+## `app/community/store/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/community/store-hero.jpg` | Store page hero — students wearing HBA gear, or a clean product layout |
+| `public/images/community/store-apparel.jpg` | Apparel category — folded hoodies/tees in school colors |
+| `public/images/community/store-spirit.jpg` | Spirit category — students with banners/scarves at a game day |
+| `public/images/community/store-accessories.jpg` | Accessories category — water bottles, bags, stickers, notebooks |
+| `public/images/community/store-bg.jpg` | Tinted background — atmospheric shot of HBA branded gear |
+
+## `app/privacy/page.tsx`, `app/terms/page.tsx`, `app/accessibility/page.tsx`, `app/nondiscrimination/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/policy-hero.jpg` | Shared hero across all four policy pages — clean, calm campus shot or architectural detail. One image serves all four. |
+
 ## `app/admissions/page.tsx`
 
 | Path | What it should depict |
