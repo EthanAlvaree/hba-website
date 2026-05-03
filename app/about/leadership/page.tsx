@@ -18,7 +18,7 @@ export default function LeadershipPage() {
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 space-y-12">
           <blockquote className="text-2xl lg:text-3xl italic text-[#1f3f66] border-l-4 border-[#f37021] pl-6 font-light leading-relaxed">
-            “It's amazing how many of our students really gain a love of learning.”
+            “It’s amazing how many of our students really gain a love of learning.”
           </blockquote>
 
           <div className="space-y-6">
@@ -42,7 +42,7 @@ export default function LeadershipPage() {
                 act responsibly, and make informed decisions about their future.
               </p>
               <p>
-                In today's ever-changing world, success requires more than academic achievement.
+                In today’s ever-changing world, success requires more than academic achievement.
                 It requires resilience, adaptability, and a lifelong love of learning. At High Bluff
                 Academy, we are committed to developing these qualities in every student.
               </p>

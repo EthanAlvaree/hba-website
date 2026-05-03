@@ -95,7 +95,7 @@ export default function Home() {
       <section className="py-24 bg-[#1f3f66]">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <blockquote className="text-2xl lg:text-3xl italic text-white/90 leading-relaxed font-light">
-            “At High Bluff Academy, students don't just learn — they grow into confident, capable young adults.”
+            “At High Bluff Academy, students don’t just learn — they grow into confident, capable young adults.”
           </blockquote>
         </div>
       </section>

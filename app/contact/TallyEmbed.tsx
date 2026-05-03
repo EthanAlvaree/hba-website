@@ -2,6 +2,14 @@
 
 import Script from "next/script"
 
+declare global {
+  interface Window {
+    Tally?: {
+      loadEmbeds: () => void
+    }
+  }
+}
+
 export default function TallyEmbed() {
   return (
     <>
@@ -22,8 +30,8 @@ export default function TallyEmbed() {
         src="https://tally.so/widgets/embed.js"
         strategy="afterInteractive"
         onLoad={() => {
-          if (typeof (window as any).Tally !== "undefined") {
-            (window as any).Tally.loadEmbeds()
+          if (window.Tally) {
+            window.Tally.loadEmbeds()
           }
         }}
       />
