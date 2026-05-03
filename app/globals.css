@@ -111,3 +111,275 @@
     font-size: 1.25rem;
   }
 }
+
+/* ============================================================
+   Printable academic-year calendar
+   ============================================================ */
+
+@page {
+  size: letter portrait;
+  margin: 0.4in;
+}
+
+.print-page {
+  background: #f1f3f7;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  color: #0f172a;
+  font-feature-settings: "ss01", "cv01", "tnum";
+}
+
+.print-sheet {
+  background: white;
+  max-width: 8.5in;
+  margin: 0 auto;
+  padding: 0.4in;
+  box-shadow: 0 30px 60px -20px rgba(15, 23, 42, 0.25);
+  border-radius: 4px;
+}
+
+.print-toolbar {
+  max-width: 8.5in;
+  margin: 0 auto 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.print-masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 2px solid #1f3f66;
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.4rem;
+  gap: 1rem;
+}
+
+.print-masthead h1 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1f3f66;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  margin: 0;
+}
+
+.print-masthead .print-year {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1f3f66;
+  border-left: 2px solid #f37021;
+  padding-left: 0.75rem;
+}
+
+.print-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.85rem 0.85rem;
+}
+
+.print-month {
+  font-size: 9px;
+  line-height: 1.25;
+  break-inside: avoid;
+}
+
+.print-month-header {
+  background: #1f3f66;
+  color: white;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-align: center;
+  padding: 0.3rem 0;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.print-day-header {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  background: #1f3f66;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+}
+
+.print-day-header span {
+  padding: 0.18rem 0;
+  text-align: center;
+  border-left: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.print-day-header span:first-child {
+  border-left: 0;
+}
+
+.print-month-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-left: 1px solid #cbd5e1;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.print-day {
+  border-top: 1px solid #cbd5e1;
+  border-right: 1px solid #cbd5e1;
+  min-height: 24px;
+  padding: 2px 4px;
+  position: relative;
+  font-size: 9px;
+}
+
+.print-day-num {
+  font-weight: 600;
+  color: #1f3f66;
+}
+
+.print-day.off-month .print-day-num {
+  color: #cbd5e1;
+}
+
+.print-day-marker {
+  font-size: 6.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-left: 2px;
+  color: #475569;
+}
+
+.print-day.is-holiday {
+  background: #e2e8f0;
+}
+
+.print-day.is-faculty {
+  background: #f1f5f9;
+}
+
+.print-day.is-academics {
+  background: rgba(243, 112, 33, 0.10);
+}
+
+.print-day.is-community {
+  background: rgba(22, 163, 74, 0.10);
+}
+
+.print-day.is-today {
+  outline: 2px solid #f37021;
+  outline-offset: -2px;
+}
+
+.print-month-events {
+  margin-top: 0.35rem;
+  padding: 0;
+  list-style: none;
+  font-size: 8.5px;
+  color: #334155;
+  line-height: 1.35;
+}
+
+.print-month-events li {
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
+  padding: 1px 0;
+}
+
+.print-month-events .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+.print-month-events .ev-date {
+  color: #1f3f66;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.print-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.4rem;
+  align-items: center;
+  margin-top: 1.4rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #cbd5e1;
+  font-size: 9px;
+  color: #475569;
+}
+
+.print-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+}
+
+.print-legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border: 1px solid #cbd5e1;
+}
+
+.print-footer {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px dashed #cbd5e1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 8.5px;
+  color: #64748b;
+  letter-spacing: 0.04em;
+}
+
+.print-footer-brand {
+  color: #1f3f66;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+@media print {
+  .print-page {
+    background: white;
+    padding: 0;
+    min-height: auto;
+  }
+
+  .print-sheet {
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    max-width: 100%;
+  }
+
+  .print-toolbar,
+  .print-only-screen {
+    display: none !important;
+  }
+
+  .print-month {
+    break-inside: avoid;
+  }
+}
+
+@media (max-width: 700px) {
+  .print-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .print-grid {
+    grid-template-columns: 1fr;
+  }
+}

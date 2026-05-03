@@ -1,6 +1,7 @@
 // app/calendar/page.tsx
 
 import Image from "next/image"
+import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { getAllEvents } from "@/lib/events-server"
@@ -126,8 +127,56 @@ export default function CalendarPage() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* PRINTABLE */}
       <section className="py-24 bg-white">
+        <div className="max-w-5xl mx-auto px-6 lg:px-12 grid gap-10 md:grid-cols-2 items-center">
+          <div className="space-y-6">
+            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+              Prefer paper?
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              Printable academic year.
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed font-light">
+              A single-sheet, year-at-a-glance view formatted for letter paper —
+              same data as the live calendar, beautifully laid out for the fridge,
+              the binder, or the office wall.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/calendar/print/2025"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#1f3f66] text-white font-semibold text-sm hover:bg-[#f37021] transition"
+              >
+                2025–2026
+              </Link>
+              <Link
+                href="/calendar/print/2026"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              >
+                2026–2027
+              </Link>
+            </div>
+            <p className="text-xs text-gray-500">
+              Tip: from the printable view, press <kbd className="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-[10px] font-mono">Ctrl/Cmd + P</kbd> and choose <em>Save as PDF</em> as the destination.
+            </p>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-3xl p-8 text-sm text-gray-600 leading-relaxed">
+            <p className="font-semibold text-[#1f3f66] mb-3">
+              What’s on the printable sheet
+            </p>
+            <ul className="space-y-2">
+              <li>• Twelve months at a glance, August through July</li>
+              <li>• Color-coded holidays, in-service, finals, and graduation</li>
+              <li>• Important dates listed below each month</li>
+              <li>• Letter-size, portrait, fits on one page</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-24 bg-gray-50">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
             Need anything else?
@@ -136,8 +185,8 @@ export default function CalendarPage() {
             We’re happy to help.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
-            Looking for a printable calendar, exact times for an event, or a date
-            we haven’t posted yet? Reach out and we’ll get it to you.
+            Looking for exact times for an event, or a date we haven’t posted
+            yet? Reach out and we’ll get it to you.
           </p>
           <div className="pt-4">
             <a

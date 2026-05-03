@@ -1,9 +1,7 @@
 // app/layout.tsx
 import "./globals.css"
 import type { ReactNode } from "react"
-import TopBar from "@/components/header/TopBar"
-import Navbar from "@/components/header/Navbar"
-import Footer from "@/components/footer/Footer"
+import LayoutChrome from "@/components/layout/LayoutChrome"
 
 export const metadata = {
   title: "High Bluff Academy",
@@ -14,10 +12,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body>
-        <TopBar />
-        <Navbar />
-        {children}
-        <Footer />
+        <LayoutChrome>{children}</LayoutChrome>
       </body>
     </html>
   )
