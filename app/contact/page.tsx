@@ -20,7 +20,7 @@ export default function ContactPage() {
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[#12233d]">
-            Let’s Connect.
+            Let’s connect.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
             Whether you’re a prospective family, a current student, or a community partner,
@@ -37,7 +37,7 @@ export default function ContactPage() {
           {/* PHONE */}
           <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
             <div className="text-[#f37021] font-semibold tracking-[0.18em] text-xs uppercase mb-4">
-              Call Us
+              Call us
             </div>
             <h3 className="text-2xl font-semibold text-[#12233d] mb-3">
               (858) 509‑9101
@@ -63,7 +63,7 @@ export default function ContactPage() {
           {/* VISIT */}
           <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
             <div className="text-[#f37021] font-semibold tracking-[0.18em] text-xs uppercase mb-4">
-              Visit Us
+              Visit us
             </div>
             <h3 className="text-2xl font-semibold text-[#12233d] mb-3">
               Rancho Santa Fe, California
@@ -80,7 +80,7 @@ export default function ContactPage() {
       <section className="py-28 bg-gradient-to-br from-[#24375a] via-[#3b4f75] to-[#516a92]">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
-            Send Us a Message
+            Send us a message
           </h2>
           <p className="text-lg text-white/85 leading-relaxed font-light max-w-2xl mx-auto mt-4">
             Share a question, request a call, or schedule a tour. We typically respond within one business day.
@@ -107,7 +107,7 @@ export default function ContactPage() {
       <section className="py-24 bg-white">
         <div className="max-w-6xl mx-auto px-6 lg:px-12 space-y-10 text-center">
           <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
-            Find Us
+            Find us
           </h2>
 
           <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
@@ -130,7 +130,7 @@ export default function ContactPage() {
       <section className="py-20 bg-gray-50">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
-            We’re Here to Help.
+            We’re here to help.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
             Whether you’re exploring enrollment, planning a transition, or simply curious about our programs,
@@ -142,13 +142,13 @@ export default function ContactPage() {
               href="mailto:admissions@highbluffacademy.com"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
-              Email Admissions
+              Email admissions
             </a>
             <a
               href="/admissions"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#12233d] text-[#12233d] font-semibold text-sm hover:bg-[#12233d] hover:text-white transition"
             >
-              Explore Admissions
+              Explore admissions
             </a>
           </div>
         </div>

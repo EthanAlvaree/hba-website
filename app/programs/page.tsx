@@ -7,7 +7,7 @@ export default function ProgramsPage() {
     <main className="bg-gray-50 overflow-hidden">
       {/* HERO */}
       <PageHero
-        title="Academic Programs"
+        title="Academic programs"
         subtitle="A flexible, college-preparatory pathway tailored to each student’s strengths and goals."
         image="/images/programs-hero.jpg"
       />
@@ -19,10 +19,10 @@ export default function ProgramsPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Core Curriculum
+              Core curriculum
             </div>
             <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
-              A Strong Academic Foundation.
+              A strong academic foundation.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
               High Bluff Academy offers a comprehensive college-preparatory curriculum that
@@ -82,7 +82,7 @@ export default function ProgramsPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-white">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/70">
-                  College-Preparatory Academics
+                  College-preparatory academics
                 </p>
                 <p className="mt-2 text-lg font-semibold">
                   Rigorous coursework with the flexibility to accelerate or reinforce as needed.
@@ -107,7 +107,7 @@ export default function ProgramsPage() {
         <div className="relative max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-              Advanced Placement (AP) Courses
+              Advanced placement (AP) courses
             </h2>
             <p className="mt-4 text-white/80 text-lg max-w-3xl mx-auto font-light">
               High Bluff Academy is an official College Board testing site, offering students
@@ -119,8 +119,8 @@ export default function ProgramsPage() {
           <div className="grid gap-8 md:grid-cols-3">
             {[
               ["AP English", ["AP English Language", "AP English Literature"]],
-              ["AP Math & Science", ["AP Calculus AB/BC", "AP Statistics", "AP Biology", "AP Chemistry", "AP Physics"]],
-              ["AP Humanities & Social Science", ["AP U.S. History", "AP World History", "AP U.S. Government", "AP Macro/Microeconomics", "AP Computer Science"]],
+              ["AP math & science", ["AP Calculus AB/BC", "AP Statistics", "AP Biology", "AP Chemistry", "AP Physics"]],
+              ["AP humanities & social science", ["AP U.S. History", "AP World History", "AP U.S. Government", "AP Macro/Microeconomics", "AP Computer Science"]],
             ].map(([title, items]) => (
               <div
                 key={title as string}
@@ -161,10 +161,10 @@ export default function ProgramsPage() {
             <div className="lg:col-span-7 space-y-8">
               <div>
                 <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
-                  Areas of Study
+                  Areas of study
                 </div>
                 <h2 className="mt-4 text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-                  Pathways for Every Learner.
+                  Pathways for every learner.
                 </h2>
                 <p className="mt-4 text-lg text-gray-600 leading-relaxed font-light">
                   Students can explore a wide range of disciplines while building a strong
@@ -192,7 +192,7 @@ export default function ProgramsPage() {
                     ],
                   },
                   {
-                    label: "College Prep",
+                    label: "College prep",
                     items: [
                       "Honors & AP English",
                       "U.S. & World History, Government, Economics",
@@ -237,7 +237,7 @@ export default function ProgramsPage() {
               Summer 2026
             </div>
             <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              High-Impact Summer Programs.
+              High-impact summer programs.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
               High Bluff Academy is widely recognized for its exceptional summer programs,
@@ -254,7 +254,7 @@ export default function ProgramsPage() {
               href="/summer-programs"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition mt-4"
             >
-              View Summer Programs
+              View summer programs
             </a>
           </div>
 
@@ -285,10 +285,10 @@ export default function ProgramsPage() {
 
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
-              Flexible Pathways
+              Flexible pathways
             </div>
             <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              Online & Hybrid Learning.
+              Online & hybrid learning.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
               For students who need additional flexibility, High Bluff Academy offers online

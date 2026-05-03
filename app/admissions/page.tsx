@@ -21,11 +21,11 @@ export default function AdmissionsPage() {
         <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           <div className="lg:col-span-7 space-y-8">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Admissions Process
+              Admissions process
             </div>
 
             <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
-              A Thoughtful, Human Admissions Experience.
+              A thoughtful, human admissions experience.
             </h1>
 
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -38,17 +38,17 @@ export default function AdmissionsPage() {
               {[
                 {
                   step: "Step 1",
-                  title: "Schedule a Tour",
+                  title: "Schedule a tour",
                   text: "Visit campus to experience our classrooms, community, and culture firsthand.",
                 },
                 {
                   step: "Step 2",
-                  title: "Submit Application",
+                  title: "Submit application",
                   text: "Complete our online application and upload recent transcripts.",
                 },
                 {
                   step: "Step 3",
-                  title: "Meet with Admissions",
+                  title: "Meet with admissions",
                   text: "Have a personal conversation about fit, goals, and next steps.",
                 },
               ].map((item) => (
@@ -75,13 +75,13 @@ export default function AdmissionsPage() {
                 target="_blank"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
-                Start Online Application
+                Start online application
               </a>
               <a
                 href="/contact"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
               >
-                Schedule a Campus Tour
+                Schedule a campus tour
               </a>
             </div>
           </div>
@@ -98,7 +98,7 @@ export default function AdmissionsPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-white">
                 <p className="text-sm uppercase tracking-[0.2em] text-white/70">
-                  Personalized Admissions
+                  Personalized admissions
                 </p>
                 <p className="mt-2 text-lg font-semibold">
                   Every application is reviewed with care, context, and the whole student in mind.
@@ -123,7 +123,7 @@ export default function AdmissionsPage() {
         <div className="relative max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-              Tuition & Financial Investment
+              Tuition & financial investment
             </h2>
             <p className="mt-4 text-white/80 text-lg max-w-2xl mx-auto font-light">
               High Bluff Academy offers a highly personalized education with small class sizes,
@@ -134,7 +134,7 @@ export default function AdmissionsPage() {
           <div className="grid gap-8 md:grid-cols-2">
             {/* Domestic */}
             <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 text-white shadow-2xl">
-              <h3 className="text-xl font-semibold mb-2">Domestic Students</h3>
+              <h3 className="text-xl font-semibold mb-2">Domestic students</h3>
               <p className="text-3xl font-bold mb-4">$28,000</p>
               <p className="text-sm text-white/80 mb-4">
                 Annual tuition for full-time domestic students.
@@ -151,7 +151,7 @@ export default function AdmissionsPage() {
 
             {/* International */}
             <div className="bg-white rounded-3xl p-8 text-gray-900 shadow-2xl border border-gray-100">
-              <h3 className="text-xl font-semibold mb-2">International Students</h3>
+              <h3 className="text-xl font-semibold mb-2">International students</h3>
               <p className="text-3xl font-bold mb-4">$45,580</p>
               <p className="text-sm text-gray-600 mb-4">
                 Annual tuition for full-time international students (F-1 visa eligible).
@@ -180,7 +180,7 @@ export default function AdmissionsPage() {
       {/* FINANCIAL AID */}
       <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-3xl font-bold text-[#1f3f66] mb-4">Financial Aid & Support</h2>
+          <h2 className="text-3xl font-bold text-[#1f3f66] mb-4">Financial aid & support</h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light mb-6">
             We recognize that an independent school education is a significant investment.
             If financial assistance is needed, our team will work with your family to explore
@@ -197,10 +197,10 @@ export default function AdmissionsPage() {
         <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 md:grid-cols-2 items-center">
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
-              Visit Campus
+              Visit campus
             </div>
             <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              See High Bluff Academy in Person.
+              See High Bluff Academy in person.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
               The best way to understand our community is to experience it. Walk our campus,
@@ -215,14 +215,14 @@ export default function AdmissionsPage() {
                 href="/contact"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
-                Schedule a Tour
+                Schedule a tour
               </a>
               <a
                 href="https://secure.gradelink.com/2962/enrollment"
                 target="_blank"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
               >
-                Start Application
+                Start application
               </a>
             </div>
           </div>

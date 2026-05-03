@@ -21,7 +21,7 @@ export default function CommunityPage() {
       <section className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
-            A Community Rooted in Purpose.
+            A community rooted in purpose.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
             High Bluff Academy is more than a school — it’s a community built on service,
@@ -37,11 +37,11 @@ export default function CommunityPage() {
 
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Community Service
+              Community service
             </div>
 
             <h2 className="text-4xl font-extrabold text-[#1f3f66] leading-tight">
-              Giving Back, Growing Forward.
+              Giving back, growing forward.
             </h2>
 
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -85,11 +85,11 @@ export default function CommunityPage() {
 
           <div className="space-y-6 text-white">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
-              Academic Support & Advisory
+              Academic support & advisory
             </div>
 
             <h2 className="text-3xl lg:text-4xl font-extrabold">
-              Personalized Guidance for Every Student.
+              Personalized guidance for every student.
             </h2>
 
             <p className="text-lg text-white/90 leading-relaxed font-light">
@@ -139,7 +139,7 @@ export default function CommunityPage() {
             </div>
 
             <h2 className="text-4xl font-extrabold text-[#1f3f66] leading-tight">
-              Recognizing Excellence.
+              Recognizing excellence.
             </h2>
 
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -162,11 +162,11 @@ export default function CommunityPage() {
 
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Community Partnerships
+              Community partnerships
             </div>
 
             <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              Learning Beyond the Classroom.
+              Learning beyond the classroom.
             </h2>
 
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -206,7 +206,7 @@ export default function CommunityPage() {
 
         <div className="relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-8">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-            Volunteering & Service Learning
+            Volunteering & service learning
           </h2>
 
           <p className="text-lg text-white/90 leading-relaxed font-light max-w-3xl mx-auto">
@@ -227,7 +227,7 @@ export default function CommunityPage() {
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-5">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-            A Community That Lifts Each Other Up.
+            A community that lifts each other up.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
             At High Bluff Academy, students are part of a supportive, connected community

@@ -10,7 +10,7 @@ export default function StudentLifePage() {
 
       {/* HERO */}
       <PageHero
-        title="Student Life"
+        title="Student life"
         subtitle="A vibrant, connected community where students lead, explore, compete, and grow."
         image="/images/studentlife-hero.jpg"
       />
@@ -21,7 +21,7 @@ export default function StudentLifePage() {
       <section className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
-            More Than a School — A Community.
+            More than a school — a community.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
             Student life at High Bluff Academy is built around leadership, creativity,
@@ -39,7 +39,7 @@ export default function StudentLifePage() {
 
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Student Leadership
+              Student leadership
             </div>
 
             <h2 className="text-4xl font-extrabold text-[#1f3f66] leading-tight">
@@ -88,7 +88,7 @@ export default function StudentLifePage() {
 
           <div className="space-y-6 text-white">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
-              Global Engagement
+              Global engagement
             </div>
 
             <h2 className="text-3xl lg:text-4xl font-extrabold">
@@ -137,7 +137,7 @@ export default function StudentLifePage() {
 
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
-              Athletics & Wellness
+              Athletics & wellness
             </div>
 
             <h2 className="text-4xl font-extrabold text-[#1f3f66] leading-tight">
@@ -165,11 +165,11 @@ export default function StudentLifePage() {
 
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Fitness Partnership
+              Fitness partnership
             </div>
 
             <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              Joy of Life Fitness Collaboration
+              Joy of Life Fitness collaboration
             </h2>
 
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -209,7 +209,7 @@ export default function StudentLifePage() {
 
         <div className="relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-8">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-            Events & School Spirit
+            Events & school spirit
           </h2>
 
           <p className="text-lg text-white/90 leading-relaxed font-light max-w-3xl mx-auto">
@@ -240,11 +240,11 @@ export default function StudentLifePage() {
 
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
-              Field Trips
+              Field trips
             </div>
 
             <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              Learning Beyond the Classroom.
+              Learning beyond the classroom.
             </h2>
 
             <p className="text-lg text-gray-600 leading-relaxed font-light">

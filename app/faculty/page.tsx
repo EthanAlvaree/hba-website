@@ -164,7 +164,7 @@ export default function FacultyPage() {
   return (
     <main className="bg-gray-50 overflow-hidden">
       <PageHero
-        title="Faculty & Staff"
+        title="Faculty & staff"
         subtitle="Exceptional educators, mentors, and leaders dedicated to every student’s success."
         image="/images/faculty/faculty-hero.jpg"
       />
@@ -175,7 +175,7 @@ export default function FacultyPage() {
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
-            Meet the People Behind High Bluff Academy.
+            Meet the people behind High Bluff Academy.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
             Our faculty bring deep expertise, warmth, and a shared commitment to personalized
@@ -274,7 +274,7 @@ export default function FacultyPage() {
       <section className="py-20 bg-[#1f3f66]">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-5">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-            Teaching is Personal Here.
+            Teaching is personal here.
           </h2>
           <p className="text-lg text-white/85 leading-relaxed font-light">
             At High Bluff Academy, students are known by name, strengths, and aspirations.

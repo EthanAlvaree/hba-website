@@ -19,7 +19,8 @@ export default function Breadcrumbs() {
         {pathSegments.map((segment, index) => {
           const href = `/${pathSegments.slice(0, index + 1).join("/")}`;
           const isLast = index === pathSegments.length - 1;
-          const label = segment.replace(/-/g, " ");
+          const raw = segment.replace(/-/g, " ");
+          const label = raw.charAt(0).toUpperCase() + raw.slice(1);
 
           return (
             <li key={href} className="flex items-center">

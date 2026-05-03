@@ -19,11 +19,11 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
               <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-                Our Mission
+                Our mission
               </div>
               <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
-                Preparing Students <br />
-                <span className="text-[#f37021]">For Life.</span>
+                Preparing students <br />
+                <span className="text-[#f37021]">for life.</span>
               </h2>
               <div className="space-y-4 text-lg text-gray-600 leading-relaxed font-light">
                 <p>
@@ -66,7 +66,7 @@ export default function AboutPage() {
         
         <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-12 text-center">
           <div className="bg-white/10 backdrop-blur-md border border-white/20 p-12 lg:p-16 rounded-3xl shadow-2xl">
-            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">Our Students</h2>
+            <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">Our students</h2>
             <p className="text-xl text-white/90 leading-relaxed font-light max-w-3xl mx-auto">
               Our student body includes full-time domestic and international students, as well as online learners enrolled both full-time and part-time. We truly believe that this diverse and dynamic community enriches the learning experience, fostering global perspectives, collaboration, and a deeper understanding of the world.
             </p>
@@ -89,7 +89,7 @@ export default function AboutPage() {
             
             <div className="lg:col-span-7 space-y-8 lg:pl-8">
               <div>
-                <h2 className="text-4xl font-extrabold text-[#1f3f66] mb-4">The Campus</h2>
+                <h2 className="text-4xl font-extrabold text-[#1f3f66] mb-4">The campus</h2>
                 <p className="text-lg text-gray-600 font-light leading-relaxed">
                   The Rancho Santa Fe campus is the main location of High Bluff Academy, a private college-preparatory high school serving grades 9–12. It is known for its small, personalized learning environment, with very low student-to-teacher ratios and small class sizes that allow individualized attention.
                 </p>
@@ -122,7 +122,7 @@ export default function AboutPage() {
       <section id="history" className="py-24 bg-gray-50 border-t border-gray-200">
         <div className="max-w-4xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-16">
-             <h2 className="text-4xl font-extrabold text-[#1f3f66]">Our History</h2>
+             <h2 className="text-4xl font-extrabold text-[#1f3f66]">Our history</h2>
              <div className="w-24 h-1.5 bg-[#f37021] mx-auto mt-6 rounded-full"></div>
           </div>
 
@@ -139,7 +139,7 @@ export default function AboutPage() {
             <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-[#1f3f66] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
               <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <div className="text-[#f37021] font-bold tracking-widest text-sm mb-2">EXPANSION</div>
+                <div className="text-[#f37021] font-bold tracking-widest text-sm mb-2">Expansion</div>
                 <p className="text-gray-600 font-light">Expanded to include a full-time high school program (grades 9–12), developing into a recognized college-preparatory institution.</p>
               </div>
             </div>
@@ -147,7 +147,7 @@ export default function AboutPage() {
             <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
               <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-[#f37021] text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
               <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-[#1f3f66] text-white p-6 rounded-2xl shadow-xl">
-                <div className="text-white/70 font-bold tracking-widest text-sm mb-2">TODAY</div>
+                <div className="text-white/70 font-bold tracking-widest text-sm mb-2">Today</div>
                 <p className="text-white/90 font-light mb-4">Achieved full WASC accreditation, allowing diplomas to be recognized nationwide. Offerings now include:</p>
                 <ul className="list-disc pl-5 space-y-1 text-sm font-medium text-white/80">
                   <li>Advanced Placement (AP) courses</li>

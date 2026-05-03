@@ -10,7 +10,7 @@ export default function SummerProgramsPage() {
 
       {/* HERO */}
       <PageHero
-        title="Summer Programs 2026"
+        title="Summer programs 2026"
         subtitle="High‑impact courses designed to accelerate learning, build confidence, and prepare students for the year ahead."
         image="/images/summer/summer-hero.jpg"
       />
@@ -21,7 +21,7 @@ export default function SummerProgramsPage() {
       <section className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
-            A Summer That Moves Students Forward.
+            A summer that moves students forward.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
             High Bluff Academy’s summer programs are known throughout San Diego for their
@@ -43,11 +43,11 @@ export default function SummerProgramsPage() {
           <div className="grid gap-16 lg:grid-cols-2 items-center">
             <div className="space-y-6">
               <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-                Summer Courses
+                Summer courses
               </div>
 
               <h2 className="text-4xl font-extrabold text-[#1f3f66] leading-tight">
-                High‑Impact Academic Classes.
+                High‑impact academic classes.
               </h2>
 
               <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -85,7 +85,7 @@ export default function SummerProgramsPage() {
 
           <div className="text-center space-y-4">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              Explore Summer Subjects
+              Explore summer subjects
             </h2>
             <p className="text-lg text-gray-600 font-light max-w-3xl mx-auto">
               Students can strengthen core skills, explore new interests, or prepare for
@@ -153,7 +153,7 @@ export default function SummerProgramsPage() {
                   className="object-cover"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-[#1f3f66] mb-2">Social Science</h3>
+              <h3 className="text-xl font-semibold text-[#1f3f66] mb-2">Social science</h3>
               <p className="text-sm text-gray-600 leading-relaxed">
                 U.S. History, World History, Government, Economics, and AP support.
               </p>
@@ -169,7 +169,7 @@ export default function SummerProgramsPage() {
                   className="object-cover"
                 />
               </div>
-              <h3 className="text-xl font-semibold text-[#1f3f66] mb-2">World Languages</h3>
+              <h3 className="text-xl font-semibold text-[#1f3f66] mb-2">World languages</h3>
               <p className="text-sm text-gray-600 leading-relaxed">
                 Spanish, French, ESL, and accelerated language options.
               </p>
@@ -208,7 +208,7 @@ export default function SummerProgramsPage() {
 
         <div className="relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-8">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-            Flexible Options for Every Student.
+            Flexible options for every student.
           </h2>
 
           <p className="text-lg text-white/90 leading-relaxed font-light max-w-3xl mx-auto">
@@ -228,7 +228,7 @@ export default function SummerProgramsPage() {
       <section className="py-20 bg-white">
         <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-5">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-            Ready to Get Started?
+            Ready to get started?
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
             Summer is the perfect time to build momentum. Join us for a season of growth,
@@ -240,13 +240,13 @@ export default function SummerProgramsPage() {
               href="/contact"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
-              Contact Us
+              Contact us
             </a>
             <a
               href="/admissions"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
             >
-              Admissions & Enrollment
+              Admissions & enrollment
             </a>
           </div>
         </div>
