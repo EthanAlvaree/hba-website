@@ -1,0 +1,153 @@
+{
+  "events": [
+    {
+      "id": "2025-08-14-inservice",
+      "title": "Teacher in-service",
+      "start": "2025-08-14",
+      "end": "2025-08-16",
+      "allDay": true,
+      "category": "faculty",
+      "description": "No school for students."
+    },
+    {
+      "id": "2025-08-18-first-day",
+      "title": "First day of school",
+      "start": "2025-08-18",
+      "allDay": true,
+      "category": "academics",
+      "description": "Classes begin for the 2025–2026 academic year."
+    },
+    {
+      "id": "2025-09-01-labor-day",
+      "title": "Labor Day",
+      "start": "2025-09-01",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2025-10-13-indigenous-peoples-day",
+      "title": "Indigenous Peoples’ Day",
+      "start": "2025-10-13",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2025-11-11-veterans-day",
+      "title": "Veterans Day",
+      "start": "2025-11-11",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2025-11-24-fall-break",
+      "title": "Fall Break",
+      "start": "2025-11-24",
+      "end": "2025-11-29",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2025-12-15-semester-1-finals",
+      "title": "Semester 1 Finals",
+      "start": "2025-12-15",
+      "end": "2025-12-18",
+      "allDay": true,
+      "category": "academics"
+    },
+    {
+      "id": "2025-12-18-inservice",
+      "title": "Teacher in-service",
+      "start": "2025-12-18",
+      "end": "2025-12-20",
+      "allDay": true,
+      "category": "faculty",
+      "description": "No school for students."
+    },
+    {
+      "id": "2025-12-22-winter-break",
+      "title": "Winter Break",
+      "start": "2025-12-22",
+      "end": "2026-01-03",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-01-05-inservice",
+      "title": "Teacher in-service",
+      "start": "2026-01-05",
+      "end": "2026-01-07",
+      "allDay": true,
+      "category": "faculty",
+      "description": "No school for students."
+    },
+    {
+      "id": "2026-01-07-semester-2-start",
+      "title": "First day of Semester 2",
+      "start": "2026-01-07",
+      "allDay": true,
+      "category": "academics"
+    },
+    {
+      "id": "2026-01-19-mlk-day",
+      "title": "Martin Luther King Jr. Day",
+      "start": "2026-01-19",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-02-16-presidents-day",
+      "title": "Presidents’ Day Holiday",
+      "start": "2026-02-16",
+      "end": "2026-02-18",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-03-30-spring-break",
+      "title": "Spring Break",
+      "start": "2026-03-30",
+      "end": "2026-04-04",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-05-18-semester-2-finals",
+      "title": "Semester 2 Finals",
+      "start": "2026-05-18",
+      "end": "2026-05-21",
+      "allDay": true,
+      "category": "academics"
+    },
+    {
+      "id": "2026-05-21-graduation",
+      "title": "Graduation",
+      "start": "2026-05-21",
+      "allDay": true,
+      "category": "community",
+      "description": "Class of 2026 graduation ceremony.",
+      "location": "Rancho Santa Fe campus"
+    },
+    {
+      "id": "2026-05-25-memorial-day",
+      "title": "Memorial Day",
+      "start": "2026-05-25",
+      "allDay": true,
+      "category": "holiday"
+    },
+    {
+      "id": "2026-06-08-summer-classes-start",
+      "title": "First day of summer classes",
+      "start": "2026-06-08",
+      "allDay": true,
+      "category": "academics",
+      "description": "All summer programs begin — six-, seven-, and eight-week courses, on campus and online."
+    },
+    {
+      "id": "2026-07-03-independence-day",
+      "title": "Independence Day (observed)",
+      "start": "2026-07-03",
+      "allDay": true,
+      "category": "holiday"
+    }
+  ]
+}
