@@ -142,7 +142,7 @@ export default function ProgramsPage() {
 
           <div className="mt-8 text-center">
             <a
-              href="/programs/online#courses"
+              href="/programs/courses"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-[#1f3f66] font-semibold text-sm shadow-lg hover:bg-[#f37021] hover:text-white transition"
             >
               See the full UC A–G course catalogue →

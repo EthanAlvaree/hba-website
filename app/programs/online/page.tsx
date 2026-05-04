@@ -70,95 +70,6 @@ const tiers = [
   },
 ]
 
-const courseList = [
-  {
-    label: "A — History / Social science",
-    courses: [
-      "World History",
-      "U.S. History",
-      "American Government",
-      "AP African American Studies",
-      "AP European History",
-      "AP Government & Politics — United States",
-      "AP Government & Politics — Comparative",
-      "AP Human Geography",
-      "AP United States History",
-      "AP World History",
-    ],
-  },
-  {
-    label: "B — English",
-    courses: [
-      "English 9, 10, 11, 12",
-      "Honors English (live instructor only)",
-      "AP English Language & Composition",
-      "AP English Literature & Composition",
-      "AP Seminar (live instruction only)",
-    ],
-  },
-  {
-    label: "C — Mathematics",
-    courses: [
-      "Algebra 1",
-      "Algebra 2 / Trigonometry",
-      "Geometry",
-      "Integrated Math 1, 2, 3",
-      "Integrated Math 1, 2, 3 Honors",
-      "Introduction to Calculus",
-      "Precalculus",
-      "Statistics",
-      "AP Precalculus (live instructor only)",
-      "AP Calculus AB",
-      "AP Calculus BC",
-      "AP Statistics",
-      "AP Computer Science A",
-      "Linear Algebra (live instructor only)",
-      "Multivariable Calculus (live instructor only)",
-    ],
-  },
-  {
-    label: "D — Science",
-    courses: [
-      "Biology: The Living Earth",
-      "Chemistry: In the Earth System",
-      "Physics of the Universe",
-      "AP Biology",
-      "AP Chemistry",
-      "AP Environmental Science",
-      "AP Physics 1",
-      "AP Physics 2",
-      "AP Physics C: Mechanics",
-      "AP Physics C: E&M",
-      "AP Computer Science Principles",
-    ],
-  },
-  {
-    label: "E — World languages",
-    courses: [
-      "Spanish 1, 2, 3, 4",
-      "AP Spanish Language & Culture",
-      "French 1, 2, 3, 4",
-    ],
-  },
-  {
-    label: "F — Visual & performing arts",
-    courses: ["AP Art History", "AP Music Theory"],
-  },
-  {
-    label: "G — College preparatory electives",
-    courses: [
-      "Economics",
-      "AP Macroeconomics",
-      "AP Microeconomics",
-      "AP Psychology",
-      "AP Research (live instructor only)",
-      "Intro to Ethnic Studies",
-      "Intro to Java",
-      "Intro to Robotic Engineering",
-    ],
-  },
-]
-
 export default function OnlineHighSchoolPage() {
   return (
     <main className="bg-gray-50 overflow-hidden">
@@ -305,38 +216,27 @@ export default function OnlineHighSchoolPage() {
         </div>
       </section>
 
-      {/* COURSE LIST */}
+      {/* COURSE CATALOGUE LINK */}
       <section id="courses" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="text-center mb-12 space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Full course list
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              UC A–G online course catalogue.
-            </h2>
-            <p className="text-gray-600 font-light max-w-2xl mx-auto">
-              Every course below satisfies UC A–G requirements. Courses marked &ldquo;live
-              instructor only&rdquo; are not available in self-paced format.
-            </p>
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            Course catalogue
           </div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {courseList.map((group) => (
-              <div
-                key={group.label}
-                className="bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm"
-              >
-                <h3 className="text-sm font-bold text-[#1f3f66] uppercase tracking-widest mb-4">
-                  {group.label}
-                </h3>
-                <ul className="space-y-1.5 text-sm text-gray-700">
-                  {group.courses.map((c) => (
-                    <li key={c} className="leading-snug">• {c}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            60+ courses, all UC A–G aligned.
+          </h2>
+          <p className="text-lg text-gray-600 font-light leading-relaxed">
+            Online students choose from the same catalogue as our on-campus students —
+            including 25+ AP and honors courses across mathematics, science, language arts,
+            social science, world languages, and electives.
+          </p>
+          <div className="pt-4">
+            <Link
+              href="/programs/courses"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#1f3f66] text-white font-semibold text-sm shadow-lg hover:bg-[#f37021] transition"
+            >
+              View the full course catalogue →
+            </Link>
           </div>
         </div>
       </section>
