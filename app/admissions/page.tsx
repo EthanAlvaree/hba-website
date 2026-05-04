@@ -167,7 +167,7 @@ export default function AdmissionsPage() {
                 </li>
                 <li className="flex justify-between gap-3">
                   <span>
-                    ESL program fee
+                    (Optional) ESL program fee
                     <span className="block text-xs text-gray-500">If needed; based on placement assessment.</span>
                   </span>
                   <span className="font-medium text-gray-900">$6,000</span>

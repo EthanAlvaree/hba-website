@@ -135,7 +135,7 @@ export default function InternationalAdmissionsPage() {
                 </li>
                 <li className="flex items-baseline justify-between gap-4 py-3">
                   <span className="text-gray-700">
-                    ESL program fee
+                    (Optional) ESL program fee
                     <span className="block text-xs text-gray-500 mt-1">
                       If needed; based on a placement assessment administered at HBA.
                     </span>
