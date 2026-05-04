@@ -11,7 +11,7 @@ export default function Footer() {
       {/* Campus Image */}
       <div className="w-full h-72 relative">
         <Image
-          src="/images/campus-aerial.jpg"
+          src="/images/home/campus-aerial.jpg"
           alt="High Bluff Academy Campus"
           fill
           sizes="100vw"
@@ -30,7 +30,7 @@ export default function Footer() {
           <div>
             <div className="relative w-24 h-24 mb-4">
               <Image
-                src="/images/hba-logo-color.png"
+                src="/images/brand/hba-logo-color.png"
                 alt="High Bluff Academy Logo"
                 fill
                 sizes="96px"
@@ -81,13 +81,13 @@ export default function Footer() {
 
             <div className="flex gap-6 items-center">
               <div className="relative w-20 h-20">
-                <Image src="/images/hba-logo-round.png" alt="HBA Seal" fill sizes="80px" className="object-contain"/>
+                <Image src="/images/brand/hba-logo-round.png" alt="HBA Seal" fill sizes="80px" className="object-contain"/>
               </div>
               <div className="relative w-20 h-20">
-                <Image src="/images/wasc-round.png" alt="WASC Accredited" fill sizes="80px" className="object-contain"/>
+                <Image src="/images/brand/wasc-round.png" alt="WASC Accredited" fill sizes="80px" className="object-contain"/>
               </div>
               <div className="relative w-20 h-20">
-                <Image src="/images/uc.png" alt="UC A-G Approved" fill sizes="80px" className="object-contain"/>
+                <Image src="/images/brand/uc.png" alt="UC A-G Approved" fill sizes="80px" className="object-contain"/>
               </div>
             </div>
           </div>

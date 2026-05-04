@@ -1,190 +1,52 @@
 # Missing image references
 
-Every page-level image path that is referenced in the codebase but does not yet exist in `public/`. Grouped by page in source order. Drop the real photo at the listed path and the page will pick it up — no code changes required (with one exception, called out below).
+Image paths referenced by pages but not yet present on disk. Drop a file at the
+listed path and the page will pick it up automatically — no code changes needed.
 
-The `public/` images that *do* exist today are:
+## Image folder layout
 
-- `public/images/campus.png`, `campus-hero.png`
-- `public/images/hba-logo.png`, `hba-logo-round.png`
-- `public/images/wasc.png`, `wasc-round.png`, `uc.png`
-- `public/images/faculty/*.jpg` — all faculty headshots and 4 `leadership-*.jpg` thumbnails
+All images live under `public/images/`, organized by page:
 
-Everything below is missing.
+```
+public/images/
+├── _unsorted/      gitignored — local-only working folder for raw uploads
+├── about/          /about
+├── admissions/     /admissions, /admissions/international
+├── athletics/      /student-life/athletics
+├── brand/          logos & accreditation seals (header + footer)
+├── calendar/       /calendar
+├── college-acceptances/  /about/college-acceptances
+├── community/      /community, /community/parents, /community/alumni, /community/store
+├── contact/        /contact
+├── faculty/        /faculty
+├── home/           homepage hero + footer campus shot
+├── leadership/     /about/leadership
+├── online/         /programs/online
+├── partnerships/   /community/partnerships
+├── policies/       /privacy, /terms, /accessibility, /nondiscrimination
+├── programs/       /programs
+├── reviews/        /reviews
+├── student-life/   /student-life
+├── summer/         /summer-programs
+└── transcripts/    /transcripts
+```
 
----
+## Currently missing
 
-## `app/about/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/mission.jpg` | "Our mission" feature image — students collaborating in class, conveying engagement and mentorship |
-| `public/images/students.jpg` | Background image for the "Our students" glassmorphism section — a wide shot of a diverse group of students |
-| `public/images/campus.jpg` | "The campus" feature image — exterior shot of the Rancho Santa Fe campus (note: `campus.png` exists but page asks for `.jpg`) |
-
-## `app/about/leadership/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/leadership-hero.jpg` | Leadership page hero — Head of School / leadership team at the school. |
-| `public/images/leadership/leadership-kun.jpg` | Round portrait of Mr. Kun Xuan (already in repo) |
-| `public/images/leadership/leadership-george.jpg` | Round portrait of George Humphreys (already in repo) |
-| `public/images/leadership/leadership-ethan.jpg` | Round portrait of Ethan Alvarée (already in repo) |
-| `public/images/leadership/leadership-molly.jpg` | Round portrait of Molly Sun (already in repo) |
-
-## `app/calendar/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/calendar/calendar-hero.jpg` | Calendar page hero — campus during a recognizable season, or an image evocative of school year rhythm |
-| `public/images/calendar/calendar-bg.jpg` | Tinted background for the categories section — broad campus shot |
-| `public/images/calendar/calendar-summer.jpg` | Summer 2026 callout image — students in a summer class context |
-
-## `app/community/parents/page.tsx`
+These paths are referenced in code but don't yet have a file. Until they do,
+the pages will show broken-image placeholders.
 
 | Path | What it should depict |
 | --- | --- |
-| `public/images/community/parents-hero.jpg` | Parents page hero — parents at a school event or family meeting with faculty |
-| `public/images/community/parents-meeting.jpg` | Tinted background — parent-teacher conference or family welcome event |
-| `public/images/community/parents-involved.jpg` | "Be part of the school" panel — parent volunteering, chaperoning, or attending a school event |
+| `public/images/about/students.jpg` | Wide shot of a diverse group of HBA students — used as the tinted background for the "Our students" section |
+| `public/images/student-life/events.jpg` | Background for the events section — a school spirit moment, rally, or celebration |
+| `public/images/summer/summer-flex.jpg` | Background for the "Don't see what you're looking for?" section on `/summer-programs` — student working independently in a flexible/hybrid setting |
 
-## `app/community/alumni/page.tsx`
+## Optional (not blocking)
 
-| Path | What it should depict |
-| --- | --- |
-| `public/images/community/alumni-hero.jpg` | Alumni page hero — graduation moment or alumni gathering |
-| `public/images/community/alumni-reunion.jpg` | Stay-connected panel — alumni event, gathering, or reunion |
-| `public/images/community/alumni-mentor.jpg` | Tinted background for "Give back" — alumnus speaking to or mentoring current students |
-
-## `app/community/store/page.tsx`
+Pages with tagged "Coming soon" content that intentionally use placeholder
+images until announcements are made:
 
 | Path | What it should depict |
 | --- | --- |
-| `public/images/community/store-hero.jpg` | Store page hero — graduation cap on a stack of yearbooks, or a clean composition of diploma + regalia + yearbook |
-
-## `app/privacy/page.tsx`, `app/terms/page.tsx`, `app/accessibility/page.tsx`, `app/nondiscrimination/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/policy-hero.jpg` | Shared hero across all four policy pages — clean, calm campus shot or architectural detail. One image serves all four. |
-
-## `app/admissions/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/admissions-hero.jpg` | Admissions page hero — welcoming campus moment, e.g. a family touring or admissions staff greeting visitors |
-| `public/images/admissions-family.jpg` | Side panel — a family meeting with admissions staff |
-| `public/images/tuition-bg.jpg` | Tinted background for the tuition section — campus architecture or quiet academic detail |
-| `public/images/visit-campus.jpg` | "See HBA in person" panel — exterior or entrance shot of campus during a tour |
-
-## `app/community/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/community/community-hero.jpg` | Community page hero — students engaged in a group/service activity |
-| `public/images/community/service.jpg` | "Giving back, growing forward" — students at a community service event |
-| `public/images/community/advisory.jpg` | Used twice (background + foreground) — a teacher meeting one-on-one with a student in advisory |
-| `public/images/community/nhs.jpg` | National Honor Society — induction ceremony or NHS members in uniform/at an event |
-| `public/images/community/partnerships.jpg` | Community partnerships — students at a partner organization or off-campus learning experience |
-| `public/images/community/volunteering.jpg` | Background for the volunteering section — students volunteering, ideally outdoors |
-
-## `app/contact/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/contact/contact-hero.jpg` | Contact page hero — friendly office staff or a welcoming campus shot |
-| _(no `contact-map.jpg` needed — replaced with Google Maps iframe)_ | — |
-
-## `app/faculty/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/faculty/faculty-hero.jpg` | Faculty page hero — a wide shot of teachers together, or a teacher in front of a class |
-
-## `app/programs/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/programs-hero.jpg` | Programs page hero — students in a focused academic setting (lab, classroom discussion) |
-| `public/images/courses.jpg` | "Strong academic foundation" feature image — students engaged in class discussion |
-| `public/images/ap-courses.jpg` | Background for the AP section — student studying at a desk, books/laptop visible |
-| `public/images/areas-study.jpg` | "Pathways for every learner" — a STEM or arts moment showing breadth of disciplines |
-| `public/images/summer-programs.jpg` | Summer programs banner on this page — students in a summer class context |
-| `public/images/online-programs.jpg` | Online & hybrid learning panel — student on a laptop in a hybrid setup |
-
-## `app/student-life/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/studentlife-hero.jpg` | Student life page hero — students in a vibrant, social/community moment |
-| `public/images/asb.jpg` | Associated Student Body — student leaders organizing an event |
-| `public/images/mun.jpg` | Used twice — Model UN students debating or holding placards at a conference |
-| `public/images/athletics.jpg` | Athletics — students during a sport or training session |
-| `public/images/events.jpg` | Background for the events section — a school spirit moment, rally, or celebration |
-| `public/images/fieldtrips.jpg` | Field trips — students at the San Diego Zoo or another off-campus location |
-
-## `app/summer-programs/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/summer/summer-hero.jpg` | Summer programs hero — students in a summer-feeling academic setting |
-| `public/images/summer/summer-class.jpg` | "High-impact academic classes" — small group class in session |
-| `public/images/summer/summer-math.jpg` | Math thumbnail — whiteboard with equations, or students working through math problems |
-| `public/images/summer/summer-lab.jpg` | Science thumbnail — students at a lab bench, microscope, or experiment |
-| `public/images/summer/summer-writing.jpg` | English thumbnail — student writing or reading, or a writing-workshop moment |
-| `public/images/summer/summer-students.jpg` | Social science thumbnail — students discussing or presenting |
-| `public/images/summer/summer-flex.jpg` | Used twice (electives card + flexible-learning section) — student working independently in a flexible/hybrid setting |
-| `public/images/summer/summer-campus.jpg` | Electives thumbnail — campus exterior or art/elective in progress |
-
-## `app/reviews/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/reviews/reviews-hero.jpg` | Reviews page hero — happy students/parents at a school event, or a welcoming campus moment |
-
-## `app/about/college-acceptances/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/college-acceptances/hero.jpg` | College acceptances hero — graduation moment, college pennants, or seniors with college merch |
-
-## `app/student-life/athletics/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/athletics/hero.jpg` | Athletics hero — strong action shot, an HBA student-athlete in their sport |
-| `public/images/athletics/brandon-nakashima.jpg` | Brandon Nakashima — tennis action shot or portrait |
-| `public/images/athletics/bryce-nakashima.jpg` | Bryce Nakashima — tennis or portrait |
-| `public/images/athletics/ethan-schiffman.jpg` | Ethan Schiffman — tennis or portrait |
-| `public/images/athletics/krando-nishiba.jpg` | Krando Nishiba — golf action or portrait |
-| `public/images/athletics/tomohiro-kawada.jpg` | Tomohiro Kawada — gymnastics action or portrait |
-| `public/images/athletics/andrew-heiati.jpg` | Andrew Heiati — Tae Kwon Do action or portrait |
-
-## `app/admissions/international/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/admissions/international-hero.jpg` | International page hero — international students on campus or at a school event |
-| `public/images/admissions/san-diego.jpg` | San Diego coastline / city — establishing shot of the location |
-| `public/images/admissions/homestay.jpg` | Homestay context — friendly host family scene |
-
-## `app/programs/online/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/online/hero.jpg` | Online High School hero — student learning at a laptop, ideally in a home study setup |
-
-## `app/transcripts/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/transcripts/hero.jpg` | Transcripts page hero — official-feeling diploma / transcript / desk shot, low-key |
-
-## `app/community/partnerships/page.tsx`
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/partnerships/hero.jpg` | Partnerships page hero — students working with an outside specialist, or two organizations meeting |
-| `public/images/partnerships/pacific-crest.jpg` | Pacific Crest Institute — test prep classroom or studio art space |
-| `public/images/partnerships/study-hut.jpg` | Study Hut Tutoring — small-group tutoring scene or Study Hut branding |
-| `public/images/partnerships/joy-of-life.jpg` | Joy of Life Fitness — Pilates, yoga, or weight training in their studio |
-| `public/images/partnerships/dining.jpg` | Student dining partner — fresh prepared meal, lunch line, or restaurant kitchen (placeholder) |
+| `public/images/partnerships/dining.jpg` | Replace once the catering partner is confirmed — a fresh prepared meal, lunch line, or restaurant kitchen |

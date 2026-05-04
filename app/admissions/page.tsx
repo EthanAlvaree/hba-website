@@ -11,7 +11,7 @@ export default function AdmissionsPage() {
       <PageHero
         title="Admissions at High Bluff Academy"
         subtitle="A personalized, welcoming process designed to get to know your student as an individual."
-        image="/images/admissions-hero.jpg"
+        image="/images/admissions/admissions-hero.jpg"
       />
 
       <Breadcrumbs />
@@ -90,7 +90,7 @@ export default function AdmissionsPage() {
           <div className="lg:col-span-5">
             <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
               <Image
-                src="/images/admissions-family.jpg"
+                src="/images/admissions/admissions-family.jpg"
                 alt="Family meeting with admissions"
                 fill
                 className="object-cover"
@@ -113,7 +113,7 @@ export default function AdmissionsPage() {
       <section id="tuition" className="py-24 bg-[#1f3f66] relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/tuition-bg.jpg"
+            src="/images/admissions/tuition-bg.jpg"
             alt="Campus architecture"
             fill
             className="object-cover"
@@ -235,7 +235,7 @@ export default function AdmissionsPage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/visit-campus.jpg"
+              src="/images/admissions/visit-campus.jpg"
               alt="Families touring campus"
               fill
               className="object-cover"

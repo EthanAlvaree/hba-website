@@ -9,7 +9,7 @@ export default function NondiscriminationPage() {
       <PageHero
         title="Non-discrimination statement"
         subtitle="High Bluff Academy welcomes students and employees of every background."
-        image="/images/policy-hero.jpg"
+        image="/images/policies/policy-hero.jpg"
       />
 
       <Breadcrumbs />

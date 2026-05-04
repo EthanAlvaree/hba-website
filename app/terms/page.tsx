@@ -9,7 +9,7 @@ export default function TermsPage() {
       <PageHero
         title="Terms of use"
         subtitle="The rules of the road for using highbluffacademy.com."
-        image="/images/policy-hero.jpg"
+        image="/images/policies/policy-hero.jpg"
       />
 
       <Breadcrumbs />

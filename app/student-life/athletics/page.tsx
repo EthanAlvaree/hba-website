@@ -70,7 +70,7 @@ const stories: AthleteStory[] = [
     outcome: "Pan-American Champion; SDSU Webb Honors College, Mechanical Engineering",
     story:
       "Andrew was the Pan-American Tae Kwon Do Champion. He competed in national and international tournaments while taking two years of AP Calculus, Linear Algebra, and two years of AP Physics — and was admitted to SDSU&rsquo;s prestigious Webb Honors College.",
-    image: "/images/athletics/andrew-heiati.jpg",
+    image: "/images/athletics/andrew-heiati.png",
   },
 ]
 

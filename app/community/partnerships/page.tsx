@@ -46,7 +46,7 @@ const partners: Partner[] = [
     shortDesc: "Structured PE, weight training, Pilates, and yoga in small groups.",
     description:
       "Through our partnership with Joy of Life Fitness, students have access to a full physical education program: regular PE classes, weight training, Pilates, yoga, and small-group fitness sessions. The collaboration supports strength, flexibility, and overall wellness while keeping the personalized attention that defines an HBA experience.",
-    image: "/images/partnerships/joy-of-life.jpg",
+    image: "/images/partnerships/joy-of-life.png",
   },
   {
     name: "Student dining partner",

@@ -34,7 +34,7 @@ export default function LeadershipPage() {
       <PageHero
         title="Leadership"
         subtitle="Guiding High Bluff Academy with vision, integrity, and a commitment to student success."
-        image="/images/leadership-hero.jpg"
+        image="/images/leadership/leadership-hero.jpg"
       />
 
       <Breadcrumbs />

@@ -9,7 +9,7 @@ export default function AccessibilityPage() {
       <PageHero
         title="Accessibility"
         subtitle="Our commitment to making High Bluff Academy welcoming to every student and family."
-        image="/images/policy-hero.jpg"
+        image="/images/policies/policy-hero.jpg"
       />
 
       <Breadcrumbs />
