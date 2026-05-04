@@ -35,7 +35,7 @@ const steps = [
   {
     n: "05",
     title: "Pay the SEVIS I-901 fee",
-    body: "Pay the SEVIS I-901 fee online through the U.S. Department of Homeland Security website.",
+    body: "Pay the SEVIS I-901 fee ($350) online through the U.S. Department of Homeland Security website.",
   },
   {
     n: "06",
@@ -109,36 +109,65 @@ export default function InternationalAdmissionsPage() {
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
               Tuition &amp; fees
             </h2>
+            <p className="mt-4 text-white/80 text-lg max-w-2xl mx-auto font-light">
+              Annual costs for full-time international students on an F-1 visa.
+            </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white shadow-xl">
-              <div className="text-xs font-bold tracking-widest text-white/70 uppercase mb-2">
-                Annual tuition
+          <div className="grid gap-6 lg:grid-cols-2">
+            {/* Required annual fees */}
+            <div className="bg-white rounded-3xl p-8 text-gray-900 shadow-xl">
+              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-4">
+                Annual fees
               </div>
-              <p className="text-3xl font-bold mb-2">$45,580</p>
-              <p className="text-sm text-white/80">
-                Full-time international students, F-1 visa eligible.
-              </p>
+              <ul className="divide-y divide-gray-100 text-sm">
+                <li className="flex items-baseline justify-between gap-4 py-3">
+                  <span className="text-gray-700">Tuition</span>
+                  <span className="font-bold text-[#1f3f66] text-lg">$29,580</span>
+                </li>
+                <li className="flex items-baseline justify-between gap-4 py-3">
+                  <span className="text-gray-700">I-20 issuing fee</span>
+                  <span className="font-bold text-[#1f3f66] text-lg">$10,000</span>
+                </li>
+                <li className="flex items-baseline justify-between gap-4 py-3">
+                  <span className="text-gray-700">International student services fee</span>
+                  <span className="font-bold text-[#1f3f66] text-lg">$6,000</span>
+                </li>
+                <li className="flex items-baseline justify-between gap-4 py-3">
+                  <span className="text-gray-700">
+                    ESL program fee
+                    <span className="block text-xs text-gray-500 mt-1">
+                      If needed; based on a placement assessment administered at HBA.
+                    </span>
+                  </span>
+                  <span className="font-bold text-[#1f3f66] text-lg whitespace-nowrap">$6,000</span>
+                </li>
+              </ul>
             </div>
-            <div className="bg-white rounded-3xl p-6 text-gray-900 shadow-xl">
-              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
-                I-20 issuing deposit
-              </div>
-              <p className="text-3xl font-bold mb-2">$10,000</p>
-              <p className="text-sm text-gray-600">
-                Applied toward tuition when the student arrives on campus.
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white shadow-xl">
-              <div className="text-xs font-bold tracking-widest text-white/70 uppercase mb-2">
+
+            {/* Other fees */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-8 text-white shadow-xl">
+              <div className="text-xs font-bold tracking-widest text-white/70 uppercase mb-4">
                 Other fees
               </div>
-              <ul className="space-y-1 text-sm text-white/80">
-                <li>Registration fee: $300 (non-refundable)</li>
-                <li>Late enrollment (after April 10): $1,000</li>
-                <li>Graduation fee (12th grade): $500</li>
+              <ul className="divide-y divide-white/10 text-sm">
+                <li className="flex items-baseline justify-between gap-4 py-3">
+                  <span className="text-white/85">Registration fee (non-refundable)</span>
+                  <span className="font-semibold text-white">$300</span>
+                </li>
+                <li className="flex items-baseline justify-between gap-4 py-3">
+                  <span className="text-white/85">Late enrollment (after April 10)</span>
+                  <span className="font-semibold text-white">$1,000</span>
+                </li>
+                <li className="flex items-baseline justify-between gap-4 py-3">
+                  <span className="text-white/85">Graduation fee (12th grade)</span>
+                  <span className="font-semibold text-white">$600</span>
+                </li>
               </ul>
+              <p className="mt-6 text-xs text-white/70 leading-relaxed">
+                The SEVIS I-901 fee ($350) is paid separately to the U.S. Department of
+                Homeland Security as part of the F-1 visa process — see step 05 below.
+              </p>
             </div>
           </div>
         </div>

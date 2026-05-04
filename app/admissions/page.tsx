@@ -152,20 +152,29 @@ export default function AdmissionsPage() {
             {/* International */}
             <div className="bg-white rounded-3xl p-8 text-gray-900 shadow-2xl border border-gray-100">
               <h3 className="text-xl font-semibold mb-2">International students</h3>
-              <p className="text-3xl font-bold mb-4">$45,580</p>
-              <p className="text-sm text-gray-600 mb-4">
-                Annual tuition for full-time international students (F-1 visa eligible).
+              <p className="text-3xl font-bold mb-1">$29,580</p>
+              <p className="text-xs text-gray-500 mb-4">
+                Annual tuition. F-1 visa students pay additional required international fees.
               </p>
-              <ul className="space-y-2 text-sm text-gray-700">
-                <li>• Full-time academic program</li>
-                <li>• Support for English language learners</li>
-                <li>• College counseling and academic planning</li>
+              <ul className="space-y-2 text-sm text-gray-700 border-t border-gray-100 pt-4">
+                <li className="flex justify-between gap-3">
+                  <span>I-20 issuing fee</span>
+                  <span className="font-medium text-gray-900">$10,000</span>
+                </li>
+                <li className="flex justify-between gap-3">
+                  <span>International student services fee</span>
+                  <span className="font-medium text-gray-900">$6,000</span>
+                </li>
+                <li className="flex justify-between gap-3">
+                  <span>
+                    ESL program fee
+                    <span className="block text-xs text-gray-500">If needed; based on placement assessment.</span>
+                  </span>
+                  <span className="font-medium text-gray-900">$6,000</span>
+                </li>
               </ul>
               <p className="mt-4 text-xs text-gray-500">
                 Registration Fee: $300 (non-refundable)
-              </p>
-              <p className="mt-1 text-xs text-gray-500">
-                I-20 Issuing Deposit: $10,000 (applied toward tuition upon arrival)
               </p>
               <a
                 href="/admissions/international"
@@ -177,7 +186,7 @@ export default function AdmissionsPage() {
           </div>
 
           <div className="mt-10 text-center text-sm text-white/80">
-            Graduation Fee (12th Grade): $500 — includes cap and gown, senior activities, and
+            Graduation Fee (12th Grade): $600 — includes cap and gown, senior activities, and
             the graduation luncheon.
           </div>
         </div>

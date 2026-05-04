@@ -217,8 +217,54 @@ export default function StorePage() {
         </div>
       </section>
 
-      {/* CONTACT FALLBACK */}
+      {/* MERCH (COMING SOON) */}
       <section className="py-20 bg-white">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+          <div className="bg-gray-50 border border-gray-200 rounded-3xl p-8 lg:p-12 shadow-sm">
+            <div className="flex items-start justify-between gap-6 flex-wrap">
+              <div className="space-y-2">
+                <div className="text-xs font-bold tracking-widest uppercase text-[#f37021]">
+                  Merch
+                </div>
+                <h3 className="text-2xl lg:text-3xl font-extrabold text-[#1f3f66] leading-tight">
+                  HBA-branded gear and keepsakes.
+                </h3>
+                <p className="text-gray-600 leading-relaxed font-light max-w-2xl">
+                  Show your HBA pride with branded apparel and accessories. Online ordering is
+                  on the way — until then, contact the school office about availability.
+                </p>
+              </div>
+              <span className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] bg-[#f37021]/10 px-3 py-1 rounded-full whitespace-nowrap">
+                Coming soon
+              </span>
+            </div>
+
+            <ul className="mt-8 grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 text-sm text-gray-700">
+              {[
+                "Water bottles",
+                "Teddy bears",
+                "Hoodies & T-shirts",
+                "Hats",
+                "Notebooks",
+                "Pencils & pens",
+                "Socks",
+                "Sweatpants & sweatshirts",
+                "Other merchandise",
+              ].map((item) => (
+                <li
+                  key={item}
+                  className="rounded-xl bg-white border border-gray-200 px-4 py-3 text-center"
+                >
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* CONTACT FALLBACK */}
+      <section className="py-20 bg-gray-50">
         <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-5">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
             Need something else?

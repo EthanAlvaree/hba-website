@@ -43,7 +43,6 @@ export const navigation: NavItem[] = [
           { label: "Campus", href: "/about#campus" },
           { label: "History", href: "/about#history" },
           { label: "College acceptances", href: "/about/college-acceptances" },
-          { label: "Reviews", href: "/reviews" },
         ],
       },
     ],
