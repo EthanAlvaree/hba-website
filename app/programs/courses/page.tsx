@@ -34,6 +34,8 @@ const categories: Category[] = [
       "AP Calculus BC",
       "Honors Linear Algebra",
       "Honors Multivariable Calculus",
+      "Honors Group Theory and Abstract Algebra",
+      "Honors Set Theory and Real Analysis",
     ],
   },
   {
