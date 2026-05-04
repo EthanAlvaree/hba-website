@@ -33,7 +33,7 @@ const categories: Category[] = [
       "AP Calculus AB",
       "AP Calculus BC",
       "Honors Linear Algebra",
-      "Honors Multivariable Calculus"
+      "Honors Multivariable Calculus",
     ],
   },
   {
@@ -52,7 +52,7 @@ const categories: Category[] = [
       "AP Physics 1",
       "AP Physics 2",
       "AP Physics C: Mechanics",
-      "AP Physics C: E&M"
+      "AP Physics C: E&M",
     ],
   },
   {
@@ -61,8 +61,8 @@ const categories: Category[] = [
     description:
       "Core English 9–12, honors and AP literature and language, and the AP Capstone diploma program.",
     courses: [
-      "English 9, 10, 11, 12",
-      "Honors English (live instructor only)",
+      "English Support",
+      "English 9, 10, 11",
       "AP English Language & Composition",
       "AP English Literature & Composition",
       "AP Seminar (live instructor only)",
@@ -97,9 +97,9 @@ const categories: Category[] = [
     description:
       "Four years of Spanish and French with live conversational practice with HBA teachers — not a recorded-only experience.",
     courses: [
-      "Spanish 1, 2, 3, 4",
-      "AP Spanish Language & Culture",
-      "French 1, 2, 3, 4",
+      "Spanish 1, 2, 3, 4/AP",
+      "French 1, 2, 3, 4/AP",
+      "Chinese 1, 2, 3, 4/AP",
     ],
   },
   {
@@ -111,7 +111,7 @@ const categories: Category[] = [
       "Digital Art",
       "Intro to Robotic Engineering",
       "AP Computer Science Principles",
-      "AP Computer Science A"
+      "AP Computer Science A",
     ],
   },
   {
