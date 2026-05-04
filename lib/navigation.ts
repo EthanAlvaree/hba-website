@@ -116,8 +116,9 @@ export const navigation: NavItem[] = [
       {
         heading: "Community",
         links: [
-          { label: "Community Service", href: "/community#service" },
-          { label: "Academic Support & Advisory", href: "/community#advisory" },
+          { label: "Community service", href: "/community#service" },
+          { label: "Academic support & advisory", href: "/community#advisory" },
+          { label: "Partnerships", href: "/community/partnerships" },
           { label: "Reviews", href: "/reviews" },
         ],
       },
@@ -127,7 +128,7 @@ export const navigation: NavItem[] = [
           { label: "Parent/Guardian", href: "/community/parents" },
           { label: "Alumni", href: "/community/alumni" },
           { label: "Order a transcript", href: "/transcripts" },
-          { label: "School Store", href: "/community/store" },
+          { label: "School store", href: "/community/store" },
         ],
       },
     ],

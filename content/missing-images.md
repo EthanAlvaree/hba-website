@@ -119,7 +119,6 @@ Everything below is missing.
 | `public/images/asb.jpg` | Associated Student Body — student leaders organizing an event |
 | `public/images/mun.jpg` | Used twice — Model UN students debating or holding placards at a conference |
 | `public/images/athletics.jpg` | Athletics — students during a sport or training session |
-| `public/images/fitness.jpg` | Joy of Life Fitness partnership — students in a Pilates / weight training / yoga class |
 | `public/images/events.jpg` | Background for the events section — a school spirit moment, rally, or celebration |
 | `public/images/fieldtrips.jpg` | Field trips — students at the San Diego Zoo or another off-campus location |
 
@@ -179,3 +178,13 @@ Everything below is missing.
 | Path | What it should depict |
 | --- | --- |
 | `public/images/transcripts/hero.jpg` | Transcripts page hero — official-feeling diploma / transcript / desk shot, low-key |
+
+## `app/community/partnerships/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/partnerships/hero.jpg` | Partnerships page hero — students working with an outside specialist, or two organizations meeting |
+| `public/images/partnerships/pacific-crest.jpg` | Pacific Crest Institute — test prep classroom or studio art space |
+| `public/images/partnerships/study-hut.jpg` | Study Hut Tutoring — small-group tutoring scene or Study Hut branding |
+| `public/images/partnerships/joy-of-life.jpg` | Joy of Life Fitness — Pilates, yoga, or weight training in their studio |
+| `public/images/partnerships/dining.jpg` | Student dining partner — fresh prepared meal, lunch line, or restaurant kitchen (placeholder) |

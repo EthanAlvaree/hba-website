@@ -167,43 +167,6 @@ export default function StudentLifePage() {
         </div>
       </section>
 
-      {/* FITNESS PARTNERSHIP */}
-      <section id="fitness" className="py-24 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
-
-          <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Fitness partnership
-            </div>
-
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              Joy of Life Fitness collaboration
-            </h2>
-
-            <p className="text-lg text-gray-600 leading-relaxed font-light">
-              Through our partnership with Joy of Life Fitness, students have access to
-              structured physical education opportunities including PE classes, weight
-              training, Pilates, yoga, and small-group fitness sessions.
-            </p>
-
-            <p className="text-sm text-gray-500">
-              This collaboration supports strength, flexibility, wellness, and personalized attention.
-            </p>
-          </div>
-
-          <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
-            <Image
-              src="/images/fitness.jpg"
-              alt="Fitness training"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-transparent" />
-          </div>
-
-        </div>
-      </section>
-
       {/* EVENTS */}
       <section id="events" className="py-24 bg-[#1f3f66] relative">
         <div className="absolute inset-0 opacity-20">

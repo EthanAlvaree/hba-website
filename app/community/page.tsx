@@ -170,14 +170,23 @@ export default function CommunityPage() {
             </h2>
 
             <p className="text-lg text-gray-600 leading-relaxed font-light">
-              High Bluff Academy partners with local organizations, businesses, and
-              educational institutions to provide students with real‑world learning
-              experiences, internships, and collaborative projects.
+              High Bluff Academy partners with specialist organizations — from test prep
+              and tutoring to fitness and student dining — so every student gets depth and
+              support beyond what a single school can provide on its own.
             </p>
 
             <p className="text-sm text-gray-500">
-              These partnerships expand opportunities for growth and connect students to the broader community.
+              Pacific Crest Institute, Study Hut Tutoring, Joy of Life Fitness, and more.
             </p>
+
+            <div className="pt-2">
+              <a
+                href="/community/partnerships"
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+              >
+                Meet our partners →
+              </a>
+            </div>
           </div>
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
