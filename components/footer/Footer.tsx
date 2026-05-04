@@ -41,7 +41,7 @@ export default function Footer() {
             <h3 className="text-2xl font-bold mb-3">High Bluff Academy</h3>
 
             <p className="text-sm leading-relaxed text-gray-200">
-              5531 Cancha de Golf Ste #202<br />
+              5531 Cancha de Golf, Ste 202<br />
               Rancho Santa Fe, CA 92091<br />
               (858) 509-9101<br />
               info@highbluffacademy.com
@@ -83,15 +83,27 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Policies */}
-          <div>
-            <h4 className="text-xl font-semibold mb-4">Policies</h4>
-            <ul className="space-y-2 text-sm text-gray-200">
-              <li><Link href="/privacy" className="hover:text-orange-300">Privacy Policy</Link></li>
-              <li><Link href="/terms" className="hover:text-orange-300">Terms of Use</Link></li>
-              <li><Link href="/accessibility" className="hover:text-orange-300">Accessibility</Link></li>
-              <li><Link href="/nondiscrimination" className="hover:text-orange-300">Non-Discrimination Statement</Link></li>
-            </ul>
+          {/* Resources & Policies */}
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 sm:gap-y-3">
+            <div className="col-span-2 sm:col-span-1">
+              <h4 className="text-xl font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-gray-200">
+                <li><Link href="/admissions" className="hover:text-orange-300">Admissions</Link></li>
+                <li><Link href="/reviews" className="hover:text-orange-300">Reviews</Link></li>
+                <li><Link href="/about/college-acceptances" className="hover:text-orange-300">College acceptances</Link></li>
+                <li><Link href="/calendar" className="hover:text-orange-300">Academic calendar</Link></li>
+                <li><Link href="/transcripts" className="hover:text-orange-300">Order a transcript</Link></li>
+              </ul>
+            </div>
+            <div className="col-span-2 sm:col-span-1">
+              <h4 className="text-xl font-semibold mb-4">Policies</h4>
+              <ul className="space-y-2 text-sm text-gray-200">
+                <li><Link href="/privacy" className="hover:text-orange-300">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-orange-300">Terms of Use</Link></li>
+                <li><Link href="/accessibility" className="hover:text-orange-300">Accessibility</Link></li>
+                <li><Link href="/nondiscrimination" className="hover:text-orange-300">Non-Discrimination</Link></li>
+              </ul>
+            </div>
           </div>
 
         </div>

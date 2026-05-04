@@ -92,7 +92,7 @@ Everything below is missing.
 | Path | What it should depict |
 | --- | --- |
 | `public/images/contact/contact-hero.jpg` | Contact page hero — friendly office staff or a welcoming campus shot |
-| `public/images/contact/contact-map.jpg` | A static map graphic showing the Rancho Santa Fe area (no exact address pin) |
+| _(no `contact-map.jpg` needed — replaced with Google Maps iframe)_ | — |
 
 ## `app/faculty/page.tsx`
 
@@ -135,3 +135,47 @@ Everything below is missing.
 | `public/images/summer/summer-students.jpg` | Social science thumbnail — students discussing or presenting |
 | `public/images/summer/summer-flex.jpg` | Used twice (electives card + flexible-learning section) — student working independently in a flexible/hybrid setting |
 | `public/images/summer/summer-campus.jpg` | Electives thumbnail — campus exterior or art/elective in progress |
+
+## `app/reviews/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/reviews/reviews-hero.jpg` | Reviews page hero — happy students/parents at a school event, or a welcoming campus moment |
+
+## `app/about/college-acceptances/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/college-acceptances/hero.jpg` | College acceptances hero — graduation moment, college pennants, or seniors with college merch |
+
+## `app/student-life/athletics/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/athletics/hero.jpg` | Athletics hero — strong action shot, an HBA student-athlete in their sport |
+| `public/images/athletics/brandon-nakashima.jpg` | Brandon Nakashima — tennis action shot or portrait |
+| `public/images/athletics/bryce-nakashima.jpg` | Bryce Nakashima — tennis or portrait |
+| `public/images/athletics/ethan-schiffman.jpg` | Ethan Schiffman — tennis or portrait |
+| `public/images/athletics/krando-nishiba.jpg` | Krando Nishiba — golf action or portrait |
+| `public/images/athletics/tomohiro-kawada.jpg` | Tomohiro Kawada — gymnastics action or portrait |
+| `public/images/athletics/andrew-heiati.jpg` | Andrew Heiati — Tae Kwon Do action or portrait |
+
+## `app/admissions/international/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/admissions/international-hero.jpg` | International page hero — international students on campus or at a school event |
+| `public/images/admissions/san-diego.jpg` | San Diego coastline / city — establishing shot of the location |
+| `public/images/admissions/homestay.jpg` | Homestay context — friendly host family scene |
+
+## `app/programs/online/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/online/hero.jpg` | Online High School hero — student learning at a laptop, ideally in a home study setup |
+
+## `app/transcripts/page.tsx`
+
+| Path | What it should depict |
+| --- | --- |
+| `public/images/transcripts/hero.jpg` | Transcripts page hero — official-feeling diploma / transcript / desk shot, low-key |

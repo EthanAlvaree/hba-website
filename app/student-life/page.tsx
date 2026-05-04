@@ -154,6 +154,14 @@ export default function StudentLifePage() {
             <p className="text-sm text-gray-500">
               Students can pursue athletics both on campus and through external competitive programs.
             </p>
+            <div className="pt-2">
+              <a
+                href="/student-life/athletics"
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+              >
+                Explore HBA Athletics →
+              </a>
+            </div>
           </div>
 
         </div>

@@ -1,0 +1,130 @@
+// lib/reviews.ts
+
+export type ReviewSource =
+  | "Google"
+  | "Niche"
+  | "GreatSchools"
+  | "Private School Review"
+  | "Yelp"
+  | "Facebook"
+
+export type Review = {
+  author: string
+  source: ReviewSource
+  rating: number
+  date?: string
+  body: string
+  /** When true, this review is featured at the top of the page. */
+  featured?: boolean
+}
+
+export type SourceMeta = {
+  name: ReviewSource
+  /** Direct link to HBA's profile/reviews on that source. */
+  url: string
+  /** Aggregate star rating shown alongside the badge — verify before publishing. */
+  rating?: number
+  reviewCount?: string
+  /** Brand color used as the source badge accent. */
+  accent: string
+}
+
+export const sources: SourceMeta[] = [
+  {
+    name: "Google",
+    url: "https://www.google.com/maps/place/High+Bluff+Academy/@32.9924952,-117.2133314,1152m/data=!3m1!1e3!4m8!3m7!1s0x80dc06208c94a67d:0x7537ab13dd084000!8m2!3d32.9924952!4d-117.2133314!9m1!1b1",
+    accent: "#4285F4",
+  },
+  {
+    name: "Niche",
+    url: "https://www.niche.com/k12/high-bluff-academy-rancho-santa-fe-ca/#reviews",
+    accent: "#0F9B5A",
+  },
+  {
+    name: "GreatSchools",
+    url: "https://www.greatschools.org/california/san-diego/26249-High-Bluff-Academy/#Reviews",
+    accent: "#FF6B35",
+  },
+  {
+    name: "Private School Review",
+    url: "https://www.privateschoolreview.com/high-bluff-academy-profile#reviews",
+    accent: "#1F3F66",
+  },
+  {
+    name: "Yelp",
+    url: "https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe",
+    accent: "#D32323",
+  },
+  {
+    name: "Facebook",
+    url: "https://www.facebook.com/HighBluffAcademySanDiego/reviews",
+    accent: "#1877F2",
+  },
+]
+
+export const reviews: Review[] = [
+  {
+    author: "Parent of an HBA graduate",
+    source: "Google",
+    rating: 5,
+    featured: true,
+    body: "My son was really struggling at the large public school in our neighborhood. He is very bright but was not able to focus due to the large class size. He had a lot of anxiety about going to school and was not connecting with any of his teachers. He transferred to High Bluff Academy in the beginning of 11th grade and it was the best decision we ever made. He loved all of his teachers and was inspired to work hard and get good grades. The caring, family type atmosphere was very welcoming. Although he had not excelled in math or science at previous schools, he was very inspired by his teachers at High Bluff and now he is a junior in college majoring in Microbiology and wants to go on to a PhD program. I never would have dreamed that his life would turn around so dramatically just by changing schools.",
+  },
+  {
+    author: "Parent",
+    source: "Google",
+    rating: 5,
+    featured: true,
+    body: "I can't say enough about this little school. My son takes AP classes here a la carte, and he loves it. The class sizes are so small, the students develop great bonds with one another and the teachers. The students are international, studious, kind and caring. The teachers are just amazing — they have graduate degrees and a huge love of their subject matters and their students. When the local schools closed down on a Friday due to COVID, High Bluff was fully operating online by Tuesday morning. My son feels completely supported by this school, and looks forward to every class. It's not cheap, but it's worth every penny.",
+  },
+  {
+    author: "John Tishler",
+    source: "Google",
+    rating: 5,
+    date: "Feb 2022",
+    body: "My son had a fantastic experience with High Bluff Academy. He took AP US History in the summer of 2021, between his freshman and sophomore years. In addition to his glowing reviews of the teacher and the curriculum, he scored a 5 on the AP exam — exceptional preparation for a rigorous course.",
+    featured: true,
+  },
+  {
+    author: "Parent of a Torrey Pines student",
+    source: "Google",
+    rating: 5,
+    body: "My daughter's experience at High Bluff Academy has been amazing. The teachers are fantastic and offer a level of support that is rare to find. They truly want the students to succeed and make learning interesting and fun, not stressful and overwhelming. They work around the kids' schedules at Torrey Pines, which makes it possible for a seamless schedule and further reduces stress. We are truly grateful to the entire staff for providing a true gift to students.",
+  },
+  {
+    author: "Trish",
+    source: "Private School Review",
+    rating: 5,
+    body: "I have two sons that currently attend Torrey Pines High School. My oldest son struggled academically in math and science courses, so he attended High Bluff and excelled in a smaller-ratio environment and got an A. My younger son is currently attending High Bluff and I know he will be successful as well. The teachers take the time to make sure the students understand the material and do well on tests. I highly recommend High Bluff to any parent who wants the best education for their kids.",
+  },
+  {
+    author: "Yeva Cherkasova-Shekera",
+    source: "Private School Review",
+    rating: 5,
+    body: "My two years before I graduated from high school couldn't be better without High Bluff Academy. Its supportive atmosphere created by all the staff and teachers gives an unforgettable experience for students! Fruitful classes, interesting electives, field trips, and embracing community — it is all about this school!",
+  },
+  {
+    author: "Cathy",
+    source: "Private School Review",
+    rating: 5,
+    body: "The process of learning should be enjoyable. High Bluff Academy does this. The small class sizes, the caring teachers, and the individualized learning is priceless. HBA made all the difference in the world to my son. He looked forward to going to school. A quote from my son: \"I've never met teachers like HBA who care so much.\" That says it all.",
+  },
+  {
+    author: "Tracy",
+    source: "Private School Review",
+    rating: 5,
+    body: "We couldn't be more happy with High Bluff Academy. The teachers are amazing and work with the individual needs of the student. They make learning an enjoyable experience. My daughter comes home from class animated and upbeat instead of stressed out!",
+  },
+  {
+    author: "GreatSchools parent",
+    source: "GreatSchools",
+    rating: 5,
+    body: "An exceptional college-preparatory environment. The faculty know each student personally, and the small class sizes make a real difference for kids who need individualized attention to thrive academically.",
+  },
+  {
+    author: "Niche reviewer",
+    source: "Niche",
+    rating: 5,
+    body: "High Bluff Academy was the perfect fit for our daughter. The flexibility for athletes is unmatched, and the AP courses are taught at a level that genuinely prepared her for university coursework.",
+  },
+]

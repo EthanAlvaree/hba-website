@@ -42,6 +42,8 @@ export const navigation: NavItem[] = [
         links: [
           { label: "Campus", href: "/about#campus" },
           { label: "History", href: "/about#history" },
+          { label: "College acceptances", href: "/about/college-acceptances" },
+          { label: "Reviews", href: "/reviews" },
         ],
       },
     ],
@@ -58,6 +60,14 @@ export const navigation: NavItem[] = [
           { label: "Visit Campus", href: "/contact" },
         ],
       },
+      {
+        heading: "Pathways",
+        links: [
+          { label: "International (F-1 visa)", href: "/admissions/international" },
+          { label: "Online High School", href: "/programs/online" },
+          { label: "Order a transcript", href: "/transcripts" },
+        ],
+      },
     ],
   },
   {
@@ -71,13 +81,15 @@ export const navigation: NavItem[] = [
           { label: "Courses", href: "/programs#courses" },
           { label: "AP Courses", href: "/programs#ap" },
           { label: "Areas of Study", href: "/programs#areas" },
+          { label: "Full course catalogue", href: "/programs/online#courses" },
         ],
       },
       {
-        heading: "Summer",
+        heading: "Pathways",
         links: [
           { label: "Summer 2026", href: "/summer-programs" },
-          { label: "Online Classes", href: "/programs#online" },
+          { label: "Online High School", href: "/programs/online" },
+          { label: "Online pricing", href: "/programs/online#pricing" },
         ],
       },
     ],
@@ -89,9 +101,9 @@ export const navigation: NavItem[] = [
       {
         heading: "Experience",
         links: [
-          { label: "Clubs & ASB", href: "/student-life#clubs" },
-          { label: "Athletics", href: "/student-life#athletics" },
-          { label: "Events", href: "/student-life#events" },
+          { label: "Clubs & activities", href: "/student-life#clubs" },
+          { label: "Athletics", href: "/student-life/athletics" },
+          { label: "Events & field trips", href: "/student-life#events" },
         ],
       },
     ],
@@ -106,6 +118,7 @@ export const navigation: NavItem[] = [
         links: [
           { label: "Community Service", href: "/community#service" },
           { label: "Academic Support & Advisory", href: "/community#advisory" },
+          { label: "Reviews", href: "/reviews" },
         ],
       },
       {
@@ -113,6 +126,7 @@ export const navigation: NavItem[] = [
         links: [
           { label: "Parent/Guardian", href: "/community/parents" },
           { label: "Alumni", href: "/community/alumni" },
+          { label: "Order a transcript", href: "/transcripts" },
           { label: "School Store", href: "/community/store" },
         ],
       },

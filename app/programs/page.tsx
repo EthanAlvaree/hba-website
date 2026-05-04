@@ -139,6 +139,15 @@ export default function ProgramsPage() {
           <p className="mt-10 text-center text-sm text-white/70">
             AP course availability may vary based on student enrollment and demand.
           </p>
+
+          <div className="mt-8 text-center">
+            <a
+              href="/programs/online#courses"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-[#1f3f66] font-semibold text-sm shadow-lg hover:bg-[#f37021] hover:text-white transition"
+            >
+              See the full UC A–G course catalogue →
+            </a>
+          </div>
         </div>
       </section>
 
@@ -300,6 +309,14 @@ export default function ProgramsPage() {
               online through our virtual learning platform or taken one-on-one with an
               in-person teacher.
             </p>
+            <div className="pt-2">
+              <a
+                href="/programs/online"
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+              >
+                Explore HBA Online High School →
+              </a>
+            </div>
           </div>
         </div>
       </section>

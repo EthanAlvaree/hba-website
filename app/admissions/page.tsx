@@ -167,6 +167,12 @@ export default function AdmissionsPage() {
               <p className="mt-1 text-xs text-gray-500">
                 I-20 Issuing Deposit: $10,000 (applied toward tuition upon arrival)
               </p>
+              <a
+                href="/admissions/international"
+                className="mt-5 inline-flex items-center text-sm font-semibold text-[#f37021] hover:underline"
+              >
+                F-1 visa application steps →
+              </a>
             </div>
           </div>
 

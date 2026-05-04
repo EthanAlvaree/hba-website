@@ -1,4 +1,3 @@
-import Image from "next/image"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import TallyEmbed from "./TallyEmbed"
@@ -66,7 +65,8 @@ export default function ContactPage() {
               Visit us
             </div>
             <h3 className="text-2xl font-semibold text-[#12233d] mb-3">
-              Rancho Santa Fe, California
+              5531 Cancha de Golf, Ste 202<br />
+              Rancho Santa Fe, CA 92091
             </h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               Schedule a tour to see our campus, meet our faculty, and experience HBA in person.
@@ -105,24 +105,47 @@ export default function ContactPage() {
 
       {/* MAP SECTION */}
       <section className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 space-y-10 text-center">
-          <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
-            Find us
-          </h2>
-
-          <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
-            <Image
-              src="/images/contact/contact-map.jpg"
-              alt="Map to High Bluff Academy area"
-              fill
-              className="object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/45 to-transparent" />
+        <div className="max-w-6xl mx-auto px-6 lg:px-12 space-y-10">
+          <div className="text-center space-y-3">
+            <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
+              Find us
+            </h2>
+            <p className="text-sm text-gray-600">
+              5531 Cancha de Golf, Ste 202 · Rancho Santa Fe, CA 92091
+            </p>
           </div>
 
-          <p className="text-sm text-gray-600 max-w-xl mx-auto">
-            For privacy and safety, the exact address is provided when you schedule a tour or meeting.
-          </p>
+          <div className="relative h-[480px] rounded-3xl overflow-hidden shadow-2xl border border-gray-100">
+            <iframe
+              title="High Bluff Academy on Google Maps"
+              src="https://www.google.com/maps?q=5531+Cancha+de+Golf+Ste+202,+Rancho+Santa+Fe,+CA+92091&output=embed"
+              width="100%"
+              height="100%"
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              allowFullScreen
+              className="border-0"
+            />
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-4">
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=5531+Cancha+de+Golf+Ste+202,+Rancho+Santa+Fe,+CA+92091"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#1f3f66] text-white font-semibold text-sm hover:brightness-110 transition"
+            >
+              Get directions
+            </a>
+            <a
+              href="https://www.google.com/maps/place/5531+Cancha+de+Golf+Ste+202,+Rancho+Santa+Fe,+CA+92091"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+            >
+              Open in Google Maps
+            </a>
+          </div>
         </div>
       </section>
 
