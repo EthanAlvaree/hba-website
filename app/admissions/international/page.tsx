@@ -117,32 +117,49 @@ export default function InternationalAdmissionsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Required annual fees */}
             <div className="bg-white rounded-3xl p-8 text-gray-900 shadow-xl">
-              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-4">
-                Annual fees
+              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+                Annual cost
               </div>
-              <ul className="divide-y divide-gray-100 text-sm">
-                <li className="flex items-baseline justify-between gap-4 py-3">
-                  <span className="text-gray-700">Tuition</span>
-                  <span className="font-bold text-[#1f3f66] text-lg">$29,580</span>
-                </li>
-                <li className="flex items-baseline justify-between gap-4 py-3">
-                  <span className="text-gray-700">I-20 issuing fee</span>
-                  <span className="font-bold text-[#1f3f66] text-lg">$10,000</span>
-                </li>
-                <li className="flex items-baseline justify-between gap-4 py-3">
-                  <span className="text-gray-700">International student services fee</span>
-                  <span className="font-bold text-[#1f3f66] text-lg">$6,000</span>
-                </li>
-                <li className="flex items-baseline justify-between gap-4 py-3">
+              <p className="text-4xl font-extrabold text-[#1f3f66] mb-1">$45,580</p>
+              <p className="text-sm text-gray-600 mb-6">
+                Total annual cost for full-time international students.
+              </p>
+
+              <div className="border-t border-gray-100 pt-5">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-3">
+                  Breakdown including
+                </p>
+                <ul className="space-y-2 text-sm">
+                  <li className="flex items-baseline justify-between gap-4">
+                    <span className="text-gray-700">Tuition</span>
+                    <span className="font-semibold text-[#1f3f66] tabular-nums">$29,580</span>
+                  </li>
+                  <li className="flex items-baseline justify-between gap-4">
+                    <span className="text-gray-700">I-20 issuing fee</span>
+                    <span className="font-semibold text-[#1f3f66] tabular-nums">+ $10,000</span>
+                  </li>
+                  <li className="flex items-baseline justify-between gap-4">
+                    <span className="text-gray-700">International student services fee</span>
+                    <span className="font-semibold text-[#1f3f66] tabular-nums">+ $6,000</span>
+                  </li>
+                  <li className="flex items-baseline justify-between gap-4 border-t border-gray-200 mt-2 pt-3">
+                    <span className="font-bold text-[#1f3f66]">Total</span>
+                    <span className="font-bold text-[#1f3f66] text-lg tabular-nums">= $45,580</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-6 pt-5 border-t border-gray-100">
+                <div className="flex items-baseline justify-between gap-4 text-sm">
                   <span className="text-gray-700">
                     (Optional) ESL program fee
                     <span className="block text-xs text-gray-500 mt-1">
                       If needed; based on a placement assessment administered at HBA.
                     </span>
                   </span>
-                  <span className="font-bold text-[#1f3f66] text-lg whitespace-nowrap">$6,000</span>
-                </li>
-              </ul>
+                  <span className="font-semibold text-[#1f3f66] tabular-nums whitespace-nowrap">+ $6,000</span>
+                </div>
+              </div>
             </div>
 
             {/* Other fees */}

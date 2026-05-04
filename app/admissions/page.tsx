@@ -152,27 +152,45 @@ export default function AdmissionsPage() {
             {/* International */}
             <div className="bg-white rounded-3xl p-8 text-gray-900 shadow-2xl border border-gray-100">
               <h3 className="text-xl font-semibold mb-2">International students</h3>
-              <p className="text-3xl font-bold mb-1">$29,580</p>
+              <p className="text-3xl font-bold mb-1">$45,580</p>
               <p className="text-xs text-gray-500 mb-4">
-                Annual tuition. F-1 visa students pay additional required international fees.
+                Annual cost for full-time international students on an F-1 visa.
               </p>
-              <ul className="space-y-2 text-sm text-gray-700 border-t border-gray-100 pt-4">
-                <li className="flex justify-between gap-3">
-                  <span>I-20 issuing fee</span>
-                  <span className="font-medium text-gray-900">$10,000</span>
-                </li>
-                <li className="flex justify-between gap-3">
-                  <span>International student services fee</span>
-                  <span className="font-medium text-gray-900">$6,000</span>
-                </li>
-                <li className="flex justify-between gap-3">
-                  <span>
-                    (Optional) ESL program fee
-                    <span className="block text-xs text-gray-500">If needed; based on placement assessment.</span>
+
+              <div className="border-t border-gray-100 pt-4">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-3">
+                  Breakdown including
+                </p>
+                <ul className="space-y-2 text-sm text-gray-700">
+                  <li className="flex justify-between gap-3">
+                    <span>Tuition</span>
+                    <span className="font-medium text-gray-900 tabular-nums">$29,580</span>
+                  </li>
+                  <li className="flex justify-between gap-3">
+                    <span>I-20 issuing fee</span>
+                    <span className="font-medium text-gray-900 tabular-nums">+ $10,000</span>
+                  </li>
+                  <li className="flex justify-between gap-3">
+                    <span>International student services fee</span>
+                    <span className="font-medium text-gray-900 tabular-nums">+ $6,000</span>
+                  </li>
+                  <li className="flex justify-between gap-3 border-t border-gray-200 mt-2 pt-2 font-semibold text-[#1f3f66]">
+                    <span>Total</span>
+                    <span className="tabular-nums">= $45,580</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between gap-3 text-sm">
+                <span className="text-gray-700">
+                  (Optional) ESL program fee
+                  <span className="block text-xs text-gray-500 mt-1">
+                    If needed; based on placement assessment.
                   </span>
-                  <span className="font-medium text-gray-900">$6,000</span>
-                </li>
-              </ul>
+                </span>
+                <span className="font-medium text-gray-900 tabular-nums whitespace-nowrap">+ $6,000</span>
+              </div>
+
               <p className="mt-4 text-xs text-gray-500">
                 Registration Fee: $300 (non-refundable)
               </p>
