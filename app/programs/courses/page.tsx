@@ -56,17 +56,15 @@ const categories: Category[] = [
     ],
   },
   {
-    id: "language-arts",
-    label: "Language arts",
+    id: "computer-science",
+    label: "Computer Science",
     description:
-      "Core English 9–12, honors and AP literature and language, and the AP Capstone diploma program.",
+      "Technology and Computer Science.",
     courses: [
-      "English Support",
-      "English 9, 10, 11",
-      "AP English Language & Composition",
-      "AP English Literature & Composition",
-      "AP Seminar (live instructor only)",
-      "AP Research (live instructor only)",
+      "Digital Art",
+      "Intro to Robotic Engineering",
+      "AP Computer Science Principles",
+      "AP Computer Science A",
     ],
   },
   {
@@ -92,6 +90,20 @@ const categories: Category[] = [
     ],
   },
   {
+    id: "language-arts",
+    label: "English language arts",
+    description:
+      "Core English 9–12, honors and AP literature and language, and the AP Capstone diploma program.",
+    courses: [
+      "English Support",
+      "English 9, 10, 11",
+      "AP English Language & Composition",
+      "AP English Literature & Composition",
+      "AP Seminar (live instructor only)",
+      "AP Research (live instructor only)",
+    ],
+  },
+  {
     id: "world-languages",
     label: "World languages",
     description:
@@ -100,18 +112,6 @@ const categories: Category[] = [
       "Spanish 1, 2, 3, 4/AP",
       "French 1, 2, 3, 4/AP",
       "Chinese 1, 2, 3, 4/AP",
-    ],
-  },
-  {
-    id: "computer-science",
-    label: "Computer Science",
-    description:
-      "Technology and Computer Science.",
-    courses: [
-      "Digital Art",
-      "Intro to Robotic Engineering",
-      "AP Computer Science Principles",
-      "AP Computer Science A",
     ],
   },
   {
