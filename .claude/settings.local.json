@@ -11,7 +11,18 @@
       "Read(//tmp/docx-extract/**)",
       "Bash(python -c ' *)",
       "Bash(npm install *)",
-      "Bash(npm audit *)"
+      "Bash(npm audit *)",
+      "Bash(python -m pip install --quiet pypdf)",
+      "Bash(mkdir -p .binder1-pages)",
+      "Bash(pdftoppm -r 110 -jpeg content/Binder1.pdf .binder1-pages/page)",
+      "Bash(pdftoppm -jpeg -r 110 content/Binder1.pdf .binder1-pages/p)",
+      "Bash(pdftoppm content/Binder1.pdf .binder1-pages/p -jpeg -r 110)",
+      "Bash(python -c \"from docx import Document; doc = Document\\('content/Website content.docx'\\); [print\\(p.text\\) for p in doc.paragraphs]\")",
+      "Bash(pip install *)",
+      "Bash(echo)",
+      "Bash(mkdir -p app/student-life/athletics)",
+      "Bash(mv app/student-life/athletes/page.tsx app/student-life/athletics/page.tsx)",
+      "Bash(rmdir app/student-life/athletes)"
     ]
   }
 }
