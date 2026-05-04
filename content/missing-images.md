@@ -59,11 +59,7 @@ Everything below is missing.
 
 | Path | What it should depict |
 | --- | --- |
-| `public/images/community/store-hero.jpg` | Store page hero — students wearing HBA gear, or a clean product layout |
-| `public/images/community/store-apparel.jpg` | Apparel category — folded hoodies/tees in school colors |
-| `public/images/community/store-spirit.jpg` | Spirit category — students with banners/scarves at a game day |
-| `public/images/community/store-accessories.jpg` | Accessories category — water bottles, bags, stickers, notebooks |
-| `public/images/community/store-bg.jpg` | Tinted background — atmospheric shot of HBA branded gear |
+| `public/images/community/store-hero.jpg` | Store page hero — graduation cap on a stack of yearbooks, or a clean composition of diploma + regalia + yearbook |
 
 ## `app/privacy/page.tsx`, `app/terms/page.tsx`, `app/accessibility/page.tsx`, `app/nondiscrimination/page.tsx`
 

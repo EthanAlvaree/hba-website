@@ -1,15 +1,118 @@
 // app/community/store/page.tsx
 
-import Image from "next/image"
+import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+
+export const metadata = {
+  title: "School store — High Bluff Academy",
+  description:
+    "Order official transcripts through Parchment, request graduation caps and gowns, and reserve yearbooks.",
+}
+
+const PARCHMENT_URL = "https://www.parchment.com/u/registration/34903511/institution"
+
+type Service = {
+  eyebrow: string
+  title: string
+  description: string
+  detail: string
+  href: string
+  cta: string
+  external?: boolean
+  /** Optional inline tag, e.g. "12th grade only" */
+  tag?: string
+  icon: React.ReactNode
+}
+
+const services: Service[] = [
+  {
+    eyebrow: "Transcripts",
+    title: "Order an official transcript.",
+    description:
+      "Current and former students can order official transcripts and credentials securely through our Parchment partner.",
+    detail:
+      "Electronic delivery to colleges, employers, or any verified recipient — typically within 1–2 business days.",
+    href: "/transcripts",
+    cta: "Order through Parchment",
+    icon: (
+      <svg
+        className="w-7 h-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z" />
+        <polyline points="14 3 14 9 20 9" />
+        <line x1="9" y1="14" x2="15" y2="14" />
+        <line x1="9" y1="18" x2="13" y2="18" />
+      </svg>
+    ),
+  },
+  {
+    eyebrow: "Graduation",
+    title: "Caps and gowns.",
+    description:
+      "Seniors order their graduation regalia through the school office. Gowns, caps, and tassels in HBA colors are included with the senior graduation fee.",
+    detail:
+      "Sizing happens in early spring. Contact the office with questions about replacements or guests.",
+    href: "/contact",
+    cta: "Contact the office",
+    tag: "12th grade",
+    icon: (
+      <svg
+        className="w-7 h-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M22 10 12 5 2 10l10 5 10-5z" />
+        <path d="M6 12v5a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3v-5" />
+        <line x1="22" y1="10" x2="22" y2="16" />
+      </svg>
+    ),
+  },
+  {
+    eyebrow: "Yearbooks",
+    title: "Reserve a yearbook.",
+    description:
+      "Students publish an art and literary magazine each fall and spring, and the annual yearbook captures the full school year — clubs, athletics, events, and senior pages.",
+    detail:
+      "Yearbook orders are taken in late spring. Contact the office to reserve a copy or check on past editions.",
+    href: "/contact",
+    cta: "Reserve a yearbook",
+    icon: (
+      <svg
+        className="w-7 h-7"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+      </svg>
+    ),
+  },
+]
 
 export default function StorePage() {
   return (
     <main className="bg-gray-50 overflow-hidden">
       <PageHero
         title="School store"
-        subtitle="Wear it, gift it, share it — official HBA gear for students, families, and alumni."
+        subtitle="Order official documents, graduation regalia, and keepsakes from High Bluff Academy."
         image="/images/community/store-hero.jpg"
       />
 
@@ -17,122 +120,125 @@ export default function StorePage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-            HBA spirit
+            Official orders
           </div>
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
-            Show your colors.
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            Everything you need to order from HBA.
           </h2>
-          <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
-            From hoodies on the way to morning class to alumni rep at college a year
-            later, the HBA logo travels well. Browse the categories below and check back
-            for new drops each season.
+          <p className="text-lg text-gray-600 leading-relaxed font-light">
+            Whether you&rsquo;re a senior preparing for graduation, an alumnus requesting a
+            transcript for a college or employer, or a parent reserving a yearbook,
+            you&rsquo;ll find the right link below.
           </p>
         </div>
       </section>
 
-      {/* CATEGORIES */}
-      <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
-              Shop the store
-            </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-              Categories.
-            </h2>
-          </div>
-
-          <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                label: "Apparel",
-                title: "Everyday essentials.",
-                description:
-                  "Hoodies, crewnecks, tees, and quarter-zips in school colors — sized for students, parents, and alumni.",
-                image: "/images/community/store-apparel.jpg",
-              },
-              {
-                label: "Spirit",
-                title: "Game day & beyond.",
-                description:
-                  "Banners, scarves, beanies, and pennants for athletics events and family weekends.",
-                image: "/images/community/store-spirit.jpg",
-              },
-              {
-                label: "Accessories",
-                title: "Carry it with you.",
-                description:
-                  "Bags, water bottles, stickers, and notebooks — small touches of HBA wherever you go.",
-                image: "/images/community/store-accessories.jpg",
-              },
-            ].map((category) => (
+      {/* SERVICES */}
+      <section className="pb-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-16 space-y-12">
+          <div className="grid gap-8 md:grid-cols-3">
+            {services.map((service) => (
               <div
-                key={category.label}
-                className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
+                key={service.eyebrow}
+                className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 hover:shadow-2xl transition-shadow p-8 flex flex-col"
               >
-                <div className="relative h-56 w-full overflow-hidden">
-                  <Image
-                    src={category.image}
-                    alt={category.title}
-                    fill
-                    className="object-cover transition-transform duration-700 hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/60 to-transparent" />
-                </div>
-                <div className="p-6 flex flex-col gap-3">
-                  <div className="text-xs font-bold tracking-widest uppercase text-[#f37021]">
-                    {category.label}
+                <div className="flex items-start justify-between">
+                  <div className="w-14 h-14 rounded-2xl bg-[#1f3f66] text-white flex items-center justify-center">
+                    {service.icon}
                   </div>
-                  <h3 className="text-xl font-extrabold text-[#1f3f66]">
-                    {category.title}
-                  </h3>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    {category.description}
-                  </p>
+                  {service.tag && (
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] bg-[#f37021]/10 px-3 py-1 rounded-full">
+                      {service.tag}
+                    </span>
+                  )}
                 </div>
+
+                <div className="mt-6 text-xs font-bold tracking-widest uppercase text-[#f37021]">
+                  {service.eyebrow}
+                </div>
+                <h3 className="mt-2 text-xl font-extrabold text-[#1f3f66] leading-tight">
+                  {service.title}
+                </h3>
+                <p className="mt-3 text-sm text-gray-700 leading-relaxed">
+                  {service.description}
+                </p>
+                <p className="mt-3 text-xs text-gray-500 leading-relaxed">
+                  {service.detail}
+                </p>
+
+                {service.external ? (
+                  <a
+                    href={service.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+                  >
+                    {service.cta} →
+                  </a>
+                ) : (
+                  <Link
+                    href={service.href}
+                    className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+                  >
+                    {service.cta} →
+                  </Link>
+                )}
               </div>
             ))}
           </div>
+
+          {/* QUICK PARCHMENT CARD */}
+          <div className="bg-[#1f3f66] rounded-3xl px-8 py-10 lg:px-12 lg:py-12 text-white grid gap-6 lg:grid-cols-12 items-center shadow-2xl">
+            <div className="lg:col-span-8 space-y-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-white/70">
+                Need a transcript right now?
+              </div>
+              <h3 className="text-2xl lg:text-3xl font-extrabold">
+                Skip ahead to Parchment.
+              </h3>
+              <p className="text-white/85 font-light text-sm">
+                If you&rsquo;ve ordered through HBA before, you can go straight to your
+                Parchment account.
+              </p>
+            </div>
+            <div className="lg:col-span-4 flex lg:justify-end">
+              <a
+                href={PARCHMENT_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-[#1f3f66] font-semibold text-sm hover:bg-[#f37021] hover:text-white transition"
+              >
+                Open Parchment →
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* COMING SOON / VISIT STORE */}
-      <section className="py-24 bg-[#1f3f66] relative">
-        <div className="absolute inset-0 opacity-20">
-          <Image
-            src="/images/community/store-bg.jpg"
-            alt="HBA gear"
-            fill
-            className="object-cover"
-          />
-        </div>
-
-        <div className="relative max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
-            Online store
-          </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-            New drops, all year.
+      {/* CONTACT FALLBACK */}
+      <section className="py-20 bg-white">
+        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-5">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            Need something else?
           </h2>
-          <p className="text-lg text-white/85 leading-relaxed font-light max-w-2xl mx-auto">
-            Our online store is launching soon. In the meantime, contact the office to
-            place an order, ask about sizes, or arrange pickup at the Rancho Santa Fe
-            campus.
+          <p className="text-lg text-gray-600 leading-relaxed font-light">
+            For special requests — duplicate diplomas, replacement regalia, archival
+            yearbooks, or anything we haven&rsquo;t listed — the school office is happy to help.
           </p>
-          <div className="flex flex-wrap justify-center gap-4 pt-4">
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
             <a
-              href="/contact"
+              href="mailto:info@highbluffacademy.com"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
-              Place an order
+              Email the office
             </a>
             <a
-              href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              href="tel:+18585099101"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
             >
-              Get notified at launch
+              Call (858) 509-9101
             </a>
           </div>
         </div>
