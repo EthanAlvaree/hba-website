@@ -2,7 +2,7 @@
 
 import Image from "next/image"
 import Link from "next/link"
-import { FaInstagram, FaFacebookF, FaTiktok } from "react-icons/fa"
+import { FaInstagram, FaFacebookF, FaTiktok, FaYoutube, FaLinkedinIn, FaYelp } from "react-icons/fa"
 
 export default function Footer() {
   return (
@@ -11,7 +11,7 @@ export default function Footer() {
       {/* Campus Image */}
       <div className="w-full h-72 relative">
         <Image
-          src="/images/campus.png"
+          src="/images/campus-aerial.jpg"
           alt="High Bluff Academy Campus"
           fill
           sizes="100vw"
@@ -48,15 +48,24 @@ export default function Footer() {
             </p>
 
             {/* Social Icons */}
-            <div className="flex gap-4 mt-5 text-2xl">
-              <Link href="https://www.instagram.com/highbluffacademy" target="_blank">
+            <div className="flex flex-wrap gap-4 mt-5 text-2xl">
+              <Link href="https://www.instagram.com/highbluffacademy" target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
                 <FaInstagram />
               </Link>
-              <Link href="https://www.facebook.com/HighBluffAcademySanDiego" target="_blank">
+              <Link href="https://www.facebook.com/HighBluffAcademySanDiego" target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
                 <FaFacebookF />
               </Link>
-              <Link href="https://www.tiktok.com/@highbluffacademy" target="_blank">
+              <Link href="https://www.tiktok.com/@highbluffacademy" target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
                 <FaTiktok />
+              </Link>
+              <Link href="https://www.youtube.com/channel/UCBnvACwf375sxhefzTZOlog" target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
+                <FaYoutube />
+              </Link>
+              <Link href="https://www.linkedin.com/school/highbluffacademy/" target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
+                <FaLinkedinIn />
+              </Link>
+              <Link href="https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe" target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
+                <FaYelp />
               </Link>
             </div>
           </div>

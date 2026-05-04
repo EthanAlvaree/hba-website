@@ -26,6 +26,10 @@ Everything below is missing.
 | Path | What it should depict |
 | --- | --- |
 | `public/images/leadership-hero.jpg` | Leadership page hero — Head of School / leadership team at the school. |
+| `public/images/leadership/leadership-kun.jpg` | Round portrait of Mr. Kun Xuan (already in repo) |
+| `public/images/leadership/leadership-george.jpg` | Round portrait of George Humphreys (already in repo) |
+| `public/images/leadership/leadership-ethan.jpg` | Round portrait of Ethan Alvarée (already in repo) |
+| `public/images/leadership/leadership-molly.jpg` | Round portrait of Molly Sun (already in repo) |
 
 ## `app/calendar/page.tsx`
 

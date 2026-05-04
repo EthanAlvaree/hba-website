@@ -13,6 +13,8 @@ type FacultyMember = {
   shortBio: string
   fullBio: string
   area: string
+  /** Whether this person is part of the school's leadership team. */
+  leadership?: boolean
 }
 
 const faculty: FacultyMember[] = [
@@ -21,6 +23,7 @@ const faculty: FacultyMember[] = [
     title: "Head of School",
     image: "/images/faculty/kun-xuan.jpg",
     area: "Leadership",
+    leadership: true,
     shortBio:
       "Head of School with 17+ years in education and investment, focused on innovative, student-centered learning environments.",
     fullBio:
@@ -31,30 +34,33 @@ const faculty: FacultyMember[] = [
     title: "Director & Principal",
     image: "/images/faculty/george-humphreys.jpg",
     area: "Leadership · Science · Technology",
+    leadership: true,
     shortBio:
       "Director and Principal known for Chemistry, AP Chemistry, Physics, and building lasting mentor relationships with students.",
     fullBio:
       "George first designed HBA’s lab science program in 2008. He has earned local fame among the TPHS community for teaching Chemistry, AP Chemistry and Physics. George can take the most complex information and make it seem easy.\n\nHe creates lasting relationships with his students who view him as a mentor and friend. George also teaches our technology and engineering classes.\n\nHe is also a talented chef and teaches our cooking class. George and his students provide lunch for the entire school every Friday. George graduated from the University of San Diego and has three children: Jase, Lucy and George. When not at HBA, George can be found on the golf course.",
   },
   {
-    name: "Molly Sun",
-    title: "Director of Admissions & Operations",
-    image: "/images/faculty/molly-sun.jpg",
-    area: "Admissions · Operations",
-    shortBio:
-      "Admissions and operations leader with a background in higher education, language teaching, and cross-cultural communication.",
-    fullBio:
-      "Molly holds a Master’s degree in Higher Education Administration from Northeastern University, where she developed a strong foundation in the U.S. higher education system, including college access, student development, and enrollment management. She also holds California teaching credentials in Chinese, reflecting her commitment to both language education and cross-cultural communication.\n\nPrior to joining High Bluff Academy, Molly taught Chinese language courses at San Diego State University, where she worked with a diverse student population and helped foster global awareness through language learning. She was also involved in the university’s military immersion program in collaboration with the Defense Language Institute, supporting intensive language training and cultural competency development.\n\nAt HBA, Molly is deeply committed to guiding students and families through the admissions process with care and transparency. She is passionate about building meaningful relationships with families and creating a supportive, inclusive school community. Through her work, she strives to ensure that each student feels welcomed, understood, and empowered to succeed both academically and personally.\n\nOutside of her professional role, Molly enjoys spending quality time with her family. She loves cooking and exploring new recipes, staying active at her local Pilates studio, and taking walks with her family and their golden retriever, Turbo.",
-  },
-  {
     name: "Ethan Alvarée",
-    title: "Math Department Chair & Director of Technology",
+    title: "Director of Instruction and Curriculum",
     image: "/images/faculty/ethan-alvaree.jpg",
-    area: "Mathematics · Technology",
+    area: "Leadership · Mathematics · Technology",
+    leadership: true,
     shortBio:
       "Math, statistics, and computer science educator, curriculum writer for College Board, and director of technology at HBA.",
     fullBio:
       "Ethan is an accomplished educator with more than ten years of teaching experience in mathematics, statistics, and computer science. They hold a B.S. from Michigan State University and an M.S. from UC San Diego. Since joining HBA in 2018, they have played a key role in implementing the integrated Common Core math curriculum and launching new courses in symbolic logic, linear algebra, and group theory.\n\nBeyond teaching, Ethan is an active writer and researcher in the field of mathematics. They are a writer at the College Board, developing curriculum for the new AP Precalculus course and crafting lessons for the SpringBoard textbooks. Ethan’s research has been featured in the Journal of Statistics and Management Systems, and they are currently authoring additional textbooks in mathematical subjects.\n\nOutside their professional endeavors, Ethan enjoys spending quality time with their two golden retrievers, Mister Fibonacci and Miss Ada.",
+  },
+  {
+    name: "Molly Sun",
+    title: "Director of Admissions and Operations",
+    image: "/images/faculty/molly-sun.jpg",
+    area: "Leadership · Admissions · Operations",
+    leadership: true,
+    shortBio:
+      "Admissions and operations leader with a background in higher education, language teaching, and cross-cultural communication.",
+    fullBio:
+      "Molly holds a Master’s degree in Higher Education Administration from Northeastern University, where she developed a strong foundation in the U.S. higher education system, including college access, student development, and enrollment management. She also holds California teaching credentials in Chinese, reflecting her commitment to both language education and cross-cultural communication.\n\nPrior to joining High Bluff Academy, Molly taught Chinese language courses at San Diego State University, where she worked with a diverse student population and helped foster global awareness through language learning. She was also involved in the university’s military immersion program in collaboration with the Defense Language Institute, supporting intensive language training and cultural competency development.\n\nAt HBA, Molly is deeply committed to guiding students and families through the admissions process with care and transparency. She is passionate about building meaningful relationships with families and creating a supportive, inclusive school community. Through her work, she strives to ensure that each student feels welcomed, understood, and empowered to succeed both academically and personally.\n\nOutside of her professional role, Molly enjoys spending quality time with her family. She loves cooking and exploring new recipes, staying active at her local Pilates studio, and taking walks with her family and their golden retriever, Turbo.",
   },
   {
     name: "Kristin O'Connor",
@@ -158,13 +164,53 @@ const faculty: FacultyMember[] = [
   },
 ]
 
+function FacultyCard({
+  member,
+  onClick,
+}: {
+  member: FacultyMember
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group text-left bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-300 border border-gray-100 flex flex-col"
+    >
+      <div className="relative h-64 w-full overflow-hidden">
+        <Image
+          src={member.image}
+          alt={member.name}
+          fill
+          className="object-cover transition-transform duration-700 group-hover:scale-105"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      </div>
+      <div className="p-5 flex flex-col gap-2 flex-grow">
+        <div className="text-xs font-semibold tracking-[0.18em] uppercase text-[#f37021]">
+          {member.area}
+        </div>
+        <h3 className="text-lg font-semibold text-[#1f3f66]">{member.name}</h3>
+        <p className="text-sm text-gray-600">{member.title}</p>
+        <p className="mt-2 text-sm text-gray-700 line-clamp-3">{member.shortBio}</p>
+        <span className="mt-auto pt-3 text-xs font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+          Read full bio →
+        </span>
+      </div>
+    </button>
+  )
+}
+
 export default function FacultyPage() {
   const [selected, setSelected] = useState<FacultyMember | null>(null)
+
+  const leadership = faculty.filter((m) => m.leadership)
+  const teachers = faculty.filter((m) => !m.leadership)
 
   return (
     <main className="bg-gray-50 overflow-hidden">
       <PageHero
-        title="Faculty & staff"
+        title="Faculty and staff"
         subtitle="Exceptional educators, mentors, and leaders dedicated to every student’s success."
         image="/images/faculty/faculty-hero.jpg"
       />
@@ -185,42 +231,54 @@ export default function FacultyPage() {
         </div>
       </section>
 
-      {/* Faculty Grid */}
-      <section className="pb-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-            {faculty.map((member) => (
-              <button
+      {/* Leadership */}
+      <section id="leadership" className="pb-12 bg-gray-50 scroll-mt-24">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-8 pt-16">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+              Leadership
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              School leadership
+            </h2>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {leadership.map((member) => (
+              <FacultyCard
                 key={member.name}
-                type="button"
+                member={member}
                 onClick={() => setSelected(member)}
-                className="group text-left bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-shadow duration-300 border border-gray-100 flex flex-col"
-              >
-                <div className="relative h-72 w-full overflow-hidden">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                </div>
-                <div className="p-5 flex flex-col gap-2">
-                  <div className="text-xs font-semibold tracking-[0.18em] uppercase text-[#f37021]">
-                    {member.area}
-                  </div>
-                  <h3 className="text-lg font-semibold text-[#1f3f66]">
-                    {member.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">{member.title}</p>
-                  <p className="mt-2 text-sm text-gray-700 line-clamp-3">
-                    {member.shortBio}
-                  </p>
-                  <span className="mt-3 text-xs font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
-                    Read full bio →
-                  </span>
-                </div>
-              </button>
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Divider */}
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 py-12">
+          <div className="border-t border-gray-200" />
+        </div>
+      </div>
+
+      {/* Teachers */}
+      <section id="teachers" className="pb-24 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+              Faculty
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              Teachers and staff
+            </h2>
+          </div>
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {teachers.map((member) => (
+              <FacultyCard
+                key={member.name}
+                member={member}
+                onClick={() => setSelected(member)}
+              />
             ))}
           </div>
         </div>

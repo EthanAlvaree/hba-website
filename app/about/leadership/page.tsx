@@ -1,7 +1,32 @@
 // app/about/leadership/page.tsx
 
+import Image from "next/image"
+import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+
+const leaders = [
+  {
+    name: "Mr. Kun Xuan",
+    role: "Head of School",
+    image: "/images/leadership/leadership-kun.jpg",
+  },
+  {
+    name: "George Humphreys",
+    role: "Director and Principal",
+    image: "/images/leadership/leadership-george.jpg",
+  },
+  {
+    name: "Ethan Alvarée",
+    role: "Director of Instruction and Curriculum",
+    image: "/images/leadership/leadership-ethan.jpg",
+  },
+  {
+    name: "Molly Sun",
+    role: "Director of Admissions and Operations",
+    image: "/images/leadership/leadership-molly.jpg",
+  },
+]
 
 export default function LeadershipPage() {
   return (
@@ -58,57 +83,54 @@ export default function LeadershipPage() {
 
       {/* LEADERSHIP TEAM */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 md:grid-cols-12 items-start">
-          <div className="md:col-span-8 space-y-6 text-white">
+        <div className="max-w-6xl mx-auto px-6 lg:px-12 space-y-12">
+          <div className="text-center max-w-2xl mx-auto space-y-3 text-white">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
               Leadership team
             </div>
             <h2 className="text-3xl lg:text-4xl font-extrabold">
               The team behind HBA.
             </h2>
-            <ul className="space-y-4 text-lg text-white/90 font-light">
-              <li>
-                <span className="font-semibold text-white">Head of School:</span> Mr. Kun Xuan
-              </li>
-              <li>
-                <span className="font-semibold text-white">Director & Principal:</span> George Humphreys
-              </li>
-              <li>
-                <span className="font-semibold text-white">Math Chair & Director of Technology:</span> Ethan Alvarée
-              </li>
-              <li>
-                <span className="font-semibold text-white">Assistant Director & Director of Admissions:</span> Molly Sun
-              </li>
-            </ul>
+            <p className="text-white/80 font-light">
+              Click any leader below to read their full bio on our faculty page.
+            </p>
           </div>
 
-          <aside className="md:col-span-4 bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white shadow-2xl">
-            <h4 className="text-xs font-bold tracking-widest uppercase text-white/70 mb-4">
-              Quick links
-            </h4>
-            <ul className="space-y-3 text-sm">
-              <li>
-                <a href="/about#approach" className="hover:text-[#f37021] transition-colors">
-                  Our approach →
-                </a>
+          <ul className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {leaders.map((leader) => (
+              <li key={leader.name}>
+                <Link
+                  href="/faculty#leadership"
+                  className="group block text-center"
+                >
+                  <div className="relative w-40 h-40 sm:w-44 sm:h-44 mx-auto rounded-full overflow-hidden ring-4 ring-white/10 shadow-2xl transition duration-300 group-hover:ring-[#f37021]">
+                    <Image
+                      src={leader.image}
+                      alt={leader.name}
+                      fill
+                      sizes="180px"
+                      className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                  </div>
+                  <div className="mt-5 space-y-1">
+                    <p className="text-base font-semibold text-white group-hover:text-[#f37021] transition-colors">
+                      {leader.name}
+                    </p>
+                    <p className="text-sm text-white/70 font-light">{leader.role}</p>
+                  </div>
+                </Link>
               </li>
-              <li>
-                <a href="/about#students" className="hover:text-[#f37021] transition-colors">
-                  Our students →
-                </a>
-              </li>
-              <li>
-                <a href="/faculty" className="hover:text-[#f37021] transition-colors">
-                  Faculty directory →
-                </a>
-              </li>
-              <li>
-                <a href="/about#history" className="hover:text-[#f37021] transition-colors">
-                  School history →
-                </a>
-              </li>
-            </ul>
-          </aside>
+            ))}
+          </ul>
+
+          <div className="text-center pt-2">
+            <Link
+              href="/faculty"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-[#1f3f66] font-semibold text-sm hover:bg-[#f37021] hover:text-white transition"
+            >
+              See all faculty and staff →
+            </Link>
+          </div>
         </div>
       </section>
     </main>

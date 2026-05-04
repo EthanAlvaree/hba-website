@@ -13,7 +13,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="bg-[#1f3f66] text-white sticky top-0 z-[100] shadow-md">
+    <header className="bg-[#1f3f66] text-white shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         {/* Logo + Name */}
         <Link

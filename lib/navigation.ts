@@ -33,7 +33,7 @@ export const navigation: NavItem[] = [
         links: [
           { label: "Our Approach", href: "/about#approach" },
           { label: "Our Students", href: "/about#students" },
-          { label: "Our Teachers", href: "/faculty" },
+          { label: "Faculty and staff", href: "/faculty" },
           { label: "Leadership", href: "/about/leadership" },
         ],
       },

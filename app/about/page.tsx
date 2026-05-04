@@ -1,6 +1,7 @@
 import Image from "next/image";
 import PageHero from "@/components/ui/PageHero";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
+import YouTubeEmbed from "@/components/ui/YouTubeEmbed";
 
 export default function AboutPage() {
   return (
@@ -8,7 +9,7 @@ export default function AboutPage() {
       <PageHero
         title="About High Bluff Academy"
         subtitle="Cultivating lifelong, independent learners in a supportive environment."
-        image="/images/campus-hero.png" 
+        image="/images/campus.png" 
       />
 
       <Breadcrumbs />
@@ -49,6 +50,25 @@ export default function AboutPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent"></div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* VIDEO - See HBA in action */}
+      <section id="video" className="py-24 bg-gray-50 border-t border-gray-200">
+        <div className="max-w-5xl mx-auto px-6 lg:px-12 space-y-8">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+              Watch
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              See High Bluff Academy in action.
+            </h2>
+            <p className="text-gray-600 font-light">
+              A three-minute look at our campus, classrooms, and community — straight from
+              the people who make HBA what it is.
+            </p>
+          </div>
+          <YouTubeEmbed videoId="DFui4sPHozQ" title="Welcome to High Bluff Academy" />
         </div>
       </section>
 

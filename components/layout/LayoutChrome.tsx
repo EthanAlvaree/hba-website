@@ -19,8 +19,10 @@ export default function LayoutChrome({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <TopBar />
-      <Navbar />
+      <div className="sticky top-0 z-[100]">
+        <TopBar />
+        <Navbar />
+      </div>
       {children}
       <Footer />
     </>

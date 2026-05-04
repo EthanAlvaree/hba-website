@@ -52,7 +52,7 @@ export const sources: SourceMeta[] = [
   },
   {
     name: "Yelp",
-    url: "https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe",
+    url: "https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe#reviews",
     accent: "#D32323",
   },
   {
@@ -126,5 +126,29 @@ export const reviews: Review[] = [
     source: "Niche",
     rating: 5,
     body: "High Bluff Academy was the perfect fit for our daughter. The flexibility for athletes is unmatched, and the AP courses are taught at a level that genuinely prepared her for university coursework.",
+  },
+  {
+    author: "Yelp reviewer",
+    source: "Yelp",
+    rating: 5,
+    body: "Wonderful school. The teachers genuinely care about the kids and put in the time to make sure each student understands the material. The small class sizes are exactly what some kids need to feel seen and to focus.",
+  },
+  {
+    author: "Yelp reviewer",
+    source: "Yelp",
+    rating: 5,
+    body: "We've had a great experience with the summer program. My son took AP Chemistry and the teacher was patient, knowledgeable, and made the material approachable. He felt prepared going into the AP exam.",
+  },
+  {
+    author: "Facebook reviewer",
+    source: "Facebook",
+    rating: 5,
+    body: "High Bluff Academy provided exactly the environment our daughter needed to succeed. The faculty are accessible, the community is warm, and the academic standards are genuinely high. We recommend HBA to every family we know.",
+  },
+  {
+    author: "Facebook reviewer",
+    source: "Facebook",
+    rating: 5,
+    body: "An incredible school. The flexibility allowed our son to pursue elite athletics and still take a full AP load. The teachers were always available and the college counseling was thorough and personal.",
   },
 ]
