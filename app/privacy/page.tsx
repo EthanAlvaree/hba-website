@@ -9,7 +9,7 @@ export default function PrivacyPage() {
       <PageHero
         title="Privacy policy"
         subtitle="How we collect, use, and protect information at High Bluff Academy."
-        image="/images/policies/policy-hero.jpg"
+        image="/images/policies/policy-hero.webp"
       />
 
       <Breadcrumbs />

@@ -55,7 +55,7 @@ export default function InternationalAdmissionsPage() {
       <PageHero
         title="International student admissions"
         subtitle="Welcome to San Diego — and to High Bluff Academy."
-        image="/images/admissions/international-hero.jpg"
+        image="/images/admissions/international-hero.webp"
       />
 
       <Breadcrumbs />
@@ -86,7 +86,7 @@ export default function InternationalAdmissionsPage() {
 
           <div className="lg:col-span-5 relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/admissions/san-diego.jpg"
+              src="/images/admissions/san-diego.webp"
               alt="San Diego coastline"
               fill
               className="object-cover"
@@ -194,7 +194,7 @@ export default function InternationalAdmissionsPage() {
           </div>
           <div className="relative h-[320px] rounded-3xl overflow-hidden shadow-xl">
             <Image
-              src="/images/admissions/homestay.jpg"
+              src="/images/admissions/homestay.webp"
               alt="Homestay family"
               fill
               className="object-cover"

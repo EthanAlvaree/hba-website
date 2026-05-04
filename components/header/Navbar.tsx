@@ -22,7 +22,7 @@ export default function Navbar() {
         >
           <div className="relative w-12 h-12">
             <Image
-              src="/images/brand/hba-logo.png"
+              src="/images/brand/hba-logo.webp"
               alt="HBA Logo"
               fill
               sizes="(max-width: 768px) 180px, 220px"

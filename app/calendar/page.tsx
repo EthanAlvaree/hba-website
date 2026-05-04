@@ -21,7 +21,7 @@ export default function CalendarPage() {
       <PageHero
         title="Calendar"
         subtitle="Important dates, school events, and key academic milestones — live and synced to your phone."
-        image="/images/calendar/calendar-hero.jpg"
+        image="/images/calendar/calendar-hero.webp"
       />
 
       <Breadcrumbs />
@@ -107,7 +107,7 @@ export default function CalendarPage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/calendar/calendar-summer.jpg"
+              src="/images/calendar/calendar-summer.webp"
               alt="Summer at HBA"
               fill
               className="object-cover"

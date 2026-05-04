@@ -8,7 +8,7 @@ export default function Home() {
     <main className="bg-gray-50 overflow-hidden">
       <PageHero
         title="A community where students thrive"
-        image="/images/home/home-hero.jpg"
+        image="/images/home/home-hero.webp"
       />
 
       {/* WELCOME */}

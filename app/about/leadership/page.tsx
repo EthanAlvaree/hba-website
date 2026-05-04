@@ -9,22 +9,22 @@ const leaders = [
   {
     name: "Mr. Kun Xuan",
     role: "Head of School",
-    image: "/images/leadership/leadership-kun.jpg",
+    image: "/images/leadership/leadership-kun.webp",
   },
   {
     name: "George Humphreys",
     role: "Director and Principal",
-    image: "/images/leadership/leadership-george.jpg",
+    image: "/images/leadership/leadership-george.webp",
   },
   {
     name: "Ethan Alvarée",
     role: "Director of Instruction and Curriculum",
-    image: "/images/leadership/leadership-ethan.jpg",
+    image: "/images/leadership/leadership-ethan.webp",
   },
   {
     name: "Molly Sun",
     role: "Director of Admissions and Operations",
-    image: "/images/leadership/leadership-molly.jpg",
+    image: "/images/leadership/leadership-molly.webp",
   },
 ]
 
@@ -34,7 +34,7 @@ export default function LeadershipPage() {
       <PageHero
         title="Leadership"
         subtitle="Guiding High Bluff Academy with vision, integrity, and a commitment to student success."
-        image="/images/leadership/leadership-hero.jpg"
+        image="/images/leadership/leadership-hero.webp"
       />
 
       <Breadcrumbs />

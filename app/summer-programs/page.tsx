@@ -18,7 +18,7 @@ export default function SummerProgramsPage() {
       <PageHero
         title="Summer programs 2026"
         subtitle="High-impact courses designed to accelerate learning, build confidence, and prepare students for the year ahead."
-        image="/images/summer/summer-hero.jpg"
+        image="/images/summer/summer-hero.webp"
       />
 
       <Breadcrumbs />
@@ -252,7 +252,7 @@ export default function SummerProgramsPage() {
       <section className="py-24 bg-[#1f3f66] relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/summer/summer-flex.jpg"
+            src="/images/summer/summer-flex.webp"
             alt="Flexible learning"
             fill
             className="object-cover"

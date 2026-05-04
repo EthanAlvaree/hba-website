@@ -9,7 +9,7 @@ export default function AboutPage() {
       <PageHero
         title="About High Bluff Academy"
         subtitle="Cultivating lifelong, independent learners in a supportive environment."
-        image="/images/about/campus.jpg"
+        image="/images/about/campus.webp"
       />
 
       <Breadcrumbs />
@@ -42,7 +42,7 @@ export default function AboutPage() {
             {/* High-Fidelity Image Feature */}
             <div className="relative h-[600px] w-full rounded-3xl overflow-hidden shadow-2xl group">
               <Image 
-                src="/images/about/mission.jpg"
+                src="/images/about/mission.webp"
                 alt="Students collaborating" 
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -77,7 +77,7 @@ export default function AboutPage() {
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0 opacity-20">
           <Image 
-            src="/images/about/students.jpg"
+            src="/images/about/students.webp"
             alt="Diverse student body" 
             fill
             className="object-cover"
@@ -100,7 +100,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-5 relative h-[500px] rounded-3xl overflow-hidden shadow-xl">
                <Image 
-                src="/images/about/campus.jpg"
+                src="/images/about/campus.webp"
                 alt="Rancho Santa Fe Campus" 
                 fill
                 className="object-cover"

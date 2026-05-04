@@ -18,7 +18,7 @@ export default function TranscriptsPage() {
       <PageHero
         title="Order a transcript"
         subtitle="Securely request official transcripts and credentials through Parchment."
-        image="/images/transcripts/hero.jpg"
+        image="/images/transcripts/hero.webp"
       />
 
       <Breadcrumbs />

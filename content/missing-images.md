@@ -33,14 +33,8 @@ public/images/
 
 ## Currently missing
 
-These paths are referenced in code but don't yet have a file. Until they do,
-the pages will show broken-image placeholders.
-
-| Path | What it should depict |
-| --- | --- |
-| `public/images/about/students.jpg` | Wide shot of a diverse group of HBA students — used as the tinted background for the "Our students" section |
-| `public/images/student-life/events.jpg` | Background for the events section — a school spirit moment, rally, or celebration |
-| `public/images/summer/summer-flex.jpg` | Background for the "Don't see what you're looking for?" section on `/summer-programs` — student working independently in a flexible/hybrid setting |
+None — all referenced images are present on disk. Add new entries here if a
+page references a file that hasn't been added yet.
 
 ## Optional (not blocking)
 
@@ -49,4 +43,4 @@ images until announcements are made:
 
 | Path | What it should depict |
 | --- | --- |
-| `public/images/partnerships/dining.jpg` | Replace once the catering partner is confirmed — a fresh prepared meal, lunch line, or restaurant kitchen |
+| `public/images/partnerships/dining.webp` | Replace once the catering partner is confirmed — a fresh prepared meal, lunch line, or restaurant kitchen |

@@ -21,7 +21,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Kun Xuan",
     title: "Head of School",
-    image: "/images/faculty/kun-xuan.jpg",
+    image: "/images/faculty/kun-xuan.webp",
     area: "Leadership",
     leadership: true,
     shortBio:
@@ -32,7 +32,7 @@ const faculty: FacultyMember[] = [
   {
     name: "George Humphreys",
     title: "Director & Principal",
-    image: "/images/faculty/george-humphreys.jpg",
+    image: "/images/faculty/george-humphreys.webp",
     area: "Leadership · Science · Technology",
     leadership: true,
     shortBio:
@@ -43,7 +43,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Ethan Alvarée",
     title: "Director of Instruction and Curriculum",
-    image: "/images/faculty/ethan-alvaree.jpg",
+    image: "/images/faculty/ethan-alvaree.webp",
     area: "Leadership · Mathematics · Technology",
     leadership: true,
     shortBio:
@@ -54,7 +54,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Molly Sun",
     title: "Director of Admissions and Operations",
-    image: "/images/faculty/molly-sun.jpg",
+    image: "/images/faculty/molly-sun.webp",
     area: "Leadership · Admissions · Operations",
     leadership: true,
     shortBio:
@@ -65,7 +65,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Kristin O'Connor",
     title: "Office Manager & Student Activities Coordinator",
-    image: "/images/faculty/kristin-oconnor.jpg",
+    image: "/images/faculty/kristin-oconnor.webp",
     area: "Student Support · Activities",
     shortBio:
       "Office manager and activities coordinator with a background in Child Development and a passion for student success.",
@@ -75,7 +75,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Ishaan Mishra",
     title: "Academic & College Counselor",
-    image: "/images/faculty/ishaan-mishra.jpg",
+    image: "/images/faculty/ishaan-mishra.webp",
     area: "Counseling · College Planning",
     shortBio:
       "Academic and college counselor focused on helping students navigate college, career pathways, and long-term goals.",
@@ -85,7 +85,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Ellen Sullivan",
     title: "English Department Chair",
-    image: "/images/faculty/ellen-sullivan.jpg",
+    image: "/images/faculty/ellen-sullivan.webp",
     area: "English · Humanities",
     shortBio:
       "English and Social Science educator with a background in international affairs and a passion for literacy and communication.",
@@ -95,7 +95,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Alan Saltamachio",
     title: "Biology & Environmental Science Teacher",
-    image: "/images/faculty/alan-saltamachio.jpg",
+    image: "/images/faculty/alan-saltamachio.webp",
     area: "Science",
     shortBio:
       "Veteran biology and environmental science teacher with 30+ years of experience and a passion for hands-on learning.",
@@ -105,7 +105,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Fran Dickson",
     title: "Spanish Teacher",
-    image: "/images/faculty/fran-dickson.jpg",
+    image: "/images/faculty/fran-dickson.webp",
     area: "World Languages",
     shortBio:
       "Spanish teacher from Chile who brings language, culture, and lived experience into every lesson.",
@@ -115,7 +115,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Tricia Tigli",
     title: "French & ESL Teacher",
-    image: "/images/faculty/tricia-tigli.jpg",
+    image: "/images/faculty/tricia-tigli.webp",
     area: "World Languages · ESL · Humanities",
     shortBio:
       "French and ESL teacher with a global background, deep linguistic training, and a love of travel and culture.",
@@ -125,7 +125,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Kris Bunce",
     title: "Math & Science Teacher",
-    image: "/images/faculty/kris-bunce.jpg",
+    image: "/images/faculty/kris-bunce.webp",
     area: "Math · Science",
     shortBio:
       "Former nuclear engineer and research scientist teaching math, chemistry, and physics with real-world rigor.",
@@ -135,7 +135,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Dr. Will Anderson",
     title: "Science Teacher",
-    image: "/images/faculty/will-anderson.jpg",
+    image: "/images/faculty/will-anderson.webp",
     area: "Science",
     shortBio:
       "Ph.D. biochemist and longtime San Diego educator making advanced science accessible and exciting for students.",
@@ -145,7 +145,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Lindy Benson",
     title: "Economics Teacher",
-    image: "/images/faculty/lindy-benson.jpg",
+    image: "/images/faculty/lindy-benson.webp",
     area: "Social Science · Economics",
     shortBio:
       "Economics teacher with deep academic training, a global background, and a passion for both students and animals.",
@@ -155,7 +155,7 @@ const faculty: FacultyMember[] = [
   {
     name: "Judy Beck",
     title: "Studio Art Teacher",
-    image: "/images/faculty/judy-beck.jpg",
+    image: "/images/faculty/judy-beck.webp",
     area: "Visual Arts",
     shortBio:
       "Artist, designer, and educator with a rich career in art, design, philanthropy, and global travel.",
@@ -212,7 +212,7 @@ export default function FacultyPage() {
       <PageHero
         title="Faculty and staff"
         subtitle="Exceptional educators, mentors, and leaders dedicated to every student’s success."
-        image="/images/faculty/faculty-hero.jpg"
+        image="/images/faculty/faculty-hero.webp"
       />
 
       <Breadcrumbs />

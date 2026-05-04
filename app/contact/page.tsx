@@ -10,7 +10,7 @@ export default function ContactPage() {
       <PageHero
         title="Contact High Bluff Academy"
         subtitle="We’re here to help — reach out anytime."
-        image="/images/contact/contact-hero.jpg"
+        image="/images/contact/contact-hero.webp"
       />
 
       <Breadcrumbs />
