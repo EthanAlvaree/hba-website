@@ -2,6 +2,7 @@
 "use client"
 
 import { useState, useMemo } from "react"
+import Image from "next/image"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { reviews, sources, type ReviewSource } from "@/lib/reviews"
@@ -87,11 +88,14 @@ export default function ReviewsPage() {
                 rel="noopener noreferrer"
                 className="group bg-white border border-gray-200 rounded-2xl p-4 text-center shadow-sm hover:shadow-lg transition-shadow"
               >
-                <div
-                  className="w-10 h-10 mx-auto rounded-full mb-3 flex items-center justify-center text-white font-bold text-sm"
-                  style={{ backgroundColor: s.accent }}
-                >
-                  {s.name[0]}
+                <div className="relative w-12 h-12 mx-auto mb-3">
+                  <Image
+                    src={s.logo}
+                    alt={`${s.name} logo`}
+                    fill
+                    sizes="48px"
+                    className="object-contain"
+                  />
                 </div>
                 <div className="text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021] transition-colors">
                   {s.name}

@@ -99,14 +99,13 @@ export default function PartnershipsPage() {
               }`}
             >
               <div className="lg:col-span-5">
-                <div className="relative h-[320px] rounded-3xl overflow-hidden shadow-xl bg-gray-200">
+                <div className="relative h-[320px] rounded-3xl overflow-hidden shadow-xl bg-white">
                   <Image
                     src={partner.image}
                     alt={partner.name}
                     fill
-                    className="object-cover"
+                    className="object-contain p-8"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/50 to-transparent" />
                 </div>
               </div>
 

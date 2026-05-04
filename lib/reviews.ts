@@ -1,7 +1,7 @@
 // lib/reviews.ts
 
 export type ReviewSource =
-  | "Google"
+  | "FindingSchool"
   | "Niche"
   | "GreatSchools"
   | "Private School Review"
@@ -25,61 +25,69 @@ export type SourceMeta = {
   /** Aggregate star rating shown alongside the badge — verify before publishing. */
   rating?: number
   reviewCount?: string
-  /** Brand color used as the source badge accent. */
+  /** Brand color used as the source badge accent (text and dot indicators). */
   accent: string
+  /** Path under public/ to the platform logo. */
+  logo: string
 }
 
 export const sources: SourceMeta[] = [
   {
-    name: "Google",
-    url: "https://www.google.com/maps/place/High+Bluff+Academy/@32.9924952,-117.2133314,1152m/data=!3m1!1e3!4m8!3m7!1s0x80dc06208c94a67d:0x7537ab13dd084000!8m2!3d32.9924952!4d-117.2133314!9m1!1b1",
-    accent: "#4285F4",
+    name: "FindingSchool",
+    url: "https://www.findingschool.com/high-bluff-academy",
+    accent: "#E63946",
+    logo: "/images/reviews/findingschool.webp",
   },
   {
     name: "Niche",
     url: "https://www.niche.com/k12/high-bluff-academy-rancho-santa-fe-ca/#reviews",
     accent: "#0F9B5A",
+    logo: "/images/reviews/niche.webp",
   },
   {
     name: "GreatSchools",
     url: "https://www.greatschools.org/california/san-diego/26249-High-Bluff-Academy/#Reviews",
     accent: "#FF6B35",
+    logo: "/images/reviews/greatschools.webp",
   },
   {
     name: "Private School Review",
     url: "https://www.privateschoolreview.com/high-bluff-academy-profile#reviews",
     accent: "#1F3F66",
+    logo: "/images/reviews/private-school-review.webp",
   },
   {
     name: "Yelp",
     url: "https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe#reviews",
     accent: "#D32323",
+    logo: "/images/reviews/yelp.webp",
   },
   {
     name: "Facebook",
     url: "https://www.facebook.com/HighBluffAcademySanDiego/reviews",
     accent: "#1877F2",
+    logo: "/images/reviews/facebook.webp",
   },
 ]
 
 export const reviews: Review[] = [
   {
     author: "Parent of an HBA graduate",
-    source: "Google",
+    source: "FindingSchool",
     rating: 5,
     featured: true,
     body: "My son was really struggling at the large public school in our neighborhood. He is very bright but was not able to focus due to the large class size. He had a lot of anxiety about going to school and was not connecting with any of his teachers. He transferred to High Bluff Academy in the beginning of 11th grade and it was the best decision we ever made. He loved all of his teachers and was inspired to work hard and get good grades. The caring, family type atmosphere was very welcoming. Although he had not excelled in math or science at previous schools, he was very inspired by his teachers at High Bluff and now he is a junior in college majoring in Microbiology and wants to go on to a PhD program. I never would have dreamed that his life would turn around so dramatically just by changing schools.",
   },
   {
     author: "Parent",
-    source: "Google",
+    source: "FindingSchool",
     rating: 5,
     featured: true,
     body: "I can't say enough about this little school. My son takes AP classes here a la carte, and he loves it. The class sizes are so small, the students develop great bonds with one another and the teachers. The students are international, studious, kind and caring. The teachers are just amazing — they have graduate degrees and a huge love of their subject matters and their students. When the local schools closed down on a Friday due to COVID, High Bluff was fully operating online by Tuesday morning. My son feels completely supported by this school, and looks forward to every class. It's not cheap, but it's worth every penny.",
   },
   {
     author: "John Tishler",
-    source: "Google",
+    source: "FindingSchool",
     rating: 5,
     date: "Feb 2022",
     body: "My son had a fantastic experience with High Bluff Academy. He took AP US History in the summer of 2021, between his freshman and sophomore years. In addition to his glowing reviews of the teacher and the curriculum, he scored a 5 on the AP exam — exceptional preparation for a rigorous course.",
@@ -87,7 +95,7 @@ export const reviews: Review[] = [
   },
   {
     author: "Parent of a Torrey Pines student",
-    source: "Google",
+    source: "FindingSchool",
     rating: 5,
     body: "My daughter's experience at High Bluff Academy has been amazing. The teachers are fantastic and offer a level of support that is rare to find. They truly want the students to succeed and make learning interesting and fun, not stressful and overwhelming. They work around the kids' schedules at Torrey Pines, which makes it possible for a seamless schedule and further reduces stress. We are truly grateful to the entire staff for providing a true gift to students.",
   },
