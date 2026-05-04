@@ -24,29 +24,23 @@ const categories: Category[] = [
     description:
       "From Algebra 1 through Multivariable Calculus, with honors and AP tracks at every level.",
     courses: [
-      "Algebra 1",
-      "Algebra 2 / Trigonometry",
-      "Geometry",
+      "Algebra 1 / Geometry / Algebra 2",
       "Integrated Math 1, 2, 3",
       "Integrated Math 1, 2, 3 Honors",
-      "Introduction to Calculus",
-      "Precalculus",
-      "Honors Precalculus",
-      "Statistics",
-      "AP Precalculus (live instructor only)",
+      "Intro to Calculus / Honors Precalculus",
+      "AP Precalculus",
+      "AP Statistics",
       "AP Calculus AB",
       "AP Calculus BC",
-      "AP Statistics",
-      "AP Computer Science A",
-      "Linear Algebra (live instructor only)",
-      "Multivariable Calculus (live instructor only)",
+      "Honors Linear Algebra",
+      "Honors Multivariable Calculus"
     ],
   },
   {
     id: "science",
     label: "Science",
     description:
-      "NGSS-aligned lab science with honors and AP options, plus introductory computer science.",
+      "NGSS-aligned lab science with honors and AP options.",
     courses: [
       "Biology: The Living Earth",
       "Chemistry: In the Earth System",
@@ -58,8 +52,7 @@ const categories: Category[] = [
       "AP Physics 1",
       "AP Physics 2",
       "AP Physics C: Mechanics",
-      "AP Physics C: E&M",
-      "AP Computer Science Principles",
+      "AP Physics C: E&M"
     ],
   },
   {
@@ -110,16 +103,31 @@ const categories: Category[] = [
     ],
   },
   {
+    id: "computer-science",
+    label: "Computer Science",
+    description:
+      "Technology and Computer Science.",
+    courses: [
+      "Digital Art",
+      "Intro to Robotic Engineering",
+      "AP Computer Science Principles",
+      "AP Computer Science A"
+    ],
+  },
+  {
     id: "electives",
     label: "Electives",
     description:
       "Visual and performing arts AP courses alongside introductory technology and ethnic studies electives.",
     courses: [
-      "AP Art History",
+      "Digital Art",
+      "Studio Art",
+      "Cooking",
       "AP Music Theory",
-      "Intro to Ethnic Studies",
-      "Intro to Java",
-      "Intro to Robotic Engineering",
+      "Logic and Philosophy",
+      "PE Fitness",
+      "PE Golf",
+      "PE Hiking"
     ],
   },
 ]
