@@ -22,7 +22,21 @@
       "Bash(echo)",
       "Bash(mkdir -p app/student-life/athletics)",
       "Bash(mv app/student-life/athletes/page.tsx app/student-life/athletics/page.tsx)",
-      "Bash(rmdir app/student-life/athletes)"
+      "Bash(rmdir app/student-life/athletes)",
+      "Bash(mkdir -p home about programs student-life policies brand _unsorted)",
+      "Bash(mv home-hero.JPG home/home-hero.jpg)",
+      "Bash(mv campus-aerial.jpg home/campus-aerial.jpg)",
+      "Bash(mv mission.JPG about/mission.jpg)",
+      "Bash(mv campus.jpg about/campus.jpg)",
+      "Bash(mv IMG_0008.JPG _unsorted/)",
+      "Bash(mv IMG_0038.JPG _unsorted/)",
+      "Bash(mv IMG_0039.JPG _unsorted/)",
+      "Bash(mv IMG_0040.JPG _unsorted/)",
+      "Bash(mv IMG_0112.JPG _unsorted/)",
+      "Bash(mv online/online-hero.jpg online/hero.jpg)",
+      "Bash(mv transcripts/transcripts-hero.jpg transcripts/hero.jpg)",
+      "Bash(mv summer/summer-hero.JPG summer/summer-hero.jpg.tmp)",
+      "Bash(mv summer/summer-hero.jpg.tmp summer/summer-hero.jpg)"
     ]
   }
 }
