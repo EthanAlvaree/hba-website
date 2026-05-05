@@ -33,12 +33,6 @@ export type SourceMeta = {
 
 export const sources: SourceMeta[] = [
   {
-    name: "FindingSchool",
-    url: "https://www.findingschool.com/high-bluff-academy",
-    accent: "#E63946",
-    logo: "/images/reviews/findingschool.webp",
-  },
-  {
     name: "Niche",
     url: "https://www.niche.com/k12/high-bluff-academy-rancho-santa-fe-ca/#reviews",
     accent: "#0F9B5A",
@@ -47,19 +41,25 @@ export const sources: SourceMeta[] = [
   {
     name: "GreatSchools",
     url: "https://www.greatschools.org/california/san-diego/26249-High-Bluff-Academy/#Reviews",
-    accent: "#FF6B35",
+    accent: "#29B6F6",
     logo: "/images/reviews/greatschools.webp",
   },
   {
     name: "Private School Review",
     url: "https://www.privateschoolreview.com/high-bluff-academy-profile#reviews",
-    accent: "#1F3F66",
+    accent: "#C9A227",
     logo: "/images/reviews/private-school-review.webp",
+  },
+  {
+    name: "FindingSchool",
+    url: "https://www.findingschool.com/high-bluff-academy",
+    accent: "#800000",
+    logo: "/images/reviews/findingschool.webp",
   },
   {
     name: "Yelp",
     url: "https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe#reviews",
-    accent: "#D32323",
+    accent: "#E31837",
     logo: "/images/reviews/yelp.webp",
   },
   {
