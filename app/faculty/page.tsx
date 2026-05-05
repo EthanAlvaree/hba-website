@@ -1,8 +1,10 @@
 // app/faculty/page.tsx
 "use client"
 
-import { useState } from "react"
+import { Fragment, useState } from "react"
 import Image from "next/image"
+import { Dialog, Transition } from "@headlessui/react"
+import { XMarkIcon } from "@heroicons/react/24/outline"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 
@@ -284,49 +286,86 @@ export default function FacultyPage() {
         </div>
       </section>
 
-      {/* Modal */}
-      {selected && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
-          onClick={() => setSelected(null)}
-        >
-          <div
-            className="bg-white max-w-2xl w-full rounded-3xl overflow-hidden shadow-2xl relative"
-            onClick={(e) => e.stopPropagation()}
+      {/* Bio dialog */}
+      <Transition.Root show={!!selected} as={Fragment}>
+        <Dialog as="div" className="relative z-[200]" onClose={() => setSelected(null)}>
+          <Transition.Child
+            as={Fragment}
+            enter="transition-opacity ease-out duration-200"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="transition-opacity ease-in duration-150"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
           >
-            <div className="grid md:grid-cols-2">
-              <div className="relative h-64 md:h-full">
-                <Image
-                  src={selected.image}
-                  alt={selected.name}
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent md:bg-gradient-to-r" />
-              </div>
-              <div className="p-6 md:p-8 space-y-3">
-                <div className="text-xs font-semibold tracking-[0.18em] uppercase text-[#f37021]">
-                  {selected.area}
-                </div>
-                <h3 className="text-2xl font-bold text-[#1f3f66]">
-                  {selected.name}
-                </h3>
-                <p className="text-sm text-gray-600">{selected.title}</p>
-                <div className="mt-4 space-y-3 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                  {selected.fullBio}
-                </div>
+            <div className="fixed inset-0 bg-black/50" aria-hidden="true" />
+          </Transition.Child>
+
+          <div className="fixed inset-0 flex items-stretch sm:items-center justify-center sm:p-4">
+            <Transition.Child
+              as={Fragment}
+              enter="transition ease-out duration-200"
+              enterFrom="opacity-0 sm:scale-95"
+              enterTo="opacity-100 sm:scale-100"
+              leave="transition ease-in duration-150"
+              leaveFrom="opacity-100 sm:scale-100"
+              leaveTo="opacity-0 sm:scale-95"
+            >
+              <Dialog.Panel
+                className="relative bg-white shadow-2xl w-full h-full flex flex-col overflow-hidden
+                           sm:h-auto sm:max-w-2xl sm:max-h-[90vh] sm:rounded-3xl
+                           md:flex-row md:max-w-3xl"
+              >
                 <button
                   type="button"
                   onClick={() => setSelected(null)}
-                  className="mt-4 inline-flex items-center justify-center px-5 py-2 rounded-full bg-[#1f3f66] text-white text-xs font-semibold hover:bg-[#f37021] transition"
+                  aria-label="Close"
+                  className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-white/95 text-[#1f3f66] flex items-center justify-center shadow-lg backdrop-blur hover:bg-white transition"
                 >
-                  Close
+                  <XMarkIcon className="w-5 h-5" />
                 </button>
-              </div>
-            </div>
+
+                {selected && (
+                  <>
+                    <div className="relative h-72 flex-shrink-0 md:h-auto md:w-2/5">
+                      <Image
+                        src={selected.image}
+                        alt={selected.name}
+                        fill
+                        sizes="(min-width: 768px) 40vw, 100vw"
+                        className="object-cover object-top"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:bg-gradient-to-r" />
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-6 md:p-8 md:w-3/5">
+                      <div className="space-y-3">
+                        <div className="text-xs font-semibold tracking-[0.18em] uppercase text-[#f37021]">
+                          {selected.area}
+                        </div>
+                        <Dialog.Title className="text-2xl font-bold text-[#1f3f66]">
+                          {selected.name}
+                        </Dialog.Title>
+                        <p className="text-sm text-gray-600">{selected.title}</p>
+                        <div className="mt-4 space-y-3 text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                          {selected.fullBio}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setSelected(null)}
+                          className="mt-4 inline-flex items-center justify-center px-5 py-2 rounded-full bg-[#1f3f66] text-white text-xs font-semibold hover:bg-[#f37021] transition"
+                        >
+                          Close
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </Dialog.Panel>
+            </Transition.Child>
           </div>
-        </div>
-      )}
+        </Dialog>
+      </Transition.Root>
 
       {/* Closing Section */}
       <section className="py-20 bg-[#1f3f66]">
