@@ -133,14 +133,14 @@ const faculty: FacultyMember[] = [
       "Kris is a former Nuclear Engineer/Research Scientist that currently teaches math, chemistry, and physics. He has been a teacher since 2010, teaching math and science courses for High Tech High, SDSU, and University of Phoenix. Kris also helps develop curriculum. In fact, he led two teams of instructional designers in reconstructing the math program at University of Phoenix.\n\nHe was recently awarded Distinguished Faculty of the Year for outstanding teaching practices and for creating and facilitating faculty development workshops. In addition to teaching at High Bluff Academy, Kris helps the US Academic Decathlon develop exams, runs a tutoring business, and occasionally gives guest lectures at SDSU.",
   },
   {
-    name: "Dr. Will Anderson",
+    name: "Will Anderson, Ph.D.",
     title: "Science Teacher",
     image: "/images/faculty/will-anderson.webp",
     area: "Science",
     shortBio:
       "Ph.D. biochemist and longtime San Diego educator making advanced science accessible and exciting for students.",
     fullBio:
-      "Dr. Will Anderson is a Ph.D. biochemist who has lived, worked, and taught in San Diego for almost 20 years. He received his B.A. in Biological Sciences at Cornell University and his M.S. and Ph.D. in Chemistry at UCSD. Dr. Will spent over 10 years doing scientific research at UCSD and The Scripps Research Institute before joining HBA.\n\nAfter several years of private tutoring, he joined the HBA staff in 2016 and teaches CP and AP Chemistry, CP and AP Biology, Environmental Science, and Psychology. Dr. Will uses his years of experience helping students succeed at the college level to make science accessible and exciting for students at all levels here at HBA.",
+      "Dr. Will Anderson is a Ph.D. biochemist with nearly two decades of experience living, working, and teaching in San Diego. He earned his degree in Biochemistry and Molecular Biology from Cornell University and his Ph.D. in Chemistry from the University of California, San Diego. He brings a broad background in scientific research to the classroom, having spent over 10 years conducting academic research at Cornell University, UCSD, and The Scripps Research Institute.\n\nIn addition to his research career, Dr. Will has spent the past 13 years teaching high school, university, and graduate students. He has taught all levels of Chemistry, Biology, Environmental Science, and Psychology at High Bluff Academy, where he is known for making complex scientific ideas accessible, engaging, and meaningful for students at every level. He continues to mentor former students as they navigate college, graduate school, and professional pathways.\n\nOutside of the classroom, Dr. Will is an ardent supporter of the San Diego Zoo Wildlife Association. He enjoys spending time with the magnificent animals for which they care. He also spends an inordinate amount of time reading for fun, knows way too much about Star Wars, and has two cats named Luke & Leia.",
   },
   {
     name: "Lindy Benson",
