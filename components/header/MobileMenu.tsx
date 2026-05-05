@@ -111,7 +111,30 @@ export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
                       )
                     )}
 
-                    <div className="pt-4">
+                    <div className="pt-4 border-t mt-2">
+                      <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                        Quick links
+                      </h4>
+                      <ul className="space-y-1 mb-4">
+                        {[
+                          { label: "Parent/Guardian", href: "/community/parents" },
+                          { label: "Alumni", href: "/community/alumni" },
+                          { label: "School store", href: "/community/store" },
+                          { label: "Calendar", href: "/calendar" },
+                          { label: "Contact", href: "/contact" },
+                        ].map((link) => (
+                          <li key={link.href}>
+                            <Link
+                              href={link.href}
+                              className="text-sm text-gray-700 py-1 block"
+                              onClick={onClose}
+                            >
+                              {link.label}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+
                       <Link
                         href="https://secure.gradelink.com/2962/enrollment"
                         className="w-full block text-center bg-[#f37021] text-white py-2 rounded-sm font-semibold text-sm"

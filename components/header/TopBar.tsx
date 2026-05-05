@@ -18,7 +18,7 @@ export default function TopBar() {
   }
 
   return (
-    <div className="bg-[#173a63] text-white text-sm">
+    <div className="hidden lg:block bg-[#173a63] text-white text-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-2">
         <form onSubmit={handleSearch} role="search" className="flex items-center gap-4">
           <label htmlFor="topbar-search" className="sr-only">
