@@ -10,21 +10,25 @@ const leaders = [
     name: "Mr. Kun Xuan",
     role: "Head of School",
     image: "/images/leadership/leadership-kun.webp",
+    slug: "kun-xuan",
   },
   {
     name: "George Humphreys",
     role: "Director and Principal",
     image: "/images/leadership/leadership-george.webp",
+    slug: "george-humphreys",
   },
   {
     name: "Ethan Alvarée",
     role: "Director of Instruction and Curriculum",
     image: "/images/leadership/leadership-ethan.webp",
+    slug: "ethan-alvaree",
   },
   {
     name: "Molly Sun",
     role: "Director of Admissions and Operations",
     image: "/images/leadership/leadership-molly.webp",
+    slug: "molly-sun",
   },
 ]
 
@@ -92,7 +96,7 @@ export default function LeadershipPage() {
               The team behind HBA.
             </h2>
             <p className="text-white/80 font-light">
-              Click any leader below to read their full bio on our faculty page.
+              Click any leader below to read their full bio.
             </p>
           </div>
 
@@ -100,7 +104,7 @@ export default function LeadershipPage() {
             {leaders.map((leader) => (
               <li key={leader.name}>
                 <Link
-                  href="/faculty#leadership"
+                  href={`/faculty/${leader.slug}`}
                   className="group block text-center"
                 >
                   <div className="relative w-40 h-40 sm:w-44 sm:h-44 mx-auto rounded-full overflow-hidden ring-4 ring-white/10 shadow-2xl transition duration-300 group-hover:ring-[#f37021]">
