@@ -147,7 +147,7 @@ export default function CourseCataloguePage() {
 
       {/* INTRO */}
       <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
             One catalogue. On campus, online, or hybrid.
           </h2>
@@ -175,7 +175,7 @@ export default function CourseCataloguePage() {
 
       {/* CATEGORIES */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           {categories.map((cat) => (
             <div key={cat.id} id={cat.id} className="scroll-mt-24">
               <div className="grid gap-10 lg:grid-cols-12 items-start">
@@ -211,7 +211,7 @@ export default function CourseCataloguePage() {
 
       {/* CTA */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Find the right course load.
           </h2>

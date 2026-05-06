@@ -17,7 +17,7 @@ export default function ParentsPage() {
 
       {/* WELCOME */}
       <section className="py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Partners in education
           </div>
@@ -35,7 +35,7 @@ export default function ParentsPage() {
 
       {/* QUICK LINKS */}
       <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
           <div className="text-center max-w-3xl mx-auto space-y-4">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Quick links
@@ -170,7 +170,7 @@ export default function ParentsPage() {
           />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
+        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="space-y-6 text-white">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
               Communication
@@ -208,7 +208,7 @@ export default function ParentsPage() {
 
       {/* GET INVOLVED */}
       <section className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
               src="/images/community/parents-involved.webp"

@@ -90,7 +90,7 @@ export default function AthleticsPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             HBA athletes
           </div>
@@ -108,7 +108,7 @@ export default function AthleticsPage() {
 
       {/* FLEXIBILITY HIGHLIGHT */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
               {
@@ -149,7 +149,7 @@ export default function AthleticsPage() {
 
       {/* STORIES */}
       <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-3">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Athlete stories
@@ -199,7 +199,7 @@ export default function AthleticsPage() {
 
       {/* CTA */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Talk to us about your schedule.
           </h2>

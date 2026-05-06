@@ -45,7 +45,7 @@ export default function LeadershipPage() {
 
       {/* WELCOME FROM HEAD OF SCHOOL */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 space-y-12">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 space-y-12">
           <blockquote className="text-2xl lg:text-3xl italic text-[#1f3f66] border-l-4 border-[#f37021] pl-6 font-light leading-relaxed">
             “It’s amazing how many of our students really gain a love of learning.”
           </blockquote>
@@ -87,7 +87,7 @@ export default function LeadershipPage() {
 
       {/* LEADERSHIP TEAM */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 space-y-12">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-3 text-white">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
               Leadership team

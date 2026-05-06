@@ -34,7 +34,7 @@ export default function CalendarPage() {
 
       {/* PRINTABLE */}
       <section className="py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 grid gap-10 md:grid-cols-2 items-center">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 grid gap-10 md:grid-cols-2 items-center">
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Prefer paper?
@@ -82,7 +82,7 @@ export default function CalendarPage() {
 
       {/* SUMMER 2026 CALLOUT */}
       <section className="py-24 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Summer 2026
@@ -119,7 +119,7 @@ export default function CalendarPage() {
 
       {/* CTA */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
             Need anything else?
           </div>

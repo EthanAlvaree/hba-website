@@ -25,7 +25,7 @@ export default function SummerProgramsPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
             A summer that moves students forward.
           </h2>
@@ -62,7 +62,7 @@ export default function SummerProgramsPage() {
 
       {/* SCHEDULE & ENROLLMENT NOTES */}
       <section className="py-20 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 lg:grid-cols-12 items-start">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 lg:grid-cols-12 items-start">
           <div className="lg:col-span-5 space-y-4">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Summer 2026 dates
@@ -126,7 +126,7 @@ export default function SummerProgramsPage() {
 
       {/* COURSE CATALOGUE */}
       <section id="catalog" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-4">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Course catalogue
@@ -259,7 +259,7 @@ export default function SummerProgramsPage() {
           />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Don&rsquo;t see what you&rsquo;re looking for?
           </h2>

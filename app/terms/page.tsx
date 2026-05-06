@@ -16,7 +16,7 @@ export default function TermsPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12 space-y-6">
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Effective May 2026
           </div>
@@ -33,7 +33,7 @@ export default function TermsPage() {
 
       {/* SECTIONS */}
       <section className="py-24 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12 space-y-12">
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 space-y-12">
           {[
             {
               heading: "Acceptance of terms",
@@ -153,7 +153,7 @@ export default function TermsPage() {
 
       {/* CONTACT */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
             Questions?
           </div>

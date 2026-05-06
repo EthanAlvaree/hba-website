@@ -145,7 +145,7 @@ export default function CollegeAcceptancesPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             2020 – 2025
           </div>
@@ -166,7 +166,7 @@ export default function CollegeAcceptancesPage() {
 
       {/* TIERS */}
       <section className="pb-24">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           {lists.map((list) => (
             <div key={list.tier} className="space-y-6">
               <div className="flex flex-wrap items-end justify-between gap-4">
@@ -204,7 +204,7 @@ export default function CollegeAcceptancesPage() {
 
       {/* CTA */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Personalized college counseling, from day one.
           </h2>

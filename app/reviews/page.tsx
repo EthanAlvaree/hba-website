@@ -65,7 +65,7 @@ export default function ReviewsPage() {
 
       {/* AGGREGATE SOURCES */}
       <section className="py-16 bg-white border-b border-gray-100">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Verified across the web
@@ -109,7 +109,7 @@ export default function ReviewsPage() {
 
       {/* FEATURED REVIEWS */}
       <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12 space-y-3">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Featured
@@ -153,7 +153,7 @@ export default function ReviewsPage() {
 
       {/* ALL REVIEWS WITH FILTER */}
       <section className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
             <div>
               <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
@@ -227,7 +227,7 @@ export default function ReviewsPage() {
 
       {/* CTA */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             See for yourself.
           </h2>

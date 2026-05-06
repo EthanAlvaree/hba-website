@@ -110,7 +110,7 @@ export default function InteractiveCalendar({ events }: Props) {
       id="calendar"
       className="py-24 bg-gray-50 scroll-mt-32"
     >
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-10">
+      <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-10">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">

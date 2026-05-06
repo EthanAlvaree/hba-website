@@ -107,7 +107,7 @@ export default async function FacultyDetailPage({ params }: Props) {
 
       {/* Full bio */}
       <section className="pb-20 bg-white">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12">
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12">
           <div className="space-y-5 text-gray-700 leading-relaxed text-base lg:text-lg font-light">
             {paragraphs.map((p, i) => (
               <p key={i}>{p}</p>
@@ -160,7 +160,7 @@ export default async function FacultyDetailPage({ params }: Props) {
 
       {/* CTA */}
       <section className="py-20 bg-[#1f3f66]">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12 text-center space-y-5">
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 text-center space-y-5">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Want to learn more?
           </h2>

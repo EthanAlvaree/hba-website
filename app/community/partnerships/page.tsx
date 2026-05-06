@@ -72,7 +72,7 @@ export default function PartnershipsPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Better together
           </div>
@@ -90,7 +90,7 @@ export default function PartnershipsPage() {
 
       {/* PARTNERS */}
       <section className="pb-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 pt-16 space-y-10">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 pt-16 space-y-10">
           {partners.map((partner, idx) => (
             <article
               key={partner.name}
@@ -145,7 +145,7 @@ export default function PartnershipsPage() {
 
       {/* PARTNER WITH US CTA */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Interested in partnering with HBA?
           </h2>

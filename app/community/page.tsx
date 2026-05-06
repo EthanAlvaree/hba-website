@@ -19,7 +19,7 @@ export default function CommunityPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
             A community rooted in purpose.
           </h2>
@@ -33,7 +33,7 @@ export default function CommunityPage() {
 
       {/* COMMUNITY SERVICE */}
       <section id="service" className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
 
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
@@ -81,7 +81,7 @@ export default function CommunityPage() {
           />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
+        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
 
           <div className="space-y-6 text-white">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
@@ -119,7 +119,7 @@ export default function CommunityPage() {
 
       {/* NHS */}
       <section id="nhs" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
 
           <div className="lg:col-span-6">
             <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl group">
@@ -158,7 +158,7 @@ export default function CommunityPage() {
 
       {/* COMMUNITY PARTNERSHIPS */}
       <section id="partnerships" className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
 
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
@@ -213,7 +213,7 @@ export default function CommunityPage() {
           />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-8">
+        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-8">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Volunteering & service learning
           </h2>
@@ -234,7 +234,7 @@ export default function CommunityPage() {
 
       {/* CLOSING */}
       <section className="py-20 bg-white">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-5">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-5">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
             A community that lifts each other up.
           </h2>

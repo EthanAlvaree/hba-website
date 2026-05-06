@@ -24,7 +24,7 @@ export default function TranscriptsPage() {
       <Breadcrumbs />
 
       <section className="py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12 text-center space-y-8">
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 text-center space-y-8">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Powered by Parchment
           </div>
@@ -57,7 +57,7 @@ export default function TranscriptsPage() {
       </section>
 
       <section className="py-20 bg-gray-50">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12 grid gap-6 sm:grid-cols-2">
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 grid gap-6 sm:grid-cols-2">
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
             <h3 className="text-base font-semibold text-[#1f3f66] mb-2">
               First-time users

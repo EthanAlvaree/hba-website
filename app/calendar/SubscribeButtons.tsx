@@ -31,7 +31,7 @@ export default function SubscribeButtons() {
 
   return (
     <section className="py-24 bg-[#1f3f66]">
-      <div className="max-w-5xl mx-auto px-6 lg:px-12 space-y-10">
+      <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 space-y-10">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
             Stay in sync

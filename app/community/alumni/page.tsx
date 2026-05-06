@@ -17,7 +17,7 @@ export default function AlumniPage() {
 
       {/* WELCOME */}
       <section className="py-24 bg-white">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Once HBA, always HBA
           </div>
@@ -35,7 +35,7 @@ export default function AlumniPage() {
 
       {/* STAY CONNECTED */}
       <section className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 lg:grid-cols-12 items-center">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 lg:grid-cols-12 items-center">
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Stay connected
@@ -98,7 +98,7 @@ export default function AlumniPage() {
           />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 lg:px-12 space-y-12">
+        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12 space-y-12">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
               Give back
@@ -142,7 +142,7 @@ export default function AlumniPage() {
 
       {/* CTA */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             We’d love to hear from you
           </div>

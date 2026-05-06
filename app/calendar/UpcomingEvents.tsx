@@ -48,7 +48,7 @@ function spanLabel(ev: SchoolEvent): string {
 export default function UpcomingEvents({ events }: Props) {
   return (
     <section className="py-24 bg-white">
-      <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-12">
+      <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-12">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">

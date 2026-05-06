@@ -83,7 +83,7 @@ export default function OnlineHighSchoolPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
             A full high school. From anywhere.
           </h2>
@@ -121,7 +121,7 @@ export default function OnlineHighSchoolPage() {
 
       {/* PRICING TIERS */}
       <section id="pricing" className="py-24 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12 space-y-3">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Packages & pricing
@@ -218,7 +218,7 @@ export default function OnlineHighSchoolPage() {
 
       {/* COURSE CATALOGUE LINK */}
       <section id="courses" className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Course catalogue
           </div>
@@ -243,7 +243,7 @@ export default function OnlineHighSchoolPage() {
 
       {/* CTA */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Ready to learn from anywhere?
           </h2>

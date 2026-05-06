@@ -17,7 +17,7 @@ export default function ContactPage() {
 
       {/* INTRO */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[#12233d]">
             Let’s connect.
           </h2>
@@ -31,7 +31,7 @@ export default function ContactPage() {
 
       {/* CONTACT CARDS */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-10 lg:grid-cols-3">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-10 lg:grid-cols-3">
 
           {/* PHONE */}
           <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
@@ -78,7 +78,7 @@ export default function ContactPage() {
 
       {/* FORM SECTION — PREMIUM EDITORIAL */}
       <section className="py-28 bg-gradient-to-br from-[#24375a] via-[#3b4f75] to-[#516a92]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center mb-16">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center mb-16">
           <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
             Send us a message
           </h2>
@@ -105,7 +105,7 @@ export default function ContactPage() {
 
       {/* MAP SECTION */}
       <section className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 space-y-10">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 space-y-10">
           <div className="text-center space-y-3">
             <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
               Find us
@@ -151,7 +151,7 @@ export default function ContactPage() {
 
       {/* CTA */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
             We’re here to help.
           </h2>
