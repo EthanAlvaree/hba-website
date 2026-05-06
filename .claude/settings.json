@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls app/ && ls app/admissions/ && find . -name \"tuition*\" -not -path \"*/node_modules/*\" 2>nul)",
+      "Bash(where cwebp *)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"const s=require\\('sharp'\\); s\\('image-originals/brand/hba-logo-color.png'\\).metadata\\(\\).then\\(m=>console.log\\('color:',m.width,'x',m.height\\)\\); s\\('image-originals/brand/hba-logo-white.png'\\).metadata\\(\\).then\\(m=>console.log\\('white:',m.width,'x',m.height\\)\\); s\\('image-originals/athletics/ethan-schiffman.png'\\).metadata\\(\\).then\\(m=>console.log\\('schiff:',m.width,'x',m.height,m.format\\)\\); s\\('image-originals/athletics/krando-nishiba.jpg'\\).metadata\\(\\).then\\(m=>console.log\\('krando:',m.width,'x',m.height,m.format\\)\\);\")",
+      "Bash(node -e \"const s=require\\('sharp'\\); s\\('public/images/athletics/ethan-schiffman.webp'\\).metadata\\(\\).then\\(m=>console.log\\('current schiff webp:', m.width,'x',m.height,'  bytes:', m.size\\)\\);\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); ['public/images/athletics/ethan-schiffman.webp','public/images/athletics/krando-nishiba.webp'].forEach\\(p=>console.log\\(p,\\(fs.statSync\\(p\\).size/1024\\).toFixed\\(1\\)+'KB'\\)\\);\")",
+      "Bash(node -e ' *)"
+    ],
+    "additionalDirectories": [
+      "C:\\dev\\hba-website"
+    ]
+  }
+}
