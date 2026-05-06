@@ -128,9 +128,9 @@ export default function StorePage() {
             Everything you need to order from HBA.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
-            Whether you&rsquo;re a senior preparing for graduation, an alumnus requesting a
+            Whether you’re a senior preparing for graduation, an alumnus requesting a
             transcript for a college or employer, or a parent reserving a yearbook,
-            you&rsquo;ll find the right link below.
+            you’ll find the right link below.
           </p>
         </div>
       </section>
@@ -199,7 +199,7 @@ export default function StorePage() {
                 Skip ahead to Parchment.
               </h3>
               <p className="text-white/85 font-light text-sm">
-                If you&rsquo;ve ordered through HBA before, you can go straight to your
+                If you’ve ordered through HBA before, you can go straight to your
                 Parchment account.
               </p>
             </div>
@@ -271,7 +271,7 @@ export default function StorePage() {
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
             For special requests — duplicate diplomas, replacement regalia, archival
-            yearbooks, or anything we haven&rsquo;t listed — the school office is happy to help.
+            yearbooks, or anything we haven’t listed — the school office is happy to help.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-2">
             <a

@@ -51,7 +51,7 @@ export default function TranscriptsPage() {
           </div>
 
           <p className="text-sm text-gray-500">
-            You&rsquo;ll be redirected to Parchment to register and complete your order.
+            You’ll be redirected to Parchment to register and complete your order.
           </p>
         </div>
       </section>

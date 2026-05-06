@@ -150,7 +150,7 @@ export default function CollegeAcceptancesPage() {
             2020 – 2025
           </div>
           <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-            HBA graduates earn admission to the country&rsquo;s most selective universities.
+            HBA graduates earn admission to the country’s most selective universities.
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
             Our college counseling team works with each student from freshman year forward,

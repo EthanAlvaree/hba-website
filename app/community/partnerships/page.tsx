@@ -53,7 +53,7 @@ const partners: Partner[] = [
     category: "Catering · Daily meals",
     shortDesc: "A trusted local restaurant providing fresh daily lunches.",
     description:
-      "We&rsquo;re finalizing a partnership with a local restaurant to provide fresh, balanced lunches to HBA students every school day. Details and the partner announcement will be shared here soon.",
+      "We’re finalizing a partnership with a local restaurant to provide fresh, balanced lunches to HBA students every school day. Details and the partner announcement will be shared here soon.",
     image: "/images/partnerships/dining.webp",
     status: "Coming soon",
   },
@@ -150,7 +150,7 @@ export default function PartnershipsPage() {
             Interested in partnering with HBA?
           </h2>
           <p className="text-lg text-white/90 font-light">
-            We&rsquo;re always open to thoughtful collaborations with organizations that share
+            We’re always open to thoughtful collaborations with organizations that share
             our commitment to small-group, student-centered learning. Reach out to start a
             conversation.
           </p>

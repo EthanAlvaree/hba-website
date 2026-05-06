@@ -74,7 +74,7 @@ export default function ReviewsPage() {
               Read reviews on every major platform.
             </h2>
             <p className="text-gray-600 font-light">
-              We&rsquo;ve been reviewed by hundreds of HBA families on the platforms below.
+              We’ve been reviewed by hundreds of HBA families on the platforms below.
               Click through to read every review — unfiltered and in full.
             </p>
           </div>

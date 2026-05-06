@@ -35,7 +35,7 @@ const stories: AthleteStory[] = [
     sport: "Tennis",
     outcome: "Now at Ohio State University",
     story:
-      "Brandon&rsquo;s brother Bryce also benefited from a flexible HBA schedule that supported a serious tennis training regimen. He is now a student at Ohio State.",
+      "Brandon’s brother Bryce also benefited from a flexible HBA schedule that supported a serious tennis training regimen. He is now a student at Ohio State.",
     image: "/images/athletics/bryce-nakashima.webp",
   },
   {
@@ -72,7 +72,7 @@ const stories: AthleteStory[] = [
     sport: "Tae Kwon Do",
     outcome: "Pan-American Champion; SDSU Webb Honors College, Mechanical Engineering",
     story:
-      "Andrew was the Pan-American Tae Kwon Do Champion. He competed in national and international tournaments while taking two years of AP Calculus, Linear Algebra, and two years of AP Physics — and was admitted to SDSU&rsquo;s prestigious Webb Honors College.",
+      "Andrew was the Pan-American Tae Kwon Do Champion. He competed in national and international tournaments while taking two years of AP Calculus, Linear Algebra, and two years of AP Physics — and was admitted to SDSU’s prestigious Webb Honors College.",
     image: "/images/athletics/andrew-heiati.webp",
   },
   {
@@ -80,7 +80,7 @@ const stories: AthleteStory[] = [
     sport: "Football",
     outcome: "First-team All-American kicker; now at Oklahoma State",
     story:
-      "Gabe used HBA&rsquo;s flexible scheduling to balance serious football training with a full college-prep course load. After stops at Sacramento State and Riverside City College, he was perfect on field goals at Idaho State in 2024 — 15-for-15, the most makes without a miss in the country, with a 55-yard long — earning first-team All-American honors and the Fred Mitchell Award as the nation&rsquo;s best non-FBS kicker. He&rsquo;s now a kicker for the Oklahoma State Cowboys.",
+      "Gabe used HBA’s flexible scheduling to balance serious football training with a full college-prep course load. After stops at Sacramento State and Riverside City College, he was perfect on field goals at Idaho State in 2024 — 15-for-15, the most makes without a miss in the country, with a 55-yard long — earning first-team All-American honors and the Fred Mitchell Award as the nation’s best non-FBS kicker. He’s now a kicker for the Oklahoma State Cowboys.",
     image: "/images/athletics/gabe-panikowski.webp",
   },
 ]
@@ -212,8 +212,8 @@ export default function AthleticsPage() {
             Talk to us about your schedule.
           </h2>
           <p className="text-lg text-white/90 font-light">
-            Whether you&rsquo;re a tennis pro on tour, a gymnast training in another city, or an
-            elite junior athlete with national-level commitments, we&rsquo;ll build a plan that works.
+            Whether you’re a tennis pro on tour, a gymnast training in another city, or an
+            elite junior athlete with national-level commitments, we’ll build a plan that works.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Link

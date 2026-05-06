@@ -101,7 +101,7 @@ export default function OnlineHighSchoolPage() {
               <div className="font-semibold text-[#f37021] tracking-widest text-xs uppercase mb-1">
                 AP testing
               </div>
-              Enroll in any AP and we hold your seat at HBA&rsquo;s San Diego testing site.
+              Enroll in any AP and we hold your seat at HBA’s San Diego testing site.
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-left">
               <div className="font-semibold text-[#f37021] tracking-widest text-xs uppercase mb-1">
@@ -249,7 +249,7 @@ export default function OnlineHighSchoolPage() {
           </h2>
           <p className="text-lg text-white/90 font-light">
             Apply online, and our admissions team will get back to you within one business
-            day. We&rsquo;re happy to walk you through the right tier for your student&rsquo;s goals.
+            day. We’re happy to walk you through the right tier for your student’s goals.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <a

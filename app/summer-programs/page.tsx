@@ -135,7 +135,7 @@ export default function SummerProgramsPage() {
               Summer 2026 courses
             </h2>
             <p className="text-gray-600 font-light">
-              Live group classes are listed below. Don&rsquo;t see a course? Almost any HBA
+              Live group classes are listed below. Don’t see a course? Almost any HBA
               course can be offered online, on-demand, or one-on-one — just{" "}
               <Link href="/contact" className="text-[#f37021] font-medium hover:underline">
                 get in touch
@@ -261,7 +261,7 @@ export default function SummerProgramsPage() {
 
         <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-            Don&rsquo;t see what you&rsquo;re looking for?
+            Don’t see what you’re looking for?
           </h2>
 
           <p className="text-lg text-white/90 leading-relaxed font-light max-w-3xl mx-auto">

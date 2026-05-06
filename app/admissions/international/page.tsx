@@ -95,7 +95,7 @@ export default function InternationalAdmissionsPage() {
             <div className="absolute bottom-6 left-6 right-6 text-white">
               <p className="text-sm uppercase tracking-[0.2em] text-white/70">Our city</p>
               <p className="mt-2 text-lg font-semibold">
-                San Diego — America&rsquo;s Finest City, with year-round perfect weather.
+                San Diego — America’s Finest City, with year-round perfect weather.
               </p>
             </div>
           </div>
