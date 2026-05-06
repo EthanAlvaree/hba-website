@@ -2,7 +2,16 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import { CheckIcon } from "@heroicons/react/24/solid"
+
+const ICON_BASE = "/images/new-user-setup"
+const TEAMS_ICON = `${ICON_BASE}/teams.webp`
+const ONENOTE_ICON = `${ICON_BASE}/onenote.webp`
+const EDGE_ICON = `${ICON_BASE}/edge.webp`
+const OUTLOOK_ICON = `${ICON_BASE}/outlook.webp`
+const AUTH_ICON = `${ICON_BASE}/authenticator.webp`
+const MICROSOFT_ICON = `${ICON_BASE}/microsoft.webp`
 
 type Computer = "windows" | "mac" | "ipad"
 type Phone = "iphone" | "android"
@@ -27,7 +36,14 @@ const AUTH_LINKS = {
 
 const COMPUTER_APPS: Record<
   Computer,
-  { id: string; name: string; description: string; href: string; note?: string }[]
+  {
+    id: string
+    name: string
+    description: string
+    href: string
+    icon: string
+    note?: string
+  }[]
 > = {
   windows: [
     {
@@ -36,6 +52,7 @@ const COMPUTER_APPS: Record<
       description:
         "Where your classes, video calls, and class chats happen. Sign in with your school account.",
       href: "https://www.microsoft.com/microsoft-teams/download-app",
+      icon: TEAMS_ICON,
     },
     {
       id: "win-onenote",
@@ -43,6 +60,7 @@ const COMPUTER_APPS: Record<
       description:
         "Class notebooks live here. If OneNote is already installed with Office, you can skip this.",
       href: "https://apps.microsoft.com/detail/xpffzhvgqwwlhb",
+      icon: ONENOTE_ICON,
     },
     {
       id: "win-edge",
@@ -50,6 +68,7 @@ const COMPUTER_APPS: Record<
       description:
         "Already built into Windows — no install needed. We recommend signing in to Edge with your school account so bookmarks and passwords sync.",
       href: "https://www.microsoft.com/edge/download",
+      icon: EDGE_ICON,
       note: "Already installed on Windows",
     },
   ],
@@ -60,6 +79,7 @@ const COMPUTER_APPS: Record<
       description:
         "We recommend Edge for school work — sign in with your school account so bookmarks and passwords sync.",
       href: "https://www.microsoft.com/edge/download",
+      icon: EDGE_ICON,
     },
     {
       id: "mac-teams",
@@ -67,12 +87,14 @@ const COMPUTER_APPS: Record<
       description:
         "Where your classes, video calls, and class chats happen. On Mac, download from Microsoft’s site (it’s not in the App Store).",
       href: "https://www.microsoft.com/microsoft-teams/download-app",
+      icon: TEAMS_ICON,
     },
     {
       id: "mac-onenote",
       name: "Microsoft OneNote",
       description: "Class notebooks live here. Install from the Mac App Store.",
       href: "https://apps.apple.com/us/app/microsoft-onenote/id784801555",
+      icon: ONENOTE_ICON,
     },
   ],
   ipad: [
@@ -81,31 +103,35 @@ const COMPUTER_APPS: Record<
       name: "Microsoft Edge",
       description: "Sign in with your school account so bookmarks and passwords sync.",
       href: "https://apps.apple.com/us/app/microsoft-edge/id1288723196",
+      icon: EDGE_ICON,
     },
     {
       id: "ipad-teams",
       name: "Microsoft Teams",
       description: "Where your classes, video calls, and class chats happen.",
       href: "https://apps.apple.com/us/app/microsoft-teams/id1113153706",
+      icon: TEAMS_ICON,
     },
     {
       id: "ipad-onenote",
       name: "Microsoft OneNote",
       description: "Class notebooks live here.",
       href: "https://apps.apple.com/us/app/microsoft-onenote/id410395246",
+      icon: ONENOTE_ICON,
     },
     {
       id: "ipad-outlook",
       name: "Microsoft Outlook",
       description: "Email and calendar.",
       href: "https://apps.apple.com/us/app/microsoft-outlook/id951937596",
+      icon: OUTLOOK_ICON,
     },
   ],
 }
 
 const PHONE_APPS: Record<
   Phone,
-  { id: string; name: string; description: string; href: string }[]
+  { id: string; name: string; description: string; href: string; icon: string }[]
 > = {
   iphone: [
     {
@@ -113,18 +139,21 @@ const PHONE_APPS: Record<
       name: "Microsoft Outlook",
       description: "Email and calendar.",
       href: "https://apps.apple.com/us/app/microsoft-outlook/id951937596",
+      icon: OUTLOOK_ICON,
     },
     {
       id: "iphone-teams",
       name: "Microsoft Teams",
       description: "Class chats and video calls on the go.",
       href: "https://apps.apple.com/us/app/microsoft-teams/id1113153706",
+      icon: TEAMS_ICON,
     },
     {
       id: "iphone-onenote",
       name: "Microsoft OneNote",
       description: "Your class notebooks, on your phone.",
       href: "https://apps.apple.com/us/app/microsoft-onenote/id410395246",
+      icon: ONENOTE_ICON,
     },
   ],
   android: [
@@ -133,18 +162,21 @@ const PHONE_APPS: Record<
       name: "Microsoft Outlook",
       description: "Email and calendar.",
       href: "https://play.google.com/store/apps/details?id=com.microsoft.office.outlook",
+      icon: OUTLOOK_ICON,
     },
     {
       id: "android-teams",
       name: "Microsoft Teams",
       description: "Class chats and video calls on the go.",
       href: "https://play.google.com/store/apps/details?id=com.microsoft.teams",
+      icon: TEAMS_ICON,
     },
     {
       id: "android-onenote",
       name: "Microsoft OneNote",
       description: "Your class notebooks, on your phone.",
       href: "https://play.google.com/store/apps/details?id=com.microsoft.office.onenote",
+      icon: ONENOTE_ICON,
     },
   ],
 }
@@ -204,6 +236,8 @@ function CheckRow({
   href,
   hrefLabel,
   note,
+  icon,
+  iconAlt,
 }: {
   id: string
   checked: boolean
@@ -213,6 +247,8 @@ function CheckRow({
   href?: string
   hrefLabel?: string
   note?: string
+  icon?: string
+  iconAlt?: string
 }) {
   return (
     <div
@@ -236,6 +272,19 @@ function CheckRow({
         >
           {checked && <CheckIcon className="w-4 h-4 text-white" />}
         </button>
+
+        {icon && (
+          <Image
+            src={icon}
+            alt={iconAlt ?? ""}
+            width={96}
+            height={96}
+            className={`flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 object-contain transition ${
+              checked ? "opacity-50 grayscale" : ""
+            }`}
+            aria-hidden={iconAlt ? undefined : true}
+          />
+        )}
 
         <div className="flex-1 min-w-0">
           <div
@@ -422,6 +471,8 @@ export default function OnboardingFlow() {
                 hrefLabel={`Open in ${
                   phone === "iphone" ? "App Store" : "Play Store"
                 }`}
+                icon={AUTH_ICON}
+                iconAlt="Microsoft Authenticator"
               />
             </div>
           ) : (
@@ -512,6 +563,8 @@ export default function OnboardingFlow() {
               toggle={toggle}
               title="I’ve signed in to my school account"
               description="If you ran into trouble, the office can help — see the bottom of this page."
+              icon={MICROSOFT_ICON}
+              iconAlt="Microsoft 365"
             />
           </div>
         </div>
@@ -572,6 +625,8 @@ export default function OnboardingFlow() {
                       : "Open in App Store"
                   }
                   note={app.note}
+                  icon={app.icon}
+                  iconAlt={app.name}
                 />
               ))}
 
@@ -659,6 +714,8 @@ export default function OnboardingFlow() {
                   hrefLabel={`Open in ${
                     phone === "iphone" ? "App Store" : "Play Store"
                   }`}
+                  icon={app.icon}
+                  iconAlt={app.name}
                 />
               ))}
 

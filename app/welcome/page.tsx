@@ -1,5 +1,6 @@
 // app/welcome/page.tsx
 
+import Image from "next/image"
 import {
   KeyIcon,
   DevicePhoneMobileIcon,
@@ -21,9 +22,41 @@ export default function WelcomePage() {
       <PageHero
         title="Welcome to High Bluff Academy"
         subtitle="Let’s get your school account and apps ready — about 15 minutes."
+        image="/images/new-user-setup/new-user-setup-hero.webp"
       />
 
       <Breadcrumbs />
+
+      {/* CO-BRAND */}
+      <section className="bg-white border-b border-gray-100 py-10 print:hidden">
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 flex flex-col items-center gap-4">
+          <div className="flex items-center gap-6 sm:gap-10">
+            <Image
+              src="/images/brand/hba-logo-round.webp"
+              alt="High Bluff Academy"
+              width={499}
+              height={499}
+              className="h-14 sm:h-16 w-auto"
+            />
+            <span
+              className="text-2xl font-light text-gray-300 select-none"
+              aria-hidden="true"
+            >
+              ×
+            </span>
+            <Image
+              src="/images/new-user-setup/microsoft.webp"
+              alt="Microsoft 365"
+              width={225}
+              height={225}
+              className="h-14 sm:h-16 w-auto"
+            />
+          </div>
+          <p className="text-sm text-gray-500 text-center max-w-md">
+            School accounts, email, and apps at HBA are powered by Microsoft 365.
+          </p>
+        </div>
+      </section>
 
       {/* WHAT YOU'LL NEED */}
       <section className="py-24 bg-white">
