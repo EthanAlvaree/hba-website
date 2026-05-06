@@ -6,6 +6,7 @@ import type { ReactNode } from "react"
 import TopBar from "@/components/header/TopBar"
 import Navbar from "@/components/header/Navbar"
 import Footer from "@/components/footer/Footer"
+import ScrollReveal from "@/components/ui/ScrollReveal"
 
 const NO_CHROME_PREFIXES = ["/calendar/print"]
 
@@ -25,6 +26,7 @@ export default function LayoutChrome({ children }: { children: ReactNode }) {
       </div>
       {children}
       <Footer />
+      <ScrollReveal />
     </>
   )
 }

@@ -16,7 +16,7 @@ export default function ProgramsPage() {
 
       {/* CORE COURSES – Editorial Split */}
       <section id="courses" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-6 space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Core curriculum
@@ -104,7 +104,7 @@ export default function ProgramsPage() {
           />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
               Advanced placement (AP) courses
@@ -154,7 +154,7 @@ export default function ProgramsPage() {
       {/* AREAS OF STUDY – Iconic Grid */}
       <section id="areas" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
+          <div className="reveal grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
             <div className="lg:col-span-5">
               <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
                 <Image
@@ -240,7 +240,7 @@ export default function ProgramsPage() {
 
       {/* SUMMER PROGRAMS – Feature Banner */}
       <section id="summer" className="py-24 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Summer 2026
@@ -281,7 +281,7 @@ export default function ProgramsPage() {
 
       {/* ONLINE & FLEXIBLE LEARNING */}
       <section id="online" className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="relative h-[340px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
               src="/images/programs/online-programs.webp"

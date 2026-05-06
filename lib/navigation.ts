@@ -31,14 +31,14 @@ export const navigation: NavItem[] = [
       {
         heading: "Overview",
         links: [
-          { label: "Our Approach", href: "/about#approach" },
-          { label: "Our Students", href: "/about#students" },
+          { label: "Our approach", href: "/about#approach" },
+          { label: "Our students", href: "/about#students" },
           { label: "Faculty and staff", href: "/faculty" },
           { label: "Leadership", href: "/about/leadership" },
         ],
       },
       {
-        heading: "Campus & History",
+        heading: "Campus & history",
         links: [
           { label: "Campus", href: "/about#campus" },
           { label: "History", href: "/about#history" },
@@ -54,16 +54,16 @@ export const navigation: NavItem[] = [
       {
         heading: "Enrollment",
         links: [
-          { label: "How to Apply", href: "/admissions#apply" },
-          { label: "Tuition & Aid", href: "/admissions#tuition" },
-          { label: "Visit Campus", href: "/contact" },
+          { label: "How to apply", href: "/admissions#apply" },
+          { label: "Tuition & aid", href: "/admissions#tuition" },
+          { label: "Visit campus", href: "/contact" },
         ],
       },
       {
         heading: "Pathways",
         links: [
           { label: "International (F-1 visa)", href: "/admissions/international" },
-          { label: "Online High School", href: "/programs/online" },
+          { label: "Online high school", href: "/programs/online" },
           { label: "Order a transcript", href: "/transcripts" },
         ],
       },
@@ -78,8 +78,8 @@ export const navigation: NavItem[] = [
         heading: "Academics",
         links: [
           { label: "Courses", href: "/programs#courses" },
-          { label: "AP Courses", href: "/programs#ap" },
-          { label: "Areas of Study", href: "/programs#areas" },
+          { label: "AP courses", href: "/programs#ap" },
+          { label: "Areas of study", href: "/programs#areas" },
           { label: "Course catalogue", href: "/programs/courses" },
         ],
       },
@@ -87,14 +87,14 @@ export const navigation: NavItem[] = [
         heading: "Pathways",
         links: [
           { label: "Summer 2026", href: "/summer-programs" },
-          { label: "Online High School", href: "/programs/online" },
+          { label: "Online high school", href: "/programs/online" },
           { label: "Online pricing", href: "/programs/online#pricing" },
         ],
       },
     ],
   },
   {
-    title: "Student Life",
+    title: "Student life",
     href: "/student-life",
     columns: [
       {

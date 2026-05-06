@@ -80,15 +80,31 @@ export default function Footer() {
             </p>
 
             <div className="flex gap-6 items-center">
-              <div className="relative w-20 h-20">
+              <Link
+                href="/"
+                aria-label="High Bluff Academy home"
+                className="relative w-20 h-20 transition-opacity hover:opacity-80"
+              >
                 <Image src="/images/brand/hba-logo-round.webp" alt="HBA Seal" fill sizes="80px" className="object-contain"/>
-              </div>
-              <div className="relative w-20 h-20">
+              </Link>
+              <Link
+                href="https://directory.acswasc.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="WASC accredited — view directory"
+                className="relative w-20 h-20 transition-opacity hover:opacity-80"
+              >
                 <Image src="/images/brand/wasc-round.webp" alt="WASC Accredited" fill sizes="80px" className="object-contain"/>
-              </div>
-              <div className="relative w-20 h-20">
+              </Link>
+              <Link
+                href="https://hs-articulation.ucop.edu/agcourselist"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="UC A-G approved — view course list"
+                className="relative w-20 h-20 transition-opacity hover:opacity-80"
+              >
                 <Image src="/images/brand/uc.webp" alt="UC A-G Approved" fill sizes="80px" className="object-contain"/>
-              </div>
+              </Link>
             </div>
           </div>
 
@@ -107,10 +123,10 @@ export default function Footer() {
             <div className="col-span-2 sm:col-span-1">
               <h4 className="text-xl font-semibold mb-4">Policies</h4>
               <ul className="space-y-2 text-sm text-gray-200">
-                <li><Link href="/privacy" className="hover:text-orange-300">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-orange-300">Terms of Use</Link></li>
+                <li><Link href="/privacy" className="hover:text-orange-300">Privacy policy</Link></li>
+                <li><Link href="/terms" className="hover:text-orange-300">Terms of use</Link></li>
                 <li><Link href="/accessibility" className="hover:text-orange-300">Accessibility</Link></li>
-                <li><Link href="/nondiscrimination" className="hover:text-orange-300">Non-Discrimination</Link></li>
+                <li><Link href="/nondiscrimination" className="hover:text-orange-300">Non-discrimination</Link></li>
               </ul>
             </div>
           </div>

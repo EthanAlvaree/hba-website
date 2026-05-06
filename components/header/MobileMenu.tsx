@@ -117,7 +117,7 @@ export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
                       </h4>
                       <ul className="space-y-1 mb-4">
                         {[
-                          { label: "Parent/Guardian", href: "/community/parents" },
+                          { label: "Parent/guardian", href: "/community/parents" },
                           { label: "Alumni", href: "/community/alumni" },
                           { label: "School store", href: "/community/store" },
                           { label: "Calendar", href: "/calendar" },

@@ -11,8 +11,36 @@
 }
 
 @layer base {
+  /* Top half matches the navbar; bottom half matches the footer's dark band.
+     Fixed-attachment so overscroll at either edge reveals the matching color
+     instead of the browser's default white. */
+  html {
+    background: linear-gradient(to bottom, #1f3f66 50%, #0f1f36 50%) fixed;
+  }
   body {
-    @apply antialiased text-slate-900 bg-white;
+    @apply antialiased text-slate-900 bg-white min-h-screen;
+  }
+}
+
+/* Subtle fade-up on viewport entry. Add the `reveal` class to any element;
+   ScrollReveal toggles `reveal--in` once the element scrolls into view. */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 600ms ease-out, transform 600ms ease-out;
+  will-change: opacity, transform;
+}
+
+.reveal--in {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }
 

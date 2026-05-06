@@ -13,7 +13,7 @@ export default function Home() {
 
       {/* WELCOME */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Welcome
           </div>
@@ -32,7 +32,7 @@ export default function Home() {
       {/* PATHWAYS */}
       <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div className="reveal text-center max-w-3xl mx-auto space-y-4">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Explore HBA
             </div>
@@ -41,7 +41,7 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="reveal grid gap-8 md:grid-cols-3">
             {[
               {
                 eyebrow: "Admissions",
@@ -60,7 +60,7 @@ export default function Home() {
                 cta: "Explore programs",
               },
               {
-                eyebrow: "Student Life",
+                eyebrow: "Student life",
                 title: "A vibrant community.",
                 description:
                   "Explore clubs, athletics, and the experiences that shape our students.",
@@ -93,7 +93,7 @@ export default function Home() {
 
       {/* QUOTE */}
       <section className="py-24 bg-[#1f3f66]">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <blockquote className="text-2xl lg:text-3xl italic text-white/90 leading-relaxed font-light">
             “At High Bluff Academy, students don’t just learn — they grow into confident, capable young adults.”
           </blockquote>
@@ -102,7 +102,7 @@ export default function Home() {
 
       {/* CTA */}
       <section className="py-24 bg-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
             Visit
           </div>

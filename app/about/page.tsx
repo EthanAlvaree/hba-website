@@ -17,7 +17,7 @@ export default function AboutPage() {
       {/* OUR APPROACH - Editorial Split Layout */}
       <section id="approach" className="py-24 relative">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          <div className="reveal grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="space-y-6">
               <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
                 Our mission
@@ -55,7 +55,7 @@ export default function AboutPage() {
 
       {/* VIDEO - See HBA in action */}
       <section id="video" className="py-24 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-5xl mx-auto px-6 lg:px-12 space-y-8">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 space-y-8">
           <div className="text-center max-w-2xl mx-auto space-y-3">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Watch
@@ -85,7 +85,7 @@ export default function AboutPage() {
         </div>
         
         <div className="relative z-10 max-w-5xl mx-auto px-6 lg:px-12 text-center">
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 p-12 lg:p-16 rounded-3xl shadow-2xl">
+          <div className="reveal bg-white/10 backdrop-blur-md border border-white/20 p-12 lg:p-16 rounded-3xl shadow-2xl">
             <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6">Our students</h2>
             <p className="text-xl text-white/90 leading-relaxed font-light max-w-3xl mx-auto">
               Our student body includes full-time domestic and international students, as well as online learners enrolled both full-time and part-time. We truly believe that this diverse and dynamic community enriches the learning experience, fostering global perspectives, collaboration, and a deeper understanding of the world.
@@ -97,7 +97,7 @@ export default function AboutPage() {
       {/* CAMPUS - Feature Grid */}
       <section id="campus" className="py-24 bg-white">
         <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="reveal grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             <div className="lg:col-span-5 relative h-[500px] rounded-3xl overflow-hidden shadow-xl">
                <Image 
                 src="/images/about/campus.webp"
@@ -140,7 +140,7 @@ export default function AboutPage() {
 
       {/* HISTORY - Timeline Style */}
       <section id="history" className="py-24 bg-gray-50 border-t border-gray-200">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-16">
              <h2 className="text-4xl font-extrabold text-[#1f3f66]">Our history</h2>
              <div className="w-24 h-1.5 bg-[#f37021] mx-auto mt-6 rounded-full"></div>

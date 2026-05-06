@@ -18,7 +18,7 @@ export default function AdmissionsPage() {
 
       {/* HOW TO APPLY – Conversion-Focused Steps */}
       <section id="apply" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           <div className="lg:col-span-7 space-y-8">
             <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
               Admissions process
@@ -120,7 +120,7 @@ export default function AdmissionsPage() {
           />
         </div>
 
-        <div className="relative max-w-6xl mx-auto px-6 lg:px-12">
+        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
               Tuition & financial investment
@@ -144,9 +144,10 @@ export default function AdmissionsPage() {
                 <li>• College-preparatory curriculum</li>
                 <li>• Academic support and tutoring options</li>
               </ul>
-              <p className="mt-6 text-xs text-white/70">
-                Registration Fee: $300 (non-refundable)
-              </p>
+              <ul className="mt-6 space-y-1 text-xs text-white/70">
+                <li>Registration fee: $300 (non-refundable)</li>
+                <li>Late enrollment (after April 10): $1,000</li>
+              </ul>
             </div>
 
             {/* International */}
@@ -191,9 +192,10 @@ export default function AdmissionsPage() {
                 <span className="font-medium text-gray-900 tabular-nums whitespace-nowrap">+ $6,000</span>
               </div>
 
-              <p className="mt-4 text-xs text-gray-500">
-                Registration Fee: $300 (non-refundable)
-              </p>
+              <ul className="mt-4 space-y-1 text-xs text-gray-500">
+                <li>Registration fee: $300 (non-refundable)</li>
+                <li>Late enrollment (after April 10): $1,000</li>
+              </ul>
               <a
                 href="/admissions/international"
                 className="mt-5 inline-flex items-center text-sm font-semibold text-[#f37021] hover:underline"
@@ -204,7 +206,7 @@ export default function AdmissionsPage() {
           </div>
 
           <div className="mt-10 text-center text-sm text-white/80">
-            Graduation Fee (12th Grade): $600 — includes cap and gown, senior activities, and
+            Graduation fee (12th grade): $600 — includes cap and gown, senior activities, and
             the graduation luncheon.
           </div>
         </div>
@@ -212,7 +214,7 @@ export default function AdmissionsPage() {
 
       {/* FINANCIAL AID */}
       <section className="py-20 bg-gray-50">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 text-center">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <h2 className="text-3xl font-bold text-[#1f3f66] mb-4">Financial aid & support</h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light mb-6">
             We recognize that an independent school education is a significant investment.
@@ -227,7 +229,7 @@ export default function AdmissionsPage() {
 
       {/* VISIT CAMPUS – Strong CTA */}
       <section id="visit" className="py-24 bg-white">
-        <div className="max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 md:grid-cols-2 items-center">
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 md:grid-cols-2 items-center">
           <div className="space-y-6">
             <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
               Visit campus
