@@ -30,7 +30,7 @@ export default function Navbar() {
               priority
             />
           </div>
-          <span className="text-xl font-bold tracking-tight uppercase hidden sm:block">
+          <span className="text-xl font-bold tracking-tight uppercase leading-none hidden sm:block">
             High Bluff Academy
           </span>
         </Link>
