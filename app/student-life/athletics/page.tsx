@@ -18,6 +18,7 @@ type AthleteStory = {
   outcome: string
   story: string
   image?: string
+  imagePosition?: "top" | "center" | "bottom"
 }
 
 const stories: AthleteStory[] = [
@@ -44,6 +45,7 @@ const stories: AthleteStory[] = [
     story:
       "HBA helped Ethan balance a rigorous AP-heavy course load with a busy junior tennis schedule. He went on to enroll at UC Berkeley.",
     image: "/images/athletics/ethan-schiffman.webp",
+    imagePosition: "top",
   },
   {
     name: "Krando Nishiba",
@@ -53,6 +55,7 @@ const stories: AthleteStory[] = [
     story:
       "Krando transferred from La Jolla Country Day to HBA and added an extra year of high school. The flexibility gave him time to develop his golf game while raising his GPA and adding more AP classes — and he achieved his lifelong goal of attending USC as a recruited golfer.",
     image: "/images/athletics/krando-nishiba.webp",
+    imagePosition: "top",
   },
   {
     name: "Tomohiro Kawada",
@@ -172,6 +175,7 @@ export default function AthleticsPage() {
                         alt={story.name}
                         fill
                         className="object-cover"
+                        style={{ objectPosition: story.imagePosition ?? "center" }}
                       />
                     )}
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/60 to-transparent" />
