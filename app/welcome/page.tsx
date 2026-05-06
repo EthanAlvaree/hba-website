@@ -119,17 +119,42 @@ export default function WelcomePage() {
             ))}
           </div>
 
-          <div className="bg-[#1f3f66]/5 border border-[#1f3f66]/15 rounded-2xl p-6 text-sm text-gray-700 leading-relaxed">
-            <p>
-              <span className="font-semibold text-[#1f3f66]">Your username</span>{" "}
-              is in the format{" "}
-              <span className="font-mono text-[#1f3f66] break-all">
-                firstname.lastname.YY@highbluffacademy.com
+          <div className="bg-[#1f3f66]/5 border border-[#1f3f66]/15 rounded-2xl p-6 sm:p-10">
+            <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-5 text-center">
+              Your username
+            </div>
+            <div className="font-mono text-base sm:text-xl lg:text-2xl font-semibold text-[#1f3f66] text-center leading-tight break-words">
+              firstname.lastname.
+              <span className="text-[#f37021]">YY</span>
+              <wbr />@highbluffacademy.com
+            </div>
+
+            <div className="mt-6 pt-6 border-t border-[#1f3f66]/10 grid gap-4 sm:grid-cols-3 text-xs sm:text-sm text-gray-600">
+              <div className="text-center">
+                <div className="font-mono font-semibold text-gray-900 mb-1 break-all">
+                  firstname.lastname
+                </div>
+                <div>Your first and last name</div>
+              </div>
+              <div className="text-center">
+                <div className="font-mono font-bold text-[#f37021] mb-1">YY</div>
+                <div>Last two digits of your graduation year</div>
+              </div>
+              <div className="text-center">
+                <div className="font-mono font-semibold text-gray-900 mb-1 break-all">
+                  @highbluffacademy.com
+                </div>
+                <div>Same for everyone</div>
+              </div>
+            </div>
+
+            <p className="mt-6 pt-6 border-t border-[#1f3f66]/10 text-sm text-gray-600 text-center leading-relaxed">
+              <span className="font-semibold text-[#1f3f66]">Example:</span> a
+              senior graduating in 2027 named Jane Doe would use{" "}
+              <span className="font-mono font-semibold text-[#1f3f66]">
+                jane.doe.27@highbluffacademy.com
               </span>
-              , where <span className="font-mono">YY</span> is the last two
-              digits of your graduation year. For example, a senior graduating
-              in 2027 would use{" "}
-              <span className="font-mono">jane.doe.27@highbluffacademy.com</span>.
+              .
             </p>
           </div>
         </div>

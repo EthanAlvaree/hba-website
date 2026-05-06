@@ -515,11 +515,13 @@ export default function OnboardingFlow() {
                 heading: "Enter your username",
                 body: (
                   <>
-                    Use the format{" "}
-                    <span className="font-mono text-[#1f3f66]">
-                      firstname.lastname.YY@highbluffacademy.com
+                    Your first name, last name, and the last two digits of
+                    your graduation year.
+                    <span className="mt-3 block bg-white border border-[#1f3f66]/20 rounded-lg px-4 py-3 font-mono text-sm sm:text-base font-semibold text-[#1f3f66] text-center break-words">
+                      firstname.lastname.
+                      <span className="text-[#f37021]">YY</span>
+                      <wbr />@highbluffacademy.com
                     </span>
-                    .
                   </>
                 ),
               },
