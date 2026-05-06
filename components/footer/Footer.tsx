@@ -118,6 +118,7 @@ export default function Footer() {
                 <li><Link href="/about/college-acceptances" className="hover:text-orange-300">College acceptances</Link></li>
                 <li><Link href="/calendar" className="hover:text-orange-300">Academic calendar</Link></li>
                 <li><Link href="/transcripts" className="hover:text-orange-300">Order a transcript</Link></li>
+                <li><Link href="/welcome" className="hover:text-orange-300">New student setup</Link></li>
               </ul>
             </div>
             <div className="col-span-2 sm:col-span-1">

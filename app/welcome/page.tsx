@@ -1,0 +1,136 @@
+// app/welcome/page.tsx
+
+import {
+  KeyIcon,
+  DevicePhoneMobileIcon,
+  ComputerDesktopIcon,
+} from "@heroicons/react/24/outline"
+import PageHero from "@/components/ui/PageHero"
+import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import OnboardingFlow from "./OnboardingFlow"
+
+export const metadata = {
+  title: "Welcome to HBA — Set up your account",
+  description:
+    "New to High Bluff Academy? Set up your school Microsoft 365 account, install your apps, and get ready for class in about 15 minutes.",
+}
+
+export default function WelcomePage() {
+  return (
+    <main className="bg-gray-50">
+      <PageHero
+        title="Welcome to High Bluff Academy"
+        subtitle="Let’s get your school account and apps ready — about 15 minutes."
+      />
+
+      <Breadcrumbs />
+
+      {/* WHAT YOU'LL NEED */}
+      <section className="py-24 bg-white">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 space-y-8">
+          <div className="text-center space-y-4">
+            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+              Before you start
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+              What you’ll need.
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
+              Have these handy before you begin. The whole process should take
+              about 15 minutes.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              {
+                eyebrow: "Item 1",
+                title: "Your account info",
+                text: "Your school username and temporary password from the HBA office.",
+                Icon: KeyIcon,
+              },
+              {
+                eyebrow: "Item 2",
+                title: "Your phone",
+                text: "iPhone or Android — required for the Authenticator app and sign-in security.",
+                Icon: DevicePhoneMobileIcon,
+              },
+              {
+                eyebrow: "Item 3",
+                title: "Your computer or tablet",
+                text: "Windows, Mac, or iPad — whatever you’ll use for class.",
+                Icon: ComputerDesktopIcon,
+              },
+            ].map((item) => (
+              <div
+                key={item.eyebrow}
+                className="group relative bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
+              >
+                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1f3f66] to-[#3b5f8e] flex items-center justify-center shadow-lg shadow-[#1f3f66]/25 mb-5 ring-1 ring-white/20">
+                  <item.Icon
+                    className="w-7 h-7 text-white"
+                    strokeWidth={1.75}
+                  />
+                  <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
+                </div>
+                <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+                  {item.eyebrow}
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-[#1f3f66]/5 border border-[#1f3f66]/15 rounded-2xl p-6 text-sm text-gray-700 leading-relaxed">
+            <p>
+              <span className="font-semibold text-[#1f3f66]">Your username</span>{" "}
+              is in the format{" "}
+              <span className="font-mono text-[#1f3f66] break-all">
+                firstname.lastname.YY@highbluffacademy.com
+              </span>
+              , where <span className="font-mono">YY</span> is the last two
+              digits of your graduation year. For example, a senior graduating
+              in 2027 would use{" "}
+              <span className="font-mono">jane.doe.27@highbluffacademy.com</span>.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* INTERACTIVE ONBOARDING FLOW */}
+      <OnboardingFlow />
+
+      {/* HELP */}
+      <section className="py-20 bg-gray-50 print:hidden">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+          <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#1f3f66]">
+            Stuck on a step?
+          </h2>
+          <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
+            The HBA office is happy to help. Stop by, call, or send us an email
+            and we’ll walk you through it.
+          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <a
+              href="mailto:admissions@highbluffacademy.com"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+            >
+              Email the office
+            </a>
+            <a
+              href="tel:+18585099101"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+            >
+              Call (858) 509‑9101
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+  )
+}
