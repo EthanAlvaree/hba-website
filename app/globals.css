@@ -10,13 +10,27 @@
   --shadow-mega: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
 
+/* Kill the white "rubber-band" overscroll bounce at the top and bottom of
+   the page. Two strategies layered together:
+   1. overscroll-behavior: none disables the bounce on browsers that respect
+      it (modern Chrome, Edge, Firefox, Safari).
+   2. The explicit fixed-attachment gradient on <html> is a fallback that
+      colors any bounce that does slip through — navbar navy on top, footer
+      dark navy on bottom. */
+html {
+  overscroll-behavior: none;
+  background-color: #1f3f66;
+  background-image: linear-gradient(to bottom, #1f3f66 50%, #0f1f36 50%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+  background-size: 100% 100vh;
+}
+
+body {
+  overscroll-behavior: none;
+}
+
 @layer base {
-  /* Top half matches the navbar; bottom half matches the footer's dark band.
-     Fixed-attachment so overscroll at either edge reveals the matching color
-     instead of the browser's default white. */
-  html {
-    background: linear-gradient(to bottom, #1f3f66 50%, #0f1f36 50%) fixed;
-  }
   body {
     @apply antialiased text-slate-900 bg-white min-h-screen;
   }

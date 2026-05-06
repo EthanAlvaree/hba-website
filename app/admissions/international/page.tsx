@@ -104,6 +104,15 @@ export default function InternationalAdmissionsPage() {
 
       {/* TUITION & FEES */}
       <section className="py-24 bg-[#1f3f66] relative">
+        <div className="absolute inset-0 opacity-20">
+          <Image
+            src="/images/admissions/tuition-bg.webp"
+            alt="Campus architecture"
+            fill
+            className="object-cover"
+          />
+        </div>
+
         <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12">
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white">

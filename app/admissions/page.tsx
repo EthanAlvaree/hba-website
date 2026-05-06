@@ -144,10 +144,6 @@ export default function AdmissionsPage() {
                 <li>• College-preparatory curriculum</li>
                 <li>• Academic support and tutoring options</li>
               </ul>
-              <ul className="mt-6 space-y-1 text-xs text-white/70">
-                <li>Registration fee: $300 (non-refundable)</li>
-                <li>Late enrollment (after April 10): $1,000</li>
-              </ul>
             </div>
 
             {/* International */}
@@ -192,10 +188,6 @@ export default function AdmissionsPage() {
                 <span className="font-medium text-gray-900 tabular-nums whitespace-nowrap">+ $6,000</span>
               </div>
 
-              <ul className="mt-4 space-y-1 text-xs text-gray-500">
-                <li>Registration fee: $300 (non-refundable)</li>
-                <li>Late enrollment (after April 10): $1,000</li>
-              </ul>
               <a
                 href="/admissions/international"
                 className="mt-5 inline-flex items-center text-sm font-semibold text-[#f37021] hover:underline"
@@ -205,9 +197,13 @@ export default function AdmissionsPage() {
             </div>
           </div>
 
-          <div className="mt-10 text-center text-sm text-white/80">
-            Graduation fee (12th grade): $600 — includes cap and gown, senior activities, and
-            the graduation luncheon.
+          <div className="mt-10 max-w-2xl mx-auto text-center text-sm text-white/80 space-y-2">
+            <p>Registration fee: $300 (non-refundable)</p>
+            <p>Late enrollment (after April 10): $1,000</p>
+            <p>
+              Graduation fee (12th grade): $600 — includes cap and gown, senior activities,
+              and the graduation luncheon.
+            </p>
           </div>
         </div>
       </section>
