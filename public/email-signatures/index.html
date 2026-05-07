@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HBA Email Signatures</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 30px 24px 60px;
+      background: #eef0f4;
+      font-family: Calibri, Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── Nav card ── */
+    .nav-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px 26px 18px;
+      margin-bottom: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    .nav-title {
+      font-size: 15pt;
+      font-weight: 700;
+      color: #485f85;
+      margin-bottom: 18px;
+      letter-spacing: -.2px;
+    }
+
+    .nav-section-label {
+      font-size: 8.5pt;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .7px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+
+    .nav-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .nav-btn {
+      text-decoration: none;
+      color: #485f85;
+      border: 1.5px solid #c5cede;
+      border-radius: 7px;
+      padding: 5px 15px;
+      font-size: 10pt;
+      background: #fff;
+      cursor: pointer;
+      transition: background .14s, color .14s, border-color .14s, box-shadow .14s;
+    }
+
+    .nav-btn:hover {
+      background: #f0f3f9;
+      border-color: #485f85;
+    }
+
+    .nav-btn.active {
+      background: #485f85;
+      color: #fff;
+      border-color: #485f85;
+      box-shadow: 0 2px 6px rgba(72,95,133,.30);
+    }
+
+    /* ── Signature display ── */
+    #sig-display {
+      display: none;
+      background: #fff;
+      border-radius: 12px;
+      padding: 32px 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    }
+
+    #sig-content {
+      display: none;
+    }
+
+    #sig-placeholder {
+      text-align: center;
+      color: #bbb;
+      font-size: 11pt;
+      padding: 30px 0 10px;
+    }
+
+    #sig-error {
+      display: none;
+      text-align: center;
+      color: #c0392b;
+      font-size: 10pt;
+      padding: 20px 0;
+    }
+
+    /* ── Copy hint ── */
+    #copy-hint {
+      display: none;
+      margin-top: 20px;
+      padding: 10px 16px;
+      background: #f0f4ff;
+      border-radius: 8px;
+      font-size: 9.5pt;
+      color: #485f85;
+      border: 1px solid #d0d8f0;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav-card">
+    <div class="nav-title">HBA Email Signatures</div>
+
+    <div class="nav-section-label">Leadership</div>
+    <div class="nav-group">
+      <a href="#" class="nav-btn" data-src="signatures/kun-xuan.html">Kun Xuan</a>
+      <a href="#" class="nav-btn" data-src="signatures/george-humphreys.html">George Humphreys</a>
+      <a href="#" class="nav-btn" data-src="signatures/ethan-alvaree.html">Ethan Alvarée</a>
+      <a href="#" class="nav-btn" data-src="signatures/molly-sun.html">Molly Sun</a>
+    </div>
+
+    <div class="nav-section-label">Faculty and Staff</div>
+    <div class="nav-group">
+      <a href="#" class="nav-btn" data-src="signatures/kristin-oconnor.html">Kristin O'Connor</a>
+      <a href="#" class="nav-btn" data-src="signatures/ishaan-mishra.html">Ishaan Mishra</a>
+      <a href="#" class="nav-btn" data-src="signatures/ellen-sullivan.html">Ellen Sullivan</a>
+      <a href="#" class="nav-btn" data-src="signatures/alan-saltamachio.html">Alan Saltamachio</a>
+      <a href="#" class="nav-btn" data-src="signatures/fran-dickson.html">Fran Dickson</a>
+      <a href="#" class="nav-btn" data-src="signatures/tricia-tigli.html">Tricia Tigli</a>
+      <a href="#" class="nav-btn" data-src="signatures/kris-bunce.html">Kris Bunce</a>
+      <a href="#" class="nav-btn" data-src="signatures/will-anderson.html">Will Anderson, Ph.D.</a>
+      <a href="#" class="nav-btn" data-src="signatures/lindy-benson.html">Lindy Benson</a>
+      <a href="#" class="nav-btn" data-src="signatures/judy-beck.html">Judy Beck</a>
+    </div>
+  </nav>
+
+  <div id="sig-display">
+    <div id="sig-placeholder">← Select a name above to preview the email signature</div>
+    <div id="sig-error">Failed to load signature. Please try again.</div>
+    <div id="sig-content"></div>
+    <div id="copy-hint">
+      <strong>How to use:</strong> Select all content in the signature above (Ctrl+A or Cmd+A after clicking inside it), copy, then paste directly into your email client's signature settings.
+    </div>
+  </div>
+
+  <script>
+    const display     = document.getElementById('sig-display');
+    const content     = document.getElementById('sig-content');
+    const placeholder = document.getElementById('sig-placeholder');
+    const errorMsg    = document.getElementById('sig-error');
+    const copyHint    = document.getElementById('copy-hint');
+
+    document.querySelectorAll('.nav-btn').forEach(function(btn) {
+      btn.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        // Update active state
+        document.querySelectorAll('.nav-btn').forEach(function(b) {
+          b.classList.remove('active');
+        });
+        this.classList.add('active');
+
+        // Show card while loading
+        display.style.display = 'block';
+        placeholder.style.display = 'block';
+        placeholder.textContent = 'Loading\u2026';
+        content.style.display = 'none';
+        errorMsg.style.display = 'none';
+        copyHint.style.display = 'none';
+
+        var src = this.dataset.src;
+
+        fetch(src)
+          .then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.text();
+          })
+          .then(function(html) {
+            var doc = new DOMParser().parseFromString(html, 'text/html');
+            var sig = doc.getElementById('Signature');
+            if (sig) {
+              content.innerHTML = sig.outerHTML;
+              placeholder.style.display = 'none';
+              content.style.display = 'block';
+              copyHint.style.display = 'block';
+            } else {
+              throw new Error('Signature element not found');
+            }
+          })
+          .catch(function() {
+            placeholder.style.display = 'none';
+            errorMsg.style.display = 'block';
+          });
+      });
+    });
+  </script>
+
+</body>
+</html>
