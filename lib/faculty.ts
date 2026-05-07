@@ -15,6 +15,12 @@ export type FacultyMember = {
   image: string
   /** Subject / department label, e.g. "Science" or "Leadership · Mathematics · Technology". */
   area: string
+  /** Year (or month/season + year) the member began teaching at HBA. Omit for non-teaching staff. */
+  hbaStart?: string
+  /** When their teaching career began, e.g., "2008 in Santiago, Chile". Omit if unknown or N/A. */
+  careerStart?: string
+  /** Courses currently or historically taught at HBA. Omit for non-teaching staff. */
+  coursesTaught?: string[]
   /** Used on faculty index cards and as the meta description on the detail page. */
   shortBio: string
   /** Full bio. Paragraphs separated by \n\n; rendered with whitespace-pre-line. */
@@ -43,10 +49,29 @@ export const faculty: FacultyMember[] = [
     image: "/images/faculty/george-humphreys.webp",
     area: "Leadership · Science · Technology",
     leadership: true,
+    hbaStart: "June 2007",
+    coursesTaught: [
+      "Chemistry",
+      "AP Chemistry",
+      "Physics",
+      "AP Physics 1",
+      "Intro to Engineering",
+      "Intro to Programming",
+      "Algebra 1",
+      "Geometry",
+      "Algebra 2",
+      "Integrated Math 1",
+      "Integrated Math 2",
+      "Integrated Math 3",
+      "Precalculus",
+      "Health",
+      "Golf PE",
+      "Cooking",
+    ],
     shortBio:
       "Director and Principal known for Chemistry, AP Chemistry, Physics, and building lasting mentor relationships with students.",
     fullBio:
-      "George first designed HBA’s lab science program in 2008. He has earned local fame among the TPHS community for teaching Chemistry, AP Chemistry and Physics. George can take the most complex information and make it seem easy.\n\nHe creates lasting relationships with his students who view him as a mentor and friend. George also teaches our technology and engineering classes.\n\nHe is also a talented chef and teaches our cooking class. George and his students provide lunch for the entire school every Friday. George graduated from the University of San Diego and has three children: Jase, Lucy and George. When not at HBA, George can be found on the golf course.",
+      "George began working at High Bluff Academy in the summer of 2007. During his tenure he earned local fame among the TPHS community for teaching Chemistry, AP Chemistry, Physics, and AP Physics 1, with a unique ability to take the most complex concepts and make them accessible and engaging for students.\n\nGeorge believes that the key to educational success is active engagement by all parties. In his classroom students are empowered to self-advocate, actively participate, and have their voice heard. Through his teaching, he has created lasting relationships with his students, who view him both as a mentor and a friend.\n\nAs he transitioned into administration, George brought that same student-centric approach to coaching and mentoring the staff as he helped lead the High Bluff Academy community. George prioritizes clear and effective communication among students, staff, and families to ensure every student feels supported to achieve their goals. George believes that it is important to keep teaching and connected with the students and staff as he leads through example.\n\nWhen he is not at HBA, George is a dedicated father of 3, Jase, Lucy, and George, a passionate golfer, and amateur chef.",
   },
   {
     slug: "ethan-alvaree",
@@ -55,6 +80,7 @@ export const faculty: FacultyMember[] = [
     image: "/images/faculty/ethan-alvaree.webp",
     area: "Leadership · Mathematics · Technology",
     leadership: true,
+    hbaStart: "2018",
     shortBio:
       "Math, statistics, and computer science educator, curriculum writer for College Board, and director of technology at HBA.",
     fullBio:
@@ -100,6 +126,19 @@ export const faculty: FacultyMember[] = [
     title: "English Department Chair",
     image: "/images/faculty/ellen-sullivan.webp",
     area: "English · Humanities",
+    hbaStart: "2018",
+    coursesTaught: [
+      "English 9",
+      "English 10",
+      "English 11",
+      "English 12",
+      "AP Literature",
+      "AP Language",
+      "AP Research",
+      "AP Seminar",
+      "Yearbook",
+      "Community Service",
+    ],
     shortBio:
       "English and Social Science educator with a background in international affairs and a passion for literacy and communication.",
     fullBio:
@@ -111,6 +150,15 @@ export const faculty: FacultyMember[] = [
     title: "Biology & Environmental Science Teacher",
     image: "/images/faculty/alan-saltamachio.webp",
     area: "Science",
+    hbaStart: "2023",
+    careerStart: "1989",
+    coursesTaught: [
+      "Biology",
+      "AP Biology",
+      "Environmental Science",
+      "AP Environmental Science",
+      "Health",
+    ],
     shortBio:
       "Veteran biology and environmental science teacher with 30+ years of experience and a passion for hands-on learning.",
     fullBio:
@@ -119,13 +167,22 @@ export const faculty: FacultyMember[] = [
   {
     slug: "fran-dickson",
     name: "Fran Dickson",
-    title: "Spanish Teacher",
+    title: "Spanish Department Chair",
     image: "/images/faculty/fran-dickson.webp",
     area: "World Languages",
+    hbaStart: "2023",
+    careerStart: "2008 in Santiago, Chile",
+    coursesTaught: [
+      "Spanish 1",
+      "Spanish 2",
+      "Spanish 3",
+      "Spanish 4",
+      "AP Spanish",
+    ],
     shortBio:
       "Spanish teacher from Chile who brings language, culture, and lived experience into every lesson.",
     fullBio:
-      "Fran is a passionate Spanish teacher from Chile, with a deep love for her language and culture. She holds a degree in Spanish and a teaching credential, which enables her to inspire and educate students with a comprehensive understanding of the language. With years of experience in the classroom, Fran is dedicated to making Spanish come alive for her students, fostering not only language proficiency but also an appreciation for the rich traditions and history of the Spanish-speaking world.\n\nEach summer, Fran enjoys traveling back to her homeland of Chile, reconnecting with her roots and exploring new corners of the country. These travels enrich her teaching, providing firsthand experiences and stories that she shares with her students. Outside the classroom, Fran loves spending quality time with her son, David, cherishing family moments and creating lasting memories. Her passion for teaching, her cultural connection to Chile, and her devotion to her family make her an inspiring educator and a wonderful role model for her students.",
+      "Fran is a passionate Spanish teacher from Chile, with a deep love for her language and culture. She holds a degree in Spanish and a teaching credential, which enables her to inspire and educate students with a comprehensive understanding of the language. With years of experience in the classroom, Fran is dedicated to making Spanish come alive for her students, fostering not only language proficiency but also an appreciation for the rich traditions and history of the Spanish-speaking world.\n\nEach summer, Fran enjoys traveling back to her homeland of Chile, reconnecting with her roots and exploring new corners of the country. These travels enrich her teaching, providing firsthand experiences and stories that she shares with her students. Outside the classroom, Fran loves spending quality time with her two children, David and Victoria, cherishing family moments and creating lasting memories. Her passion for teaching, her cultural connection to Chile, and her devotion to her family make her an inspiring educator and a wonderful role model for her students.",
   },
   {
     slug: "tricia-tigli",
@@ -133,6 +190,19 @@ export const faculty: FacultyMember[] = [
     title: "French & ESL Teacher",
     image: "/images/faculty/tricia-tigli.webp",
     area: "World Languages · ESL · Humanities",
+    hbaStart: "June 2021",
+    careerStart: "2011 at San Diego Unified School District",
+    coursesTaught: [
+      "English 9",
+      "English 10",
+      "ESL",
+      "World History",
+      "French 1",
+      "French 2",
+      "French 3",
+      "French 4",
+      "AP French",
+    ],
     shortBio:
       "French and ESL teacher with a global background, deep linguistic training, and a love of travel and culture.",
     fullBio:
@@ -144,6 +214,21 @@ export const faculty: FacultyMember[] = [
     title: "Math & Science Teacher",
     image: "/images/faculty/kris-bunce.webp",
     area: "Math · Science",
+    hbaStart: "Summer 2022",
+    coursesTaught: [
+      "Integrated Math 1",
+      "Integrated Math 2",
+      "Integrated Math 3",
+      "Honors Integrated Math 1",
+      "Honors Integrated Math 2",
+      "Honors Integrated Math 3",
+      "AP Precalculus",
+      "AP Calculus AB",
+      "AP Calculus BC",
+      "AP Chemistry",
+      "AP Physics 1",
+      "AP Physics 2",
+    ],
     shortBio:
       "Former nuclear engineer and research scientist teaching math, chemistry, and physics with real-world rigor.",
     fullBio:
@@ -155,6 +240,19 @@ export const faculty: FacultyMember[] = [
     title: "Science Teacher",
     image: "/images/faculty/will-anderson.webp",
     area: "Science",
+    hbaStart: "2016",
+    coursesTaught: [
+      "Biology",
+      "Honors Biology",
+      "AP Biology",
+      "Chemistry",
+      "Honors Chemistry",
+      "AP Chemistry",
+      "Environmental Science",
+      "AP Environmental Science",
+      "Psychology",
+      "AP Psychology",
+    ],
     shortBio:
       "Ph.D. biochemist and longtime San Diego educator making advanced science accessible and exciting for students.",
     fullBio:
