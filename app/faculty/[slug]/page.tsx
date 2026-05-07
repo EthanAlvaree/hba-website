@@ -101,62 +101,62 @@ export default async function FacultyDetailPage({ params }: Props) {
             <p className="text-lg text-gray-700 leading-relaxed font-light italic border-l-4 border-[#f37021] pl-5">
               {member.shortBio}
             </p>
+
+            {(member.hbaStart ||
+              member.careerStart ||
+              (member.coursesTaught && member.coursesTaught.length > 0)) && (
+              <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 lg:p-7 space-y-5">
+                {(member.hbaStart || member.careerStart) && (
+                  <div className="grid gap-5 sm:grid-cols-2">
+                    {member.hbaStart && (
+                      <div>
+                        <div className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-1.5">
+                          At HBA since
+                        </div>
+                        <div className="text-base font-semibold text-[#1f3f66]">
+                          {member.hbaStart}
+                        </div>
+                      </div>
+                    )}
+                    {member.careerStart && (
+                      <div>
+                        <div className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-1.5">
+                          Teaching since
+                        </div>
+                        <div className="text-base font-semibold text-[#1f3f66]">
+                          {member.careerStart}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {member.coursesTaught && member.coursesTaught.length > 0 && (
+                  <div>
+                    <div className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-2.5">
+                      Courses taught at HBA
+                    </div>
+                    <ul className="flex flex-wrap gap-2">
+                      {member.coursesTaught.map((c) => (
+                        <li
+                          key={c}
+                          className="inline-block rounded-full bg-white border border-gray-200 px-3 py-1 text-xs font-medium text-[#1f3f66]"
+                        >
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* Full bio */}
       <section className="pb-20 bg-white">
-        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 space-y-10">
-          {(member.hbaStart ||
-            member.careerStart ||
-            (member.coursesTaught && member.coursesTaught.length > 0)) && (
-            <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 lg:p-8 space-y-6">
-              {(member.hbaStart || member.careerStart) && (
-                <div className="grid gap-6 sm:grid-cols-2">
-                  {member.hbaStart && (
-                    <div>
-                      <div className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-1.5">
-                        At HBA since
-                      </div>
-                      <div className="text-base font-semibold text-[#1f3f66]">
-                        {member.hbaStart}
-                      </div>
-                    </div>
-                  )}
-                  {member.careerStart && (
-                    <div>
-                      <div className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-1.5">
-                        Teaching since
-                      </div>
-                      <div className="text-base font-semibold text-[#1f3f66]">
-                        {member.careerStart}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {member.coursesTaught && member.coursesTaught.length > 0 && (
-                <div>
-                  <div className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-2.5">
-                    Courses taught at HBA
-                  </div>
-                  <ul className="flex flex-wrap gap-2">
-                    {member.coursesTaught.map((c) => (
-                      <li
-                        key={c}
-                        className="inline-block rounded-full bg-white border border-gray-200 px-3 py-1 text-xs font-medium text-[#1f3f66]"
-                      >
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
+        <div className="reveal max-w-3xl mx-auto px-6 lg:px-12">
           <div className="space-y-5 text-gray-700 leading-relaxed text-base lg:text-lg font-light">
             {paragraphs.map((p, i) => (
               <p key={i}>{p}</p>

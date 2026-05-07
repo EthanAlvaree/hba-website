@@ -81,6 +81,15 @@ export const faculty: FacultyMember[] = [
     area: "Leadership · Mathematics · Technology",
     leadership: true,
     hbaStart: "2018",
+    coursesTaught: [
+      "AP Calculus AB",
+      "AP Calculus BC",
+      "AP Statistics",
+      "Honors Multivariable Calculus",
+      "Honors Linear Algebra",
+      "Honors Group Theory",
+      "Digital Art",
+    ],
     shortBio:
       "Math, statistics, and computer science educator, curriculum writer for College Board, and director of technology at HBA.",
     fullBio:
