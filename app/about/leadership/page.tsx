@@ -45,41 +45,59 @@ export default function LeadershipPage() {
 
       {/* WELCOME FROM HEAD OF SCHOOL */}
       <section className="py-24 bg-white">
-        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 space-y-12">
-          <blockquote className="text-2xl lg:text-3xl italic text-[#1f3f66] border-l-4 border-[#f37021] pl-6 font-light leading-relaxed">
-            “It’s amazing how many of our students really gain a love of learning.”
-          </blockquote>
+        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12">
+          <div className="grid gap-12 lg:grid-cols-12 items-start">
+            {/* Portrait */}
+            <div className="lg:col-span-5">
+              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl bg-gray-100">
+                <Image
+                  src="/images/faculty/kun-xuan.webp"
+                  alt="Mr. Kun Xuan, Head of School"
+                  fill
+                  sizes="(min-width: 1024px) 40vw, 100vw"
+                  className="object-cover object-top"
+                />
+              </div>
+            </div>
 
-          <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
-              Head of school
-            </div>
-            <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
-              Welcome from the head of school.
-            </h2>
-            <div className="space-y-4 text-lg text-gray-600 leading-relaxed font-light">
-              <p>
-                At High Bluff Academy, we are dedicated to cultivating a learning environment
-                where students are empowered to grow, achieve, and thrive. Our mission is rooted
-                in the belief that every student has unique strengths, and with the right guidance
-                and support, each can reach their fullest potential.
-              </p>
-              <p>
-                We take pride in providing a personalized educational experience that challenges
-                students academically while nurturing their confidence and independence. Our faculty
-                serves not only as educators, but also as mentors—guiding students to think critically,
-                act responsibly, and make informed decisions about their future.
-              </p>
-              <p>
-                In today’s ever-changing world, success requires more than academic achievement.
-                It requires resilience, adaptability, and a lifelong love of learning. At High Bluff
-                Academy, we are committed to developing these qualities in every student.
-              </p>
-            </div>
-            <div className="pt-4">
-              <p className="font-semibold text-[#1f3f66]">Warm regards,</p>
-              <p className="font-semibold text-[#1f3f66] mt-2">Mr. Kun Xuan</p>
-              <p className="text-gray-600 text-sm">Head of School</p>
+            {/* Message */}
+            <div className="lg:col-span-7 space-y-8">
+              <blockquote className="text-2xl lg:text-3xl italic text-[#1f3f66] border-l-4 border-[#f37021] pl-6 font-light leading-relaxed">
+                “It’s amazing how many of our students really gain a love of learning.”
+              </blockquote>
+
+              <div className="space-y-6">
+                <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+                  Head of school
+                </div>
+                <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+                  Welcome from the head of school.
+                </h2>
+                <div className="space-y-4 text-lg text-gray-600 leading-relaxed font-light">
+                  <p>
+                    At High Bluff Academy, we are dedicated to cultivating a learning environment
+                    where students are empowered to grow, achieve, and thrive. Our mission is rooted
+                    in the belief that every student has unique strengths, and with the right guidance
+                    and support, each can reach their fullest potential.
+                  </p>
+                  <p>
+                    We take pride in providing a personalized educational experience that challenges
+                    students academically while nurturing their confidence and independence. Our faculty
+                    serves not only as educators, but also as mentors—guiding students to think critically,
+                    act responsibly, and make informed decisions about their future.
+                  </p>
+                  <p>
+                    In today’s ever-changing world, success requires more than academic achievement.
+                    It requires resilience, adaptability, and a lifelong love of learning. At High Bluff
+                    Academy, we are committed to developing these qualities in every student.
+                  </p>
+                </div>
+                <div className="pt-4">
+                  <p className="font-semibold text-[#1f3f66]">Warm regards,</p>
+                  <p className="font-semibold text-[#1f3f66] mt-2">Mr. Kun Xuan</p>
+                  <p className="text-gray-600 text-sm">Head of School</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
