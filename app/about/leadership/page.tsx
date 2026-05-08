@@ -49,7 +49,7 @@ export default function LeadershipPage() {
           <div className="grid gap-12 lg:grid-cols-12 items-start">
             {/* Portrait */}
             <div className="lg:col-span-5">
-              <div className="relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl bg-gray-100">
+              <div className="relative aspect-[4/5] rounded-full overflow-hidden shadow-2xl bg-gray-100">
                 <Image
                   src="/images/faculty/kun-xuan.webp"
                   alt="Mr. Kun Xuan, Head of School"
