@@ -51,7 +51,7 @@ export default function LeadershipPage() {
             <div className="lg:col-span-5">
               <div className="relative aspect-[4/5] rounded-[50%] overflow-hidden shadow-2xl bg-gray-100">
                 <Image
-                  src="/images/faculty/kun-xuan.webp"
+                  src="/images/leadership/leadership-kun.webp"
                   alt="Mr. Kun Xuan, Head of School"
                   fill
                   sizes="(min-width: 1024px) 40vw, 100vw"

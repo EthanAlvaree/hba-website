@@ -304,6 +304,9 @@ export const faculty: FacultyMember[] = [
     title: "Studio Art Teacher",
     image: "/images/faculty/judy-beck.webp",
     area: "Visual Arts",
+    hbaStart: "2025",
+    careerStart: "2013",
+    coursesTaught: ["Studio Art"],
     shortBio:
       "Artist, designer, and educator with a rich career in art, design, philanthropy, and global travel.",
     fullBio:
