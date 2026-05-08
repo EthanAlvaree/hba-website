@@ -285,6 +285,14 @@ export const faculty: FacultyMember[] = [
     title: "Economics Teacher",
     image: "/images/faculty/lindy-benson.webp",
     area: "Social Science · Economics",
+    hbaStart: "2026",
+    careerStart: "1993",
+    coursesTaught: [
+      "Economics",
+      "AP Microeconomics",
+      "AP Macroeconomics",
+      "Personal Finance",
+    ],
     shortBio:
       "Economics teacher with deep academic training, a global background, and a passion for both students and animals.",
     fullBio:
