@@ -36,6 +36,7 @@ const categories: Category[] = [
       "Honors Multivariable Calculus",
       "Honors Group Theory and Abstract Algebra",
       "Honors Set Theory and Real Analysis",
+      "Mathematics of Machine Learning",
     ],
   },
   {
@@ -123,9 +124,10 @@ const categories: Category[] = [
       "Visual and performing arts AP courses alongside introductory technology and ethnic studies electives.",
     courses: [
       "Studio Art",
-      "Cooking",
+      "AP Art History",
       "AP Music Theory",
       "Logic and Philosophy",
+      "Cooking",
       "PE Fitness",
       "PE Golf",
       "PE Hiking",

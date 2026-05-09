@@ -55,6 +55,7 @@ const apCategories: { label: string; courses: string[] }[] = [
       "AP Human Geography",
       "AP Business Principles & Personal Finance",
       "AP Spanish, French & Chinese Language",
+      "AP Art History",
       "AP Music Theory",
     ],
   },
@@ -80,6 +81,7 @@ const pathways: Pathway[] = [
       "AP Computer Science A",
       "Honors Linear Algebra",
       "Honors Multivariable Calculus",
+      "Mathematics of Machine Learning",
     ],
     capstone: "AWS Cloud Practitioner certification",
   },
@@ -114,19 +116,17 @@ const pathways: Pathway[] = [
     capstone: "Bioethics seminar with an independent literature-review project",
   },
   {
-    id: "computational-finance",
-    name: "Computational Finance & Economics",
+    id: "visual-arts",
+    name: "Visual Arts & Publication",
     tagline:
-      "Quantitative economics paired with the mathematics and programming behind modern finance.",
+      "Classical drawing foundations paired with digital production craft and a real publication credit.",
     courses: [
-      "AP Calculus BC",
-      "AP Statistics",
-      "AP Microeconomics",
-      "AP Macroeconomics",
-      "AP Business Principles & Personal Finance",
-      "AP Computer Science A",
+      "Studio Art",
+      "Digital Art",
+      "AP Art History",
     ],
-    capstone: "Quantitative modeling project — backtesting a strategy on real market data",
+    capstone:
+      "Co-credited contribution to a professionally printed hardcover book, offered in partnership with our partner organization Pacific Crest Institute (PCI)",
   },
   {
     id: "ap-capstone",
@@ -325,24 +325,22 @@ export default function ProgramsPage() {
             </p>
           </div>
 
-          <ol className="grid gap-6 md:grid-cols-2">
+          <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {pathways.map((p, i) => (
               <li
                 key={p.id}
-                className="bg-gray-50 border border-gray-200 rounded-2xl p-7 lg:p-8 shadow-sm hover:shadow-lg hover:border-[#f37021] transition flex flex-col"
+                className="bg-gray-50 border border-gray-200 rounded-2xl p-5 lg:p-6 shadow-sm hover:shadow-lg hover:border-[#f37021] transition flex flex-col"
               >
-                <div className="flex items-baseline gap-3 mb-2">
-                  <span className="text-xs font-bold tracking-widest uppercase text-[#f37021] tabular-nums">
-                    Pathway {String(i + 1).padStart(2, "0")}
-                  </span>
-                </div>
-                <h3 className="text-xl lg:text-2xl font-extrabold text-[#1f3f66] leading-tight">
+                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#f37021] tabular-nums mb-1">
+                  Pathway {String(i + 1).padStart(2, "0")}
+                </span>
+                <h3 className="text-lg font-extrabold text-[#1f3f66] leading-tight">
                   {p.name}
                 </h3>
-                <p className="text-sm text-gray-600 font-light leading-relaxed mt-2">
+                <p className="text-xs text-gray-600 font-light leading-relaxed mt-2">
                   {p.tagline}
                 </p>
-                <ul className="space-y-1.5 mt-5 text-sm text-gray-700 flex-grow">
+                <ul className="space-y-1 mt-4 text-xs text-gray-700 flex-grow">
                   {p.courses.map((c) => (
                     <li key={c} className="flex gap-2 leading-snug">
                       <span className="text-[#f37021] font-bold">→</span>
@@ -350,11 +348,11 @@ export default function ProgramsPage() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-5 pt-4 border-t border-gray-200">
+                <div className="mt-4 pt-3 border-t border-gray-200">
                   <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#1f3f66]">
                     Capstone
                   </div>
-                  <p className="text-sm text-gray-700 mt-1">{p.capstone}</p>
+                  <p className="text-xs text-gray-700 mt-1 leading-snug">{p.capstone}</p>
                 </div>
               </li>
             ))}
