@@ -61,7 +61,7 @@ const categories: Category[] = [
     id: "computer-science",
     label: "Computer Science",
     description:
-      "Technology and Computer Science.",
+      "From digital media and robotics to two AP computer science courses, including the rigorous Java-based AP CS A.",
     courses: [
       "Digital Art",
       "Intro to Robotic Engineering",
@@ -78,7 +78,7 @@ const categories: Category[] = [
       "World History",
       "U.S. History",
       "Economics",
-      "AP Business and Personal Finance",
+      "AP Business Principles & Personal Finance",
       "AP Government & Politics — United States",
       "AP Government & Politics — Comparative",
       "AP World History",
@@ -95,10 +95,10 @@ const categories: Category[] = [
     id: "language-arts",
     label: "English language arts",
     description:
-      "Core English 9–12, honors and AP literature and language, and the AP Capstone diploma program.",
+      "Core English 9–12 and honors and AP literature and language. AP Seminar and AP Research together comprise the AP Capstone Diploma program — a College Board credential not offered at most high schools.",
     courses: [
       "English Support",
-      "English 9, 10, 11",
+      "English 9, 10, 11, 12",
       "AP English Language & Composition",
       "AP English Literature & Composition",
       "AP Seminar (live instructor only)",
@@ -122,14 +122,13 @@ const categories: Category[] = [
     description:
       "Visual and performing arts AP courses alongside introductory technology and ethnic studies electives.",
     courses: [
-      "Digital Art",
       "Studio Art",
       "Cooking",
       "AP Music Theory",
       "Logic and Philosophy",
       "PE Fitness",
       "PE Golf",
-      "PE Hiking"
+      "PE Hiking",
     ],
   },
 ]

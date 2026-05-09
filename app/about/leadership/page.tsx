@@ -94,6 +94,13 @@ export default function LeadershipPage() {
                 </div>
                 <div className="pt-4">
                   <p className="font-semibold text-[#1f3f66]">Warm regards,</p>
+                  <Image
+                    src="/images/leadership/kun-signature.webp"
+                    alt="Signature of Mr. Kun Xuan"
+                    width={352}
+                    height={118}
+                    className="mt-3 h-16 w-auto"
+                  />
                   <p className="font-semibold text-[#1f3f66] mt-2">Mr. Kun Xuan</p>
                   <p className="text-gray-600 text-sm">Head of School</p>
                 </div>

@@ -1,6 +1,161 @@
+// app/programs/page.tsx
+
 import Image from "next/image"
+import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+
+export const metadata = {
+  title: "Academic programs — High Bluff Academy",
+  description:
+    "HBA offers a college-preparatory curriculum with 30+ AP courses, six distinctive academic pathways, and the AP Capstone Diploma program — all UC A–G aligned, on campus, online, or hybrid.",
+}
+
+const apCategories: { label: string; courses: string[] }[] = [
+  {
+    label: "AP Math, Statistics & Computer Science",
+    courses: [
+      "AP Precalculus",
+      "AP Calculus AB & BC",
+      "AP Statistics",
+      "AP Computer Science Principles",
+      "AP Computer Science A",
+    ],
+  },
+  {
+    label: "AP Sciences",
+    courses: [
+      "AP Biology",
+      "AP Chemistry",
+      "AP Environmental Science",
+      "AP Physics 1 & 2",
+      "AP Physics C: Mechanics",
+      "AP Physics C: Electricity & Magnetism",
+    ],
+  },
+  {
+    label: "AP English & History",
+    courses: [
+      "AP English Language",
+      "AP English Literature",
+      "AP Seminar",
+      "AP Research",
+      "AP U.S. History",
+      "AP World History",
+      "AP European History",
+      "AP African American Studies",
+    ],
+  },
+  {
+    label: "AP Social Sciences, Languages & Arts",
+    courses: [
+      "AP U.S. & Comparative Government",
+      "AP Macroeconomics & Microeconomics",
+      "AP Psychology",
+      "AP Human Geography",
+      "AP Business Principles & Personal Finance",
+      "AP Spanish, French & Chinese Language",
+      "AP Music Theory",
+    ],
+  },
+]
+
+type Pathway = {
+  id: string
+  name: string
+  tagline: string
+  courses: string[]
+  capstone: string
+}
+
+const pathways: Pathway[] = [
+  {
+    id: "data-science",
+    name: "Data Science & Quantitative Reasoning",
+    tagline:
+      "The mathematics, programming, and modeling foundation for the most quantitative degrees at university.",
+    courses: [
+      "AP Statistics",
+      "AP Calculus BC",
+      "AP Computer Science A",
+      "Honors Linear Algebra",
+      "Honors Multivariable Calculus",
+    ],
+    capstone: "AWS Cloud Practitioner certification",
+  },
+  {
+    id: "engineering",
+    name: "Engineering & Robotics",
+    tagline:
+      "From classical mechanics to mechatronics — the design pathway for future engineers.",
+    courses: [
+      "AP Physics 1",
+      "AP Physics C: Mechanics",
+      "AP Physics C: Electricity & Magnetism",
+      "AP Calculus BC",
+      "Intro to Robotic Engineering",
+      "AP Computer Science A",
+    ],
+    capstone: "Independent engineering portfolio reviewed by a working engineer mentor",
+  },
+  {
+    id: "pre-medical",
+    name: "Pre-Medical & Life Sciences",
+    tagline:
+      "Foundations deeper than the standard three sciences for future physicians, biologists, and researchers.",
+    courses: [
+      "Honors Chemistry",
+      "AP Biology",
+      "AP Chemistry",
+      "AP Environmental Science",
+      "AP Psychology",
+      "AP Statistics",
+    ],
+    capstone: "Bioethics seminar with an independent literature-review project",
+  },
+  {
+    id: "computational-finance",
+    name: "Computational Finance & Economics",
+    tagline:
+      "Quantitative economics paired with the mathematics and programming behind modern finance.",
+    courses: [
+      "AP Calculus BC",
+      "AP Statistics",
+      "AP Microeconomics",
+      "AP Macroeconomics",
+      "AP Business Principles & Personal Finance",
+      "AP Computer Science A",
+    ],
+    capstone: "Quantitative modeling project — backtesting a strategy on real market data",
+  },
+  {
+    id: "ap-capstone",
+    name: "AP Capstone Diploma",
+    tagline:
+      "The College Board's most recognized research distinction, earned alongside other coursework.",
+    courses: [
+      "AP Seminar (live instructor only)",
+      "AP Research (live instructor only)",
+      "Plus four additional AP exams in subjects of the student's choice",
+    ],
+    capstone:
+      "AP Capstone Diploma — explicitly recognized by Stanford, the UC system, NYU, and many others",
+  },
+  {
+    id: "global-studies",
+    name: "Global Studies & Modern Languages",
+    tagline:
+      "Four years of language alongside the world's most consequential history and politics.",
+    courses: [
+      "AP World History",
+      "AP Comparative Government & Politics",
+      "AP Human Geography",
+      "Four years of Spanish, French, or Chinese — through AP",
+      "Model UN seminar",
+    ],
+    capstone: "Independent research paper on a contemporary global issue",
+  },
+]
 
 export default function ProgramsPage() {
   return (
@@ -8,13 +163,13 @@ export default function ProgramsPage() {
       {/* HERO */}
       <PageHero
         title="Academic programs"
-        subtitle="A flexible, college-preparatory pathway tailored to each student’s strengths and goals."
+        subtitle="A flexible, college-preparatory pathway tailored to each student's strengths and goals."
         image="/images/programs/programs-hero.webp"
       />
 
       <Breadcrumbs />
 
-      {/* CORE COURSES – Editorial Split */}
+      {/* CORE COURSES */}
       <section id="courses" className="py-24 bg-white">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-6 space-y-6">
@@ -37,8 +192,8 @@ export default function ProgramsPage() {
                   English
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  Literature, Composition, Honors English — building strong readers, writers,
-                  and communicators.
+                  Literature, composition, and honors English — building strong readers,
+                  writers, and communicators.
                 </p>
               </div>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -46,8 +201,8 @@ export default function ProgramsPage() {
                   Mathematics
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  Algebra I & II, Geometry, Pre-Calculus, Calculus — from foundations to
-                  advanced problem-solving.
+                  Algebra through calculus, with honors tracks extending into linear algebra,
+                  multivariable calculus, and abstract algebra.
                 </p>
               </div>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
@@ -55,17 +210,17 @@ export default function ProgramsPage() {
                   Science
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  Biology, Chemistry, Physics, Environmental Science — hands-on, inquiry-based
-                  learning.
+                  Biology, chemistry, physics, and environmental science — hands-on,
+                  inquiry-based learning.
                 </p>
               </div>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
                 <h3 className="text-sm font-semibold text-[#1f3f66] uppercase tracking-widest mb-3">
-                  Social Sciences
+                  Social science
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  World History, U.S. History, Government, Economics — understanding society,
-                  culture, and global issues.
+                  World and U.S. history, government, economics, and psychology — understanding
+                  society, culture, and global issues.
                 </p>
               </div>
             </div>
@@ -93,43 +248,45 @@ export default function ProgramsPage() {
         </div>
       </section>
 
-      {/* AP COURSES – Highlighted Section */}
+      {/* AP COURSES */}
       <section id="ap" className="py-24 bg-[#1f3f66] relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/programs/ap-courses.webp"
-            alt="Student studying for AP exam"
+            alt=""
             fill
             className="object-cover"
           />
         </div>
 
-        <div className="reveal relative max-w-6xl mx-auto px-6 lg:px-12">
-          <div className="text-center mb-12">
+        <div className="reveal relative max-w-7xl mx-auto px-6 lg:px-12">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-4">
+            <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
+              30+ AP courses
+            </div>
             <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
-              Advanced placement (AP) courses
+              Advanced placement at the breadth of a major university.
             </h2>
-            <p className="mt-4 text-white/80 text-lg max-w-3xl mx-auto font-light">
-              High Bluff Academy is an official College Board testing site, offering students
-              a seamless pathway from AP coursework to AP exams — on the same campus where
-              they learn every day.
+            <p className="text-white/80 text-lg font-light leading-relaxed">
+              High Bluff Academy is an authorized AP Capstone school and an official College
+              Board testing site (CEEB 053036) — students complete AP coursework and sit for
+              AP exams on the same campus where they learn every day.
             </p>
           </div>
 
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              ["AP English", ["AP English Language", "AP English Literature"]],
-              ["AP math & science", ["AP Calculus AB/BC", "AP Statistics", "AP Biology", "AP Chemistry", "AP Physics"]],
-              ["AP humanities & social science", ["AP U.S. History", "AP World History", "AP U.S. Government", "AP Macro/Microeconomics", "AP Computer Science"]],
-            ].map(([title, items]) => (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 auto-rows-fr">
+            {apCategories.map((cat) => (
               <div
-                key={title as string}
-                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white shadow-xl"
+                key={cat.label}
+                className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 text-white shadow-xl flex flex-col"
               >
-                <h3 className="text-lg font-semibold mb-3">{title}</h3>
-                <ul className="space-y-1 text-sm text-white/80">
-                  {(items as string[]).map((item) => (
-                    <li key={item}>• {item}</li>
+                <h3 className="text-base font-bold mb-4 leading-snug">{cat.label}</h3>
+                <ul className="space-y-1.5 text-sm text-white/85">
+                  {cat.courses.map((c) => (
+                    <li key={c} className="flex gap-2 leading-snug">
+                      <span className="text-[#f37021] font-bold">•</span>
+                      <span>{c}</span>
+                    </li>
                   ))}
                 </ul>
               </div>
@@ -141,104 +298,76 @@ export default function ProgramsPage() {
           </p>
 
           <div className="mt-8 text-center">
-            <a
+            <Link
               href="/programs/courses"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-[#1f3f66] font-semibold text-sm shadow-lg hover:bg-[#f37021] hover:text-white transition"
             >
               See the full UC A–G course catalogue →
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* AREAS OF STUDY – Iconic Grid */}
-      <section id="areas" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-6 lg:px-12">
-          <div className="reveal grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
-            <div className="lg:col-span-5">
-              <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
-                <Image
-                  src="/images/programs/areas-study.webp"
-                  alt="STEM and arts learning"
-                  fill
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-tr from-black/50 to-transparent" />
-              </div>
+      {/* PATHWAYS */}
+      <section id="pathways" className="py-24 bg-white">
+        <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
+          <div className="text-center max-w-3xl mx-auto space-y-4">
+            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+              Academic pathways
             </div>
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              Six distinctive pathways through HBA.
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed font-light">
+              Beyond the core diploma, students can shape their AP and honors coursework into
+              a focused track. Each pathway pairs a sequence of demanding courses with a
+              capstone credential that signals real depth to admissions readers.
+            </p>
+          </div>
 
-            <div className="lg:col-span-7 space-y-8">
-              <div>
-                <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
-                  Areas of study
+          <ol className="grid gap-6 md:grid-cols-2">
+            {pathways.map((p, i) => (
+              <li
+                key={p.id}
+                className="bg-gray-50 border border-gray-200 rounded-2xl p-7 lg:p-8 shadow-sm hover:shadow-lg hover:border-[#f37021] transition flex flex-col"
+              >
+                <div className="flex items-baseline gap-3 mb-2">
+                  <span className="text-xs font-bold tracking-widest uppercase text-[#f37021] tabular-nums">
+                    Pathway {String(i + 1).padStart(2, "0")}
+                  </span>
                 </div>
-                <h2 className="mt-4 text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
-                  Pathways for every learner.
-                </h2>
-                <p className="mt-4 text-lg text-gray-600 leading-relaxed font-light">
-                  Students can explore a wide range of disciplines while building a strong
-                  academic foundation. Our flexible structure allows for both depth and
-                  breadth — from STEM to the arts to college preparation.
+                <h3 className="text-xl lg:text-2xl font-extrabold text-[#1f3f66] leading-tight">
+                  {p.name}
+                </h3>
+                <p className="text-sm text-gray-600 font-light leading-relaxed mt-2">
+                  {p.tagline}
                 </p>
-              </div>
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                {[
-                  {
-                    label: "STEM",
-                    items: [
-                      "Algebra I & II, Geometry, Pre-Calculus, Calculus",
-                      "Biology, Chemistry, Physics, Environmental Science",
-                      "Computer Science and Coding",
-                    ],
-                  },
-                  {
-                    label: "Arts",
-                    items: [
-                      "Drawing and Painting",
-                      "Digital Art and Graphic Design",
-                      "Photography, Film & Media Studies",
-                    ],
-                  },
-                  {
-                    label: "College prep",
-                    items: [
-                      "Honors & AP English",
-                      "U.S. & World History, Government, Economics",
-                      "SAT/ACT Test Preparation",
-                      "College Counseling & Application Support",
-                    ],
-                  },
-                  {
-                    label: "Language & ESL",
-                    items: [
-                      "World Languages (e.g., Spanish, French)",
-                      "ESL for international students",
-                      "Public Speaking & Writing Workshops",
-                    ],
-                  },
-                ].map((area) => (
-                  <div
-                    key={area.label}
-                    className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm"
-                  >
-                    <h3 className="text-sm font-semibold text-[#1f3f66] uppercase tracking-widest mb-3">
-                      {area.label}
-                    </h3>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      {area.items.map((item) => (
-                        <li key={item}>• {item}</li>
-                      ))}
-                    </ul>
+                <ul className="space-y-1.5 mt-5 text-sm text-gray-700 flex-grow">
+                  {p.courses.map((c) => (
+                    <li key={c} className="flex gap-2 leading-snug">
+                      <span className="text-[#f37021] font-bold">→</span>
+                      <span>{c}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-5 pt-4 border-t border-gray-200">
+                  <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#1f3f66]">
+                    Capstone
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
+                  <p className="text-sm text-gray-700 mt-1">{p.capstone}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <p className="text-center text-sm text-gray-500 italic max-w-2xl mx-auto">
+            Pathways are advisory — they reflect the most common ways HBA students stack
+            coursework. Counselors work one-on-one with each family to tune the sequence.
+          </p>
         </div>
       </section>
 
-      {/* SUMMER PROGRAMS – Feature Banner */}
+      {/* SUMMER PROGRAMS */}
       <section id="summer" className="py-24 bg-gray-50 border-t border-gray-200">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="space-y-6">
@@ -259,12 +388,12 @@ export default function ProgramsPage() {
               <li>• Official College Board testing site (CEEB Code: 053036)</li>
               <li>• Six-, seven-, and eight-week course formats</li>
             </ul>
-            <a
+            <Link
               href="/summer-programs"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition mt-4"
             >
               View summer programs
-            </a>
+            </Link>
           </div>
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
@@ -310,12 +439,12 @@ export default function ProgramsPage() {
               in-person teacher.
             </p>
             <div className="pt-2">
-              <a
+              <Link
                 href="/programs/online"
                 className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
               >
                 Explore HBA Online High School →
-              </a>
+              </Link>
             </div>
           </div>
         </div>

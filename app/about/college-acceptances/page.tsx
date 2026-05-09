@@ -69,12 +69,10 @@ const schools: School[] = [
   { name: "New York University", tier: "elite", location: "New York, New York", featured: true },
   { name: "Carnegie Mellon University", tier: "elite", location: "Pittsburgh, Pennsylvania", featured: true },
   { name: "University of Michigan, Ann Arbor", tier: "elite", location: "Ann Arbor, Michigan", featured: true },
-  { name: "Pomona College", tier: "elite", location: "Claremont, California", featured: true },
   { name: "Emory University", tier: "elite" },
   { name: "UC San Diego", tier: "elite" },
   { name: "University of Virginia", tier: "elite" },
   { name: "UNC Chapel Hill", tier: "elite" },
-  { name: "Claremont McKenna College", tier: "elite" },
   { name: "University of Waterloo", tier: "elite", note: "Canada" },
   { name: "University of Edinburgh", tier: "elite", note: "United Kingdom" },
 
@@ -122,8 +120,10 @@ const schools: School[] = [
   { name: "Baylor University", tier: "competitive" },
 
   // ── National liberal arts ───────────────────────────────────────
+  { name: "Pomona College", tier: "liberal-arts", location: "Claremont, California", note: "7% admit rate", featured: true },
   { name: "Amherst College", tier: "liberal-arts", location: "Amherst, Massachusetts", note: "9% admit rate", featured: true },
   { name: "Middlebury College", tier: "liberal-arts", location: "Middlebury, Vermont", note: "12% admit rate", featured: true },
+  { name: "Claremont McKenna College", tier: "liberal-arts", note: "11% admit rate" },
   { name: "Carleton College", tier: "liberal-arts" },
   { name: "Colby College", tier: "liberal-arts" },
   { name: "Colgate University", tier: "liberal-arts", note: "12% admit rate" },
