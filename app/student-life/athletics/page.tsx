@@ -99,10 +99,10 @@ export default function AthleticsPage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             HBA athletes
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             Built for the demands of elite athletic training.
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
@@ -144,10 +144,10 @@ export default function AthleticsPage() {
                 key={card.title}
                 className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm"
               >
-                <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+                <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-2">
                   {card.eyebrow}
                 </div>
-                <h3 className="text-lg font-semibold text-[#1f3f66] mb-2">{card.title}</h3>
+                <h3 className="text-lg font-semibold text-brand-navy mb-2">{card.title}</h3>
                 <p className="text-sm text-gray-600 leading-relaxed">{card.body}</p>
               </div>
             ))}
@@ -159,10 +159,10 @@ export default function AthleticsPage() {
       <section className="py-24 bg-white">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Athlete stories
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Real athletes. Real schedules. Real results.
             </h2>
           </div>
@@ -186,16 +186,16 @@ export default function AthleticsPage() {
                         style={{ objectPosition: story.imagePosition ?? "center" }}
                       />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/60 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/60 to-transparent" />
                   </div>
                 </div>
 
                 <div className="lg:col-span-7 space-y-4">
-                  <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase">
+                  <div className="text-xs font-bold tracking-widest text-brand-orange uppercase">
                     {story.sport}
                     {story.classYear && ` · ${story.classYear}`}
                   </div>
-                  <h3 className="text-3xl font-extrabold text-[#1f3f66]">{story.name}</h3>
+                  <h3 className="text-3xl font-extrabold text-brand-navy">{story.name}</h3>
                   <p className="text-lg font-medium text-gray-800">{story.outcome}</p>
                   <p className="text-gray-600 font-light leading-relaxed">{story.story}</p>
                 </div>
@@ -206,7 +206,7 @@ export default function AthleticsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Talk to us about your schedule.
@@ -218,13 +218,13 @@ export default function AthleticsPage() {
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Contact admissions
             </Link>
             <Link
               href="/admissions"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Apply to HBA
             </Link>

@@ -3,6 +3,7 @@
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "Course catalogue — High Bluff Academy",
@@ -149,7 +150,7 @@ export default function CourseCataloguePage() {
       {/* INTRO */}
       <section className="py-20 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             One catalogue. On campus, online, or hybrid.
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
@@ -165,7 +166,7 @@ export default function CourseCataloguePage() {
               <a
                 key={cat.id}
                 href={`#${cat.id}`}
-                className="inline-flex items-center px-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-[#1f3f66] font-semibold tracking-wide uppercase hover:bg-[#1f3f66] hover:text-white hover:border-[#1f3f66] transition"
+                className="inline-flex items-center px-4 py-2 rounded-full border border-gray-200 bg-gray-50 text-brand-navy font-semibold tracking-wide uppercase hover:bg-brand-navy hover:text-white hover:border-brand-navy transition"
               >
                 {cat.label}
               </a>
@@ -181,10 +182,10 @@ export default function CourseCataloguePage() {
             <div key={cat.id} id={cat.id} className="scroll-mt-24">
               <div className="grid gap-10 lg:grid-cols-12 items-start">
                 <div className="lg:col-span-4 space-y-3">
-                  <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+                  <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
                     {cat.label}
                   </div>
-                  <h3 className="text-2xl lg:text-3xl font-extrabold text-[#1f3f66] leading-tight">
+                  <h3 className="text-2xl lg:text-3xl font-extrabold text-brand-navy leading-tight">
                     {cat.label}
                   </h3>
                   <p className="text-gray-600 font-light leading-relaxed">
@@ -197,7 +198,7 @@ export default function CourseCataloguePage() {
                     <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2 text-sm text-gray-700">
                       {cat.courses.map((c) => (
                         <li key={c} className="leading-snug flex gap-2">
-                          <span className="text-[#f37021]">•</span>
+                          <span className="text-brand-orange">•</span>
                           <span>{c}</span>
                         </li>
                       ))}
@@ -211,7 +212,7 @@ export default function CourseCataloguePage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Find the right course load.
@@ -222,22 +223,22 @@ export default function CourseCataloguePage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <a
-              href="https://secure.gradelink.com/2962/enrollment"
+              href={siteConfig.external.enrollment}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Apply now
             </a>
             <Link
               href="/programs/online"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Online high school
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Talk to admissions
             </Link>

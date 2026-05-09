@@ -73,10 +73,10 @@ export default function PartnershipsPage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Better together
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
             Specialists in their fields, partnered with HBA.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -111,17 +111,17 @@ export default function PartnershipsPage() {
 
               <div className="lg:col-span-7 space-y-4">
                 <div className="flex flex-wrap items-center gap-3">
-                  <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase">
+                  <div className="text-xs font-bold tracking-widest text-brand-orange uppercase">
                     {partner.category}
                   </div>
                   {partner.status && (
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#1f3f66] bg-[#1f3f66]/10 px-3 py-1 rounded-full">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-brand-navy bg-brand-navy/10 px-3 py-1 rounded-full">
                       {partner.status}
                     </span>
                   )}
                 </div>
 
-                <h3 className="text-3xl font-extrabold text-[#1f3f66]">{partner.name}</h3>
+                <h3 className="text-3xl font-extrabold text-brand-navy">{partner.name}</h3>
                 <p className="text-lg font-medium text-gray-800">{partner.shortDesc}</p>
                 <p className="text-gray-600 font-light leading-relaxed">
                   {partner.description}
@@ -132,7 +132,7 @@ export default function PartnershipsPage() {
                     href={partner.website}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center text-sm font-semibold text-[#f37021] hover:underline pt-2"
+                    className="inline-flex items-center text-sm font-semibold text-brand-orange hover:underline pt-2"
                   >
                     Visit website →
                   </a>
@@ -144,7 +144,7 @@ export default function PartnershipsPage() {
       </section>
 
       {/* PARTNER WITH US CTA */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Interested in partnering with HBA?
@@ -157,13 +157,13 @@ export default function PartnershipsPage() {
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Get in touch
             </Link>
             <Link
               href="/community"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Back to community
             </Link>

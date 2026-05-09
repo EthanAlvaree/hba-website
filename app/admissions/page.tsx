@@ -3,6 +3,7 @@
 import Image from "next/image"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export default function AdmissionsPage() {
   return (
@@ -20,11 +21,11 @@ export default function AdmissionsPage() {
       <section id="apply" className="py-24 bg-white">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-start">
           <div className="lg:col-span-7 space-y-8">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Admissions process
             </div>
 
-            <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+            <h1 className="text-4xl lg:text-5xl font-extrabold text-brand-navy leading-tight">
               A thoughtful, human admissions experience.
             </h1>
 
@@ -56,7 +57,7 @@ export default function AdmissionsPage() {
                   key={item.step}
                   className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm"
                 >
-                  <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+                  <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-2">
                     {item.step}
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -71,15 +72,15 @@ export default function AdmissionsPage() {
 
             <div className="mt-10 flex flex-wrap gap-4">
               <a
-                href="https://secure.gradelink.com/2962/enrollment"
+                href={siteConfig.external.enrollment}
                 target="_blank"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
                 Start online application
               </a>
               <a
                 href="/contact"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
               >
                 Schedule a campus tour
               </a>
@@ -95,7 +96,7 @@ export default function AdmissionsPage() {
                 fill
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-white">
                 <p className="text-sm uppercase tracking-[0.2em] text-white/70">
                   Personalized admissions
@@ -110,7 +111,7 @@ export default function AdmissionsPage() {
       </section>
 
       {/* TUITION & FEES – Premium Cards */}
-      <section id="tuition" className="py-24 bg-[#1f3f66] relative">
+      <section id="tuition" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/admissions/tuition-bg.webp"
@@ -155,7 +156,7 @@ export default function AdmissionsPage() {
               </p>
 
               <div className="border-t border-gray-100 pt-4">
-                <p className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] mb-3">
+                <p className="text-[10px] font-bold tracking-widest uppercase text-brand-orange mb-3">
                   Breakdown including
                 </p>
                 <ul className="space-y-2 text-sm text-gray-700">
@@ -171,7 +172,7 @@ export default function AdmissionsPage() {
                     <span>International student services fee</span>
                     <span className="font-medium text-gray-900 tabular-nums">+ $6,000</span>
                   </li>
-                  <li className="flex justify-between gap-3 border-t border-gray-200 mt-2 pt-2 font-semibold text-[#1f3f66]">
+                  <li className="flex justify-between gap-3 border-t border-gray-200 mt-2 pt-2 font-semibold text-brand-navy">
                     <span>Total</span>
                     <span className="tabular-nums">= $45,580</span>
                   </li>
@@ -190,7 +191,7 @@ export default function AdmissionsPage() {
 
               <a
                 href="/admissions/international"
-                className="mt-5 inline-flex items-center text-sm font-semibold text-[#f37021] hover:underline"
+                className="mt-5 inline-flex items-center text-sm font-semibold text-brand-orange hover:underline"
               >
                 F-1 visa application steps →
               </a>
@@ -211,7 +212,7 @@ export default function AdmissionsPage() {
       {/* FINANCIAL AID */}
       <section className="py-20 bg-gray-50">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-3xl font-bold text-[#1f3f66] mb-4">Financial aid & support</h2>
+          <h2 className="text-3xl font-bold text-brand-navy mb-4">Financial aid & support</h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light mb-6">
             We recognize that an independent school education is a significant investment.
             If financial assistance is needed, our team will work with your family to explore
@@ -227,10 +228,10 @@ export default function AdmissionsPage() {
       <section id="visit" className="py-24 bg-white">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 md:grid-cols-2 items-center">
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Visit campus
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               See High Bluff Academy in person.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -238,20 +239,20 @@ export default function AdmissionsPage() {
               visit classrooms, and meet the educators who will be working closely with your student.
             </p>
             <div className="space-y-2 text-gray-700 text-sm">
-              <p><strong>Phone:</strong> 858-509-9101</p>
-              <p><strong>Location:</strong> Rancho Santa Fe, California</p>
+              <p><strong>Phone:</strong> {siteConfig.contact.phone}</p>
+              <p><strong>Location:</strong> {siteConfig.address.locality}, {siteConfig.address.region}</p>
             </div>
             <div className="flex flex-wrap gap-4 pt-4">
               <a
                 href="/contact"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
                 Schedule a tour
               </a>
               <a
-                href="https://secure.gradelink.com/2962/enrollment"
+                href={siteConfig.external.enrollment}
                 target="_blank"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
               >
                 Start application
               </a>

@@ -6,6 +6,7 @@ import { Dialog, Transition, Disclosure } from "@headlessui/react"
 import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import type { NavItem } from "@/lib/navigation"
+import { siteConfig } from "@/lib/site"
 
 interface MobileMenuProps {
   open: boolean
@@ -136,8 +137,8 @@ export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
                       </ul>
 
                       <Link
-                        href="https://secure.gradelink.com/2962/enrollment"
-                        className="w-full block text-center bg-[#f37021] text-white py-2 rounded-sm font-semibold text-sm"
+                        href={siteConfig.external.enrollment}
+                        className="w-full block text-center bg-brand-orange text-white py-2 rounded-sm font-semibold text-sm"
                         onClick={onClose}
                       >
                         Apply

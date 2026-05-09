@@ -10,7 +10,7 @@ import { reviews, sources, type ReviewSource } from "@/lib/reviews"
 function StarRating({ rating }: { rating: number }) {
   return (
     <div
-      className="flex gap-0.5 text-[#f37021]"
+      className="flex gap-0.5 text-brand-orange"
       aria-label={`${rating} out of 5 stars`}
     >
       {[1, 2, 3, 4, 5].map((n) => (
@@ -67,10 +67,10 @@ export default function ReviewsPage() {
       <section className="py-16 bg-white border-b border-gray-100">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center max-w-3xl mx-auto mb-10 space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Verified across the web
             </div>
-            <h2 className="text-2xl lg:text-3xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-2xl lg:text-3xl font-extrabold text-brand-navy">
               Read reviews on every major platform.
             </h2>
             <p className="text-gray-600 font-light">
@@ -97,7 +97,7 @@ export default function ReviewsPage() {
                     className="object-contain"
                   />
                 </div>
-                <div className="text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021] transition-colors">
+                <div className="text-sm font-semibold text-brand-navy group-hover:text-brand-orange transition-colors">
                   {s.name}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">Read on site →</div>
@@ -111,10 +111,10 @@ export default function ReviewsPage() {
       <section className="py-24 bg-gray-50">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12 space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Featured
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Stories that capture the HBA difference.
             </h2>
           </div>
@@ -126,7 +126,7 @@ export default function ReviewsPage() {
                 className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100 flex flex-col"
               >
                 <svg
-                  className="w-10 h-10 text-[#f37021]/30 mb-4"
+                  className="w-10 h-10 text-brand-orange/30 mb-4"
                   fill="currentColor"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
@@ -139,7 +139,7 @@ export default function ReviewsPage() {
                 <div className="border-t border-gray-100 pt-4 space-y-2">
                   <StarRating rating={review.rating} />
                   <div className="flex items-center justify-between">
-                    <p className="text-sm font-semibold text-[#1f3f66]">
+                    <p className="text-sm font-semibold text-brand-navy">
                       {review.author}
                     </p>
                     <SourceBadge source={review.source} />
@@ -156,7 +156,7 @@ export default function ReviewsPage() {
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12">
           <div className="flex flex-wrap items-end justify-between gap-6 mb-10">
             <div>
-              <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+              <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
                 More reviews
               </h2>
               <p className="text-gray-600 font-light mt-2">
@@ -170,7 +170,7 @@ export default function ReviewsPage() {
                 onClick={() => setFilter("All")}
                 className={`px-4 py-2 rounded-full text-xs font-semibold transition ${
                   filter === "All"
-                    ? "bg-[#1f3f66] text-white"
+                    ? "bg-brand-navy text-white"
                     : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                 }`}
               >
@@ -212,7 +212,7 @@ export default function ReviewsPage() {
                   {review.body}
                 </p>
                 <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
-                  <p className="text-xs font-semibold text-[#1f3f66]">
+                  <p className="text-xs font-semibold text-brand-navy">
                     {review.author}
                   </p>
                   {review.date && (
@@ -226,7 +226,7 @@ export default function ReviewsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             See for yourself.
@@ -238,13 +238,13 @@ export default function ReviewsPage() {
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <a
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Schedule a tour
             </a>
             <a
               href="/admissions"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Explore admissions
             </a>

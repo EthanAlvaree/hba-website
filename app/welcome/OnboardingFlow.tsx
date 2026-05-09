@@ -218,8 +218,8 @@ function Pill<T extends string>({
       aria-pressed={active}
       className={`px-5 py-2 rounded-full text-sm font-semibold transition ${
         active
-          ? "bg-[#1f3f66] text-white shadow-md"
-          : "bg-white text-gray-600 border border-gray-200 hover:border-[#1f3f66] hover:text-[#1f3f66]"
+          ? "bg-brand-navy text-white shadow-md"
+          : "bg-white text-gray-600 border border-gray-200 hover:border-brand-navy hover:text-brand-navy"
       }`}
     >
       {children}
@@ -266,8 +266,8 @@ function CheckRow({
           aria-label={`Mark ${title} as ${checked ? "incomplete" : "complete"}`}
           className={`mt-0.5 flex-shrink-0 w-6 h-6 rounded-md border-2 flex items-center justify-center transition ${
             checked
-              ? "bg-[#1f3f66] border-[#1f3f66]"
-              : "border-gray-300 bg-white hover:border-[#1f3f66]"
+              ? "bg-brand-navy border-brand-navy"
+              : "border-gray-300 bg-white hover:border-brand-navy"
           }`}
         >
           {checked && <CheckIcon className="w-4 h-4 text-white" />}
@@ -300,7 +300,7 @@ function CheckRow({
             </p>
           )}
           {note && (
-            <p className="mt-2 text-xs font-semibold tracking-wide uppercase text-[#f37021]">
+            <p className="mt-2 text-xs font-semibold tracking-wide uppercase text-brand-orange">
               {note}
             </p>
           )}
@@ -309,7 +309,7 @@ function CheckRow({
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-[#1f3f66] hover:text-[#f37021] transition"
+              className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand-navy hover:text-brand-orange transition"
             >
               {hrefLabel ?? "Get the app"} →
             </a>
@@ -331,10 +331,10 @@ function StepHeader({
 }) {
   return (
     <div className="text-center space-y-4 max-w-3xl mx-auto">
-      <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+      <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
         {step}
       </div>
-      <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+      <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
         {title}
       </h2>
       <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -422,7 +422,7 @@ export default function OnboardingFlow() {
             </div>
             <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-[#f37021] transition-all duration-500"
+                className="h-full bg-brand-orange transition-all duration-500"
                 style={{ width: `${progressPct}%` }}
               />
             </div>
@@ -503,7 +503,7 @@ export default function OnboardingFlow() {
                       href="https://www.office.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-[#1f3f66] hover:text-[#f37021] underline"
+                      className="font-semibold text-brand-navy hover:text-brand-orange underline"
                     >
                       office.com
                     </a>
@@ -517,9 +517,9 @@ export default function OnboardingFlow() {
                   <>
                     Your first name, last name, and the last two digits of
                     your graduation year.
-                    <span className="mt-3 block bg-white border border-[#1f3f66]/20 rounded-lg px-4 py-3 font-mono text-sm sm:text-base font-semibold text-[#1f3f66] text-center break-words">
+                    <span className="mt-3 block bg-white border border-brand-navy/20 rounded-lg px-4 py-3 font-mono text-sm sm:text-base font-semibold text-brand-navy text-center break-words">
                       firstname.lastname.
-                      <span className="text-[#f37021]">YY</span>
+                      <span className="text-brand-orange">YY</span>
                       <wbr />@highbluffacademy.com
                     </span>
                   </>
@@ -543,7 +543,7 @@ export default function OnboardingFlow() {
               },
             ].map((step, idx) => (
               <li key={idx} className="flex gap-4">
-                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-[#1f3f66] text-white font-bold text-sm flex items-center justify-center">
+                <span className="flex-shrink-0 w-8 h-8 rounded-full bg-brand-navy text-white font-bold text-sm flex items-center justify-center">
                   {idx + 1}
                 </span>
                 <div className="flex-1 pt-1">
@@ -633,8 +633,8 @@ export default function OnboardingFlow() {
               ))}
 
               {(computer === "windows" || computer === "mac") && (
-                <div className="bg-[#1f3f66]/5 border border-[#1f3f66]/15 rounded-2xl p-5 text-sm text-gray-700 leading-relaxed">
-                  <p className="font-semibold text-[#1f3f66] mb-1">
+                <div className="bg-brand-navy/5 border border-brand-navy/15 rounded-2xl p-5 text-sm text-gray-700 leading-relaxed">
+                  <p className="font-semibold text-brand-navy mb-1">
                     A note about email on your{" "}
                     {computer === "windows" ? "PC" : "Mac"}
                   </p>
@@ -645,7 +645,7 @@ export default function OnboardingFlow() {
                       href="https://outlook.office.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-[#1f3f66] hover:text-[#f37021] underline"
+                      className="font-semibold text-brand-navy hover:text-brand-orange underline"
                     >
                       outlook.office.com
                     </a>{" "}
@@ -740,11 +740,11 @@ export default function OnboardingFlow() {
       </section>
 
       {/* DONE */}
-      <section className="py-24 bg-[#1f3f66] relative overflow-hidden">
+      <section className="py-24 bg-brand-navy relative overflow-hidden">
         <div className="reveal relative max-w-3xl mx-auto px-6 lg:px-12 text-center text-white space-y-6">
           {progressPct === 100 ? (
             <>
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-[#f37021] mb-2">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-brand-orange mb-2">
                 <CheckIcon className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-3xl lg:text-4xl font-extrabold">
@@ -773,7 +773,7 @@ export default function OnboardingFlow() {
             <button
               type="button"
               onClick={() => window.print()}
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-[#1f3f66] font-semibold text-sm hover:bg-gray-100 transition"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-brand-navy font-semibold text-sm hover:bg-gray-100 transition"
             >
               Print this page
             </button>

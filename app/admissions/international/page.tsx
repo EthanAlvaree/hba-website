@@ -4,6 +4,7 @@ import Image from "next/image"
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "International student admissions — High Bluff Academy",
@@ -15,7 +16,7 @@ const steps = [
   {
     n: "01",
     title: "Submit the application",
-    body: "Complete the application form and email it along with a copy of the student's passport to admissions@highbluffacademy.com.",
+    body: `Complete the application form and email it along with a copy of the student's passport to ${siteConfig.contact.admissionsEmail}.`,
   },
   {
     n: "02",
@@ -64,10 +65,10 @@ export default function InternationalAdmissionsPage() {
       <section className="py-24 bg-white">
         <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 grid gap-12 lg:grid-cols-12 items-center">
           <div className="lg:col-span-7 space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               F-1 visa school
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
               Authorized to enroll international students on F-1 visas.
             </h2>
             <p className="text-lg text-gray-600 font-light leading-relaxed">
@@ -91,7 +92,7 @@ export default function InternationalAdmissionsPage() {
               fill
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/70 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/70 to-transparent" />
             <div className="absolute bottom-6 left-6 right-6 text-white">
               <p className="text-sm uppercase tracking-[0.2em] text-white/70">Our city</p>
               <p className="mt-2 text-lg font-semibold">
@@ -103,7 +104,7 @@ export default function InternationalAdmissionsPage() {
       </section>
 
       {/* TUITION & FEES */}
-      <section className="py-24 bg-[#1f3f66] relative">
+      <section className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/admissions/tuition-bg.webp"
@@ -126,10 +127,10 @@ export default function InternationalAdmissionsPage() {
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Required annual fees */}
             <div className="bg-white rounded-3xl p-8 text-gray-900 shadow-xl">
-              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+              <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-2">
                 Annual cost
               </div>
-              <p className="text-4xl font-extrabold text-[#1f3f66] mb-1">$45,580</p>
+              <p className="text-4xl font-extrabold text-brand-navy mb-1">$45,580</p>
               <p className="text-sm text-gray-600 mb-6">
                 Total annual cost for full-time international students.
               </p>
@@ -141,19 +142,19 @@ export default function InternationalAdmissionsPage() {
                 <ul className="space-y-2 text-sm">
                   <li className="flex items-baseline justify-between gap-4">
                     <span className="text-gray-700">Tuition</span>
-                    <span className="font-semibold text-[#1f3f66] tabular-nums">$29,580</span>
+                    <span className="font-semibold text-brand-navy tabular-nums">$29,580</span>
                   </li>
                   <li className="flex items-baseline justify-between gap-4">
                     <span className="text-gray-700">I-20 issuing fee</span>
-                    <span className="font-semibold text-[#1f3f66] tabular-nums">+ $10,000</span>
+                    <span className="font-semibold text-brand-navy tabular-nums">+ $10,000</span>
                   </li>
                   <li className="flex items-baseline justify-between gap-4">
                     <span className="text-gray-700">International student services fee</span>
-                    <span className="font-semibold text-[#1f3f66] tabular-nums">+ $6,000</span>
+                    <span className="font-semibold text-brand-navy tabular-nums">+ $6,000</span>
                   </li>
                   <li className="flex items-baseline justify-between gap-4 border-t border-gray-200 mt-2 pt-3">
-                    <span className="font-bold text-[#1f3f66]">Total</span>
-                    <span className="font-bold text-[#1f3f66] text-lg tabular-nums">= $45,580</span>
+                    <span className="font-bold text-brand-navy">Total</span>
+                    <span className="font-bold text-brand-navy text-lg tabular-nums">= $45,580</span>
                   </li>
                 </ul>
               </div>
@@ -166,7 +167,7 @@ export default function InternationalAdmissionsPage() {
                       If needed; based on a placement assessment administered at HBA.
                     </span>
                   </span>
-                  <span className="font-semibold text-[#1f3f66] tabular-nums whitespace-nowrap">+ $6,000</span>
+                  <span className="font-semibold text-brand-navy tabular-nums whitespace-nowrap">+ $6,000</span>
                 </div>
               </div>
             </div>
@@ -203,10 +204,10 @@ export default function InternationalAdmissionsPage() {
       <section className="py-24 bg-white">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12 space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Application process
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Seven steps from application to first day of class.
             </h2>
           </div>
@@ -217,11 +218,11 @@ export default function InternationalAdmissionsPage() {
                 key={step.n}
                 className="flex gap-6 bg-gray-50 border border-gray-200 rounded-2xl p-6 shadow-sm"
               >
-                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#1f3f66] text-white flex items-center justify-center font-bold">
+                <div className="flex-shrink-0 w-12 h-12 rounded-full bg-brand-navy text-white flex items-center justify-center font-bold">
                   {step.n}
                 </div>
                 <div>
-                  <h3 className="text-lg font-semibold text-[#1f3f66] mb-1">{step.title}</h3>
+                  <h3 className="text-lg font-semibold text-brand-navy mb-1">{step.title}</h3>
                   <p className="text-gray-600 font-light leading-relaxed">{step.body}</p>
                 </div>
               </li>
@@ -234,10 +235,10 @@ export default function InternationalAdmissionsPage() {
       <section className="py-24 bg-gray-50">
         <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 grid gap-12 md:grid-cols-2 items-center">
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Homestay
             </div>
-            <h2 className="text-3xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-3xl font-extrabold text-brand-navy leading-tight">
               Help with finding a host family.
             </h2>
             <p className="text-gray-600 font-light leading-relaxed">
@@ -259,7 +260,7 @@ export default function InternationalAdmissionsPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Ready to apply?
@@ -270,16 +271,16 @@ export default function InternationalAdmissionsPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <a
-              href="https://secure.gradelink.com/2962/enrollment"
+              href={siteConfig.external.enrollment}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Start application
             </a>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Contact admissions
             </Link>

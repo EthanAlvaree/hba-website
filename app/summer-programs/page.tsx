@@ -5,6 +5,7 @@ import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { ENROLLMENT_URL, summerCategories } from "@/lib/summer-courses"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "Summer programs 2026 — High Bluff Academy",
@@ -26,7 +27,7 @@ export default function SummerProgramsPage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-navy">
             A summer that moves students forward.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
@@ -38,23 +39,23 @@ export default function SummerProgramsPage() {
           </p>
 
           <div className="grid gap-4 sm:grid-cols-3 max-w-3xl mx-auto pt-6 text-sm">
-            <div className="bg-[#f37021]/10 text-[#1f3f66] rounded-2xl px-5 py-4">
-              <div className="font-semibold text-[#f37021] tracking-widest text-xs uppercase mb-1">
+            <div className="bg-brand-orange/10 text-brand-navy rounded-2xl px-5 py-4">
+              <div className="font-semibold text-brand-orange tracking-widest text-xs uppercase mb-1">
                 Live group classes
               </div>
               Starting June 8, 2026 in Rancho Santa Fe.
             </div>
-            <div className="bg-[#1f3f66]/10 text-[#1f3f66] rounded-2xl px-5 py-4">
-              <div className="font-semibold text-[#1f3f66] tracking-widest text-xs uppercase mb-1">
+            <div className="bg-brand-navy/10 text-brand-navy rounded-2xl px-5 py-4">
+              <div className="font-semibold text-brand-navy tracking-widest text-xs uppercase mb-1">
                 Flexible options
               </div>
               In-person, hybrid, and online — including 1:1 sessions.
             </div>
-            <div className="bg-[#f37021]/10 text-[#1f3f66] rounded-2xl px-5 py-4">
-              <div className="font-semibold text-[#f37021] tracking-widest text-xs uppercase mb-1">
+            <div className="bg-brand-orange/10 text-brand-navy rounded-2xl px-5 py-4">
+              <div className="font-semibold text-brand-orange tracking-widest text-xs uppercase mb-1">
                 AP testing site
               </div>
-              CEEB Code 053036. Enroll in any AP and we hold your seat.
+              CEEB Code {siteConfig.ceebCode}. Enroll in any AP and we hold your seat.
             </div>
           </div>
         </div>
@@ -64,10 +65,10 @@ export default function SummerProgramsPage() {
       <section className="py-20 bg-gray-50 border-t border-gray-200">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-12 lg:grid-cols-12 items-start">
           <div className="lg:col-span-5 space-y-4">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Summer 2026 dates
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
               Three course lengths, all starting June 8.
             </h2>
             <p className="text-gray-600 font-light leading-relaxed">
@@ -78,7 +79,7 @@ export default function SummerProgramsPage() {
 
           <div className="lg:col-span-7 grid gap-4 sm:grid-cols-3">
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+              <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-2">
                 Six-week
               </div>
               <p className="text-sm font-semibold text-gray-900">
@@ -89,7 +90,7 @@ export default function SummerProgramsPage() {
               </p>
             </div>
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+              <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-2">
                 Seven-week
               </div>
               <p className="text-sm font-semibold text-gray-900">
@@ -100,7 +101,7 @@ export default function SummerProgramsPage() {
               </p>
             </div>
             <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
-              <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+              <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-2">
                 Eight-week
               </div>
               <p className="text-sm font-semibold text-gray-900">
@@ -114,7 +115,7 @@ export default function SummerProgramsPage() {
         </div>
 
         <div className="max-w-6xl mx-auto px-6 lg:px-12 mt-10">
-          <div className="bg-[#1f3f66] text-white rounded-2xl px-6 py-5 text-sm leading-relaxed">
+          <div className="bg-brand-navy text-white rounded-2xl px-6 py-5 text-sm leading-relaxed">
             <span className="font-semibold">Enrollment notes: </span>
             For all math classes, an unofficial transcript must be submitted with
             the application; in some cases a placement test may be required.
@@ -128,16 +129,16 @@ export default function SummerProgramsPage() {
       <section id="catalog" className="py-24 bg-white">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Course catalogue
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Summer 2026 courses
             </h2>
             <p className="text-gray-600 font-light">
               Live group classes are listed below. Don’t see a course? Almost any HBA
               course can be offered online, on-demand, or one-on-one — just{" "}
-              <Link href="/contact" className="text-[#f37021] font-medium hover:underline">
+              <Link href="/contact" className="text-brand-orange font-medium hover:underline">
                 get in touch
               </Link>
               .
@@ -148,7 +149,7 @@ export default function SummerProgramsPage() {
             <div key={cat.id} id={cat.id} className="space-y-6 scroll-mt-24">
               <div className="flex flex-wrap items-end justify-between gap-4">
                 <div>
-                  <h3 className="text-2xl lg:text-3xl font-extrabold text-[#1f3f66]">
+                  <h3 className="text-2xl lg:text-3xl font-extrabold text-brand-navy">
                     {cat.label}
                   </h3>
                   <p className="text-gray-600 font-light mt-2 max-w-3xl">
@@ -160,7 +161,7 @@ export default function SummerProgramsPage() {
               {/* Desktop table */}
               <div className="hidden md:block overflow-hidden rounded-2xl border border-gray-200 shadow-sm">
                 <table className="w-full text-sm">
-                  <thead className="bg-[#1f3f66] text-white text-xs uppercase tracking-widest">
+                  <thead className="bg-brand-navy text-white text-xs uppercase tracking-widest">
                     <tr>
                       <th className="px-5 py-3 text-left font-semibold">Course</th>
                       <th className="px-5 py-3 text-left font-semibold">Dates</th>
@@ -172,12 +173,12 @@ export default function SummerProgramsPage() {
                   <tbody className="bg-white divide-y divide-gray-100">
                     {cat.courses.map((course) => (
                       <tr key={course.name} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-5 py-4 font-semibold text-[#1f3f66]">
+                        <td className="px-5 py-4 font-semibold text-brand-navy">
                           {course.name}
                           {course.sixWeek && (
                             <span
                               title="Six-week course (off June 29 – July 3)"
-                              className="ml-1 text-[#f37021] cursor-help"
+                              className="ml-1 text-brand-orange cursor-help"
                             >
                               *
                             </span>
@@ -191,7 +192,7 @@ export default function SummerProgramsPage() {
                             href={ENROLLMENT_URL}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-[#f37021] text-white text-xs font-semibold hover:brightness-110 transition"
+                            className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-orange text-white text-xs font-semibold hover:brightness-110 transition"
                           >
                             Enroll
                           </a>
@@ -210,9 +211,9 @@ export default function SummerProgramsPage() {
                     className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm"
                   >
                     <div className="flex items-start justify-between gap-4">
-                      <h4 className="font-semibold text-[#1f3f66]">
+                      <h4 className="font-semibold text-brand-navy">
                         {course.name}
-                        {course.sixWeek && <span className="ml-1 text-[#f37021]">*</span>}
+                        {course.sixWeek && <span className="ml-1 text-brand-orange">*</span>}
                       </h4>
                       <span className="text-sm font-bold text-gray-900 whitespace-nowrap">
                         {course.price}
@@ -232,7 +233,7 @@ export default function SummerProgramsPage() {
                       href={ENROLLMENT_URL}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-4 inline-flex w-full items-center justify-center px-4 py-2 rounded-full bg-[#f37021] text-white text-xs font-semibold hover:brightness-110 transition"
+                      className="mt-4 inline-flex w-full items-center justify-center px-4 py-2 rounded-full bg-brand-orange text-white text-xs font-semibold hover:brightness-110 transition"
                     >
                       Enroll
                     </a>
@@ -249,7 +250,7 @@ export default function SummerProgramsPage() {
       </section>
 
       {/* FLEXIBLE LEARNING */}
-      <section className="py-24 bg-[#1f3f66] relative">
+      <section className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/summer/summer-flex.webp"
@@ -273,7 +274,7 @@ export default function SummerProgramsPage() {
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Contact us
             </Link>
@@ -281,7 +282,7 @@ export default function SummerProgramsPage() {
               href={ENROLLMENT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Start enrollment
             </a>

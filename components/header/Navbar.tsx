@@ -8,12 +8,13 @@ import { Bars3Icon } from "@heroicons/react/24/outline"
 import Dropdown from "./Dropdown"
 import MobileMenu from "./MobileMenu"
 import { navigation } from "@/lib/navigation"
+import { siteConfig } from "@/lib/site"
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <header className="bg-[#1f3f66] text-white shadow-md">
+    <header className="bg-brand-navy text-white shadow-md">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-6 py-3">
         {/* Logo + Name */}
         <Link
@@ -58,8 +59,8 @@ export default function Navbar() {
           )}
 
           <Link
-            href="https://secure.gradelink.com/2962/enrollment"
-            className="bg-[#f37021] text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
+            href={siteConfig.external.enrollment}
+            className="bg-brand-orange text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
           >
             Apply
           </Link>

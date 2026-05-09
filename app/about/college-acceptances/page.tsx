@@ -166,10 +166,10 @@ export default function CollegeAcceptancesPage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Class profile · 2020 – 2025
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             HBA graduates earn admission to the country&rsquo;s most selective universities.
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
@@ -183,7 +183,7 @@ export default function CollegeAcceptancesPage() {
       </section>
 
       {/* CLASS PROFILE STATS */}
-      <section className="py-20 bg-[#1f3f66] text-white">
+      <section className="py-20 bg-brand-navy text-white">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12">
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
@@ -218,10 +218,10 @@ export default function CollegeAcceptancesPage() {
       <section className="py-24 bg-white">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center max-w-2xl mx-auto space-y-3 mb-16">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Selected acceptances
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               A selection of where our graduates have been admitted.
             </h2>
           </div>
@@ -229,9 +229,9 @@ export default function CollegeAcceptancesPage() {
             {featured.map((school) => (
               <li
                 key={school.name}
-                className="bg-gray-50 border-l-[3px] border-[#f37021] p-7 lg:p-8 transition hover:bg-white hover:shadow-lg"
+                className="bg-gray-50 border-l-[3px] border-brand-orange p-7 lg:p-8 transition hover:bg-white hover:shadow-lg"
               >
-                <p className="text-xl lg:text-2xl font-extrabold text-[#1f3f66] leading-tight">
+                <p className="text-xl lg:text-2xl font-extrabold text-brand-navy leading-tight">
                   {school.name}
                 </p>
                 {school.location && (
@@ -240,7 +240,7 @@ export default function CollegeAcceptancesPage() {
                   </p>
                 )}
                 {school.note && (
-                  <p className="mt-3 inline-block text-xs uppercase tracking-widest text-[#f37021] font-bold">
+                  <p className="mt-3 inline-block text-xs uppercase tracking-widest text-brand-orange font-bold">
                     {school.note}
                   </p>
                 )}
@@ -254,10 +254,10 @@ export default function CollegeAcceptancesPage() {
       <section className="py-24 bg-gray-50 border-t border-gray-200">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Complete list
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Every university where HBA graduates have been admitted.
             </h2>
             <p className="text-xs text-gray-500 italic">
@@ -273,7 +273,7 @@ export default function CollegeAcceptancesPage() {
             return (
               <div key={tierKey}>
                 <div className="border-b border-gray-300 pb-4 mb-6">
-                  <h3 className="text-xl lg:text-2xl font-extrabold text-[#1f3f66]">
+                  <h3 className="text-xl lg:text-2xl font-extrabold text-brand-navy">
                     {meta.label}
                   </h3>
                   <p className="text-sm text-gray-600 font-light mt-1">
@@ -286,7 +286,7 @@ export default function CollegeAcceptancesPage() {
                       key={s.name}
                       className="py-2.5 border-b border-gray-200 text-sm"
                     >
-                      <span className="font-semibold text-[#1f3f66]">{s.name}</span>
+                      <span className="font-semibold text-brand-navy">{s.name}</span>
                       {s.note && (
                         <span className="text-gray-500 font-light italic">
                           {" "}
@@ -303,7 +303,7 @@ export default function CollegeAcceptancesPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Personalized college counseling, from day one.
@@ -315,13 +315,13 @@ export default function CollegeAcceptancesPage() {
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Link
               href="/admissions"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Explore admissions
             </Link>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Schedule a tour
             </Link>

@@ -62,10 +62,10 @@ export default function WelcomePage() {
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 space-y-8">
           <div className="text-center space-y-4">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Before you start
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
               What you’ll need.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
@@ -99,14 +99,14 @@ export default function WelcomePage() {
                 key={item.eyebrow}
                 className="group relative bg-white border border-gray-100 rounded-2xl p-6 shadow-sm hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300"
               >
-                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-[#1f3f66] to-[#3b5f8e] flex items-center justify-center shadow-lg shadow-[#1f3f66]/25 mb-5 ring-1 ring-white/20">
+                <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-navy to-[#3b5f8e] flex items-center justify-center shadow-lg shadow-brand-navy/25 mb-5 ring-1 ring-white/20">
                   <item.Icon
                     className="w-7 h-7 text-white"
                     strokeWidth={1.75}
                   />
                   <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-white/15 to-transparent pointer-events-none" />
                 </div>
-                <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-2">
+                <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-2">
                   {item.eyebrow}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
@@ -119,17 +119,17 @@ export default function WelcomePage() {
             ))}
           </div>
 
-          <div className="bg-[#1f3f66]/5 border border-[#1f3f66]/15 rounded-2xl p-6 sm:p-10">
-            <div className="text-xs font-bold tracking-widest text-[#f37021] uppercase mb-5 text-center">
+          <div className="bg-brand-navy/5 border border-brand-navy/15 rounded-2xl p-6 sm:p-10">
+            <div className="text-xs font-bold tracking-widest text-brand-orange uppercase mb-5 text-center">
               Your username
             </div>
-            <div className="font-mono text-base sm:text-xl lg:text-2xl font-semibold text-[#1f3f66] text-center leading-tight break-words">
+            <div className="font-mono text-base sm:text-xl lg:text-2xl font-semibold text-brand-navy text-center leading-tight break-words">
               firstname.lastname.
-              <span className="text-[#f37021]">YY</span>
+              <span className="text-brand-orange">YY</span>
               <wbr />@highbluffacademy.com
             </div>
 
-            <div className="mt-6 pt-6 border-t border-[#1f3f66]/10 grid gap-4 sm:grid-cols-3 text-xs sm:text-sm text-gray-600">
+            <div className="mt-6 pt-6 border-t border-brand-navy/10 grid gap-4 sm:grid-cols-3 text-xs sm:text-sm text-gray-600">
               <div className="text-center">
                 <div className="font-mono font-semibold text-gray-900 mb-1 break-all">
                   firstname.lastname
@@ -137,7 +137,7 @@ export default function WelcomePage() {
                 <div>Your first and last name</div>
               </div>
               <div className="text-center">
-                <div className="font-mono font-bold text-[#f37021] mb-1">YY</div>
+                <div className="font-mono font-bold text-brand-orange mb-1">YY</div>
                 <div>Last two digits of your graduation year</div>
               </div>
               <div className="text-center">
@@ -148,10 +148,10 @@ export default function WelcomePage() {
               </div>
             </div>
 
-            <p className="mt-6 pt-6 border-t border-[#1f3f66]/10 text-sm text-gray-600 text-center leading-relaxed">
-              <span className="font-semibold text-[#1f3f66]">Example:</span> a
+            <p className="mt-6 pt-6 border-t border-brand-navy/10 text-sm text-gray-600 text-center leading-relaxed">
+              <span className="font-semibold text-brand-navy">Example:</span> a
               senior graduating in 2027 named Jane Doe would use{" "}
-              <span className="font-mono font-semibold text-[#1f3f66]">
+              <span className="font-mono font-semibold text-brand-navy">
                 jane.doe.27@highbluffacademy.com
               </span>
               .
@@ -166,7 +166,7 @@ export default function WelcomePage() {
       {/* HELP */}
       <section className="py-20 bg-gray-50 print:hidden">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-brand-navy">
             Stuck on a step?
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
@@ -176,13 +176,13 @@ export default function WelcomePage() {
           <div className="flex flex-wrap justify-center gap-4 pt-2">
             <a
               href="mailto:admissions@highbluffacademy.com"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Email the office
             </a>
             <a
               href="tel:+18585099101"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
             >
               Call (858) 509‑9101
             </a>

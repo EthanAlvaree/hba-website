@@ -3,6 +3,7 @@
 import Image from "next/image"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export default function ParentsPage() {
   return (
@@ -18,10 +19,10 @@ export default function ParentsPage() {
       {/* WELCOME */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Partners in education
           </div>
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-navy leading-tight">
             Welcome to the HBA family.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
@@ -37,31 +38,31 @@ export default function ParentsPage() {
       <section className="py-24 bg-gray-50">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Quick links
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Tools you’ll use most.
             </h2>
           </div>
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <a
-              href="https://secure.gradelink.com/2962/enrollment"
+              href={siteConfig.external.enrollment}
               target="_blank"
               rel="noopener noreferrer"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >
-              <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
                 Parent portal
               </div>
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-3">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-3">
                 Gradelink portal
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
                 Grades, attendance, assignments, and progress reports — all in one place.
               </p>
-              <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+              <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
                 Open Gradelink →
               </span>
             </a>
@@ -70,16 +71,16 @@ export default function ParentsPage() {
               href="/calendar"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >
-              <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
                 Calendar
               </div>
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-3">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-3">
                 Important dates
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
                 Holidays, exam weeks, conferences, and school-wide events.
               </p>
-              <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+              <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
                 View calendar →
               </span>
             </a>
@@ -88,16 +89,16 @@ export default function ParentsPage() {
               href="/contact"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >
-              <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
                 Contact
               </div>
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-3">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-3">
                 Office &amp; admissions
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
                 Reach our team for scheduling, transcripts, billing, or general questions.
               </p>
-              <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+              <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
                 Get in touch →
               </span>
             </a>
@@ -106,16 +107,16 @@ export default function ParentsPage() {
               href="/admissions#tuition"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >
-              <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
                 Tuition
               </div>
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-3">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-3">
                 Tuition &amp; financial aid
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
                 Annual tuition, registration fees, and information on financial assistance.
               </p>
-              <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+              <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
                 See details →
               </span>
             </a>
@@ -124,16 +125,16 @@ export default function ParentsPage() {
               href="/faculty"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >
-              <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
                 Faculty
               </div>
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-3">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-3">
                 Meet your student’s teachers
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
                 Bios, subject areas, and the people guiding your student day to day.
               </p>
-              <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+              <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
                 Faculty directory →
               </span>
             </a>
@@ -142,16 +143,16 @@ export default function ParentsPage() {
               href="/community#advisory"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >
-              <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
                 Advisory
               </div>
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-3">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-3">
                 Academic support
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-6">
                 How advisors partner with families to keep students on track.
               </p>
-              <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+              <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
                 Learn more →
               </span>
             </a>
@@ -160,7 +161,7 @@ export default function ParentsPage() {
       </section>
 
       {/* COMMUNICATION */}
-      <section className="py-24 bg-[#1f3f66] relative">
+      <section className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/community/parents-meeting.webp"
@@ -187,7 +188,7 @@ export default function ParentsPage() {
             <p className="text-sm text-white/70">
               For urgent matters, the office line is the fastest path:
               <br />
-              <strong className="text-white">(858) 509-9101</strong>
+              <strong className="text-white">{siteConfig.contact.phone}</strong>
             </p>
           </div>
 
@@ -220,10 +221,10 @@ export default function ParentsPage() {
           </div>
 
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Get involved
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Be part of the school.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -234,7 +235,7 @@ export default function ParentsPage() {
             </p>
             <a
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
             >
               Ask how to help
             </a>

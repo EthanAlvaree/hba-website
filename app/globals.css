@@ -1,11 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  /* Using the exact Navy and Orange tones from your inspiration site */
-  --color-hba-navy: #173a63; 
-  --color-hba-blue: #1f3f66;
-  --color-hba-orange: #f37021;
-  
+  /* Brand palette — single source of truth. All bg-brand-navy,
+     text-brand-orange, bg-brand-navy/10, etc. utilities derive from
+     these tokens. Override these to rebrand. */
+  --color-brand-navy: var(--color-brand-navy);
+  --color-brand-navy-deep: var(--color-brand-navy-deep);
+  --color-brand-orange: var(--color-brand-orange);
   /* This creates the smooth, professional 'lifted' look for the menu */
   --shadow-mega: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
@@ -19,8 +20,8 @@
       dark navy on bottom. */
 html {
   overscroll-behavior: none;
-  background-color: #1f3f66;
-  background-image: linear-gradient(to bottom, #1f3f66 50%, #0f1f36 50%);
+  background-color: var(--color-brand-navy);
+  background-image: linear-gradient(to bottom, var(--color-brand-navy) 50%, var(--color-brand-navy-deep) 50%);
   background-attachment: fixed;
   background-repeat: no-repeat;
   background-size: 100% 100vh;
@@ -64,21 +65,21 @@ body {
   --fc-page-bg-color: #ffffff;
   --fc-neutral-bg-color: #f9fafb;
   --fc-list-event-hover-bg-color: #f9fafb;
-  --fc-today-bg-color: rgba(243, 112, 33, 0.08);
-  --fc-button-bg-color: #1f3f66;
-  --fc-button-border-color: #1f3f66;
+  --fc-today-bg-color: color-mix(in srgb, var(--color-brand-orange) calc(0.08 * 100%), transparent);
+  --fc-button-bg-color: var(--color-brand-navy);
+  --fc-button-border-color: var(--color-brand-navy);
   --fc-button-text-color: #ffffff;
-  --fc-button-hover-bg-color: #f37021;
-  --fc-button-hover-border-color: #f37021;
-  --fc-button-active-bg-color: #f37021;
-  --fc-button-active-border-color: #f37021;
+  --fc-button-hover-bg-color: var(--color-brand-orange);
+  --fc-button-hover-border-color: var(--color-brand-orange);
+  --fc-button-active-bg-color: var(--color-brand-orange);
+  --fc-button-active-border-color: var(--color-brand-orange);
   font-family: inherit;
 }
 
 .fc .fc-toolbar-title {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1f3f66;
+  color: var(--color-brand-navy);
   letter-spacing: -0.01em;
 }
 
@@ -93,7 +94,7 @@ body {
 
 .fc .fc-button:focus,
 .fc .fc-button-primary:focus {
-  box-shadow: 0 0 0 3px rgba(243, 112, 33, 0.25);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-brand-orange) calc(0.25 * 100%), transparent);
 }
 
 .fc .fc-col-header-cell-cushion {
@@ -107,12 +108,12 @@ body {
 
 .fc .fc-daygrid-day-number {
   font-weight: 600;
-  color: #1f3f66;
+  color: var(--color-brand-navy);
   padding: 0.5rem 0.6rem;
 }
 
 .fc .fc-day-today .fc-daygrid-day-number {
-  color: #f37021;
+  color: var(--color-brand-orange);
 }
 
 .fc .fc-event {
@@ -130,7 +131,7 @@ body {
 
 .fc-list-event-title a,
 .fc-list-event-time {
-  color: #1f3f66;
+  color: var(--color-brand-navy);
   font-weight: 600;
 }
 
@@ -140,7 +141,7 @@ body {
 
 .fc .fc-list-day-text,
 .fc .fc-list-day-side-text {
-  color: #1f3f66;
+  color: var(--color-brand-navy);
   font-weight: 700;
 }
 
@@ -194,7 +195,7 @@ body {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  border-bottom: 2px solid #1f3f66;
+  border-bottom: 2px solid var(--color-brand-navy);
   padding-bottom: 0.6rem;
   margin-bottom: 1.4rem;
   gap: 1rem;
@@ -203,7 +204,7 @@ body {
 .print-masthead h1 {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #1f3f66;
+  color: var(--color-brand-navy);
   letter-spacing: -0.01em;
   line-height: 1.1;
   margin: 0;
@@ -212,8 +213,8 @@ body {
 .print-masthead .print-year {
   font-size: 1.15rem;
   font-weight: 700;
-  color: #1f3f66;
-  border-left: 2px solid #f37021;
+  color: var(--color-brand-navy);
+  border-left: 2px solid var(--color-brand-orange);
   padding-left: 0.75rem;
 }
 
@@ -230,7 +231,7 @@ body {
 }
 
 .print-month-header {
-  background: #1f3f66;
+  background: var(--color-brand-navy);
   color: white;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -243,7 +244,7 @@ body {
 .print-day-header {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  background: #1f3f66;
+  background: var(--color-brand-navy);
   color: rgba(255, 255, 255, 0.85);
   font-weight: 700;
   font-size: 8px;
@@ -278,7 +279,7 @@ body {
 
 .print-day-num {
   font-weight: 600;
-  color: #1f3f66;
+  color: var(--color-brand-navy);
 }
 
 .print-day.off-month .print-day-num {
@@ -303,7 +304,7 @@ body {
 }
 
 .print-day.is-academics {
-  background: rgba(243, 112, 33, 0.10);
+  background: color-mix(in srgb, var(--color-brand-orange) calc(0.10 * 100%), transparent);
 }
 
 .print-day.is-community {
@@ -311,7 +312,7 @@ body {
 }
 
 .print-day.is-today {
-  outline: 2px solid #f37021;
+  outline: 2px solid var(--color-brand-orange);
   outline-offset: -2px;
 }
 
@@ -340,7 +341,7 @@ body {
 }
 
 .print-month-events .ev-date {
-  color: #1f3f66;
+  color: var(--color-brand-navy);
   font-weight: 700;
   white-space: nowrap;
 }
@@ -384,7 +385,7 @@ body {
 }
 
 .print-footer-brand {
-  color: #1f3f66;
+  color: var(--color-brand-navy);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;

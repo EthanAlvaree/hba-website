@@ -4,7 +4,9 @@
 // directly from it. All courses link to the same Gradelink enrollment URL —
 // HBA's enrollment flow is a single application regardless of course.
 
-export const ENROLLMENT_URL = "https://secure.gradelink.com/2962/enrollment"
+import { siteConfig } from "@/lib/site"
+
+export const ENROLLMENT_URL = siteConfig.external.enrollment
 
 export type SummerCourse = {
   name: string

@@ -2,6 +2,7 @@
 
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export default function PrivacyPage() {
   return (
@@ -17,10 +18,10 @@ export default function PrivacyPage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Effective May 2026
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
             Your privacy matters.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -29,7 +30,7 @@ export default function PrivacyPage() {
             explains what information we collect, how we use it, and the choices you have.
           </p>
           <p className="text-sm text-gray-500">
-            By using highbluffacademy.com or sharing information with us through forms,
+            By using {siteConfig.domain} or sharing information with us through forms,
             email, or in person, you agree to the practices described here.
           </p>
         </div>
@@ -178,7 +179,7 @@ export default function PrivacyPage() {
               key={section.heading}
               className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
             >
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-4">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-4">
                 {section.heading}
               </h3>
               <div className="text-gray-600 leading-relaxed font-light text-base space-y-3">
@@ -190,7 +191,7 @@ export default function PrivacyPage() {
       </section>
 
       {/* CONTACT */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
             Questions?
@@ -205,7 +206,7 @@ export default function PrivacyPage() {
           <div className="pt-4">
             <a
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Contact the office
             </a>

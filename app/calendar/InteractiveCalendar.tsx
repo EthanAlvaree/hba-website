@@ -113,10 +113,10 @@ export default function InteractiveCalendar({ events }: Props) {
       <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-10">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Full calendar
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
               Browse the year.
             </h2>
             <p className="text-base text-gray-600 leading-relaxed font-light">
@@ -207,7 +207,7 @@ export default function InteractiveCalendar({ events }: Props) {
               </h3>
             </div>
             <div className="p-8 space-y-3">
-              <p className="text-sm font-semibold text-[#1f3f66]">
+              <p className="text-sm font-semibold text-brand-navy">
                 {formatRange(selected.start, selected.end, true)}
               </p>
               {selected.location && (
@@ -221,7 +221,7 @@ export default function InteractiveCalendar({ events }: Props) {
               <button
                 type="button"
                 onClick={() => setSelected(null)}
-                className="mt-4 inline-flex items-center justify-center px-5 py-2 rounded-full bg-[#1f3f66] text-white text-xs font-semibold hover:bg-[#f37021] transition"
+                className="mt-4 inline-flex items-center justify-center px-5 py-2 rounded-full bg-brand-navy text-white text-xs font-semibold hover:bg-brand-orange transition"
               >
                 Close
               </button>

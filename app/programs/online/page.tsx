@@ -3,6 +3,7 @@
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "Online high school — High Bluff Academy",
@@ -84,7 +85,7 @@ export default function OnlineHighSchoolPage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             A full high school. From anywhere.
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
@@ -98,19 +99,19 @@ export default function OnlineHighSchoolPage() {
 
           <div className="grid gap-3 sm:grid-cols-3 max-w-3xl mx-auto pt-6 text-sm">
             <div className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-left">
-              <div className="font-semibold text-[#f37021] tracking-widest text-xs uppercase mb-1">
+              <div className="font-semibold text-brand-orange tracking-widest text-xs uppercase mb-1">
                 AP testing
               </div>
               Enroll in any AP and we hold your seat at HBA’s San Diego testing site.
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-left">
-              <div className="font-semibold text-[#f37021] tracking-widest text-xs uppercase mb-1">
+              <div className="font-semibold text-brand-orange tracking-widest text-xs uppercase mb-1">
                 Counseling
               </div>
               Credentialed college counselor and Mandarin/Cantonese specialist available.
             </div>
             <div className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 text-left">
-              <div className="font-semibold text-[#f37021] tracking-widest text-xs uppercase mb-1">
+              <div className="font-semibold text-brand-orange tracking-widest text-xs uppercase mb-1">
                 Cognitive
               </div>
               Full-time students take a cognitive abilities test that personalizes instruction.
@@ -123,10 +124,10 @@ export default function OnlineHighSchoolPage() {
       <section id="pricing" className="py-24 bg-gray-50">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12">
           <div className="text-center mb-12 space-y-3">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Packages & pricing
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Three ways to learn online with HBA.
             </h2>
           </div>
@@ -137,18 +138,18 @@ export default function OnlineHighSchoolPage() {
                 key={tier.name}
                 className={`rounded-3xl p-8 shadow-sm border flex flex-col ${
                   tier.featured
-                    ? "bg-[#1f3f66] text-white border-[#1f3f66] shadow-2xl scale-100 lg:scale-[1.02]"
+                    ? "bg-brand-navy text-white border-brand-navy shadow-2xl scale-100 lg:scale-[1.02]"
                     : "bg-white text-gray-900 border-gray-200"
                 }`}
               >
                 {tier.featured && (
-                  <div className="inline-block self-start px-3 py-1 bg-[#f37021] text-white font-bold tracking-widest text-[10px] uppercase rounded-full mb-3">
+                  <div className="inline-block self-start px-3 py-1 bg-brand-orange text-white font-bold tracking-widest text-[10px] uppercase rounded-full mb-3">
                     Most popular
                   </div>
                 )}
                 <h3
                   className={`text-2xl font-extrabold ${
-                    tier.featured ? "text-white" : "text-[#1f3f66]"
+                    tier.featured ? "text-white" : "text-brand-navy"
                   }`}
                 >
                   {tier.name}
@@ -188,7 +189,7 @@ export default function OnlineHighSchoolPage() {
                     <li key={f} className="flex gap-2">
                       <span
                         className={
-                          tier.featured ? "text-[#f37021]" : "text-[#f37021]"
+                          tier.featured ? "text-brand-orange" : "text-brand-orange"
                         }
                       >
                         ✓
@@ -199,13 +200,13 @@ export default function OnlineHighSchoolPage() {
                 </ul>
 
                 <a
-                  href="https://secure.gradelink.com/2962/enrollment"
+                  href={siteConfig.external.enrollment}
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`mt-8 inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold text-sm transition ${
                     tier.featured
-                      ? "bg-[#f37021] text-white hover:brightness-110"
-                      : "border border-[#1f3f66] text-[#1f3f66] hover:bg-[#1f3f66] hover:text-white"
+                      ? "bg-brand-orange text-white hover:brightness-110"
+                      : "border border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white"
                   }`}
                 >
                   Apply now
@@ -219,10 +220,10 @@ export default function OnlineHighSchoolPage() {
       {/* COURSE CATALOGUE LINK */}
       <section id="courses" className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Course catalogue
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             60+ courses, all UC A–G aligned.
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
@@ -233,7 +234,7 @@ export default function OnlineHighSchoolPage() {
           <div className="pt-4">
             <Link
               href="/programs/courses"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#1f3f66] text-white font-semibold text-sm shadow-lg hover:bg-[#f37021] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-navy text-white font-semibold text-sm shadow-lg hover:bg-brand-orange transition"
             >
               View the full course catalogue →
             </Link>
@@ -242,7 +243,7 @@ export default function OnlineHighSchoolPage() {
       </section>
 
       {/* CTA */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <h2 className="text-3xl lg:text-4xl font-extrabold text-white">
             Ready to learn from anywhere?
@@ -253,16 +254,16 @@ export default function OnlineHighSchoolPage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <a
-              href="https://secure.gradelink.com/2962/enrollment"
+              href={siteConfig.external.enrollment}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Apply now
             </a>
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-[#1f3f66] transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Talk to admissions
             </Link>

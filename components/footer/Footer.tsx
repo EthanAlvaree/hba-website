@@ -3,8 +3,11 @@
 import Image from "next/image"
 import Link from "next/link"
 import { FaInstagram, FaFacebookF, FaTiktok, FaYoutube, FaLinkedinIn, FaYelp } from "react-icons/fa"
+import { siteConfig } from "@/lib/site"
 
 export default function Footer() {
+  const { address, contact, social } = siteConfig
+
   return (
     <footer className="mt-20">
 
@@ -12,7 +15,7 @@ export default function Footer() {
       <div className="w-full h-72 relative">
         <Image
           src="/images/home/campus-aerial.webp"
-          alt="High Bluff Academy Campus"
+          alt={`${siteConfig.name} campus`}
           fill
           sizes="100vw"
           className="object-cover"
@@ -21,7 +24,7 @@ export default function Footer() {
       </div>
 
       {/* Footer Gradient */}
-      <div className="bg-gradient-to-b from-[#1f3f66] to-[#0f1f36] text-white">
+      <div className="bg-gradient-to-b from-brand-navy to-brand-navy-deep text-white">
 
         {/* Main Grid */}
         <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-3 gap-12">
@@ -31,40 +34,40 @@ export default function Footer() {
             <div className="relative w-24 h-24 mb-4">
               <Image
                 src="/images/brand/hba-logo-color.webp"
-                alt="High Bluff Academy Logo"
+                alt={`${siteConfig.name} logo`}
                 fill
                 sizes="96px"
                 className="object-contain"
               />
             </div>
 
-            <h3 className="text-2xl font-bold mb-3">High Bluff Academy</h3>
+            <h3 className="text-2xl font-bold mb-3">{siteConfig.name}</h3>
 
             <p className="text-sm leading-relaxed text-gray-200">
-              5531 Cancha de Golf, Ste 202<br />
-              Rancho Santa Fe, CA 92091<br />
-              (858) 509-9101<br />
-              info@highbluffacademy.com
+              {address.streetLine1}<br />
+              {address.locality}, {address.regionCode} {address.postalCode}<br />
+              {contact.phone}<br />
+              {contact.infoEmail}
             </p>
 
             {/* Social Icons */}
             <div className="flex flex-wrap gap-4 mt-5 text-2xl">
-              <Link href="https://www.instagram.com/highbluffacademy" target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
+              <Link href={social.instagram.url} target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
                 <FaInstagram />
               </Link>
-              <Link href="https://www.facebook.com/HighBluffAcademySanDiego" target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
+              <Link href={social.facebook.url} target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
                 <FaFacebookF />
               </Link>
-              <Link href="https://www.tiktok.com/@highbluffacademy" target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
+              <Link href={social.tiktok.url} target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
                 <FaTiktok />
               </Link>
-              <Link href="https://www.youtube.com/channel/UCBnvACwf375sxhefzTZOlog" target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
+              <Link href={social.youtube.url} target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
                 <FaYoutube />
               </Link>
-              <Link href="https://www.linkedin.com/school/highbluffacademy/" target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
+              <Link href={social.linkedin.url} target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
                 <FaLinkedinIn />
               </Link>
-              <Link href="https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe" target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
+              <Link href={social.yelp.url} target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
                 <FaYelp />
               </Link>
             </div>
@@ -72,9 +75,9 @@ export default function Footer() {
 
           {/* About + Accreditation */}
           <div>
-            <h4 className="text-xl font-semibold mb-4">About HBA</h4>
+            <h4 className="text-xl font-semibold mb-4">About {siteConfig.shortName}</h4>
             <p className="text-sm leading-relaxed text-gray-200 mb-6">
-              High Bluff Academy is a private, WASC-accredited college-preparatory school
+              {siteConfig.name} is a private, WASC-accredited college-preparatory school
               serving grades 7–12. We provide a supportive, student-centered learning
               environment where every learner is known, challenged, and inspired.
             </p>
@@ -82,10 +85,10 @@ export default function Footer() {
             <div className="flex gap-6 items-center">
               <Link
                 href="/"
-                aria-label="High Bluff Academy home"
+                aria-label={`${siteConfig.name} home`}
                 className="relative w-20 h-20 transition-opacity hover:opacity-80"
               >
-                <Image src="/images/brand/hba-logo-round.webp" alt="HBA Seal" fill sizes="80px" className="object-contain"/>
+                <Image src="/images/brand/hba-logo-round.webp" alt={`${siteConfig.shortName} seal`} fill sizes="80px" className="object-contain"/>
               </Link>
               <Link
                 href="https://directory.acswasc.org/"
@@ -135,8 +138,8 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="bg-[#0f1f36] py-6 text-center text-sm text-gray-300 border-t border-white/10">
-          © {new Date().getFullYear()} High Bluff Academy. All rights reserved.
+        <div className="bg-brand-navy-deep py-6 text-center text-sm text-gray-300 border-t border-white/10">
+          © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
         </div>
 
       </div>

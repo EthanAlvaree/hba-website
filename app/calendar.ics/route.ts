@@ -4,16 +4,17 @@ import ical, { ICalCalendarMethod } from "ical-generator"
 import { getAllEvents } from "@/lib/events-server"
 import { effectiveEnd } from "@/lib/events"
 import { categories } from "@/lib/categories"
+import { siteConfig } from "@/lib/site"
 
 export const dynamic = "force-static"
 export const revalidate = 3600
 
 export async function GET() {
   const cal = ical({
-    name: "High Bluff Academy",
-    description: "Academic calendar for High Bluff Academy.",
+    name: siteConfig.name,
+    description: `Academic calendar for ${siteConfig.name}.`,
     timezone: "America/Los_Angeles",
-    prodId: { company: "High Bluff Academy", product: "Academic Calendar" },
+    prodId: { company: siteConfig.name, product: "Academic Calendar" },
     method: ICalCalendarMethod.PUBLISH,
   })
 

@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { SITE_URL } from "@/lib/config"
+import { SITE_URL, siteConfig } from "@/lib/site"
 
 const ICS_PATH = "/calendar.ics"
 
@@ -15,7 +15,7 @@ export default function SubscribeButtons() {
   )}`
   const outlookUrl = `https://outlook.office.com/calendar/0/addfromweb?url=${encodeURIComponent(
     httpsUrl,
-  )}&name=${encodeURIComponent("High Bluff Academy")}`
+  )}&name=${encodeURIComponent(siteConfig.name)}`
 
   const [copied, setCopied] = useState(false)
 
@@ -30,7 +30,7 @@ export default function SubscribeButtons() {
   }
 
   return (
-    <section className="py-24 bg-[#1f3f66]">
+    <section className="py-24 bg-brand-navy">
       <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 space-y-10">
         <div className="text-center space-y-4 max-w-3xl mx-auto">
           <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
@@ -48,7 +48,7 @@ export default function SubscribeButtons() {
         <div className="grid gap-4 sm:grid-cols-3">
           <a
             href={webcalUrl}
-            className="group bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white hover:bg-white hover:text-[#1f3f66] transition-colors flex flex-col gap-2 shadow-2xl"
+            className="group bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white hover:bg-white hover:text-brand-navy transition-colors flex flex-col gap-2 shadow-2xl"
           >
             <div className="text-[10px] font-bold tracking-widest uppercase opacity-80">
               iPhone, iPad, Mac
@@ -63,7 +63,7 @@ export default function SubscribeButtons() {
             href={googleUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white hover:bg-white hover:text-[#1f3f66] transition-colors flex flex-col gap-2 shadow-2xl"
+            className="group bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white hover:bg-white hover:text-brand-navy transition-colors flex flex-col gap-2 shadow-2xl"
           >
             <div className="text-[10px] font-bold tracking-widest uppercase opacity-80">
               Android &amp; web
@@ -78,7 +78,7 @@ export default function SubscribeButtons() {
             href={outlookUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="group bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white hover:bg-white hover:text-[#1f3f66] transition-colors flex flex-col gap-2 shadow-2xl"
+            className="group bg-white/10 backdrop-blur-md border border-white/20 rounded-3xl p-6 text-white hover:bg-white hover:text-brand-navy transition-colors flex flex-col gap-2 shadow-2xl"
           >
             <div className="text-[10px] font-bold tracking-widest uppercase opacity-80">
               Microsoft 365
@@ -102,7 +102,7 @@ export default function SubscribeButtons() {
           <button
             type="button"
             onClick={copyUrl}
-            className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-xs shadow-lg hover:brightness-110 transition shrink-0"
+            className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-brand-orange text-white font-semibold text-xs shadow-lg hover:brightness-110 transition shrink-0"
           >
             {copied ? "Copied!" : "Copy URL"}
           </button>

@@ -36,10 +36,10 @@ export default function CalendarPage() {
       <section className="py-24 bg-white">
         <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 grid gap-10 md:grid-cols-2 items-center">
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Prefer paper?
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Printable academic year.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -50,13 +50,13 @@ export default function CalendarPage() {
             <div className="flex flex-wrap gap-3">
               <Link
                 href="/calendar/print/2025"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#1f3f66] text-white font-semibold text-sm hover:bg-[#f37021] transition"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-brand-navy text-white font-semibold text-sm hover:bg-brand-orange transition"
               >
                 2025–2026
               </Link>
               <Link
                 href="/calendar/print/2026"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
                 2026–2027
               </Link>
@@ -67,7 +67,7 @@ export default function CalendarPage() {
           </div>
 
           <div className="bg-gray-50 border border-gray-200 rounded-3xl p-8 text-sm text-gray-600 leading-relaxed">
-            <p className="font-semibold text-[#1f3f66] mb-3">
+            <p className="font-semibold text-brand-navy mb-3">
               What’s on the printable sheet
             </p>
             <ul className="space-y-2">
@@ -84,10 +84,10 @@ export default function CalendarPage() {
       <section className="py-24 bg-gray-50">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Summer 2026
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Confirmed summer dates.
             </h2>
             <ul className="space-y-2 text-sm text-gray-700">
@@ -99,7 +99,7 @@ export default function CalendarPage() {
             </ul>
             <a
               href="/summer-programs"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition mt-4"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition mt-4"
             >
               View summer programs
             </a>
@@ -120,10 +120,10 @@ export default function CalendarPage() {
       {/* CTA */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
             Need anything else?
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             We’re happy to help.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
@@ -133,7 +133,7 @@ export default function CalendarPage() {
           <div className="pt-4">
             <a
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Contact the office
             </a>

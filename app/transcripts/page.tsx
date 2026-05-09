@@ -3,6 +3,7 @@
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "Order a transcript — High Bluff Academy",
@@ -25,11 +26,11 @@ export default function TranscriptsPage() {
 
       <section className="py-24 bg-white">
         <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 text-center space-y-8">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Powered by Parchment
           </div>
 
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             High Bluff Academy has partnered with Parchment.
           </h2>
 
@@ -44,7 +45,7 @@ export default function TranscriptsPage() {
               href={PARCHMENT_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-[#1f3f66] text-white font-semibold shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-10 py-4 rounded-full bg-brand-navy text-white font-semibold shadow-lg hover:brightness-110 transition"
             >
               Order through Parchment →
             </a>
@@ -59,7 +60,7 @@ export default function TranscriptsPage() {
       <section className="py-20 bg-gray-50">
         <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 grid gap-6 sm:grid-cols-2">
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-[#1f3f66] mb-2">
+            <h3 className="text-base font-semibold text-brand-navy mb-2">
               First-time users
             </h3>
             <p className="text-sm text-gray-600 leading-relaxed">
@@ -68,19 +69,19 @@ export default function TranscriptsPage() {
             </p>
           </div>
           <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-[#1f3f66] mb-2">
+            <h3 className="text-base font-semibold text-brand-navy mb-2">
               Need help?
             </h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               If you have trouble ordering or have questions about an in-progress request,
               email{" "}
               <a
-                href="mailto:admissions@highbluffacademy.com"
-                className="text-[#f37021] font-medium hover:underline"
+                href={`mailto:${siteConfig.contact.admissionsEmail}`}
+                className="text-brand-orange font-medium hover:underline"
               >
-                admissions@highbluffacademy.com
+                {siteConfig.contact.admissionsEmail}
               </a>
-              {" "}or call (858) 509-9101.
+              {" "}or call {siteConfig.contact.phone}.
             </p>
           </div>
         </div>
@@ -88,7 +89,7 @@ export default function TranscriptsPage() {
         <div className="mt-12 text-center">
           <Link
             href="/community/alumni"
-            className="text-sm font-semibold text-[#1f3f66] hover:text-[#f37021]"
+            className="text-sm font-semibold text-brand-navy hover:text-brand-orange"
           >
             Back to alumni resources →
           </Link>

@@ -55,7 +55,7 @@ export default function YouTubeEmbed({ videoId, title, aspect = "16/9" }: Props)
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
           <span className="absolute inset-0 flex items-center justify-center">
-            <span className="flex items-center justify-center w-20 h-20 rounded-full bg-[#f37021] text-white shadow-2xl transition-transform duration-300 group-hover:scale-110">
+            <span className="flex items-center justify-center w-20 h-20 rounded-full bg-brand-orange text-white shadow-2xl transition-transform duration-300 group-hover:scale-110">
               <svg
                 className="w-8 h-8 ml-1"
                 viewBox="0 0 24 24"

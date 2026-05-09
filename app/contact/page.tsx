@@ -1,5 +1,6 @@
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 import TallyEmbed from "./TallyEmbed"
 
 export default function ContactPage() {
@@ -35,7 +36,7 @@ export default function ContactPage() {
 
           {/* PHONE */}
           <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
-            <div className="text-[#f37021] font-semibold tracking-[0.18em] text-xs uppercase mb-4">
+            <div className="text-brand-orange font-semibold tracking-[0.18em] text-xs uppercase mb-4">
               Call us
             </div>
             <h3 className="text-2xl font-semibold text-[#12233d] mb-3">
@@ -48,11 +49,11 @@ export default function ContactPage() {
 
           {/* EMAIL */}
           <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
-            <div className="text-[#f37021] font-semibold tracking-[0.18em] text-xs uppercase mb-4">
+            <div className="text-brand-orange font-semibold tracking-[0.18em] text-xs uppercase mb-4">
               Email
             </div>
             <h3 className="text-2xl font-semibold text-[#12233d] mb-3 break-words">
-              admissions@highbluffacademy.com
+              {siteConfig.contact.admissionsEmail}
             </h3>
             <p className="text-sm text-gray-600 leading-relaxed">
               Reach out anytime — we respond quickly and are happy to help.
@@ -61,7 +62,7 @@ export default function ContactPage() {
 
           {/* VISIT */}
           <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
-            <div className="text-[#f37021] font-semibold tracking-[0.18em] text-xs uppercase mb-4">
+            <div className="text-brand-orange font-semibold tracking-[0.18em] text-xs uppercase mb-4">
               Visit us
             </div>
             <h3 className="text-2xl font-semibold text-[#12233d] mb-3">
@@ -90,7 +91,7 @@ export default function ContactPage() {
         <div className="max-w-3xl mx-auto px-6 lg:px-0">
           <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
             {/* <div className="px-8 pt-8 pb-4 text-left border-b border-slate-200">
-              <p className="text-sm font-medium tracking-[0.18em] uppercase text-[#f37021] mb-2">
+              <p className="text-sm font-medium tracking-[0.18em] uppercase text-brand-orange mb-2">
                 Contact Form
               </p>
               <p className="text-base text-slate-600">
@@ -133,7 +134,7 @@ export default function ContactPage() {
               href="https://www.google.com/maps/dir/?api=1&destination=5531+Cancha+de+Golf+Ste+202,+Rancho+Santa+Fe,+CA+92091"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#1f3f66] text-white font-semibold text-sm hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-brand-navy text-white font-semibold text-sm hover:brightness-110 transition"
             >
               Get directions
             </a>
@@ -141,7 +142,7 @@ export default function ContactPage() {
               href="https://www.google.com/maps/place/5531+Cancha+de+Golf+Ste+202,+Rancho+Santa+Fe,+CA+92091"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
             >
               Open in Google Maps
             </a>
@@ -162,8 +163,8 @@ export default function ContactPage() {
 
           <div className="flex flex-wrap justify-center gap-4 pt-4">
             <a
-              href="mailto:admissions@highbluffacademy.com"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              href={`mailto:${siteConfig.contact.admissionsEmail}`}
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Email admissions
             </a>

@@ -51,10 +51,10 @@ export default function UpcomingEvents({ events }: Props) {
       <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-12">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Coming up
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
               What’s next at HBA.
             </h2>
             <p className="text-base text-gray-600 leading-relaxed font-light">
@@ -63,7 +63,7 @@ export default function UpcomingEvents({ events }: Props) {
           </div>
           <a
             href="#calendar"
-            className="text-sm font-semibold text-[#1f3f66] hover:text-[#f37021] transition-colors"
+            className="text-sm font-semibold text-brand-navy hover:text-brand-orange transition-colors"
           >
             See full calendar →
           </a>
@@ -100,7 +100,7 @@ export default function UpcomingEvents({ events }: Props) {
                     </div>
                   </div>
                   <div className="p-6 flex flex-col flex-1 gap-2">
-                    <h3 className="text-lg font-extrabold text-[#1f3f66] leading-snug">
+                    <h3 className="text-lg font-extrabold text-brand-navy leading-snug">
                       {ev.title}
                     </h3>
                     <p className="text-xs text-gray-500 font-medium">

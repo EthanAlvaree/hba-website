@@ -3,6 +3,7 @@
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "School store — High Bluff Academy",
@@ -121,10 +122,10 @@ export default function StorePage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Official orders
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
             Everything you need to order from HBA.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -145,20 +146,20 @@ export default function StorePage() {
                 className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 hover:shadow-2xl transition-shadow p-8 flex flex-col"
               >
                 <div className="flex items-start justify-between">
-                  <div className="w-14 h-14 rounded-2xl bg-[#1f3f66] text-white flex items-center justify-center">
+                  <div className="w-14 h-14 rounded-2xl bg-brand-navy text-white flex items-center justify-center">
                     {service.icon}
                   </div>
                   {service.tag && (
-                    <span className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] bg-[#f37021]/10 px-3 py-1 rounded-full">
+                    <span className="text-[10px] font-bold tracking-widest uppercase text-brand-orange bg-brand-orange/10 px-3 py-1 rounded-full">
                       {service.tag}
                     </span>
                   )}
                 </div>
 
-                <div className="mt-6 text-xs font-bold tracking-widest uppercase text-[#f37021]">
+                <div className="mt-6 text-xs font-bold tracking-widest uppercase text-brand-orange">
                   {service.eyebrow}
                 </div>
-                <h3 className="mt-2 text-xl font-extrabold text-[#1f3f66] leading-tight">
+                <h3 className="mt-2 text-xl font-extrabold text-brand-navy leading-tight">
                   {service.title}
                 </h3>
                 <p className="mt-3 text-sm text-gray-700 leading-relaxed">
@@ -173,14 +174,14 @@ export default function StorePage() {
                     href={service.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+                    className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-brand-orange text-white font-semibold text-sm shadow hover:brightness-110 transition"
                   >
                     {service.cta} →
                   </a>
                 ) : (
                   <Link
                     href={service.href}
-                    className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+                    className="mt-6 inline-flex items-center justify-center px-5 py-2.5 rounded-full bg-brand-orange text-white font-semibold text-sm shadow hover:brightness-110 transition"
                   >
                     {service.cta} →
                   </Link>
@@ -190,7 +191,7 @@ export default function StorePage() {
           </div>
 
           {/* QUICK PARCHMENT CARD */}
-          <div className="bg-[#1f3f66] rounded-3xl px-8 py-10 lg:px-12 lg:py-12 text-white grid gap-6 lg:grid-cols-12 items-center shadow-2xl">
+          <div className="bg-brand-navy rounded-3xl px-8 py-10 lg:px-12 lg:py-12 text-white grid gap-6 lg:grid-cols-12 items-center shadow-2xl">
             <div className="lg:col-span-8 space-y-3">
               <div className="text-xs font-bold tracking-widest uppercase text-white/70">
                 Need a transcript right now?
@@ -208,7 +209,7 @@ export default function StorePage() {
                 href={PARCHMENT_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-[#1f3f66] font-semibold text-sm hover:bg-[#f37021] hover:text-white transition"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-full bg-white text-brand-navy font-semibold text-sm hover:bg-brand-orange hover:text-white transition"
               >
                 Open Parchment →
               </a>
@@ -223,10 +224,10 @@ export default function StorePage() {
           <div className="bg-gray-50 border border-gray-200 rounded-3xl p-8 lg:p-12 shadow-sm">
             <div className="flex items-start justify-between gap-6 flex-wrap">
               <div className="space-y-2">
-                <div className="text-xs font-bold tracking-widest uppercase text-[#f37021]">
+                <div className="text-xs font-bold tracking-widest uppercase text-brand-orange">
                   Merch
                 </div>
-                <h3 className="text-2xl lg:text-3xl font-extrabold text-[#1f3f66] leading-tight">
+                <h3 className="text-2xl lg:text-3xl font-extrabold text-brand-navy leading-tight">
                   HBA-branded gear and keepsakes.
                 </h3>
                 <p className="text-gray-600 leading-relaxed font-light max-w-2xl">
@@ -234,7 +235,7 @@ export default function StorePage() {
                   on the way — until then, contact the school office about availability.
                 </p>
               </div>
-              <span className="text-[10px] font-bold tracking-widest uppercase text-[#f37021] bg-[#f37021]/10 px-3 py-1 rounded-full whitespace-nowrap">
+              <span className="text-[10px] font-bold tracking-widest uppercase text-brand-orange bg-brand-orange/10 px-3 py-1 rounded-full whitespace-nowrap">
                 Coming soon
               </span>
             </div>
@@ -266,7 +267,7 @@ export default function StorePage() {
       {/* CONTACT FALLBACK */}
       <section className="py-20 bg-gray-50">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-5">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             Need something else?
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -275,16 +276,16 @@ export default function StorePage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-2">
             <a
-              href="mailto:info@highbluffacademy.com"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              href={`mailto:${siteConfig.contact.infoEmail}`}
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Email the office
             </a>
             <a
-              href="tel:+18585099101"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#1f3f66] text-[#1f3f66] font-semibold text-sm hover:bg-[#1f3f66] hover:text-white transition"
+              href={`tel:${siteConfig.contact.phoneTel}`}
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
             >
-              Call (858) 509-9101
+              Call {siteConfig.contact.phone}
             </a>
           </div>
         </div>

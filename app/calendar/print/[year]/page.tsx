@@ -5,6 +5,7 @@ import Link from "next/link"
 import { getAllEvents } from "@/lib/events-server"
 import { effectiveEnd, SchoolEvent } from "@/lib/events"
 import { categories, CategoryKey } from "@/lib/categories"
+import { siteConfig } from "@/lib/site"
 import PrintToolbar from "./PrintToolbar"
 
 export const dynamic = "force-static"
@@ -131,7 +132,7 @@ export default async function PrintCalendarPage({ params }: Props) {
       <div className="print-toolbar">
         <Link
           href="/calendar"
-          className="text-xs font-bold uppercase tracking-widest text-[#1f3f66] hover:text-[#f37021] transition-colors"
+          className="text-xs font-bold uppercase tracking-widest text-brand-navy hover:text-brand-orange transition-colors"
         >
           ← Back to calendar
         </Link>
@@ -139,7 +140,7 @@ export default async function PrintCalendarPage({ params }: Props) {
         <div className="flex flex-wrap gap-3 items-center">
           <Link
             href={`/calendar/print/${otherYear}`}
-            className="text-xs font-semibold text-[#1f3f66] hover:text-[#f37021] transition-colors"
+            className="text-xs font-semibold text-brand-navy hover:text-brand-orange transition-colors"
           >
             View {otherYearLabel} →
           </Link>
@@ -149,7 +150,7 @@ export default async function PrintCalendarPage({ params }: Props) {
 
       <article className="print-sheet">
         <header className="print-masthead">
-          <h1>High Bluff Academy Academic Calendar</h1>
+          <h1>{siteConfig.name} Academic Calendar</h1>
           <div className="print-year">
             {startYear} to {endYear}
           </div>
@@ -254,8 +255,8 @@ export default async function PrintCalendarPage({ params }: Props) {
         </div>
 
         <div className="print-footer">
-          <span className="print-footer-brand">High Bluff Academy</span>
-          <span>highbluffacademy.com · (858) 509-9101</span>
+          <span className="print-footer-brand">{siteConfig.name}</span>
+          <span>{siteConfig.domain} · {siteConfig.contact.phone}</span>
           <span>Academic year {startYear}–{endYear}</span>
         </div>
       </article>

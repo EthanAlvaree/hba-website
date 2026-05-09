@@ -17,10 +17,10 @@ export default function NondiscriminationPage() {
       {/* STATEMENT */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-3xl mx-auto px-6 lg:px-12 space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Our policy
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66] leading-tight">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy leading-tight">
             One school, every student.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -93,7 +93,7 @@ export default function NondiscriminationPage() {
               key={section.heading}
               className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100"
             >
-              <h3 className="text-xl font-extrabold text-[#1f3f66] mb-4">
+              <h3 className="text-xl font-extrabold text-brand-navy mb-4">
                 {section.heading}
               </h3>
               <div className="text-gray-600 leading-relaxed font-light text-base space-y-3">
@@ -105,7 +105,7 @@ export default function NondiscriminationPage() {
       </section>
 
       {/* CONTACT */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
           <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
             Speak up
@@ -120,7 +120,7 @@ export default function NondiscriminationPage() {
           <div className="pt-4">
             <a
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Contact the office
             </a>

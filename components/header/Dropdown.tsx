@@ -70,7 +70,7 @@ export default function Dropdown({
           >
             {columns.map((col) => (
               <div key={col.heading}>
-                <h4 className="font-semibold text-xs tracking-wider uppercase text-[#1f3f66] mb-3 border-b pb-2">
+                <h4 className="font-semibold text-xs tracking-wider uppercase text-brand-navy mb-3 border-b pb-2">
                   {col.heading}
                 </h4>
 
@@ -81,8 +81,8 @@ export default function Dropdown({
                         href={link.href}
                         className={`text-sm transition-colors block ${
                           pathname === link.href
-                            ? "text-[#1f3f66] font-semibold"
-                            : "text-gray-700 hover:text-[#1f3f66]"
+                            ? "text-brand-navy font-semibold"
+                            : "text-gray-700 hover:text-brand-navy"
                         }`}
                       >
                         {link.label}

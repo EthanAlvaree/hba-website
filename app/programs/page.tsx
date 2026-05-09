@@ -13,6 +13,7 @@ import {
 import type { ComponentType, SVGProps } from "react"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "Academic programs — High Bluff Academy",
@@ -189,10 +190,10 @@ export default function ProgramsPage() {
       <section id="courses" className="py-24 bg-white">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Core curriculum
             </div>
-            <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-navy leading-tight">
               A strong academic foundation.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -204,7 +205,7 @@ export default function ProgramsPage() {
 
             <div className="grid gap-6 sm:grid-cols-2 mt-6">
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-sm font-semibold text-[#1f3f66] uppercase tracking-widest mb-3">
+                <h3 className="text-sm font-semibold text-brand-navy uppercase tracking-widest mb-3">
                   English
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
@@ -213,7 +214,7 @@ export default function ProgramsPage() {
                 </p>
               </div>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-sm font-semibold text-[#1f3f66] uppercase tracking-widest mb-3">
+                <h3 className="text-sm font-semibold text-brand-navy uppercase tracking-widest mb-3">
                   Mathematics
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
@@ -222,7 +223,7 @@ export default function ProgramsPage() {
                 </p>
               </div>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-sm font-semibold text-[#1f3f66] uppercase tracking-widest mb-3">
+                <h3 className="text-sm font-semibold text-brand-navy uppercase tracking-widest mb-3">
                   Science
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
@@ -231,7 +232,7 @@ export default function ProgramsPage() {
                 </p>
               </div>
               <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5 shadow-sm">
-                <h3 className="text-sm font-semibold text-[#1f3f66] uppercase tracking-widest mb-3">
+                <h3 className="text-sm font-semibold text-brand-navy uppercase tracking-widest mb-3">
                   Social science
                 </h3>
                 <p className="text-sm text-gray-700 leading-relaxed">
@@ -250,7 +251,7 @@ export default function ProgramsPage() {
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-white">
                 <p className="text-xs uppercase tracking-[0.2em] text-white/70">
                   College-preparatory academics
@@ -265,7 +266,7 @@ export default function ProgramsPage() {
       </section>
 
       {/* AP COURSES */}
-      <section id="ap" className="py-24 bg-[#1f3f66] relative">
+      <section id="ap" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/programs/ap-courses.webp"
@@ -285,7 +286,7 @@ export default function ProgramsPage() {
             </h2>
             <p className="text-white/80 text-lg font-light leading-relaxed">
               High Bluff Academy is an authorized AP Capstone school and an official College
-              Board testing site (CEEB 053036) — students complete AP coursework and sit for
+              Board testing site (CEEB {siteConfig.ceebCode}) — students complete AP coursework and sit for
               AP exams on the same campus where they learn every day.
             </p>
           </div>
@@ -300,7 +301,7 @@ export default function ProgramsPage() {
                 <ul className="space-y-1.5 text-sm text-white/85">
                   {cat.courses.map((c) => (
                     <li key={c} className="flex gap-2 leading-snug">
-                      <span className="text-[#f37021] font-bold">•</span>
+                      <span className="text-brand-orange font-bold">•</span>
                       <span>{c}</span>
                     </li>
                   ))}
@@ -316,7 +317,7 @@ export default function ProgramsPage() {
           <div className="mt-8 text-center">
             <Link
               href="/programs/courses"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-[#1f3f66] font-semibold text-sm shadow-lg hover:bg-[#f37021] hover:text-white transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-brand-navy font-semibold text-sm shadow-lg hover:bg-brand-orange hover:text-white transition"
             >
               See the full UC A–G course catalogue →
             </Link>
@@ -328,10 +329,10 @@ export default function ProgramsPage() {
       <section id="pathways" className="py-24 bg-white">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
           <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Academic pathways
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Six distinctive pathways through HBA.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -347,19 +348,19 @@ export default function ProgramsPage() {
               return (
               <li
                 key={p.id}
-                className="bg-gray-50 border border-gray-200 rounded-2xl p-5 lg:p-6 shadow-sm hover:shadow-lg hover:border-[#f37021] transition flex flex-col"
+                className="bg-gray-50 border border-gray-200 rounded-2xl p-5 lg:p-6 shadow-sm hover:shadow-lg hover:border-brand-orange transition flex flex-col"
               >
                 <div className="flex items-start justify-between mb-1">
-                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#f37021] tabular-nums pt-1">
+                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-orange tabular-nums pt-1">
                     Pathway {String(i + 1).padStart(2, "0")}
                   </span>
                   <Icon
                     aria-hidden="true"
                     strokeWidth={1.5}
-                    className="h-6 w-6 text-[#1f3f66]/60 flex-shrink-0"
+                    className="h-6 w-6 text-brand-navy/60 flex-shrink-0"
                   />
                 </div>
-                <h3 className="text-lg font-extrabold text-[#1f3f66] leading-tight">
+                <h3 className="text-lg font-extrabold text-brand-navy leading-tight">
                   {p.name}
                 </h3>
                 <p className="text-xs text-gray-600 font-light leading-relaxed mt-2">
@@ -368,13 +369,13 @@ export default function ProgramsPage() {
                 <ul className="space-y-1 mt-4 text-xs text-gray-700 flex-grow">
                   {p.courses.map((c) => (
                     <li key={c} className="flex gap-2 leading-snug">
-                      <span className="text-[#f37021] font-bold">→</span>
+                      <span className="text-brand-orange font-bold">→</span>
                       <span>{c}</span>
                     </li>
                   ))}
                 </ul>
                 <div className="mt-4 pt-3 border-t border-gray-200">
-                  <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#1f3f66]">
+                  <div className="text-[10px] font-bold tracking-[0.2em] uppercase text-brand-navy">
                     Capstone
                   </div>
                   <p className="text-xs text-gray-700 mt-1 leading-snug">{p.capstone}</p>
@@ -395,10 +396,10 @@ export default function ProgramsPage() {
       <section id="summer" className="py-24 bg-gray-50 border-t border-gray-200">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Summer 2026
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               High-impact summer programs.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -409,12 +410,12 @@ export default function ProgramsPage() {
             <ul className="space-y-2 text-sm text-gray-700">
               <li>• Live group classes on campus starting June 8, 2026</li>
               <li>• Flexible online, hybrid, and in-person options</li>
-              <li>• Official College Board testing site (CEEB Code: 053036)</li>
+              <li>• Official College Board testing site (CEEB Code: {siteConfig.ceebCode})</li>
               <li>• Six-, seven-, and eight-week course formats</li>
             </ul>
             <Link
               href="/summer-programs"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition mt-4"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition mt-4"
             >
               View summer programs
             </Link>
@@ -442,14 +443,14 @@ export default function ProgramsPage() {
               fill
               className="object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 to-transparent" />
           </div>
 
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Flexible pathways
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Online & hybrid learning.
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -465,7 +466,7 @@ export default function ProgramsPage() {
             <div className="pt-2">
               <Link
                 href="/programs/online"
-                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-brand-orange text-white font-semibold text-sm shadow hover:brightness-110 transition"
               >
                 Explore HBA Online High School →
               </Link>

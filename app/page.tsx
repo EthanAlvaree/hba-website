@@ -14,10 +14,10 @@ export default function Home() {
       {/* WELCOME */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Welcome
           </div>
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-navy leading-tight">
             Welcome to High Bluff Academy.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">
@@ -33,10 +33,10 @@ export default function Home() {
       <section className="py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-6 lg:px-12 space-y-14">
           <div className="reveal text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               Explore HBA
             </div>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Find your path forward.
             </h2>
           </div>
@@ -73,16 +73,16 @@ export default function Home() {
                 href={p.link}
                 className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
               >
-                <div className="text-xs font-bold tracking-widest uppercase text-[#f37021] mb-3">
+                <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
                   {p.eyebrow}
                 </div>
-                <h3 className="text-2xl font-extrabold text-[#1f3f66] mb-3">
+                <h3 className="text-2xl font-extrabold text-brand-navy mb-3">
                   {p.title}
                 </h3>
                 <p className="text-sm text-gray-600 leading-relaxed mb-6">
                   {p.description}
                 </p>
-                <span className="mt-auto text-sm font-semibold text-[#1f3f66] group-hover:text-[#f37021]">
+                <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
                   {p.cta} →
                 </span>
               </Link>
@@ -92,7 +92,7 @@ export default function Home() {
       </section>
 
       {/* QUOTE */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center">
           <blockquote className="text-2xl lg:text-3xl italic text-white/90 leading-relaxed font-light">
             “At High Bluff Academy, students don’t just learn — they grow into confident, capable young adults.”
@@ -103,10 +103,10 @@ export default function Home() {
       {/* CTA */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+          <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
             Visit
           </div>
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             Ready to visit High Bluff Academy?
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
@@ -116,7 +116,7 @@ export default function Home() {
           <div className="pt-4">
             <Link
               href="/contact"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Schedule a visit
             </Link>

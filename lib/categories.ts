@@ -1,5 +1,7 @@
 // lib/categories.ts
 
+import { brand } from "@/lib/site"
+
 export type CategoryKey = "academics" | "holiday" | "faculty" | "community"
 
 export interface CategoryMeta {
@@ -13,7 +15,7 @@ export const categories: Record<CategoryKey, CategoryMeta> = {
   academics: {
     key: "academics",
     label: "Academics",
-    color: "#f37021",
+    color: brand.orange,
     description:
       "First and last day of class, semester boundaries, finals, and AP testing dates.",
   },
@@ -27,7 +29,7 @@ export const categories: Record<CategoryKey, CategoryMeta> = {
   faculty: {
     key: "faculty",
     label: "Faculty",
-    color: "#1f3f66",
+    color: brand.navy,
     description:
       "Teacher in-service days. Faculty are on campus; students do not attend.",
   },

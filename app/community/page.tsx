@@ -20,7 +20,7 @@ export default function CommunityPage() {
       {/* INTRO */}
       <section className="py-24 bg-white">
         <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-navy">
             A community rooted in purpose.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light max-w-3xl mx-auto">
@@ -36,11 +36,11 @@ export default function CommunityPage() {
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-16 items-center">
 
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Community service
             </div>
 
-            <h2 className="text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-4xl font-extrabold text-brand-navy leading-tight">
               Giving back, growing forward.
             </h2>
 
@@ -63,7 +63,7 @@ export default function CommunityPage() {
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 to-transparent" />
             </div>
           </div>
 
@@ -71,7 +71,7 @@ export default function CommunityPage() {
       </section>
 
       {/* ACADEMIC SUPPORT & ADVISORY */}
-      <section id="advisory" className="py-24 bg-[#1f3f66] relative">
+      <section id="advisory" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/community/advisory.webp"
@@ -129,16 +129,16 @@ export default function CommunityPage() {
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#1f3f66]/80 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 to-transparent" />
             </div>
           </div>
 
           <div className="lg:col-span-6 space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#1f3f66]/10 text-[#1f3f66] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
               National Honor Society
             </div>
 
-            <h2 className="text-4xl font-extrabold text-[#1f3f66] leading-tight">
+            <h2 className="text-4xl font-extrabold text-brand-navy leading-tight">
               Recognizing excellence.
             </h2>
 
@@ -161,11 +161,11 @@ export default function CommunityPage() {
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
 
           <div className="space-y-6">
-            <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+            <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
               Community partnerships
             </div>
 
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+            <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
               Learning beyond the classroom.
             </h2>
 
@@ -182,7 +182,7 @@ export default function CommunityPage() {
             <div className="pt-2">
               <a
                 href="/community/partnerships"
-                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#f37021] text-white font-semibold text-sm shadow hover:brightness-110 transition"
+                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-brand-orange text-white font-semibold text-sm shadow hover:brightness-110 transition"
               >
                 Meet our partners →
               </a>
@@ -203,7 +203,7 @@ export default function CommunityPage() {
       </section>
 
       {/* VOLUNTEERING */}
-      <section id="volunteering" className="py-24 bg-[#1f3f66] relative">
+      <section id="volunteering" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
             src="/images/community/volunteering.webp"
@@ -235,7 +235,7 @@ export default function CommunityPage() {
       {/* CLOSING */}
       <section className="py-20 bg-white">
         <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-5">
-          <h2 className="text-3xl lg:text-4xl font-extrabold text-[#1f3f66]">
+          <h2 className="text-3xl lg:text-4xl font-extrabold text-brand-navy">
             A community that lifts each other up.
           </h2>
           <p className="text-lg text-gray-600 leading-relaxed font-light">

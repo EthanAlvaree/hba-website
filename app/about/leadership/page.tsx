@@ -62,15 +62,15 @@ export default function LeadershipPage() {
 
             {/* Message */}
             <div className="lg:col-span-7 space-y-8">
-              <blockquote className="text-2xl lg:text-3xl italic text-[#1f3f66] border-l-4 border-[#f37021] pl-6 font-light leading-relaxed">
+              <blockquote className="text-2xl lg:text-3xl italic text-brand-navy border-l-4 border-brand-orange pl-6 font-light leading-relaxed">
                 “It’s amazing how many of our students really gain a love of learning.”
               </blockquote>
 
               <div className="space-y-6">
-                <div className="inline-block px-4 py-1.5 bg-[#f37021]/10 text-[#f37021] font-bold tracking-widest text-xs uppercase rounded-full">
+                <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
                   Head of school
                 </div>
-                <h2 className="text-4xl lg:text-5xl font-extrabold text-[#1f3f66] leading-tight">
+                <h2 className="text-4xl lg:text-5xl font-extrabold text-brand-navy leading-tight">
                   Welcome from the head of school.
                 </h2>
                 <div className="space-y-4 text-lg text-gray-600 leading-relaxed font-light">
@@ -93,7 +93,7 @@ export default function LeadershipPage() {
                   </p>
                 </div>
                 <div className="pt-4">
-                  <p className="font-semibold text-[#1f3f66]">Warm regards,</p>
+                  <p className="font-semibold text-brand-navy">Warm regards,</p>
                   <Image
                     src="/images/leadership/kun-signature.webp"
                     alt="Signature of Mr. Kun Xuan"
@@ -101,7 +101,7 @@ export default function LeadershipPage() {
                     height={118}
                     className="mt-3 h-16 w-auto"
                   />
-                  <p className="font-semibold text-[#1f3f66] mt-2">Mr. Kun Xuan</p>
+                  <p className="font-semibold text-brand-navy mt-2">Mr. Kun Xuan</p>
                   <p className="text-gray-600 text-sm">Head of School</p>
                 </div>
               </div>
@@ -111,7 +111,7 @@ export default function LeadershipPage() {
       </section>
 
       {/* LEADERSHIP TEAM */}
-      <section className="py-24 bg-[#1f3f66]">
+      <section className="py-24 bg-brand-navy">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 space-y-12">
           <div className="text-center max-w-2xl mx-auto space-y-3 text-white">
             <div className="inline-block px-4 py-1.5 bg-white/10 text-white font-bold tracking-widest text-xs uppercase rounded-full">
@@ -132,7 +132,7 @@ export default function LeadershipPage() {
                   href={`/faculty/${leader.slug}`}
                   className="group block text-center"
                 >
-                  <div className="relative w-40 h-40 sm:w-44 sm:h-44 mx-auto rounded-full overflow-hidden ring-4 ring-white/10 shadow-2xl transition duration-300 group-hover:ring-[#f37021]">
+                  <div className="relative w-40 h-40 sm:w-44 sm:h-44 mx-auto rounded-full overflow-hidden ring-4 ring-white/10 shadow-2xl transition duration-300 group-hover:ring-brand-orange">
                     <Image
                       src={leader.image}
                       alt={leader.name}
@@ -142,7 +142,7 @@ export default function LeadershipPage() {
                     />
                   </div>
                   <div className="mt-5 space-y-1">
-                    <p className="text-base font-semibold text-white group-hover:text-[#f37021] transition-colors">
+                    <p className="text-base font-semibold text-white group-hover:text-brand-orange transition-colors">
                       {leader.name}
                     </p>
                     <p className="text-sm text-white/70 font-light">{leader.role}</p>
@@ -155,7 +155,7 @@ export default function LeadershipPage() {
           <div className="text-center pt-2">
             <Link
               href="/faculty"
-              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-[#1f3f66] font-semibold text-sm hover:bg-[#f37021] hover:text-white transition"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-white text-brand-navy font-semibold text-sm hover:bg-brand-orange hover:text-white transition"
             >
               See all faculty and staff →
             </Link>
