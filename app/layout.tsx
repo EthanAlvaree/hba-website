@@ -2,6 +2,7 @@
 import "./globals.css"
 import type { Metadata } from "next"
 import type { ReactNode } from "react"
+import { Analytics } from "@vercel/analytics/next"
 import LayoutChrome from "@/components/layout/LayoutChrome"
 import { siteConfig } from "@/lib/site"
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body>
         <LayoutChrome>{children}</LayoutChrome>
+        <Analytics />
       </body>
     </html>
   )
