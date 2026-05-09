@@ -4,9 +4,9 @@
   /* Brand palette — single source of truth. All bg-brand-navy,
      text-brand-orange, bg-brand-navy/10, etc. utilities derive from
      these tokens. Override these to rebrand. */
-  --color-brand-navy: var(--color-brand-navy);
-  --color-brand-navy-deep: var(--color-brand-navy-deep);
-  --color-brand-orange: var(--color-brand-orange);
+  --color-brand-navy: #1f3f66;
+  --color-brand-navy-deep: #0f1f36;
+  --color-brand-orange: #f37021;
   /* This creates the smooth, professional 'lifted' look for the menu */
   --shadow-mega: 0 25px 50px -12px rgb(0 0 0 / 0.25);
 }
