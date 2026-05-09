@@ -36,7 +36,7 @@ const categories: Category[] = [
       "Honors Multivariable Calculus",
       "Honors Group Theory and Abstract Algebra",
       "Honors Set Theory and Real Analysis",
-      "Mathematics of Machine Learning",
+      "Honors Mathematics of Machine Learning",
     ],
   },
   {

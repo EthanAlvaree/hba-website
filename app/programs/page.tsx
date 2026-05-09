@@ -2,6 +2,15 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import {
+  AcademicCapIcon,
+  BeakerIcon,
+  CogIcon,
+  CpuChipIcon,
+  GlobeAltIcon,
+  PaintBrushIcon,
+} from "@heroicons/react/24/outline"
+import type { ComponentType, SVGProps } from "react"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 
@@ -67,6 +76,7 @@ type Pathway = {
   tagline: string
   courses: string[]
   capstone: string
+  icon: ComponentType<SVGProps<SVGSVGElement>>
 }
 
 const pathways: Pathway[] = [
@@ -81,9 +91,10 @@ const pathways: Pathway[] = [
       "AP Computer Science A",
       "Honors Linear Algebra",
       "Honors Multivariable Calculus",
-      "Mathematics of Machine Learning",
+      "Honors Mathematics of Machine Learning",
     ],
     capstone: "AWS Cloud Practitioner certification",
+    icon: CpuChipIcon,
   },
   {
     id: "engineering",
@@ -99,6 +110,7 @@ const pathways: Pathway[] = [
       "AP Computer Science A",
     ],
     capstone: "Independent engineering portfolio reviewed by a working engineer mentor",
+    icon: CogIcon,
   },
   {
     id: "pre-medical",
@@ -114,6 +126,7 @@ const pathways: Pathway[] = [
       "AP Statistics",
     ],
     capstone: "Bioethics seminar with an independent literature-review project",
+    icon: BeakerIcon,
   },
   {
     id: "visual-arts",
@@ -127,6 +140,7 @@ const pathways: Pathway[] = [
     ],
     capstone:
       "Co-credited contribution to a professionally printed hardcover book, offered in partnership with our partner organization Pacific Crest Institute (PCI)",
+    icon: PaintBrushIcon,
   },
   {
     id: "ap-capstone",
@@ -140,6 +154,7 @@ const pathways: Pathway[] = [
     ],
     capstone:
       "AP Capstone Diploma — explicitly recognized by Stanford, the UC system, NYU, and many others",
+    icon: AcademicCapIcon,
   },
   {
     id: "global-studies",
@@ -154,6 +169,7 @@ const pathways: Pathway[] = [
       "Model UN seminar",
     ],
     capstone: "Independent research paper on a contemporary global issue",
+    icon: GlobeAltIcon,
   },
 ]
 
@@ -326,14 +342,23 @@ export default function ProgramsPage() {
           </div>
 
           <ol className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {pathways.map((p, i) => (
+            {pathways.map((p, i) => {
+              const Icon = p.icon
+              return (
               <li
                 key={p.id}
                 className="bg-gray-50 border border-gray-200 rounded-2xl p-5 lg:p-6 shadow-sm hover:shadow-lg hover:border-[#f37021] transition flex flex-col"
               >
-                <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#f37021] tabular-nums mb-1">
-                  Pathway {String(i + 1).padStart(2, "0")}
-                </span>
+                <div className="flex items-start justify-between mb-1">
+                  <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-[#f37021] tabular-nums pt-1">
+                    Pathway {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <Icon
+                    aria-hidden="true"
+                    strokeWidth={1.5}
+                    className="h-6 w-6 text-[#1f3f66]/60 flex-shrink-0"
+                  />
+                </div>
                 <h3 className="text-lg font-extrabold text-[#1f3f66] leading-tight">
                   {p.name}
                 </h3>
@@ -355,7 +380,8 @@ export default function ProgramsPage() {
                   <p className="text-xs text-gray-700 mt-1 leading-snug">{p.capstone}</p>
                 </div>
               </li>
-            ))}
+              )
+            })}
           </ol>
 
           <p className="text-center text-sm text-gray-500 italic max-w-2xl mx-auto">
