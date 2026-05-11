@@ -5,6 +5,7 @@ import {
   ContactSubmissionSummary,
 } from "@/lib/contact-submissions"
 import {
+  deleteArchivedContactSubmissionAction,
   signOutAdminAction,
   updateContactSubmissionAction,
 } from "./actions"
@@ -30,10 +31,13 @@ type ContactSubmissionsDashboardProps = {
   summary: ContactSubmissionSummary
 }
 
+const pacificTimeZone = "America/Los_Angeles"
+
 function formatTimestamp(value: string) {
   return new Intl.DateTimeFormat("en-US", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: pacificTimeZone,
   }).format(new Date(value))
 }
 
@@ -124,56 +128,6 @@ function getMessagePreview(message: string) {
   return `${normalized.slice(0, 137)}...`
 }
 
-function getMetricCards(mode: DashboardMode, summary: ContactSubmissionSummary) {
-  if (mode === "archived") {
-    return [
-      {
-        label: "Archived history",
-        value: summary.archivedCount,
-        tone: "text-slate-900",
-      },
-      {
-        label: "Active queue",
-        value: summary.activeCount,
-        tone: "text-brand-navy",
-      },
-      {
-        label: "Needs response",
-        value: summary.newCount,
-        tone: "text-amber-700",
-      },
-      {
-        label: "Tour requests",
-        value: summary.activeTourRequestedCount,
-        tone: "text-brand-orange",
-      },
-    ]
-  }
-
-  return [
-    {
-      label: "Active queue",
-      value: summary.activeCount,
-      tone: "text-brand-navy",
-    },
-    {
-      label: "Needs response",
-      value: summary.newCount,
-      tone: "text-amber-700",
-    },
-    {
-      label: "In follow-up",
-      value: summary.contactedCount,
-      tone: "text-sky-700",
-    },
-    {
-      label: "Tour requests",
-      value: summary.activeTourRequestedCount,
-      tone: "text-brand-orange",
-    },
-  ]
-}
-
 export function sortContactSubmissions(
   submissions: ContactSubmissionRecord[],
   sort: SubmissionSortOption
@@ -206,6 +160,51 @@ export function sortContactSubmissions(
   return sorted
 }
 
+function buildDashboardHref(
+  mode: DashboardMode,
+  filters: DashboardFilters,
+  overrides: Partial<DashboardFilters>
+) {
+  const nextFilters = { ...filters, ...overrides }
+  const params = new URLSearchParams()
+  const basePath =
+    mode === "archived"
+      ? "/admin/contact-submissions/archived"
+      : "/admin/contact-submissions"
+
+  if (mode === "active" && nextFilters.status !== "all") {
+    params.set("status", nextFilters.status)
+  }
+
+  if (nextFilters.tour !== "all") {
+    params.set("tour", nextFilters.tour)
+  }
+
+  const defaultSort = mode === "archived" ? "newest" : "oldest"
+
+  if (nextFilters.sort !== defaultSort) {
+    params.set("sort", nextFilters.sort)
+  }
+
+  const query = params.toString()
+
+  return query ? `${basePath}?${query}` : basePath
+}
+
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4">
+      <path
+        d="M7.5 3.75h5M2.5 5.417h15M8.333 9.167v4.166M11.667 9.167v4.166M4.167 5.417l.833 10c.067.8.735 1.416 1.538 1.416h6.924c.803 0 1.471-.616 1.538-1.416l.833-10M7.083 3.75l.278-.834a1.25 1.25 0 0 1 1.186-.853h2.906c.538 0 1.017.344 1.186.853l.278.834"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  )
+}
+
 export default function ContactSubmissionsDashboard({
   adminEmail,
   currentPath,
@@ -214,8 +213,39 @@ export default function ContactSubmissionsDashboard({
   submissions,
   summary,
 }: ContactSubmissionsDashboardProps) {
-  const metricCards = getMetricCards(mode, summary)
   const isArchivedView = mode === "archived"
+  const quickFilters = !isArchivedView
+    ? [
+        {
+          label: "Active queue",
+          count: summary.activeCount,
+          href: buildDashboardHref(mode, filters, { status: "all", tour: "all" }),
+          active: filters.status === "all" && filters.tour === "all",
+          className: "text-brand-navy",
+        },
+        {
+          label: "Needs response",
+          count: summary.newCount,
+          href: buildDashboardHref(mode, filters, { status: "new", tour: "all" }),
+          active: filters.status === "new" && filters.tour === "all",
+          className: "text-amber-700",
+        },
+        {
+          label: "In follow-up",
+          count: summary.contactedCount,
+          href: buildDashboardHref(mode, filters, { status: "contacted", tour: "all" }),
+          active: filters.status === "contacted" && filters.tour === "all",
+          className: "text-sky-700",
+        },
+        {
+          label: "Tour requests",
+          count: summary.activeTourRequestedCount,
+          href: buildDashboardHref(mode, filters, { status: "all", tour: "yes" }),
+          active: filters.status === "all" && filters.tour === "yes",
+          className: "text-brand-orange",
+        },
+      ]
+    : []
 
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
@@ -288,45 +318,45 @@ export default function ContactSubmissionsDashboard({
           </div>
         </section>
 
-        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {metricCards.map((card) => (
-            <div
-              key={card.label}
-              className="rounded-[1.75rem] border border-slate-200 bg-white px-5 py-5 shadow-sm"
-            >
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                {card.label}
-              </p>
-              <p className={`mt-3 text-3xl font-extrabold ${card.tone}`}>{card.value}</p>
-            </div>
-          ))}
-        </section>
+        {!isArchivedView && (
+          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {quickFilters.map((filter) => (
+              <Link
+                key={filter.label}
+                href={filter.href}
+                className={`rounded-[1.75rem] border px-5 py-5 shadow-sm transition ${
+                  filter.active
+                    ? "border-brand-navy/15 bg-brand-navy text-white"
+                    : "border-slate-200 bg-white text-slate-900 hover:border-brand-navy/20"
+                }`}
+              >
+                <p
+                  className={`text-xs font-semibold uppercase tracking-[0.18em] ${
+                    filter.active ? "text-white/70" : "text-slate-500"
+                  }`}
+                >
+                  {filter.label}
+                </p>
+                <p className={`mt-3 text-3xl font-extrabold ${filter.active ? "text-white" : filter.className}`}>
+                  {filter.count}
+                </p>
+              </Link>
+            ))}
+          </section>
+        )}
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <form
             className={`grid gap-4 ${
               isArchivedView
                 ? "md:grid-cols-[minmax(0,220px)_minmax(0,220px)_auto]"
-                : "md:grid-cols-[minmax(0,220px)_minmax(0,220px)_minmax(0,220px)_auto]"
+                : "md:grid-cols-[minmax(0,220px)_minmax(0,220px)_auto]"
             } md:items-end`}
           >
-            {!isArchivedView && (
-              <label className="space-y-2 text-sm font-medium text-slate-700">
-                <span className="block">Queue</span>
-                <select
-                  name="status"
-                  defaultValue={filters.status}
-                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
-                >
-                  <option value="all">All active submissions</option>
-                  <option value="new">Needs response</option>
-                  <option value="contacted">In follow-up</option>
-                </select>
-              </label>
-            )}
+            {!isArchivedView && <input type="hidden" name="status" value={filters.status} />}
 
             <label className="space-y-2 text-sm font-medium text-slate-700">
-              <span className="block">Tour interest</span>
+              <span className="block">Additional tour filter</span>
               <select
                 name="tour"
                 defaultValue={filters.tour}
@@ -356,7 +386,7 @@ export default function ContactSubmissionsDashboard({
               type="submit"
               className="inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110"
             >
-              Apply filters
+              Apply advanced filters
             </button>
           </form>
         </section>
@@ -489,54 +519,82 @@ export default function ContactSubmissionsDashboard({
                       </div>
                     </div>
 
-                    <form action={updateContactSubmissionAction} className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50/80 p-5">
-                      <input type="hidden" name="id" value={submission.id} />
-                      <input type="hidden" name="redirectTo" value={currentPath} />
+                    <div className="space-y-4">
+                      <form action={updateContactSubmissionAction} className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50/80 p-5">
+                        <input type="hidden" name="id" value={submission.id} />
+                        <input type="hidden" name="redirectTo" value={currentPath} />
 
-                      <div className="space-y-2">
-                        <p className="text-sm font-semibold text-slate-900">Front desk triage</p>
-                        <p className="text-sm text-slate-600">
-                          Use <strong>Contacted</strong> after an email, call, or tour scheduling step. Use <strong>Archived</strong> once the conversation is complete.
-                        </p>
-                      </div>
+                        <div className="space-y-2">
+                          <p className="text-sm font-semibold text-slate-900">Front desk triage</p>
+                          <p className="text-sm text-slate-600">
+                            Use <strong>Contacted</strong> after an email, call, or tour scheduling step. Use <strong>Archived</strong> once the conversation is complete.
+                          </p>
+                        </div>
 
-                      <label className="space-y-2 text-sm font-medium text-slate-700">
-                        <span className="block">Status</span>
-                        <select
-                          name="status"
-                          defaultValue={submission.status}
-                          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
+                        <label className="space-y-2 text-sm font-medium text-slate-700">
+                          <span className="block">Status</span>
+                          <select
+                            name="status"
+                            defaultValue={submission.status}
+                            className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
+                          >
+                            <option value="new">Needs response</option>
+                            <option value="contacted">Contacted / emailed / scheduled</option>
+                            <option value="archived">Archived</option>
+                          </select>
+                        </label>
+
+                        <label className="space-y-2 text-sm font-medium text-slate-700">
+                          <span className="block">Notes</span>
+                          <textarea
+                            name="notes"
+                            rows={5}
+                            defaultValue={submission.notes ?? ""}
+                            placeholder="Add handoff notes, scheduled tour details, or next steps for the front desk team."
+                            className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
+                          />
+                        </label>
+
+                        {submission.archived_at && (
+                          <p className="text-xs text-slate-500">
+                            Archived on {formatTimestamp(submission.archived_at)}
+                          </p>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110"
                         >
-                          <option value="new">Needs response</option>
-                          <option value="contacted">Contacted / emailed / scheduled</option>
-                          <option value="archived">Archived</option>
-                        </select>
-                      </label>
+                          Save triage
+                        </button>
+                      </form>
 
-                      <label className="space-y-2 text-sm font-medium text-slate-700">
-                        <span className="block">Notes</span>
-                        <textarea
-                          name="notes"
-                          rows={5}
-                          defaultValue={submission.notes ?? ""}
-                          placeholder="Add handoff notes, scheduled tour details, or next steps for the front desk team."
-                          className="w-full rounded-3xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
-                        />
-                      </label>
+                      {isArchivedView && (
+                        <form action={deleteArchivedContactSubmissionAction} className="rounded-3xl border border-rose-200 bg-rose-50/70 p-5">
+                          <input type="hidden" name="id" value={submission.id} />
+                          <input type="hidden" name="redirectTo" value={currentPath} />
 
-                      {submission.archived_at && (
-                        <p className="text-xs text-slate-500">
-                          Archived on {formatTimestamp(submission.archived_at)}
-                        </p>
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                            <div className="space-y-1">
+                              <p className="text-sm font-semibold text-rose-800">Permanent delete</p>
+                              <p className="text-sm text-rose-700">
+                                Use this only for spam, test entries, or obvious junk. This removes the submission from the archive for good.
+                              </p>
+                            </div>
+
+                            <button
+                              type="submit"
+                              className="inline-flex items-center justify-center gap-2 rounded-full border border-rose-300 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                              aria-label={`Delete ${submission.name} permanently`}
+                              title="Delete permanently"
+                            >
+                              <TrashIcon />
+                              Delete forever
+                            </button>
+                          </div>
+                        </form>
                       )}
-
-                      <button
-                        type="submit"
-                        className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110"
-                      >
-                        Save triage
-                      </button>
-                    </form>
+                    </div>
                   </div>
                 </details>
               )

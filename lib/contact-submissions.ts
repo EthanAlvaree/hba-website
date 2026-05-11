@@ -33,10 +33,15 @@ export const contactSubmissionUpdateSchema = z.object({
   notes: z.string().trim().max(4000),
 })
 
+export const contactSubmissionDeleteSchema = z.object({
+  id: z.string().trim().min(1),
+})
+
 export type ContactSubmissionInput = z.infer<typeof contactSubmissionSchema>
 export type ContactSubmissionRequest = z.infer<typeof contactSubmissionRequestSchema>
 export type ContactSubmissionStatus = z.infer<typeof contactSubmissionStatusSchema>
 export type ContactSubmissionUpdate = z.infer<typeof contactSubmissionUpdateSchema>
+export type ContactSubmissionDelete = z.infer<typeof contactSubmissionDeleteSchema>
 
 export type ContactSubmissionRecord = {
   id: string
@@ -221,4 +226,20 @@ export async function updateContactSubmission(input: ContactSubmissionUpdate) {
   }
 
   return data
+}
+
+export async function deleteArchivedContactSubmission(id: string) {
+  const { error, count } = await supabase
+    .from("contact_submissions")
+    .delete({ count: "exact" })
+    .eq("id", id)
+    .eq("status", "archived")
+
+  if (error) {
+    throw new Error(`Failed to delete archived contact submission: ${error.message}`)
+  }
+
+  if (!count) {
+    throw new Error("Archived contact submission not found.")
+  }
 }
