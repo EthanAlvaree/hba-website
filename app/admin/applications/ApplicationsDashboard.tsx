@@ -5,6 +5,7 @@ import {
   ApplicationStatus,
   ApplicationSummary,
 } from "@/lib/applications"
+import type { ApplicationDocumentRecord } from "@/lib/application-storage"
 import {
   deleteApplicationAction,
   signOutApplicationsAdminAction,
@@ -30,6 +31,7 @@ type ApplicationsDashboardProps = {
   mode: DashboardMode
   applications: ApplicationRecord[]
   summary: ApplicationSummary
+  documentsByApp: Map<string, ApplicationDocumentRecord[]>
 }
 
 const pacificTimeZone = "America/Los_Angeles"
@@ -404,6 +406,7 @@ export default function ApplicationsDashboard({
   mode,
   applications,
   summary,
+  documentsByApp,
 }: ApplicationsDashboardProps) {
   const isArchivedView = mode === "archived"
   const queueTabs = getQueueTabs(mode, filters, summary)
@@ -664,19 +667,79 @@ export default function ApplicationsDashboard({
                         {application.prior_schools.length === 0 ? (
                           <p className="text-sm text-slate-600">No schools listed.</p>
                         ) : (
-                          <ul className="space-y-2 text-sm text-slate-800">
-                            {application.prior_schools.map((school, index) => (
-                              <li key={`${school.name}-${index}`}>
-                                <p className="font-semibold">{school.name}</p>
-                                {school.note && (
-                                  <p className="whitespace-pre-wrap text-slate-600">
-                                    {school.note}
-                                  </p>
-                                )}
-                              </li>
-                            ))}
+                          <ul className="space-y-3 text-sm text-slate-800">
+                            {application.prior_schools.map((school, index) => {
+                              const schoolDocs = (
+                                documentsByApp.get(application.id) ?? []
+                              ).filter(
+                                (doc) =>
+                                  (doc.prior_school_name ?? "").trim() === school.name.trim()
+                              )
+                              return (
+                                <li key={`${school.name}-${index}`}>
+                                  <p className="font-semibold">{school.name}</p>
+                                  {school.note && (
+                                    <p className="whitespace-pre-wrap text-slate-600">
+                                      {school.note}
+                                    </p>
+                                  )}
+                                  {schoolDocs.length > 0 && (
+                                    <ul className="mt-1 space-y-1">
+                                      {schoolDocs.map((doc) => (
+                                        <li key={doc.id}>
+                                          <a
+                                            href={`/api/admin/applications/documents/${doc.id}`}
+                                            className="inline-flex items-center gap-1 text-xs font-semibold text-brand-navy underline-offset-4 hover:underline"
+                                            target="_blank"
+                                            rel="noopener"
+                                          >
+                                            📎 {doc.filename}
+                                          </a>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                </li>
+                              )
+                            })}
                           </ul>
                         )}
+                        {(() => {
+                          const allDocs = documentsByApp.get(application.id) ?? []
+                          const schoolNameSet = new Set(
+                            application.prior_schools.map((s) => s.name.trim())
+                          )
+                          const unmatchedDocs = allDocs.filter(
+                            (doc) => !schoolNameSet.has((doc.prior_school_name ?? "").trim())
+                          )
+                          if (unmatchedDocs.length === 0) return null
+                          return (
+                            <div className="mt-3 border-t border-slate-200 pt-3">
+                              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                                Other transcripts
+                              </p>
+                              <ul className="mt-2 space-y-1">
+                                {unmatchedDocs.map((doc) => (
+                                  <li key={doc.id} className="text-sm">
+                                    <a
+                                      href={`/api/admin/applications/documents/${doc.id}`}
+                                      className="inline-flex items-center gap-1 font-semibold text-brand-navy underline-offset-4 hover:underline"
+                                      target="_blank"
+                                      rel="noopener"
+                                    >
+                                      📎 {doc.filename}
+                                    </a>
+                                    {doc.prior_school_name && (
+                                      <span className="ml-2 text-xs text-slate-500">
+                                        ({doc.prior_school_name})
+                                      </span>
+                                    )}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )
+                        })()}
                       </div>
 
                       <div className="space-y-3 rounded-3xl border border-slate-200 bg-slate-50 px-5 py-5">

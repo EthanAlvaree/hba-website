@@ -9,6 +9,7 @@ import {
   type ApplicationEnrollmentType,
   type ApplicationStatus,
 } from "@/lib/applications"
+import { listApplicationDocumentsByIds } from "@/lib/application-storage"
 import ApplicationsDashboard, {
   applicationSortOptions,
   sortApplications,
@@ -70,6 +71,10 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
     getApplicationSummary(),
   ])
 
+  const documentsByApp = await listApplicationDocumentsByIds(
+    applications.map((application) => application.id)
+  )
+
   return (
     <ApplicationsDashboard
       adminEmail={adminEmail}
@@ -78,6 +83,7 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
       mode="active"
       applications={sortApplications(applications, sort)}
       summary={summary}
+      documentsByApp={documentsByApp}
     />
   )
 }

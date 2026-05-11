@@ -8,6 +8,7 @@ import type {
   ApplicationRecord,
   PriorSchool,
 } from "@/lib/applications"
+import type { ApplicationDocumentRecord } from "@/lib/application-storage"
 
 const turnstileSiteKey =
   process.env.NODE_ENV === "production"
@@ -1403,6 +1404,42 @@ function Step3PriorSchools({
 }) {
   const list = state.prior_schools.length > 0 ? state.prior_schools : [{ name: "", note: "" }]
 
+  const [documents, setDocuments] = useState<ApplicationDocumentRecord[]>([])
+  const [documentsError, setDocumentsError] = useState<string | null>(null)
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null)
+  const [hasLoadedDocs, setHasLoadedDocs] = useState(false)
+
+  const draftToken = state.draft_token
+
+  useEffect(() => {
+    if (!draftToken) {
+      setDocuments([])
+      setHasLoadedDocs(false)
+      return
+    }
+
+    let cancelled = false
+    setHasLoadedDocs(false)
+
+    fetch(`/api/apply/documents?draft_token=${encodeURIComponent(draftToken)}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (cancelled) return
+        if (data?.success && Array.isArray(data.documents)) {
+          setDocuments(data.documents as ApplicationDocumentRecord[])
+        }
+        setHasLoadedDocs(true)
+      })
+      .catch(() => {
+        if (cancelled) return
+        setHasLoadedDocs(true)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [draftToken])
+
   const updateAt = (index: number, patch: Partial<PriorSchool>) => {
     const next = list.map((school, i) => (i === index ? { ...school, ...patch } : school))
     setPriorSchools(next)
@@ -1417,6 +1454,98 @@ function Step3PriorSchools({
     setPriorSchools([...list, { name: "", note: "" }])
   }
 
+  async function handleFileUpload(file: File, priorSchoolName: string) {
+    if (!draftToken) return
+    setUploadingFor(priorSchoolName)
+    setDocumentsError(null)
+
+    try {
+      const initResponse = await fetch("/api/apply/documents/init", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draft_token: draftToken,
+          kind: "transcript",
+          filename: file.name,
+          content_type: file.type || "application/octet-stream",
+          prior_school_name: priorSchoolName,
+        }),
+      })
+
+      const initData = (await initResponse.json()) as {
+        success: boolean
+        signed_url?: string
+        storage_path?: string
+        error?: string
+      }
+
+      if (!initResponse.ok || !initData.success || !initData.signed_url || !initData.storage_path) {
+        throw new Error(initData.error ?? "Couldn't start the upload.")
+      }
+
+      const uploadResponse = await fetch(initData.signed_url, {
+        method: "PUT",
+        headers: { "Content-Type": file.type || "application/octet-stream" },
+        body: file,
+      })
+
+      if (!uploadResponse.ok) {
+        throw new Error("File upload to storage failed.")
+      }
+
+      const completeResponse = await fetch("/api/apply/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          draft_token: draftToken,
+          kind: "transcript",
+          filename: file.name,
+          storage_path: initData.storage_path,
+          prior_school_name: priorSchoolName,
+        }),
+      })
+
+      const completeData = (await completeResponse.json()) as {
+        success: boolean
+        document?: ApplicationDocumentRecord
+        error?: string
+      }
+
+      if (!completeResponse.ok || !completeData.success || !completeData.document) {
+        throw new Error(completeData.error ?? "Couldn't finalize the upload.")
+      }
+
+      setDocuments((prev) => [...prev, completeData.document as ApplicationDocumentRecord])
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : "Upload failed.")
+    } finally {
+      setUploadingFor(null)
+    }
+  }
+
+  async function handleFileDelete(documentId: string) {
+    if (!draftToken) return
+    setDocumentsError(null)
+
+    try {
+      const response = await fetch("/api/apply/documents", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draft_token: draftToken, document_id: documentId }),
+      })
+
+      const data = (await response.json()) as { success: boolean; error?: string }
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error ?? "Couldn't delete the file.")
+      }
+
+      setDocuments((prev) => prev.filter((doc) => doc.id !== documentId))
+    } catch (error) {
+      setDocumentsError(error instanceof Error ? error.message : "Delete failed.")
+    }
+  }
+
   return (
     <div className="space-y-6">
       <header>
@@ -1424,50 +1553,138 @@ function Step3PriorSchools({
           Prior schools
         </h2>
         <p className="mt-2 text-sm text-slate-600">
-          List every school the student has attended (most recent first). You can
-          add multiple schools. Transcript uploads will come later — for now, just
-          the school names.
+          List every school the student has attended (most recent first). Upload
+          transcripts as PDFs or images if you have them — you can also add them
+          later by returning to your saved draft.
         </p>
       </header>
 
+      {!draftToken && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <strong className="font-semibold">Save your draft first to attach transcripts.</strong>{" "}
+          Click <em>Save and continue later</em> below — we’ll email you a link so
+          you can come back and upload files at any time.
+        </div>
+      )}
+
+      {documentsError && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+          {documentsError}
+        </div>
+      )}
+
       <div className="space-y-4">
-        {list.map((school, index) => (
-          <div
-            key={index}
-            className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-5"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-semibold text-slate-700">
-                School {index + 1}
-              </span>
-              {list.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => remove(index)}
-                  className="text-sm font-semibold text-rose-700 hover:underline"
-                >
-                  Remove
-                </button>
+        {list.map((school, index) => {
+          const schoolName = school.name.trim()
+          const schoolDocuments = schoolName
+            ? documents.filter((doc) => doc.prior_school_name === schoolName)
+            : []
+          const fileInputId = `prior_school_file_${index}`
+          const isUploadingHere = uploadingFor === schoolName && schoolName.length > 0
+          const canUpload = Boolean(draftToken && schoolName.length > 0)
+
+          return (
+            <div
+              key={index}
+              className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50 p-5"
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-slate-700">
+                  School {index + 1}
+                </span>
+                {list.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => remove(index)}
+                    className="text-sm font-semibold text-rose-700 hover:underline"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+
+              <TextField
+                label="School name"
+                name={`prior_school_name_${index}`}
+                value={school.name}
+                onChange={(v) => updateAt(index, { name: v })}
+                placeholder="e.g. La Jolla Country Day School"
+              />
+              <TextareaField
+                label="Notes about this school (optional)"
+                name={`prior_school_note_${index}`}
+                value={school.note ?? ""}
+                onChange={(v) => updateAt(index, { note: v })}
+                rows={2}
+                placeholder="Dates attended, grades, anything we should know"
+              />
+
+              {draftToken && hasLoadedDocs && (
+                <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4">
+                  <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-sm font-semibold text-slate-900">
+                      Transcripts for this school
+                    </p>
+                    {!canUpload && (
+                      <p className="text-xs text-slate-500">
+                        Enter the school name first to attach a transcript.
+                      </p>
+                    )}
+                  </div>
+
+                  {schoolDocuments.length > 0 && (
+                    <ul className="space-y-2">
+                      {schoolDocuments.map((doc) => (
+                        <li
+                          key={doc.id}
+                          className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+                        >
+                          <span className="truncate font-medium text-slate-800">
+                            {doc.filename}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleFileDelete(doc.id)}
+                            className="text-xs font-semibold text-rose-700 hover:underline"
+                          >
+                            Remove
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
+                  <div>
+                    <label
+                      htmlFor={fileInputId}
+                      className={`inline-flex cursor-pointer items-center justify-center rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                        canUpload
+                          ? "border-brand-navy text-brand-navy hover:bg-brand-navy hover:text-white"
+                          : "cursor-not-allowed border-slate-200 text-slate-400"
+                      }`}
+                    >
+                      {isUploadingHere ? "Uploading…" : "Upload transcript"}
+                    </label>
+                    <input
+                      id={fileInputId}
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg,.gif,.heic,.doc,.docx"
+                      disabled={!canUpload || isUploadingHere}
+                      className="sr-only"
+                      onChange={(event) => {
+                        const file = event.target.files?.[0]
+                        if (file) {
+                          handleFileUpload(file, schoolName)
+                        }
+                        event.target.value = ""
+                      }}
+                    />
+                  </div>
+                </div>
               )}
             </div>
-
-            <TextField
-              label="School name"
-              name={`prior_school_name_${index}`}
-              value={school.name}
-              onChange={(v) => updateAt(index, { name: v })}
-              placeholder="e.g. La Jolla Country Day School"
-            />
-            <TextareaField
-              label="Notes about this school (optional)"
-              name={`prior_school_note_${index}`}
-              value={school.note ?? ""}
-              onChange={(v) => updateAt(index, { note: v })}
-              rows={2}
-              placeholder="Dates attended, grades, anything we should know"
-            />
-          </div>
-        ))}
+          )
+        })}
 
         <button
           type="button"

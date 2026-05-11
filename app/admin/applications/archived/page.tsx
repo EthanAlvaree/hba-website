@@ -7,6 +7,7 @@ import {
   listApplications,
   type ApplicationEnrollmentType,
 } from "@/lib/applications"
+import { listApplicationDocumentsByIds } from "@/lib/application-storage"
 import ApplicationsDashboard, {
   applicationSortOptions,
   sortApplications,
@@ -64,6 +65,10 @@ export default async function ArchivedApplicationsPage({
     getApplicationSummary(),
   ])
 
+  const documentsByApp = await listApplicationDocumentsByIds(
+    applications.map((application) => application.id)
+  )
+
   return (
     <ApplicationsDashboard
       adminEmail={adminEmail}
@@ -72,6 +77,7 @@ export default async function ArchivedApplicationsPage({
       mode="archived"
       applications={sortApplications(applications, sort)}
       summary={summary}
+      documentsByApp={documentsByApp}
     />
   )
 }
