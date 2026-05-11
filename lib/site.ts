@@ -89,8 +89,10 @@ export const siteConfig = {
 
   /** External app / portal URLs. */
   external: {
-    /** GradeLink enrollment / re-enrollment link. */
-    enrollment: "https://secure.gradelink.com/2962/enrollment",
+    /** Application / re-enrollment landing page. Native to the HBA site as of
+     *  May 2026 — was previously the GradeLink off-site form. Kept under
+     *  `external` for backwards compatibility with the existing call sites. */
+    enrollment: "/apply",
   },
 } as const
 
