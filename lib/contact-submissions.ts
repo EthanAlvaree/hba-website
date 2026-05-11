@@ -4,6 +4,17 @@ import { createClient } from "@supabase/supabase-js"
 export const contactSubmissionStatusSchema = z.enum([
   "new",
   "contacted",
+  "follow_up",
+  "tour_scheduled",
+  "tour_completed",
+  "archived",
+])
+
+export const contactSubmissionWorkflowStatusSchema = z.enum([
+  "new",
+  "follow_up",
+  "tour_scheduled",
+  "tour_completed",
   "archived",
 ])
 
@@ -29,7 +40,7 @@ export const contactSubmissionRequestSchema = contactSubmissionSchema.extend({
 
 export const contactSubmissionUpdateSchema = z.object({
   id: z.string().trim().min(1),
-  status: contactSubmissionStatusSchema,
+  status: contactSubmissionWorkflowStatusSchema,
   notes: z.string().trim().max(4000),
 })
 
@@ -40,6 +51,9 @@ export const contactSubmissionDeleteSchema = z.object({
 export type ContactSubmissionInput = z.infer<typeof contactSubmissionSchema>
 export type ContactSubmissionRequest = z.infer<typeof contactSubmissionRequestSchema>
 export type ContactSubmissionStatus = z.infer<typeof contactSubmissionStatusSchema>
+export type ContactSubmissionWorkflowStatus = z.infer<
+  typeof contactSubmissionWorkflowStatusSchema
+>
 export type ContactSubmissionUpdate = z.infer<typeof contactSubmissionUpdateSchema>
 export type ContactSubmissionDelete = z.infer<typeof contactSubmissionDeleteSchema>
 
@@ -64,10 +78,17 @@ export type ContactSubmissionRecord = {
 
 export type ContactSubmissionSummary = {
   activeCount: number
-  newCount: number
-  contactedCount: number
+  needsResponseCount: number
+  followUpCount: number
+  tourScheduledCount: number
+  tourCompletedCount: number
   archivedCount: number
-  activeTourRequestedCount: number
+}
+
+export function normalizeContactSubmissionStatus(
+  status: ContactSubmissionStatus
+): ContactSubmissionWorkflowStatus {
+  return status === "contacted" ? "follow_up" : status
 }
 
 const supabaseUrl = process.env.HBA_SUPABASE_URL
@@ -123,7 +144,7 @@ export async function createContactSubmission(input: ContactSubmissionInput) {
 
 export async function listContactSubmissions(filters?: {
   view?: "active" | "archived" | "all"
-  status?: ContactSubmissionStatus | "all"
+  status?: ContactSubmissionWorkflowStatus | "all"
   tour?: "yes" | "no" | "all"
 }) {
   let query = supabase
@@ -142,7 +163,11 @@ export async function listContactSubmissions(filters?: {
   }
 
   if (filters?.status && filters.status !== "all") {
-    query = query.eq("status", filters.status)
+    if (filters.status === "follow_up") {
+      query = query.in("status", ["follow_up", "contacted"])
+    } else {
+      query = query.eq("status", filters.status)
+    }
   }
 
   if (filters?.tour === "yes") {
@@ -174,33 +199,40 @@ export async function getContactSubmissionSummary() {
 
   return (data ?? []).reduce<ContactSubmissionSummary>(
     (summary, submission) => {
-      if (submission.status === "archived") {
+      const normalizedStatus = normalizeContactSubmissionStatus(submission.status)
+
+      if (normalizedStatus === "archived") {
         summary.archivedCount += 1
         return summary
       }
 
       summary.activeCount += 1
 
-      if (submission.status === "new") {
-        summary.newCount += 1
+      if (normalizedStatus === "new") {
+        summary.needsResponseCount += 1
       }
 
-      if (submission.status === "contacted") {
-        summary.contactedCount += 1
+      if (normalizedStatus === "follow_up") {
+        summary.followUpCount += 1
       }
 
-      if (submission.schedule_tour) {
-        summary.activeTourRequestedCount += 1
+      if (normalizedStatus === "tour_scheduled") {
+        summary.tourScheduledCount += 1
+      }
+
+      if (normalizedStatus === "tour_completed") {
+        summary.tourCompletedCount += 1
       }
 
       return summary
     },
     {
       activeCount: 0,
-      newCount: 0,
-      contactedCount: 0,
+      needsResponseCount: 0,
+      followUpCount: 0,
+      tourScheduledCount: 0,
+      tourCompletedCount: 0,
       archivedCount: 0,
-      activeTourRequestedCount: 0,
     }
   )
 }

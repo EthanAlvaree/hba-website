@@ -5,6 +5,8 @@ import {
   contactSubmissionStatusSchema,
   getContactSubmissionSummary,
   listContactSubmissions,
+  normalizeContactSubmissionStatus,
+  ContactSubmissionWorkflowStatus,
 } from "@/lib/contact-submissions"
 import ContactSubmissionsDashboard, {
   submissionSortOptions,
@@ -21,7 +23,7 @@ type ContactSubmissionsPageProps = {
 }
 
 function buildPath(search: {
-  status: string
+  status: ContactSubmissionWorkflowStatus | "all"
   tour: string
   sort: SubmissionSortOption
 }) {
@@ -58,7 +60,9 @@ export default async function ContactSubmissionsPage({ searchParams }: ContactSu
   const params = await searchParams
   const parsedStatus = contactSubmissionStatusSchema.safeParse(params.status)
   const status =
-    parsedStatus.success && parsedStatus.data !== "archived" ? parsedStatus.data : "all"
+    parsedStatus.success && normalizeContactSubmissionStatus(parsedStatus.data) !== "archived"
+      ? normalizeContactSubmissionStatus(parsedStatus.data)
+      : "all"
   const tour = params.tour === "yes" || params.tour === "no" ? params.tour : "all"
   const sort = submissionSortOptions.includes(params.sort as SubmissionSortOption)
     ? (params.sort as SubmissionSortOption)

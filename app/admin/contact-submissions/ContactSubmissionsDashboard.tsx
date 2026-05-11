@@ -1,8 +1,9 @@
 import Link from "next/link"
 import {
   ContactSubmissionRecord,
-  ContactSubmissionStatus,
   ContactSubmissionSummary,
+  ContactSubmissionWorkflowStatus,
+  normalizeContactSubmissionStatus,
 } from "@/lib/contact-submissions"
 import {
   deleteArchivedContactSubmissionAction,
@@ -17,7 +18,7 @@ export type SubmissionSortOption = (typeof submissionSortOptions)[number]
 type DashboardMode = "active" | "archived"
 
 type DashboardFilters = {
-  status: ContactSubmissionStatus | "all"
+  status: ContactSubmissionWorkflowStatus | "all"
   tour: "yes" | "no" | "all"
   sort: SubmissionSortOption
 }
@@ -70,32 +71,48 @@ function formatRelativeTimestamp(value: string) {
   return formatTimestamp(value)
 }
 
-function formatStatusLabel(status: ContactSubmissionStatus) {
+function formatStatusLabel(status: ContactSubmissionWorkflowStatus) {
   if (status === "new") {
     return "Needs response"
   }
 
-  if (status === "contacted") {
+  if (status === "follow_up") {
     return "In follow-up"
+  }
+
+  if (status === "tour_scheduled") {
+    return "Tour scheduled"
+  }
+
+  if (status === "tour_completed") {
+    return "Awaiting decision"
   }
 
   return "Archived"
 }
 
-function getStatusBadgeClassName(status: ContactSubmissionStatus) {
+function getStatusBadgeClassName(status: ContactSubmissionWorkflowStatus) {
   if (status === "new") {
     return "border border-amber-200 bg-amber-50 text-amber-700"
   }
 
-  if (status === "contacted") {
+  if (status === "follow_up") {
     return "border border-sky-200 bg-sky-50 text-sky-700"
+  }
+
+  if (status === "tour_scheduled") {
+    return "border border-brand-orange/20 bg-brand-orange/10 text-brand-orange"
+  }
+
+  if (status === "tour_completed") {
+    return "border border-emerald-200 bg-emerald-50 text-emerald-700"
   }
 
   return "border border-slate-200 bg-slate-100 text-slate-600"
 }
 
 function getPriorityBadge(submission: ContactSubmissionRecord) {
-  if (submission.status !== "new") {
+  if (normalizeContactSubmissionStatus(submission.status) !== "new") {
     return null
   }
 
@@ -201,21 +218,27 @@ function getQueueTabs(mode: DashboardMode, filters: DashboardFilters, summary: C
     },
     {
       label: "Needs response",
-      count: summary.newCount,
+      count: summary.needsResponseCount,
       href: buildDashboardHref("active", filters, { status: "new", tour: "all" }),
       active: mode === "active" && filters.status === "new" && filters.tour === "all",
     },
     {
       label: "In follow-up",
-      count: summary.contactedCount,
-      href: buildDashboardHref("active", filters, { status: "contacted", tour: "all" }),
-      active: mode === "active" && filters.status === "contacted" && filters.tour === "all",
+      count: summary.followUpCount,
+      href: buildDashboardHref("active", filters, { status: "follow_up", tour: "all" }),
+      active: mode === "active" && filters.status === "follow_up" && filters.tour === "all",
     },
     {
-      label: "Tour requests",
-      count: summary.activeTourRequestedCount,
-      href: buildDashboardHref("active", filters, { status: "all", tour: "yes" }),
-      active: mode === "active" && filters.status === "all" && filters.tour === "yes",
+      label: "Tour scheduled",
+      count: summary.tourScheduledCount,
+      href: buildDashboardHref("active", filters, { status: "tour_scheduled", tour: "all" }),
+      active: mode === "active" && filters.status === "tour_scheduled" && filters.tour === "all",
+    },
+    {
+      label: "Awaiting decision",
+      count: summary.tourCompletedCount,
+      href: buildDashboardHref("active", filters, { status: "tour_completed", tour: "all" }),
+      active: mode === "active" && filters.status === "tour_completed" && filters.tour === "all",
     },
     {
       label: "Archived",
@@ -366,6 +389,7 @@ export default function ContactSubmissionsDashboard({
             </div>
           ) : (
             submissions.map((submission) => {
+              const normalizedStatus = normalizeContactSubmissionStatus(submission.status)
               const priorityBadge = getPriorityBadge(submission)
 
               return (
@@ -380,10 +404,12 @@ export default function ContactSubmissionsDashboard({
                           <h2 className="text-xl font-extrabold text-brand-navy">
                             {submission.name}
                           </h2>
-                          <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusBadgeClassName(submission.status)}`}>
-                            {formatStatusLabel(submission.status)}
+                          <span className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${getStatusBadgeClassName(normalizedStatus)}`}>
+                            {formatStatusLabel(normalizedStatus)}
                           </span>
-                          {submission.schedule_tour && (
+                          {submission.schedule_tour &&
+                            normalizedStatus !== "tour_scheduled" &&
+                            normalizedStatus !== "tour_completed" && (
                             <span className="rounded-full border border-brand-orange/20 bg-brand-orange/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange">
                               Tour requested
                             </span>
@@ -454,7 +480,7 @@ export default function ContactSubmissionsDashboard({
                             Queue state
                           </p>
                           <p className="mt-2 text-sm font-medium text-slate-900">
-                            {formatStatusLabel(submission.status)}
+                            {formatStatusLabel(normalizedStatus)}
                           </p>
                         </div>
                         <div className="rounded-3xl bg-slate-50 px-4 py-4">
@@ -493,7 +519,7 @@ export default function ContactSubmissionsDashboard({
                         <div className="space-y-2">
                           <p className="text-sm font-semibold text-slate-900">Front desk triage</p>
                           <p className="text-sm text-slate-600">
-                            Use <strong>Contacted</strong> after an email, call, or tour scheduling step. Use <strong>Archived</strong> once the conversation is complete.
+                            Step 1 is <strong>Needs response</strong>. Step 2 is <strong>In follow-up</strong>. Step 3 is <strong>Tour scheduled</strong>. Step 4 is <strong>Awaiting decision</strong>. Archive once the family enrolls or decides not to move forward.
                           </p>
                         </div>
 
@@ -501,11 +527,13 @@ export default function ContactSubmissionsDashboard({
                           <span className="block">Status</span>
                           <select
                             name="status"
-                            defaultValue={submission.status}
+                            defaultValue={normalizedStatus}
                             className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
                           >
                             <option value="new">Needs response</option>
-                            <option value="contacted">Contacted / emailed / scheduled</option>
+                            <option value="follow_up">In follow-up</option>
+                            <option value="tour_scheduled">Tour scheduled</option>
+                            <option value="tour_completed">Tour happened / awaiting decision</option>
                             <option value="archived">Archived</option>
                           </select>
                         </label>
