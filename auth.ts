@@ -39,15 +39,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       return session
     },
-    authorized({ auth, request: { nextUrl } }) {
-      const isAdminRoute = nextUrl.pathname.startsWith("/admin")
-
-      if (!isAdminRoute) {
-        return true
-      }
-
-      return auth?.user?.email ? isAllowedAdminEmail(auth.user.email) : false
-    },
   },
   pages: {
     signIn: "/admin/sign-in",

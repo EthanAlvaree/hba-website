@@ -33,7 +33,6 @@ export const contactSubmissionSchema = z.object({
 })
 
 export const contactSubmissionRequestSchema = contactSubmissionSchema.extend({
-  website: z.string().trim().max(0).optional().catch(""),
   submittedAt: z.string().trim(),
   turnstileToken: z.string().trim().min(1, "Please complete the spam check."),
 })
@@ -91,19 +90,31 @@ export function normalizeContactSubmissionStatus(
   return status === "contacted" ? "follow_up" : status
 }
 
-const supabaseUrl = process.env.HBA_SUPABASE_URL
-const supabaseServiceRoleKey = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
+function createServerSupabaseClient() {
+  const supabaseUrl = process.env.HBA_SUPABASE_URL
+  const supabaseServiceRoleKey = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
 
-if (!supabaseUrl || !supabaseServiceRoleKey) {
-  throw new Error("Supabase server environment variables are missing.")
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error("Supabase server environment variables are missing.")
+  }
+
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  })
 }
 
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
-  auth: {
-    autoRefreshToken: false,
-    persistSession: false,
-  },
-})
+let cachedSupabase: ReturnType<typeof createServerSupabaseClient> | undefined
+
+function getSupabase() {
+  if (!cachedSupabase) {
+    cachedSupabase = createServerSupabaseClient()
+  }
+
+  return cachedSupabase
+}
 
 function normalizeHowDidYouHear(value?: string) {
   const normalized = value?.trim()
@@ -112,7 +123,7 @@ function normalizeHowDidYouHear(value?: string) {
 }
 
 export async function createContactSubmission(input: ContactSubmissionInput) {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("contact_submissions")
     .insert({
       name: input.name,
@@ -147,7 +158,7 @@ export async function listContactSubmissions(filters?: {
   status?: ContactSubmissionWorkflowStatus | "all"
   tour?: "yes" | "no" | "all"
 }) {
-  let query = supabase
+  let query = getSupabase()
     .from("contact_submissions")
     .select(
       "id, created_at, name, email, phone, student_name, message, schedule_tour, how_did_you_hear, status, assigned_to, notes, source, spam_provider, spam_verified, archived_at"
@@ -188,7 +199,7 @@ export async function listContactSubmissions(filters?: {
 }
 
 export async function getContactSubmissionSummary() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("contact_submissions")
     .select("status, schedule_tour")
     .returns<Array<Pick<ContactSubmissionRecord, "status" | "schedule_tour">>>()
@@ -240,7 +251,7 @@ export async function getContactSubmissionSummary() {
 export async function updateContactSubmission(input: ContactSubmissionUpdate) {
   const archivedAt = input.status === "archived" ? new Date().toISOString() : null
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("contact_submissions")
     .update({
       status: input.status,
@@ -261,7 +272,7 @@ export async function updateContactSubmission(input: ContactSubmissionUpdate) {
 }
 
 export async function deleteArchivedContactSubmission(id: string) {
-  const { error, count } = await supabase
+  const { error, count } = await getSupabase()
     .from("contact_submissions")
     .delete({ count: "exact" })
     .eq("id", id)

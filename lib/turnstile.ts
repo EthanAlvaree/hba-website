@@ -3,10 +3,13 @@ type TurnstileVerificationResult = {
   "error-codes"?: string[]
 }
 
-const turnstileSecretKey =
-  process.env.NODE_ENV === "production"
-    ? getRequiredTurnstileSecret()
-    : "1x0000000000000000000000000000000AA"
+function getTurnstileSecret() {
+  if (process.env.NODE_ENV !== "production") {
+    return "1x0000000000000000000000000000000AA"
+  }
+
+  return getRequiredTurnstileSecret()
+}
 
 function getRequiredTurnstileSecret() {
   const rawValue = process.env.TURNSTILE_SECRET_KEY
@@ -26,7 +29,7 @@ function getRequiredTurnstileSecret() {
 
 export async function verifyTurnstileToken(token: string) {
   const formData = new URLSearchParams({
-    secret: turnstileSecretKey,
+    secret: getTurnstileSecret(),
     response: token,
   })
 

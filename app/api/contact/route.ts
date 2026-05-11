@@ -14,6 +14,12 @@ const maximumSubmissionAgeMs = 1000 * 60 * 60 * 24
 export async function POST(request: Request) {
   try {
     const formData = await request.formData()
+
+    const websiteHoneypot = formData.get("website")
+    if (typeof websiteHoneypot === "string" && websiteHoneypot.trim().length > 0) {
+      return NextResponse.json({ success: true })
+    }
+
     const parsed = contactSubmissionRequestSchema.safeParse({
       name: formData.get("name"),
       email: formData.get("email"),
@@ -22,7 +28,6 @@ export async function POST(request: Request) {
       message: formData.get("message"),
       scheduleTour: formData.get("scheduleTour"),
       howDidYouHear: formData.get("howDidYouHear"),
-      website: formData.get("website"),
       submittedAt: formData.get("submittedAt"),
       turnstileToken: formData.get("cf-turnstile-response"),
     })
@@ -47,10 +52,6 @@ export async function POST(request: Request) {
 
     if (ageMs > maximumSubmissionAgeMs) {
       return NextResponse.json({ success: false, error: "This form expired. Please refresh the page and try again." }, { status: 400 })
-    }
-
-    if (parsed.data.website) {
-      return NextResponse.json({ success: true })
     }
 
     const turnstileResult = await verifyTurnstileToken(parsed.data.turnstileToken)

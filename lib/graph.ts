@@ -11,15 +11,19 @@ function getRequiredEnv(name: "GRAPH_CLIENT_ID" | "GRAPH_CLIENT_SECRET" | "GRAPH
   return value
 }
 
-const graphClientId = getRequiredEnv("GRAPH_CLIENT_ID")
-const graphClientSecret = getRequiredEnv("GRAPH_CLIENT_SECRET")
-const graphTenantId = getRequiredEnv("GRAPH_TENANT_ID")
-
-const graphMailSender = process.env.GRAPH_MAIL_SENDER ?? `noreply@${siteConfig.contact.emailDomain}`
-const notificationRecipients = (process.env.CONTACT_NOTIFICATION_TO ?? siteConfig.contact.infoEmail)
-  .split(",")
-  .map((email) => email.trim())
-  .filter(Boolean)
+function getGraphConfig() {
+  return {
+    graphClientId: getRequiredEnv("GRAPH_CLIENT_ID"),
+    graphClientSecret: getRequiredEnv("GRAPH_CLIENT_SECRET"),
+    graphTenantId: getRequiredEnv("GRAPH_TENANT_ID"),
+    graphMailSender:
+      process.env.GRAPH_MAIL_SENDER ?? `noreply@${siteConfig.contact.emailDomain}`,
+    notificationRecipients: (process.env.CONTACT_NOTIFICATION_TO ?? siteConfig.contact.infoEmail)
+      .split(",")
+      .map((email) => email.trim())
+      .filter(Boolean),
+  }
+}
 
 function escapeHtml(value: string) {
   return value
@@ -31,6 +35,8 @@ function escapeHtml(value: string) {
 }
 
 async function getGraphAccessToken() {
+  const { graphClientId, graphClientSecret, graphTenantId } = getGraphConfig()
+
   const response = await fetch(
     `https://login.microsoftonline.com/${graphTenantId}/oauth2/v2.0/token`,
     {
@@ -80,6 +86,7 @@ function buildContactSubmissionHtml(submission: ContactSubmissionRecord) {
 }
 
 export async function sendContactNotification(submission: ContactSubmissionRecord) {
+  const { graphMailSender, notificationRecipients } = getGraphConfig()
   const accessToken = await getGraphAccessToken()
 
   const response = await fetch(
