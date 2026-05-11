@@ -1,7 +1,7 @@
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { siteConfig } from "@/lib/site"
-import TallyEmbed from "./TallyEmbed"
+import ContactForm from "./ContactForm"
 
 export default function ContactPage() {
   return (
@@ -99,7 +99,7 @@ export default function ContactPage() {
               </p>
             </div> */}
 
-            <TallyEmbed />
+            <ContactForm />
           </div>
         </div>
       </section>

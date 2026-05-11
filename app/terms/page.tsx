@@ -90,8 +90,8 @@ export default function TermsPage() {
               body: (
                 <p>
                   This site links to and embeds third-party services such as Gradelink
-                  (enrollment), Tally (forms), and social platforms. We don’t control
-                  those services and aren’t responsible for their content or practices.
+                  (enrollment), Google Maps, Microsoft services, and social platforms.
+                  We don’t control those services and aren’t responsible for their content or practices.
                   Their terms and privacy policies govern your use of them.
                 </p>
               ),

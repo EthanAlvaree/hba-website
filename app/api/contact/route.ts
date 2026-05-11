@@ -1,0 +1,98 @@
+import { NextResponse } from "next/server"
+import {
+  contactSubmissionRequestSchema,
+  createContactSubmission,
+} from "@/lib/contact-submissions"
+import { sendContactNotification } from "@/lib/graph"
+import { verifyTurnstileToken } from "@/lib/turnstile"
+
+export const dynamic = "force-dynamic"
+
+const minimumSubmissionDelayMs = 1500
+const maximumSubmissionAgeMs = 1000 * 60 * 60 * 24
+
+function extractRemoteIp(request: Request) {
+  const forwardedFor = request.headers.get("x-forwarded-for")
+
+  if (!forwardedFor) {
+    return null
+  }
+
+  return forwardedFor.split(",")[0]?.trim() ?? null
+}
+
+export async function POST(request: Request) {
+  try {
+    const formData = await request.formData()
+    const parsed = contactSubmissionRequestSchema.safeParse({
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      studentName: formData.get("studentName"),
+      message: formData.get("message"),
+      scheduleTour: formData.get("scheduleTour"),
+      howDidYouHear: formData.get("howDidYouHear"),
+      website: formData.get("website"),
+      submittedAt: formData.get("submittedAt"),
+      turnstileToken: formData.get("cf-turnstile-response"),
+    })
+
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0]?.message ?? "Please review the form and try again."
+
+      return NextResponse.json({ success: false, error: firstError }, { status: 400 })
+    }
+
+    const submittedAtMs = Number(parsed.data.submittedAt)
+
+    if (!Number.isFinite(submittedAtMs)) {
+      return NextResponse.json({ success: false, error: "Submission metadata was invalid." }, { status: 400 })
+    }
+
+    const ageMs = Date.now() - submittedAtMs
+
+    if (ageMs < minimumSubmissionDelayMs) {
+      return NextResponse.json({ success: false, error: "Please wait a moment and try again." }, { status: 429 })
+    }
+
+    if (ageMs > maximumSubmissionAgeMs) {
+      return NextResponse.json({ success: false, error: "This form expired. Please refresh the page and try again." }, { status: 400 })
+    }
+
+    if (parsed.data.website) {
+      return NextResponse.json({ success: true })
+    }
+
+    const turnstileResult = await verifyTurnstileToken(
+      parsed.data.turnstileToken,
+      extractRemoteIp(request)
+    )
+
+    if (!turnstileResult.success) {
+      return NextResponse.json(
+        { success: false, error: "Please complete the spam check and try again." },
+        { status: 400 }
+      )
+    }
+
+    const submission = await createContactSubmission(parsed.data)
+
+    let notificationDelivered = true
+
+    try {
+      await sendContactNotification(submission)
+    } catch (error) {
+      notificationDelivered = false
+      console.error("Contact notification email failed.", error)
+    }
+
+    return NextResponse.json({ success: true, notificationDelivered })
+  } catch (error) {
+    console.error("Contact submission failed.", error)
+
+    return NextResponse.json(
+      { success: false, error: "Something went wrong while sending your message. Please try again." },
+      { status: 500 }
+    )
+  }
+}
