@@ -1,5 +1,6 @@
 import { siteConfig } from "@/lib/site"
 import type { ContactSubmissionRecord } from "@/lib/contact-submissions"
+import type { ApplicationRecord } from "@/lib/applications"
 
 function getRequiredEnv(name: "GRAPH_CLIENT_ID" | "GRAPH_CLIENT_SECRET" | "GRAPH_TENANT_ID") {
   const value = process.env[name]
@@ -19,6 +20,12 @@ function getGraphConfig() {
     graphMailSender:
       process.env.GRAPH_MAIL_SENDER ?? `noreply@${siteConfig.contact.emailDomain}`,
     notificationRecipients: (process.env.CONTACT_NOTIFICATION_TO ?? siteConfig.contact.infoEmail)
+      .split(",")
+      .map((email) => email.trim())
+      .filter(Boolean),
+    applicationRecipients: (
+      process.env.APPLICATION_NOTIFICATION_TO ?? siteConfig.contact.admissionsEmail
+    )
       .split(",")
       .map((email) => email.trim())
       .filter(Boolean),
@@ -129,4 +136,176 @@ export async function sendContactNotification(submission: ContactSubmissionRecor
 
     throw new Error(`Failed to send Graph notification email: ${response.status} ${responseText}`)
   }
+}
+
+// ============================================================================
+// Application emails
+// ============================================================================
+
+type SendMailOptions = {
+  subject: string
+  htmlBody: string
+  toRecipients: string[]
+  replyTo?: { address: string; name?: string }
+}
+
+async function sendMail(options: SendMailOptions) {
+  const { graphMailSender } = getGraphConfig()
+  const accessToken = await getGraphAccessToken()
+
+  const response = await fetch(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(graphMailSender)}/sendMail`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        message: {
+          subject: options.subject,
+          body: { contentType: "HTML", content: options.htmlBody },
+          toRecipients: options.toRecipients.map((email) => ({
+            emailAddress: { address: email },
+          })),
+          ...(options.replyTo
+            ? {
+                replyTo: [
+                  {
+                    emailAddress: {
+                      address: options.replyTo.address,
+                      ...(options.replyTo.name ? { name: options.replyTo.name } : {}),
+                    },
+                  },
+                ],
+              }
+            : {}),
+        },
+        saveToSentItems: true,
+      }),
+      cache: "no-store",
+    }
+  )
+
+  if (!response.ok) {
+    const responseText = await response.text()
+    throw new Error(`Failed to send Graph email: ${response.status} ${responseText}`)
+  }
+}
+
+function describeEnrollmentType(value: string | null) {
+  if (value === "summer") return "Summer"
+  if (value === "part_time") return "Part-time"
+  if (value === "full_time") return "Full-time"
+  return "Not selected"
+}
+
+function buildApplicationNotificationHtml(
+  application: ApplicationRecord,
+  dashboardUrl: string
+) {
+  const studentName =
+    [
+      application.student_first_name,
+      application.student_middle_name,
+      application.student_last_name,
+    ]
+      .filter(Boolean)
+      .join(" ") || "(no student name)"
+
+  const parts: string[] = [
+    `<p>A new application was submitted on the HBA website.</p>`,
+    `<h3>Family</h3>`,
+    `<p><strong>Guardian 1:</strong> ${escapeHtml(application.guardian1_name ?? "")}</p>`,
+    `<p><strong>Email:</strong> ${escapeHtml(application.guardian1_email ?? "")}</p>`,
+    `<p><strong>Mobile:</strong> ${escapeHtml(application.guardian1_mobile ?? "")}</p>`,
+    `<h3>Student</h3>`,
+    `<p><strong>Name:</strong> ${escapeHtml(studentName)}</p>`,
+    `<p><strong>DOB:</strong> ${escapeHtml(application.student_dob ?? "")}</p>`,
+    `<p><strong>Current grade:</strong> ${escapeHtml(application.student_current_grade ?? "")}</p>`,
+    `<p><strong>Desired entry grade:</strong> ${escapeHtml(application.student_desired_grade ?? "")}</p>`,
+    `<h3>Enrollment</h3>`,
+    `<p><strong>Type:</strong> ${escapeHtml(describeEnrollmentType(application.enrollment_type))}</p>`,
+  ]
+
+  if (application.course_interest.length > 0) {
+    parts.push(
+      `<p><strong>Courses of interest:</strong></p>`,
+      `<ul>${application.course_interest
+        .map((course) => `<li>${escapeHtml(course)}</li>`)
+        .join("")}</ul>`
+    )
+  }
+
+  if (application.prior_schools.length > 0) {
+    parts.push(
+      `<p><strong>Prior schools:</strong></p>`,
+      `<ul>${application.prior_schools
+        .map((school) => `<li>${escapeHtml(school.name)}</li>`)
+        .join("")}</ul>`
+    )
+  }
+
+  if (application.how_did_you_hear) {
+    parts.push(
+      `<p><strong>How they heard about HBA:</strong> ${escapeHtml(application.how_did_you_hear)}</p>`
+    )
+  }
+
+  if (application.notes_from_family) {
+    parts.push(
+      `<p><strong>Notes from family:</strong></p>`,
+      `<p>${escapeHtml(application.notes_from_family).replace(/\n/g, "<br />")}</p>`
+    )
+  }
+
+  parts.push(
+    `<p><a href="${escapeHtml(dashboardUrl)}">Open in admin dashboard</a></p>`,
+    `<p><strong>Application ID:</strong> ${escapeHtml(application.id)}</p>`
+  )
+
+  return parts.join("")
+}
+
+export async function sendApplicationNotification(application: ApplicationRecord) {
+  const { applicationRecipients } = getGraphConfig()
+  const dashboardUrl = `${siteConfig.url}/admin/applications/${application.id}`
+  const studentName =
+    [application.student_first_name, application.student_last_name]
+      .filter(Boolean)
+      .join(" ") || "(no student name)"
+  const guardianName = application.guardian1_name ?? "(no guardian name)"
+
+  await sendMail({
+    subject: `New HBA application — ${guardianName} (for ${studentName})`,
+    htmlBody: buildApplicationNotificationHtml(application, dashboardUrl),
+    toRecipients: applicationRecipients,
+    replyTo: application.guardian1_email
+      ? { address: application.guardian1_email, name: guardianName }
+      : undefined,
+  })
+}
+
+function buildMagicLinkHtml(parentName: string, resumeUrl: string) {
+  return [
+    `<p>Hi ${escapeHtml(parentName)},</p>`,
+    `<p>You started an application on the High Bluff Academy website. Use the link below to resume where you left off — it's good for 30 days.</p>`,
+    `<p><a href="${escapeHtml(resumeUrl)}" style="display:inline-block;background:#f37021;color:#ffffff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;">Continue your application</a></p>`,
+    `<p>Or copy and paste this URL into your browser:</p>`,
+    `<p>${escapeHtml(resumeUrl)}</p>`,
+    `<p>If you didn't start an application, you can safely ignore this email.</p>`,
+    `<p>— High Bluff Academy</p>`,
+  ].join("")
+}
+
+export async function sendApplicationDraftMagicLink(options: {
+  toEmail: string
+  parentName: string
+  resumeUrl: string
+}) {
+  await sendMail({
+    subject: "Continue your High Bluff Academy application",
+    htmlBody: buildMagicLinkHtml(options.parentName, options.resumeUrl),
+    toRecipients: [options.toEmail],
+  })
 }
