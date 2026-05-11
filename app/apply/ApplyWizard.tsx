@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import Script from "next/script"
 import { summerCategories } from "@/lib/summer-courses"
 import type {
@@ -8,14 +8,6 @@ import type {
   ApplicationRecord,
   PriorSchool,
 } from "@/lib/applications"
-
-declare global {
-  interface Window {
-    turnstile?: {
-      reset: () => void
-    }
-  }
-}
 
 const turnstileSiteKey =
   process.env.NODE_ENV === "production"
@@ -1680,6 +1672,60 @@ function Step5Review({
   setField: <K extends keyof WizardState>(key: K, value: WizardState[K]) => void
 }) {
   const summary = useMemo(() => buildReviewSummary(state), [state])
+  const turnstileContainerRef = useRef<HTMLDivElement | null>(null)
+
+  // The Turnstile script auto-renders widgets that exist when the script
+  // first loads. Because Step 5 mounts AFTER the script has already done its
+  // initial scan, we have to call window.turnstile.render() explicitly when
+  // the component mounts, and clean up on unmount so going back/forward
+  // between steps doesn't leak widgets.
+  useEffect(() => {
+    if (!turnstileSiteKey) return
+
+    // Precompute the render options in the narrowed synchronous flow.
+    // TypeScript doesn't carry the `!turnstileSiteKey` narrowing into the
+    // nested mount() closure, so capturing it on a typed object is the
+    // cleanest way to keep `sitekey: string` valid inside the closure.
+    const renderOptions = {
+      sitekey: turnstileSiteKey,
+      theme: "light" as const,
+      size: "flexible" as const,
+    }
+
+    let widgetId: string | null = null
+    let pollHandle: ReturnType<typeof setInterval> | null = null
+    let cancelled = false
+
+    function mount() {
+      if (cancelled) return
+      if (!turnstileContainerRef.current) return
+      if (!window.turnstile) return
+      if (widgetId) return
+
+      const id = window.turnstile.render(turnstileContainerRef.current, renderOptions)
+      if (id) widgetId = id
+    }
+
+    if (window.turnstile) {
+      mount()
+    } else {
+      pollHandle = setInterval(() => {
+        if (window.turnstile) {
+          if (pollHandle) clearInterval(pollHandle)
+          pollHandle = null
+          mount()
+        }
+      }, 100)
+    }
+
+    return () => {
+      cancelled = true
+      if (pollHandle) clearInterval(pollHandle)
+      if (widgetId && window.turnstile) {
+        window.turnstile.remove(widgetId)
+      }
+    }
+  }, [])
 
   return (
     <div className="space-y-8">
@@ -1726,12 +1772,7 @@ function Step5Review({
 
       <div>
         {turnstileSiteKey ? (
-          <div
-            className="cf-turnstile"
-            data-sitekey={turnstileSiteKey}
-            data-theme="light"
-            data-size="flexible"
-          />
+          <div ref={turnstileContainerRef} />
         ) : (
           <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
             Turnstile is not configured yet.

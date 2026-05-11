@@ -3,14 +3,6 @@
 import { useState } from "react"
 import Script from "next/script"
 
-declare global {
-  interface Window {
-    turnstile?: {
-      reset: () => void
-    }
-  }
-}
-
 type SubmissionState =
   | { type: "idle" }
   | { type: "error"; message: string }
