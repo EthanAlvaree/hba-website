@@ -97,6 +97,7 @@ export default function ContactForm() {
                 type="email"
                 name="email"
                 autoComplete="email"
+                placeholder="Parent or guardian email address"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>
@@ -108,6 +109,7 @@ export default function ContactForm() {
                 type="tel"
                 name="phone"
                 autoComplete="tel"
+                placeholder="Best phone number"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>
@@ -130,6 +132,7 @@ export default function ContactForm() {
               required
               name="message"
               rows={6}
+              placeholder="Tell us about your student, your goals, or any questions you have."
               className="w-full rounded-3xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
             />
           </label>

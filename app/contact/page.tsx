@@ -6,7 +6,6 @@ import ContactForm from "./ContactForm"
 export default function ContactPage() {
   return (
     <main className="bg-gray-50 overflow-hidden">
-
       {/* HERO */}
       <PageHero
         title="Contact High Bluff Academy"
@@ -16,96 +15,107 @@ export default function ContactPage() {
 
       <Breadcrumbs />
 
-      {/* INTRO */}
-      <section className="py-24 bg-white">
-        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-[#12233d]">
-            Let’s connect.
-          </h2>
-          <p className="text-lg text-gray-600 leading-relaxed font-light">
-            Whether you’re a prospective family, a current student, or a community partner,
-            we’re always happy to hear from you. Our team is ready to answer questions,
-            schedule tours, and provide the support you need.
-          </p>
-        </div>
-      </section>
-
-      {/* CONTACT CARDS */}
-      <section className="py-20 bg-gray-50">
-        <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-10 lg:grid-cols-3">
-
-          {/* PHONE */}
-          <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
-            <div className="text-brand-orange font-semibold tracking-[0.18em] text-xs uppercase mb-4">
-              Call us
-            </div>
-            <h3 className="text-2xl font-semibold text-[#12233d] mb-3">
-              (858) 509‑9101
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Our office team is available to assist with admissions, scheduling, and general inquiries.
-            </p>
-          </div>
-
-          {/* EMAIL */}
-          <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
-            <div className="text-brand-orange font-semibold tracking-[0.18em] text-xs uppercase mb-4">
-              Email
-            </div>
-            <h3 className="text-2xl font-semibold text-[#12233d] mb-3 break-words">
-              {siteConfig.contact.admissionsEmail}
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Reach out anytime — we respond quickly and are happy to help.
-            </p>
-          </div>
-
-          {/* VISIT */}
-          <div className="bg-white rounded-3xl px-10 py-12 shadow-sm border border-gray-100 hover:shadow-xl transition-shadow">
-            <div className="text-brand-orange font-semibold tracking-[0.18em] text-xs uppercase mb-4">
-              Visit us
-            </div>
-            <h3 className="text-2xl font-semibold text-[#12233d] mb-3">
-              5531 Cancha de Golf, Ste 202<br />
-              Rancho Santa Fe, CA 92091
-            </h3>
-            <p className="text-sm text-gray-600 leading-relaxed">
-              Schedule a tour to see our campus, meet our faculty, and experience HBA in person.
-            </p>
-          </div>
-
-        </div>
-      </section>
-
-      {/* FORM SECTION — PREMIUM EDITORIAL */}
-      <section className="py-28 bg-gradient-to-br from-[#24375a] via-[#3b4f75] to-[#516a92]">
-        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center mb-16">
-          <h2 className="text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
-            Send us a message
-          </h2>
-          <p className="text-lg text-white/85 leading-relaxed font-light max-w-2xl mx-auto mt-4">
-            Share a question, request a call, or schedule a tour. We typically respond within one business day.
-          </p>
-        </div>
-
-        <div className="max-w-3xl mx-auto px-6 lg:px-0">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden">
-            {/* <div className="px-8 pt-8 pb-4 text-left border-b border-slate-200">
-              <p className="text-sm font-medium tracking-[0.18em] uppercase text-brand-orange mb-2">
-                Contact Form
+      <section className="bg-white py-16 lg:py-20">
+        <div className="reveal mx-auto grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:px-12 xl:gap-14">
+          <div className="space-y-8 lg:pt-6">
+            <div className="space-y-4">
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange">
+                Contact HBA
               </p>
-              <p className="text-base text-slate-600">
-                Tell us a bit about your student and how we can help.
+              <h2 className="text-4xl font-extrabold tracking-tight text-[#12233d] lg:text-5xl">
+                Let’s connect.
+              </h2>
+              <p className="text-lg leading-relaxed text-slate-600">
+                Reach out with questions about admissions, scheduling, student support, or next steps. The form stays front and center, and our office team can also help by phone, email, or in person.
               </p>
-            </div> */}
+            </div>
 
-            <ContactForm />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-6 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange">
+                  Call us
+                </p>
+                <a
+                  href={`tel:${siteConfig.contact.phoneTel}`}
+                  className="mt-3 block text-2xl font-semibold tracking-tight text-[#12233d] transition hover:text-brand-orange"
+                >
+                  {siteConfig.contact.phone}
+                </a>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
+                  Best for quick questions about scheduling, admissions timing, and general office support.
+                </p>
+              </div>
+
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-6 shadow-sm">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange">
+                  Email admissions
+                </p>
+                <a
+                  href={`mailto:${siteConfig.contact.admissionsEmail}`}
+                  className="mt-3 block break-all text-xl font-semibold tracking-tight text-[#12233d] transition hover:text-brand-orange"
+                >
+                  {siteConfig.contact.admissionsEmail}
+                </a>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
+                  A good fit for sending school records, longer questions, or follow-up information.
+                </p>
+              </div>
+
+              <div className="rounded-3xl border border-slate-200 bg-slate-50 px-6 py-6 shadow-sm sm:col-span-2 lg:col-span-1">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange">
+                  Visit us
+                </p>
+                <div className="mt-3 space-y-1 text-xl font-semibold tracking-tight text-[#12233d]">
+                  <p>5531 Cancha de Golf, Ste 202</p>
+                  <p>Rancho Santa Fe, CA 92091</p>
+                </div>
+                <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-600">
+                  Schedule a campus visit to meet the team and get a feel for the HBA experience in person.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap gap-4">
+              <a
+                href={`mailto:${siteConfig.contact.admissionsEmail}`}
+                className="inline-flex items-center justify-center rounded-full bg-brand-navy px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110"
+              >
+                Email admissions
+              </a>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=5531+Cancha+de+Golf+Ste+202,+Rancho+Santa+Fe,+CA+92091"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-brand-navy px-6 py-3 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+              >
+                Get directions
+              </a>
+            </div>
+          </div>
+
+          <div className="relative">
+            <div className="absolute inset-0 translate-x-4 translate-y-4 rounded-[2rem] bg-brand-orange/12 blur-3xl" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-slate-100 bg-white shadow-[0_24px_80px_rgba(18,35,61,0.18)]">
+              <div className="border-b border-slate-200 bg-gradient-to-r from-[#24375a] via-[#31466b] to-[#486184] px-8 py-8 text-white sm:px-10">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/75">
+                  Send us a message
+                </p>
+                <h3 className="mt-3 text-3xl font-extrabold tracking-tight sm:text-4xl">
+                  Start the conversation here.
+                </h3>
+                <p className="mt-3 max-w-2xl text-base leading-relaxed text-white/80">
+                  Share a question, request a call, or ask about scheduling a tour. We typically respond within one business day.
+                </p>
+              </div>
+
+              <ContactForm />
+            </div>
           </div>
         </div>
       </section>
 
       {/* MAP SECTION */}
-      <section className="py-24 bg-white">
+      <section className="bg-slate-100 py-20 lg:py-24">
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 space-y-10">
           <div className="text-center space-y-3">
             <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
@@ -149,35 +159,6 @@ export default function ContactPage() {
           </div>
         </div>
       </section>
-
-      {/* CTA */}
-      <section className="py-20 bg-gray-50">
-        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12 text-center space-y-6">
-          <h2 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-[#12233d]">
-            We’re here to help.
-          </h2>
-          <p className="text-lg text-gray-600 leading-relaxed font-light max-w-2xl mx-auto">
-            Whether you’re exploring enrollment, planning a transition, or simply curious about our programs,
-            our team is ready to support you.
-          </p>
-
-          <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <a
-              href={`mailto:${siteConfig.contact.admissionsEmail}`}
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
-            >
-              Email admissions
-            </a>
-            <a
-              href="/admissions"
-              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-[#12233d] text-[#12233d] font-semibold text-sm hover:bg-[#12233d] hover:text-white transition"
-            >
-              Explore admissions
-            </a>
-          </div>
-        </div>
-      </section>
-
     </main>
   )
 }

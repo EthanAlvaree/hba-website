@@ -197,7 +197,7 @@ function buildDashboardHref(
     params.set("tour", nextFilters.tour)
   }
 
-  const defaultSort = mode === "archived" ? "newest" : "oldest"
+  const defaultSort = "newest"
 
   if (nextFilters.sort !== defaultSort) {
     params.set("sort", nextFilters.sort)
@@ -364,8 +364,8 @@ export default function ContactSubmissionsDashboard({
                 defaultValue={filters.sort}
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
               >
-                <option value="oldest">Oldest first</option>
                 <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
                 <option value="tour">Tour requests first</option>
                 <option value="name">Parent name A-Z</option>
               </select>

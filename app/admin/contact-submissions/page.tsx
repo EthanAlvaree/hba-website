@@ -37,7 +37,7 @@ function buildPath(search: {
     params.set("tour", search.tour)
   }
 
-  if (search.sort !== "oldest") {
+  if (search.sort !== "newest") {
     params.set("sort", search.sort)
   }
 
@@ -66,7 +66,7 @@ export default async function ContactSubmissionsPage({ searchParams }: ContactSu
   const tour = params.tour === "yes" || params.tour === "no" ? params.tour : "all"
   const sort = submissionSortOptions.includes(params.sort as SubmissionSortOption)
     ? (params.sort as SubmissionSortOption)
-    : "oldest"
+    : "newest"
 
   const [submissions, summary] = await Promise.all([
     listContactSubmissions({ view: "active", status, tour }),
