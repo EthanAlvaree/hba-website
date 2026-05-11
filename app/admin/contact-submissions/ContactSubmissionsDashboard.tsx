@@ -298,6 +298,12 @@ export default function ContactSubmissionsDashboard({
                 <div className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/85">
                   Signed in as {adminEmail}
                 </div>
+                <Link
+                  href="/admin/applications"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Applications
+                </Link>
                 <form action={signOutAdminAction}>
                   <button
                     type="submit"

@@ -241,6 +241,7 @@ export type ApplicationSubmitInput = z.infer<typeof applicationSubmitSchema>
 export const applicationAdminUpdateSchema = z.object({
   id: z.uuid(),
   status: applicationStatusSchema,
+  enrollment_type: applicationEnrollmentTypeSchema.optional(),
   internal_notes: optionalString(4000),
   assigned_to: optionalString(200),
 })
@@ -634,6 +635,10 @@ export async function updateApplicationStatus(input: ApplicationAdminUpdate) {
     status: input.status,
     internal_notes: input.internal_notes ?? null,
     assigned_to: input.assigned_to ?? null,
+  }
+
+  if (input.enrollment_type !== undefined) {
+    patch.enrollment_type = input.enrollment_type
   }
 
   if (input.status === "archived") {
