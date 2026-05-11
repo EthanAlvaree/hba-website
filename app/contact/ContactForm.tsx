@@ -80,11 +80,12 @@ export default function ContactForm() {
         <form className="space-y-6" onSubmit={handleSubmit}>
           <div className="grid gap-6 sm:grid-cols-2">
             <label className="space-y-2 text-left">
-              <span className="block text-sm font-semibold text-slate-900">Name</span>
+              <span className="block text-sm font-semibold text-slate-900">Parent/guardian name</span>
               <input
                 required
                 name="name"
                 autoComplete="name"
+                placeholder="Parent or guardian full name"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>
@@ -117,6 +118,7 @@ export default function ContactForm() {
                 required
                 name="studentName"
                 autoComplete="off"
+                placeholder="Student full name"
                 className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>

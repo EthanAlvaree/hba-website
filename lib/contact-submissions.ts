@@ -19,7 +19,7 @@ export const contactSubmissionWorkflowStatusSchema = z.enum([
 ])
 
 export const contactSubmissionSchema = z.object({
-  name: z.string().trim().min(2, "Please enter your name.").max(120),
+  name: z.string().trim().min(2, "Please enter a parent or guardian name.").max(120),
   email: z.email("Please enter a valid email address.").max(320),
   phone: z.string().trim().min(7, "Please enter a phone number.").max(40),
   studentName: z

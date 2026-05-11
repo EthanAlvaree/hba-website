@@ -67,7 +67,7 @@ function buildContactSubmissionHtml(submission: ContactSubmissionRecord) {
 
   return [
     `<p>A new contact form submission was received on the HBA website.</p>`,
-    `<p><strong>Name:</strong> ${escapeHtml(submission.name)}</p>`,
+    `<p><strong>Parent/guardian name:</strong> ${escapeHtml(submission.name)}</p>`,
     `<p><strong>Email:</strong> ${escapeHtml(submission.email)}</p>`,
     `<p><strong>Phone:</strong> ${escapeHtml(submission.phone)}</p>`,
     `<p><strong>Student name:</strong> ${escapeHtml(submission.student_name)}</p>`,
@@ -92,7 +92,7 @@ export async function sendContactNotification(submission: ContactSubmissionRecor
       },
       body: JSON.stringify({
         message: {
-          subject: `New HBA contact form inquiry from ${submission.name}`,
+          subject: `New HBA contact inquiry from parent ${submission.name}`,
           body: {
             contentType: "HTML",
             content: buildContactSubmissionHtml(submission),

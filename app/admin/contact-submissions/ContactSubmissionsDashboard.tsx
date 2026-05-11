@@ -367,7 +367,7 @@ export default function ContactSubmissionsDashboard({
                 <option value="oldest">Oldest first</option>
                 <option value="newest">Newest first</option>
                 <option value="tour">Tour requests first</option>
-                <option value="name">Name A-Z</option>
+                <option value="name">Parent name A-Z</option>
               </select>
             </label>
 
@@ -401,6 +401,9 @@ export default function ContactSubmissionsDashboard({
                     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.9fr)_minmax(0,1.3fr)_auto] lg:items-center">
                       <div className="min-w-0 space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+                            Parent/guardian
+                          </span>
                           <h2 className="text-xl font-extrabold text-brand-navy">
                             {submission.name}
                           </h2>
@@ -459,6 +462,12 @@ export default function ContactSubmissionsDashboard({
                       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         <div className="rounded-3xl bg-slate-50 px-4 py-4">
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                            Parent/guardian
+                          </p>
+                          <p className="mt-2 text-sm font-medium text-slate-900">{submission.name}</p>
+                        </div>
+                        <div className="rounded-3xl bg-slate-50 px-4 py-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
                             Email
                           </p>
                           <p className="mt-2 text-sm font-medium text-slate-900">{submission.email}</p>
@@ -471,7 +480,7 @@ export default function ContactSubmissionsDashboard({
                         </div>
                         <div className="rounded-3xl bg-slate-50 px-4 py-4">
                           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                            Student
+                            Student name
                           </p>
                           <p className="mt-2 text-sm font-medium text-slate-900">{submission.student_name}</p>
                         </div>
