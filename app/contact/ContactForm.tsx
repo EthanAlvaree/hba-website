@@ -134,20 +134,12 @@ export default function ContactForm() {
 
           <label className="space-y-2 text-left">
             <span className="block text-sm font-semibold text-slate-900">How did you hear about us?</span>
-            <select
+            <input
               name="howDidYouHear"
-              defaultValue=""
+              autoComplete="off"
+              placeholder="Referral name, school, social post, Google search, etc."
               className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
-            >
-              <option value="">Select an option</option>
-              <option value="Friend or family">Friend or family</option>
-              <option value="Current HBA family">Current HBA family</option>
-              <option value="Online search">Online search</option>
-              <option value="Social media">Social media</option>
-              <option value="Another school or counselor">Another school or counselor</option>
-              <option value="Community event">Community event</option>
-              <option value="Other">Other</option>
-            </select>
+            />
           </label>
 
           <fieldset className="space-y-3 text-left">

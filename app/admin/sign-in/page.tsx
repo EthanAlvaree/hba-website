@@ -33,7 +33,7 @@ export default async function AdminSignInPage() {
         >
           <button
             type="submit"
-            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-8 py-3 text-sm font-semibold text-white transition hover:brightness-110"
+            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-8 py-3 text-sm font-semibold text-white shadow-lg transition duration-200 hover:-translate-y-0.5 hover:brightness-110 hover:shadow-xl active:translate-y-0 active:brightness-100"
           >
             Continue with Microsoft 365
           </button>

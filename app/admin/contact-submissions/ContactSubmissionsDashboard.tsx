@@ -516,13 +516,6 @@ export default function ContactSubmissionsDashboard({
                         <input type="hidden" name="id" value={submission.id} />
                         <input type="hidden" name="redirectTo" value={currentPath} />
 
-                        <div className="space-y-2">
-                          <p className="text-sm font-semibold text-slate-900">Front desk triage</p>
-                          <p className="text-sm text-slate-600">
-                            Step 1 is <strong>Needs response</strong>. Step 2 is <strong>In follow-up</strong>. Step 3 is <strong>Tour scheduled</strong>. Step 4 is <strong>Awaiting decision</strong>. Archive once the family enrolls or decides not to move forward.
-                          </p>
-                        </div>
-
                         <label className="space-y-2 text-sm font-medium text-slate-700">
                           <span className="block">Status</span>
                           <select
