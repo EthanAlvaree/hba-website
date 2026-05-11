@@ -57,6 +57,14 @@ export type ContactSubmissionRecord = {
   archived_at: string | null
 }
 
+export type ContactSubmissionSummary = {
+  activeCount: number
+  newCount: number
+  contactedCount: number
+  archivedCount: number
+  activeTourRequestedCount: number
+}
+
 const supabaseUrl = process.env.HBA_SUPABASE_URL
 const supabaseServiceRoleKey = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
 
@@ -109,6 +117,7 @@ export async function createContactSubmission(input: ContactSubmissionInput) {
 }
 
 export async function listContactSubmissions(filters?: {
+  view?: "active" | "archived" | "all"
   status?: ContactSubmissionStatus | "all"
   tour?: "yes" | "no" | "all"
 }) {
@@ -118,6 +127,14 @@ export async function listContactSubmissions(filters?: {
       "id, created_at, name, email, phone, student_name, message, schedule_tour, how_did_you_hear, status, assigned_to, notes, source, spam_provider, spam_verified, archived_at"
     )
     .order("created_at", { ascending: false })
+
+  if (filters?.view === "active") {
+    query = query.neq("status", "archived")
+  }
+
+  if (filters?.view === "archived") {
+    query = query.eq("status", "archived")
+  }
 
   if (filters?.status && filters.status !== "all") {
     query = query.eq("status", filters.status)
@@ -138,6 +155,49 @@ export async function listContactSubmissions(filters?: {
   }
 
   return data
+}
+
+export async function getContactSubmissionSummary() {
+  const { data, error } = await supabase
+    .from("contact_submissions")
+    .select("status, schedule_tour")
+    .returns<Array<Pick<ContactSubmissionRecord, "status" | "schedule_tour">>>()
+
+  if (error) {
+    throw new Error(`Failed to load contact submission summary: ${error.message}`)
+  }
+
+  return (data ?? []).reduce<ContactSubmissionSummary>(
+    (summary, submission) => {
+      if (submission.status === "archived") {
+        summary.archivedCount += 1
+        return summary
+      }
+
+      summary.activeCount += 1
+
+      if (submission.status === "new") {
+        summary.newCount += 1
+      }
+
+      if (submission.status === "contacted") {
+        summary.contactedCount += 1
+      }
+
+      if (submission.schedule_tour) {
+        summary.activeTourRequestedCount += 1
+      }
+
+      return summary
+    },
+    {
+      activeCount: 0,
+      newCount: 0,
+      contactedCount: 0,
+      archivedCount: 0,
+      activeTourRequestedCount: 0,
+    }
+  )
 }
 
 export async function updateContactSubmission(input: ContactSubmissionUpdate) {

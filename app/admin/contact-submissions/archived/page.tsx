@@ -2,7 +2,6 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { isAllowedAdminEmail } from "@/lib/admin"
 import {
-  contactSubmissionStatusSchema,
   getContactSubmissionSummary,
   listContactSubmissions,
 } from "@/lib/contact-submissions"
@@ -10,43 +9,41 @@ import ContactSubmissionsDashboard, {
   submissionSortOptions,
   SubmissionSortOption,
   sortContactSubmissions,
-} from "./ContactSubmissionsDashboard"
+} from "../ContactSubmissionsDashboard"
 
-type ContactSubmissionsPageProps = {
+type ArchivedContactSubmissionsPageProps = {
   searchParams: Promise<{
-    status?: string
     tour?: string
     sort?: string
   }>
 }
 
 function buildPath(search: {
-  status: string
   tour: string
   sort: SubmissionSortOption
 }) {
   const params = new URLSearchParams()
 
-  if (search.status !== "all") {
-    params.set("status", search.status)
-  }
-
   if (search.tour !== "all") {
     params.set("tour", search.tour)
   }
 
-  if (search.sort !== "oldest") {
+  if (search.sort !== "newest") {
     params.set("sort", search.sort)
   }
 
   const query = params.toString()
 
-  return query ? `/admin/contact-submissions?${query}` : "/admin/contact-submissions"
+  return query
+    ? `/admin/contact-submissions/archived?${query}`
+    : "/admin/contact-submissions/archived"
 }
 
 export const dynamic = "force-dynamic"
 
-export default async function ContactSubmissionsPage({ searchParams }: ContactSubmissionsPageProps) {
+export default async function ArchivedContactSubmissionsPage({
+  searchParams,
+}: ArchivedContactSubmissionsPageProps) {
   const session = await auth()
 
   if (!isAllowedAdminEmail(session?.user?.email)) {
@@ -56,25 +53,22 @@ export default async function ContactSubmissionsPage({ searchParams }: ContactSu
   const adminEmail = session?.user?.email ?? ""
 
   const params = await searchParams
-  const parsedStatus = contactSubmissionStatusSchema.safeParse(params.status)
-  const status =
-    parsedStatus.success && parsedStatus.data !== "archived" ? parsedStatus.data : "all"
   const tour = params.tour === "yes" || params.tour === "no" ? params.tour : "all"
   const sort = submissionSortOptions.includes(params.sort as SubmissionSortOption)
     ? (params.sort as SubmissionSortOption)
-    : "oldest"
+    : "newest"
 
   const [submissions, summary] = await Promise.all([
-    listContactSubmissions({ view: "active", status, tour }),
+    listContactSubmissions({ view: "archived", tour }),
     getContactSubmissionSummary(),
   ])
 
   return (
     <ContactSubmissionsDashboard
       adminEmail={adminEmail}
-      currentPath={buildPath({ status, tour, sort })}
-      filters={{ status, tour, sort }}
-      mode="active"
+      currentPath={buildPath({ tour, sort })}
+      filters={{ status: "archived", tour, sort }}
+      mode="archived"
       submissions={sortContactSubmissions(submissions, sort)}
       summary={summary}
     />

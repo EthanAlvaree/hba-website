@@ -22,6 +22,8 @@ async function assertAdminSession() {
 export async function updateContactSubmissionAction(formData: FormData) {
   await assertAdminSession()
 
+  const redirectTo = formData.get("redirectTo")
+
   const parsed = contactSubmissionUpdateSchema.safeParse({
     id: formData.get("id"),
     status: formData.get("status"),
@@ -34,6 +36,14 @@ export async function updateContactSubmissionAction(formData: FormData) {
 
   await updateContactSubmission(parsed.data)
   revalidatePath("/admin/contact-submissions")
+  revalidatePath("/admin/contact-submissions/archived")
+
+  if (
+    typeof redirectTo === "string" &&
+    redirectTo.startsWith("/admin/contact-submissions")
+  ) {
+    redirect(redirectTo)
+  }
 }
 
 export async function signOutAdminAction() {
