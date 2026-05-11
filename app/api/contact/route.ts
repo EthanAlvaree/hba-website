@@ -11,16 +11,6 @@ export const dynamic = "force-dynamic"
 const minimumSubmissionDelayMs = 1500
 const maximumSubmissionAgeMs = 1000 * 60 * 60 * 24
 
-function extractRemoteIp(request: Request) {
-  const forwardedFor = request.headers.get("x-forwarded-for")
-
-  if (!forwardedFor) {
-    return null
-  }
-
-  return forwardedFor.split(",")[0]?.trim() ?? null
-}
-
 export async function POST(request: Request) {
   try {
     const formData = await request.formData()
@@ -63,12 +53,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true })
     }
 
-    const turnstileResult = await verifyTurnstileToken(
-      parsed.data.turnstileToken,
-      extractRemoteIp(request)
-    )
+    const turnstileResult = await verifyTurnstileToken(parsed.data.turnstileToken)
 
     if (!turnstileResult.success) {
+      console.error("Turnstile verification failed.", turnstileResult.errors)
+
       return NextResponse.json(
         { success: false, error: "Please complete the spam check and try again." },
         { status: 400 }

@@ -18,15 +18,11 @@ function getRequiredTurnstileSecret() {
   return value
 }
 
-export async function verifyTurnstileToken(token: string, remoteIp?: string | null) {
+export async function verifyTurnstileToken(token: string) {
   const formData = new URLSearchParams({
     secret: turnstileSecretKey,
     response: token,
   })
-
-  if (remoteIp) {
-    formData.set("remoteip", remoteIp)
-  }
 
   const response = await fetch(
     "https://challenges.cloudflare.com/turnstile/v0/siteverify",
@@ -40,14 +36,23 @@ export async function verifyTurnstileToken(token: string, remoteIp?: string | nu
     }
   )
 
-  if (!response.ok) {
-    throw new Error(`Turnstile verification failed with status ${response.status}`)
+  let result: TurnstileVerificationResult | null = null
+
+  try {
+    result = (await response.json()) as TurnstileVerificationResult
+  } catch {
+    result = null
   }
 
-  const result = (await response.json()) as TurnstileVerificationResult
+  if (!response.ok) {
+    return {
+      success: false,
+      errors: result?.["error-codes"] ?? [`siteverify-http-${response.status}`],
+    }
+  }
 
   return {
-    success: result.success,
-    errors: result["error-codes"] ?? [],
+    success: result?.success === true,
+    errors: result?.["error-codes"] ?? [],
   }
 }
