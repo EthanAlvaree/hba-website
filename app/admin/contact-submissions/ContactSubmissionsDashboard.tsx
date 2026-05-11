@@ -191,6 +191,41 @@ function buildDashboardHref(
   return query ? `${basePath}?${query}` : basePath
 }
 
+function getQueueTabs(mode: DashboardMode, filters: DashboardFilters, summary: ContactSubmissionSummary) {
+  return [
+    {
+      label: "Active queue",
+      count: summary.activeCount,
+      href: buildDashboardHref("active", filters, { status: "all", tour: "all" }),
+      active: mode === "active" && filters.status === "all" && filters.tour === "all",
+    },
+    {
+      label: "Needs response",
+      count: summary.newCount,
+      href: buildDashboardHref("active", filters, { status: "new", tour: "all" }),
+      active: mode === "active" && filters.status === "new" && filters.tour === "all",
+    },
+    {
+      label: "In follow-up",
+      count: summary.contactedCount,
+      href: buildDashboardHref("active", filters, { status: "contacted", tour: "all" }),
+      active: mode === "active" && filters.status === "contacted" && filters.tour === "all",
+    },
+    {
+      label: "Tour requests",
+      count: summary.activeTourRequestedCount,
+      href: buildDashboardHref("active", filters, { status: "all", tour: "yes" }),
+      active: mode === "active" && filters.status === "all" && filters.tour === "yes",
+    },
+    {
+      label: "Archived",
+      count: summary.archivedCount,
+      href: buildDashboardHref("archived", filters, { tour: "all" }),
+      active: mode === "archived",
+    },
+  ]
+}
+
 function TrashIcon() {
   return (
     <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" className="h-4 w-4">
@@ -214,38 +249,7 @@ export default function ContactSubmissionsDashboard({
   summary,
 }: ContactSubmissionsDashboardProps) {
   const isArchivedView = mode === "archived"
-  const quickFilters = !isArchivedView
-    ? [
-        {
-          label: "Active queue",
-          count: summary.activeCount,
-          href: buildDashboardHref(mode, filters, { status: "all", tour: "all" }),
-          active: filters.status === "all" && filters.tour === "all",
-          className: "text-brand-navy",
-        },
-        {
-          label: "Needs response",
-          count: summary.newCount,
-          href: buildDashboardHref(mode, filters, { status: "new", tour: "all" }),
-          active: filters.status === "new" && filters.tour === "all",
-          className: "text-amber-700",
-        },
-        {
-          label: "In follow-up",
-          count: summary.contactedCount,
-          href: buildDashboardHref(mode, filters, { status: "contacted", tour: "all" }),
-          active: filters.status === "contacted" && filters.tour === "all",
-          className: "text-sky-700",
-        },
-        {
-          label: "Tour requests",
-          count: summary.activeTourRequestedCount,
-          href: buildDashboardHref(mode, filters, { status: "all", tour: "yes" }),
-          active: filters.status === "all" && filters.tour === "yes",
-          className: "text-brand-orange",
-        },
-      ]
-    : []
+  const queueTabs = getQueueTabs(mode, filters, summary)
 
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
@@ -283,67 +287,29 @@ export default function ContactSubmissionsDashboard({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/admin/contact-submissions"
-                className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  !isArchivedView
-                    ? "border-white bg-white text-brand-navy"
-                    : "border-white/20 bg-transparent text-white hover:bg-white/10"
-                }`}
-              >
-                Active queue
-                <span className={`rounded-full px-2 py-0.5 text-xs ${
-                  !isArchivedView ? "bg-slate-100 text-brand-navy" : "bg-white/10 text-white"
-                }`}>
-                  {summary.activeCount}
-                </span>
-              </Link>
-
-              <Link
-                href="/admin/contact-submissions/archived"
-                className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                  isArchivedView
-                    ? "border-white bg-white text-brand-navy"
-                    : "border-white/20 bg-transparent text-white hover:bg-white/10"
-                }`}
-              >
-                Archived
-                <span className={`rounded-full px-2 py-0.5 text-xs ${
-                  isArchivedView ? "bg-slate-100 text-brand-navy" : "bg-white/10 text-white"
-                }`}>
-                  {summary.archivedCount}
-                </span>
-              </Link>
+              {queueTabs.map((tab) => (
+                <Link
+                  key={tab.label}
+                  href={tab.href}
+                  className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                    tab.active
+                      ? "border-white bg-white text-brand-navy"
+                      : "border-white/20 bg-transparent text-white hover:bg-white/10"
+                  }`}
+                >
+                  {tab.label}
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      tab.active ? "bg-slate-100 text-brand-navy" : "bg-white/10 text-white"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </section>
-
-        {!isArchivedView && (
-          <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-            {quickFilters.map((filter) => (
-              <Link
-                key={filter.label}
-                href={filter.href}
-                className={`rounded-[1.75rem] border px-5 py-5 shadow-sm transition ${
-                  filter.active
-                    ? "border-brand-navy/15 bg-brand-navy text-white"
-                    : "border-slate-200 bg-white text-slate-900 hover:border-brand-navy/20"
-                }`}
-              >
-                <p
-                  className={`text-xs font-semibold uppercase tracking-[0.18em] ${
-                    filter.active ? "text-white/70" : "text-slate-500"
-                  }`}
-                >
-                  {filter.label}
-                </p>
-                <p className={`mt-3 text-3xl font-extrabold ${filter.active ? "text-white" : filter.className}`}>
-                  {filter.count}
-                </p>
-              </Link>
-            ))}
-          </section>
-        )}
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <form
