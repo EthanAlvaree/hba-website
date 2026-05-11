@@ -199,7 +199,7 @@ export default function AdmissionsPage() {
           </div>
 
           <div className="mt-10 max-w-2xl mx-auto text-center text-sm text-white/80 space-y-2">
-            <p>Registration fee: $300 (non-refundable)</p>
+            <p>Registration fee: $350 (non-refundable)</p>
             <p>Late enrollment (after April 10): $1,000</p>
             <p>
               Graduation fee (12th grade): $600 — includes cap and gown, senior activities,

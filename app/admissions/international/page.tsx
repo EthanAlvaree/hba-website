@@ -180,7 +180,7 @@ export default function InternationalAdmissionsPage() {
               <ul className="divide-y divide-white/10 text-sm">
                 <li className="flex items-baseline justify-between gap-4 py-3">
                   <span className="text-white/85">Registration fee (non-refundable)</span>
-                  <span className="font-semibold text-white">$300</span>
+                  <span className="font-semibold text-white">$350</span>
                 </li>
                 <li className="flex items-baseline justify-between gap-4 py-3">
                   <span className="text-white/85">Late enrollment (after April 10)</span>
