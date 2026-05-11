@@ -9,10 +9,16 @@ const turnstileSecretKey =
     : "1x0000000000000000000000000000000AA"
 
 function getRequiredTurnstileSecret() {
-  const value = process.env.TURNSTILE_SECRET_KEY
+  const rawValue = process.env.TURNSTILE_SECRET_KEY
+
+  if (!rawValue) {
+    throw new Error("TURNSTILE_SECRET_KEY is missing.")
+  }
+
+  const value = rawValue.trim().replace(/^(['"])(.*)\1$/, "$2")
 
   if (!value) {
-    throw new Error("TURNSTILE_SECRET_KEY is missing.")
+    throw new Error("TURNSTILE_SECRET_KEY is empty after sanitization.")
   }
 
   return value
