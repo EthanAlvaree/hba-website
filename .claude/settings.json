@@ -57,7 +57,9 @@
       "Bash(node -e \"const sharp = require\\('sharp'\\); \\(async \\(\\) => { const a = await sharp\\('image-originals/faculty/kun-xuan.jpg'\\).metadata\\(\\); console.log\\('original:', a.width, 'x', a.height, a.format\\); const b = await sharp\\('public/images/faculty/kun-xuan.webp'\\).metadata\\(\\); console.log\\('current webp:', b.width, 'x', b.height, b.format\\); const c = await sharp\\('public/images/leadership/leadership-kun.webp'\\).metadata\\(\\); console.log\\('leadership webp:', c.width, 'x', c.height, c.format\\); }\\)\\(\\)\")",
       "Bash(npm i *)",
       "Read(//c/Users/ethan/.claude/projects/c--dev-hba-website/memory/**)",
-      "Bash(xargs grep -l -i \"ellen\")"
+      "Bash(xargs grep -l -i \"ellen\")",
+      "Bash(rm app/admin/_components/AdminShell.tsx app/admin/_components/sign-out-action.ts)",
+      "Bash(rmdir app/admin/_components)"
     ],
     "additionalDirectories": [
       "C:\\dev\\hba-website"

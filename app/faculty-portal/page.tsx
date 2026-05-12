@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import { getProfileByEmail } from "@/lib/sis"
 import { createClient } from "@supabase/supabase-js"
 
@@ -14,11 +14,6 @@ function periodShortLabel(period: string | null): string {
   if (period.startsWith("period_")) return `Period ${period.slice(7)}`
   if (period.startsWith("elective_")) return `Elective ${period.slice(9)}`
   return period
-}
-
-async function signOutFacultyAction() {
-  "use server"
-  await signOut({ redirectTo: "/" })
 }
 
 type SectionRow = {
@@ -96,45 +91,16 @@ export default async function FacultyHomePage() {
   const greetingName = profile.first_name?.trim() || profile.display_name?.trim() || profile.email
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-5xl space-y-6">
-        <section className="rounded-[2rem] bg-brand-navy px-8 py-8 text-white shadow-2xl">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-                Faculty portal
-              </p>
-              <h1 className="text-3xl font-extrabold sm:text-4xl">
-                Welcome, {greetingName}.
-              </h1>
-              <p className="text-sm text-white/85">Signed in as {profile.email}</p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link
-                href="/faculty-portal/teaching"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-              >
-                Teaching profile
-              </Link>
-              {profile.roles.includes("admin") && (
-                <Link
-                  href="/admin/applications"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Admin dashboard
-                </Link>
-              )}
-              <form action={signOutFacultyAction}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Sign out
-                </button>
-              </form>
-            </div>
-          </div>
-        </section>
+    <div className="space-y-6">
+        <header className="space-y-2">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange">
+            Faculty portal
+          </p>
+          <h1 className="text-3xl font-extrabold text-brand-navy sm:text-4xl">
+            Welcome, {greetingName}.
+          </h1>
+          <p className="text-sm text-slate-600">{profile.email}</p>
+        </header>
 
         <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-6 shadow-sm">
           <h2 className="text-lg font-extrabold text-emerald-900">Teaching profile</h2>
@@ -221,7 +187,6 @@ export default async function FacultyHomePage() {
             roadmap.
           </p>
         </section>
-      </div>
-    </main>
+    </div>
   )
 }

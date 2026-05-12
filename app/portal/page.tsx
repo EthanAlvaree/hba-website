@@ -1,6 +1,6 @@
 import Link from "next/link"
-import { redirect } from "next/navigation"
-import { auth, signOut } from "@/auth"
+import { notFound, redirect } from "next/navigation"
+import { auth } from "@/auth"
 import {
   getProfileByEmail,
   getStudentByProfileId,
@@ -9,6 +9,10 @@ import {
 } from "@/lib/sis"
 
 export const dynamic = "force-dynamic"
+
+type PageProps = {
+  searchParams: Promise<{ as?: string }>
+}
 
 const pacific = "America/Los_Angeles"
 
@@ -51,40 +55,56 @@ function groupByTerm(enrollments: StudentDetailEnrollment[]) {
   )
 }
 
-async function signOutPortalAction() {
-  "use server"
-  await signOut({ redirectTo: "/" })
-}
-
-export default async function StudentPortalPage() {
+export default async function StudentPortalPage({ searchParams }: PageProps) {
   const session = await auth()
-  if (!session?.user?.email) {
-    redirect("/admin/sign-in")
-  }
+  if (!session?.user?.email) redirect("/admin/sign-in")
 
   const profile = await getProfileByEmail(session.user.email)
-  if (!profile) {
+  if (!profile) redirect("/admin/sign-in")
+
+  const isStudent = profile.roles.includes("student")
+  const isAdmin = session.isAdmin === true
+  const raw = await searchParams
+
+  // Layout already gates non-student/non-admin out. Here we figure out
+  // *which* student to show:
+  //   - signed-in student → their own data
+  //   - admin with ?as=<studentId> → that student's data (preview mode)
+  //   - admin without ?as → friendly landing page asking them to pick
+  let targetStudentId: string | null = null
+  let previewing = false
+
+  if (isStudent) {
+    const stub = await getStudentByProfileId(profile.id)
+    if (!stub) {
+      return (
+        <EmptyState
+          title="No student record yet"
+          body="Your profile is marked as a student, but no student record is linked to it. Contact the office so they can finish the enrollment."
+        />
+      )
+    }
+    targetStudentId = stub.id
+  } else if (isAdmin && raw.as) {
+    targetStudentId = raw.as
+    previewing = true
+  } else if (isAdmin) {
+    return (
+      <EmptyState
+        title="Preview the student portal"
+        body="To preview the portal as a specific student, open a student from the directory and click 'Preview portal'."
+        cta={{ label: "Open the students directory", href: "/admin/students" }}
+      />
+    )
+  }
+
+  if (!targetStudentId) {
     redirect("/admin/sign-in")
   }
 
-  if (!profile.roles.includes("student")) {
-    // Not a student. Send admins to their dashboard; everyone else home.
-    if (session.isAdmin) {
-      redirect("/admin/contact-submissions")
-    }
-    redirect("/")
-  }
-
-  // Find the student record this profile is attached to. Reuse getStudentDetail
-  // for the enrollments; the page renders demographics from this same record.
-  const studentStub = await getStudentByProfileId(profile.id)
-  if (!studentStub) {
-    redirect("/")
-  }
-
-  const student = await getStudentDetail(studentStub.id)
+  const student = await getStudentDetail(targetStudentId)
   if (!student) {
-    redirect("/")
+    notFound()
   }
 
   const displayName = student.preferred_name?.trim() || student.legal_first_name
@@ -99,127 +119,146 @@ export default async function StudentPortalPage() {
     ) ?? buckets[0]
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-5xl space-y-6">
-        <section className="rounded-[2rem] bg-brand-navy px-8 py-8 text-white shadow-2xl">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-                Student portal
-              </p>
-              <h1 className="text-3xl font-extrabold sm:text-4xl">
-                Welcome, {displayName}.
-              </h1>
-              <p className="text-sm text-white/85">
-                Signed in as {profile.email}
-                {student.current_grade ? ` · Grade ${student.current_grade}` : ""}
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-3">
-              {student.enrollment_type === "full_time" && (
-                <Link
-                  href="/portal/course-requests"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Course requests
-                </Link>
+    <div className="space-y-6">
+      {previewing && (
+        <PreviewBanner
+          studentName={`${student.legal_first_name} ${student.legal_last_name}`.trim()}
+          returnHref={`/admin/students/${student.id}`}
+        />
+      )}
+
+      <header className="space-y-2">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange">
+          Student portal
+        </p>
+        <h1 className="text-3xl font-extrabold text-brand-navy sm:text-4xl">
+          Welcome, {displayName}.
+        </h1>
+        <p className="text-sm text-slate-600">
+          {student.profile?.email ?? student.legal_first_name}
+          {student.current_grade ? ` · Grade ${student.current_grade}` : ""}
+        </p>
+      </header>
+
+      {activeEnrollments.length === 0 ? (
+        <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">
+          You aren&rsquo;t enrolled in any sections yet. Check back after the
+          office assigns your schedule, or get in touch with the office if you
+          think this is wrong.
+        </section>
+      ) : (
+        buckets.map((bucket) => (
+          <section
+            key={bucket.key}
+            className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm"
+          >
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <h2 className="text-xl font-extrabold text-brand-navy">{bucket.label}</h2>
+              {bucket === currentTermBucket && (
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                  Current term
+                </span>
               )}
-              <Link
-                href="/portal/transcript"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-              >
-                Transcript
-              </Link>
-              <form action={signOutPortalAction}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Sign out
-                </button>
-              </form>
             </div>
-          </div>
-        </section>
 
-        {activeEnrollments.length === 0 ? (
-          <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">
-            You aren&rsquo;t enrolled in any sections yet. Check back after the
-            office assigns your schedule, or get in touch with the office if
-            you think this is wrong.
-          </section>
-        ) : (
-          buckets.map((bucket) => (
-            <section
-              key={bucket.key}
-              className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm"
-            >
-              <div className="flex flex-wrap items-end justify-between gap-3">
-                <h2 className="text-xl font-extrabold text-brand-navy">
-                  {bucket.label}
-                </h2>
-                {bucket === currentTermBucket && (
-                  <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                    Current term
-                  </span>
-                )}
-              </div>
-
-              <ul className="mt-4 space-y-3">
-                {bucket.enrollments.map((enrollment) => {
-                  const section = enrollment.section
-                  return (
-                    <li key={enrollment.id}>
-                      <Link
-                        href={`/portal/sections/${enrollment.id}`}
-                        className="block rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:border-brand-navy/30 hover:shadow-md"
-                      >
-                        <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_auto] sm:items-center">
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <p className="text-base font-semibold text-slate-900">
-                                {section?.course?.name ?? "(deleted course)"}
-                              </p>
-                              {section?.course?.code && (
-                                <code className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
-                                  {section.course.code}
-                                </code>
-                              )}
-                              {section?.section_code && (
-                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
-                                  Sec {section.section_code}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-slate-500">
-                              {periodShortLabel(section?.period ?? null)}
-                              {section?.room && <> &middot; Room {section.room}</>}
+            <ul className="mt-4 space-y-3">
+              {bucket.enrollments.map((enrollment) => {
+                const section = enrollment.section
+                return (
+                  <li key={enrollment.id}>
+                    <Link
+                      href={`/portal/sections/${enrollment.id}${previewing ? `?as=${student.id}` : ""}`}
+                      className="block rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:border-brand-navy/30 hover:shadow-md"
+                    >
+                      <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_auto] sm:items-center">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="text-base font-semibold text-slate-900">
+                              {section?.course?.name ?? "(deleted course)"}
                             </p>
+                            {section?.course?.code && (
+                              <code className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                {section.course.code}
+                              </code>
+                            )}
+                            {section?.section_code && (
+                              <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                                Sec {section.section_code}
+                              </span>
+                            )}
                           </div>
-                          <p className="text-sm text-slate-600">
-                            {section ? teacherShortName(section.teacher) : "—"}
+                          <p className="text-xs text-slate-500">
+                            {periodShortLabel(section?.period ?? null)}
+                            {section?.room && <> &middot; Room {section.room}</>}
                           </p>
-                          <span className="inline-flex items-center rounded-full border border-brand-navy/20 px-3 py-1 text-xs font-semibold text-brand-navy">
-                            Open →
-                          </span>
                         </div>
-                      </Link>
-                    </li>
-                  )
-                })}
-              </ul>
-            </section>
-          ))
-        )}
+                        <p className="text-sm text-slate-600">
+                          {section ? teacherShortName(section.teacher) : "—"}
+                        </p>
+                        <span className="inline-flex items-center rounded-full border border-brand-navy/20 px-3 py-1 text-xs font-semibold text-brand-navy">
+                          Open →
+                        </span>
+                      </div>
+                    </Link>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+        ))
+      )}
 
-        <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-          <p className="text-sm text-slate-600">
-            Calculated grades (weighted average per category, GPA across the
-            year) are coming in the next release. For now, you can see each
-            published assignment&rsquo;s individual score on its section page.
-          </p>
-        </section>
-      </div>
-    </main>
+      <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+        <p className="text-sm text-slate-600">
+          Calculated grades (weighted average per category, GPA across the
+          year) are coming in the next release. For now, you can see each
+          published assignment&rsquo;s individual score on its section page.
+        </p>
+      </section>
+    </div>
+  )
+}
+
+function PreviewBanner({
+  studentName,
+  returnHref,
+}: {
+  studentName: string
+  returnHref: string
+}) {
+  return (
+    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 text-sm text-amber-900">
+      Previewing as <strong>{studentName}</strong> —{" "}
+      <Link href={returnHref} className="underline-offset-4 hover:underline">
+        return to admin
+      </Link>
+    </div>
+  )
+}
+
+function EmptyState({
+  title,
+  body,
+  cta,
+}: {
+  title: string
+  body: string
+  cta?: { label: string; href: string }
+}) {
+  return (
+    <div className="space-y-4">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-extrabold text-brand-navy">{title}</h1>
+        <p className="text-sm text-slate-600">{body}</p>
+      </header>
+      {cta && (
+        <Link
+          href={cta.href}
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+        >
+          {cta.label}
+        </Link>
+      )}
+    </div>
   )
 }

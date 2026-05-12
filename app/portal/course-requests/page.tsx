@@ -324,8 +324,7 @@ function CourseRequestsLayout({
   children: React.ReactNode
 }) {
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6">
         <div>
           <Link
             href="/portal"
@@ -335,8 +334,7 @@ function CourseRequestsLayout({
           </Link>
         </div>
         {children}
-      </div>
-    </main>
+    </div>
   )
 }
 

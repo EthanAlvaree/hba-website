@@ -180,8 +180,7 @@ export default async function ParentStudentOverviewPage({
     ])
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/parent"
@@ -364,7 +363,6 @@ export default async function ParentStudentOverviewPage({
             )
           })
         )}
-      </div>
-    </main>
+    </div>
   )
 }

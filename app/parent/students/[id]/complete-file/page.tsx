@@ -73,8 +73,7 @@ export default async function CompleteFilePage({ params, searchParams }: PagePro
     : `${student.legal_first_name} ${student.legal_last_name}`
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6">
         <div>
           <Link
             href={`/parent/students/${studentId}`}
@@ -230,8 +229,7 @@ export default async function CompleteFilePage({ params, searchParams }: PagePro
             </button>
           </form>
         </section>
-      </div>
-    </main>
+    </div>
   )
 }
 

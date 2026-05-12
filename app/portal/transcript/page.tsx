@@ -30,8 +30,7 @@ export default async function PortalTranscriptPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10 print:bg-white print:px-0 print:py-0">
-      <div className="mx-auto max-w-4xl space-y-4">
+    <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
           <Link
             href="/portal"
@@ -43,7 +42,6 @@ export default async function PortalTranscriptPage() {
         </div>
 
         <TranscriptDocument transcript={transcript} variant="student" />
-      </div>
-    </main>
+    </div>
   )
 }

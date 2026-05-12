@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
-import { auth, signOut } from "@/auth"
+import { auth } from "@/auth"
 import { getProfileByEmail, listStudentsForParent } from "@/lib/sis"
 
 export const dynamic = "force-dynamic"
@@ -15,11 +15,6 @@ function formatDate(value: string | null) {
   }).format(new Date(`${value}T00:00:00`))
 }
 
-async function signOutParentAction() {
-  "use server"
-  await signOut({ redirectTo: "/" })
-}
-
 export default async function ParentPortalPage() {
   const session = await auth()
   if (!session?.user?.email) {
@@ -31,54 +26,67 @@ export default async function ParentPortalPage() {
     redirect("/admin/sign-in")
   }
 
-  if (!profile.roles.includes("parent")) {
-    // Not a parent. Send students to /portal, admins to admin dashboard,
-    // everyone else home.
+  // Layout already gates: only parents and admins reach here.
+  const isParent = profile.roles.includes("parent")
+  const isAdmin = session.isAdmin === true
+
+  if (!isParent && !isAdmin) {
     if (profile.roles.includes("student")) redirect("/portal")
-    if (session.isAdmin) redirect("/admin/contact-submissions")
-    redirect("/")
+    if (profile.roles.includes("faculty")) redirect("/faculty-portal")
+    redirect("/admin/sign-in")
   }
 
+  // For admins without a parent role, listStudentsForParent returns empty
+  // (no parent_links). That naturally hits the empty-state below and points
+  // them to the admin students directory.
   const children = await listStudentsForParent(profile.id)
   const greetingName =
     profile.first_name?.trim() || profile.display_name?.trim() || profile.email
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-5xl space-y-6">
-        <section className="rounded-[2rem] bg-brand-navy px-8 py-8 text-white shadow-2xl">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div className="space-y-2">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-                Family portal
-              </p>
-              <h1 className="text-3xl font-extrabold sm:text-4xl">
-                Hello, {greetingName}.
-              </h1>
-              <p className="text-sm text-white/85">Signed in as {profile.email}</p>
-            </div>
-            <form action={signOutParentAction}>
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
-        </section>
+    <div className="space-y-6">
+        <header className="space-y-2">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange">
+            Family portal
+          </p>
+          <h1 className="text-3xl font-extrabold text-brand-navy sm:text-4xl">
+            Hello, {greetingName}.
+          </h1>
+          <p className="text-sm text-slate-600">{profile.email}</p>
+        </header>
 
         {children.length === 0 ? (
           <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">
-            We don&rsquo;t have any students linked to your account yet. If you
-            believe this is wrong, contact the office at{" "}
-            <a
-              href="mailto:info@highbluffacademy.com"
-              className="font-semibold text-brand-navy underline-offset-4 hover:underline"
-            >
-              info@highbluffacademy.com
-            </a>{" "}
-            so we can sort it out.
+            {isAdmin && !isParent ? (
+              <>
+                <p>
+                  You&rsquo;re an admin previewing the family portal. To see
+                  what a specific parent sees, open a parent profile from the
+                  Profiles directory and click their kid&rsquo;s record from
+                  there.
+                </p>
+                <p className="mt-3">
+                  <Link
+                    href="/admin/profiles?role=parent"
+                    className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+                  >
+                    Open Profiles directory →
+                  </Link>
+                </p>
+              </>
+            ) : (
+              <>
+                We don&rsquo;t have any students linked to your account yet. If
+                you believe this is wrong, contact the office at{" "}
+                <a
+                  href="mailto:info@highbluffacademy.com"
+                  className="font-semibold text-brand-navy underline-offset-4 hover:underline"
+                >
+                  info@highbluffacademy.com
+                </a>{" "}
+                so we can sort it out.
+              </>
+            )}
           </section>
         ) : (
           <section className="space-y-3">
@@ -140,7 +148,6 @@ export default async function ParentPortalPage() {
             })}
           </section>
         )}
-      </div>
-    </main>
+    </div>
   )
 }

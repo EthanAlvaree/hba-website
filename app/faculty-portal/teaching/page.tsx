@@ -61,8 +61,7 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
       : null
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6">
         <div>
           <Link
             href="/faculty-portal"
@@ -101,8 +100,7 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
         />
 
         <WorkloadCard profileId={profile.id} workload={workload} />
-      </div>
-    </main>
+    </div>
   )
 }
 

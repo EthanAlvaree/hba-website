@@ -236,12 +236,20 @@ export default async function StudentDetailPage({
           >
             ← Back to students
           </Link>
-          <Link
-            href={`/admin/students/${id}/transcript`}
-            className="inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-          >
-            View transcript →
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/portal?as=${id}`}
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              Preview portal →
+            </Link>
+            <Link
+              href={`/admin/students/${id}/transcript`}
+              className="inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+            >
+              View transcript →
+            </Link>
+          </div>
         </div>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
