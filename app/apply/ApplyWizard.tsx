@@ -649,21 +649,24 @@ export default function ApplyWizard({
     }
   }
 
-  async function saveDraft(emailOverride?: string) {
+  async function saveDraft(emailOverride?: string, turnstileTokenOverride?: string) {
+    // First-time saves go through DraftEmailPrompt, which collects both the
+    // email and the Turnstile token. Subsequent saves use the existing draft
+    // token as the auth credential and skip the prompt entirely.
+    if (!state.draft_token && !turnstileTokenOverride) {
+      setShowDraftEmailPrompt(true)
+      return
+    }
+
     setSubmission({ type: "saving" })
 
     const email = emailOverride ?? state.draft_email ?? state.guardian1_email
-
-    if (!state.draft_token && !email.trim()) {
-      setShowDraftEmailPrompt(true)
-      setSubmission({ type: "idle" })
-      return
-    }
 
     const payload = buildApiPayload(state, {
       draft_email: email,
       website: "",
       submitted_at: submittedAt,
+      turnstile_token: turnstileTokenOverride,
     })
 
     try {
@@ -841,7 +844,7 @@ export default function ApplyWizard({
           <DraftEmailPrompt
             initialEmail={state.draft_email || state.guardian1_email}
             onCancel={() => setShowDraftEmailPrompt(false)}
-            onSave={(email) => saveDraft(email)}
+            onSave={(email, token) => saveDraft(email, token)}
             isSaving={submission.type === "saving"}
           />
         )}
@@ -2076,31 +2079,91 @@ function DraftEmailPrompt({
 }: {
   initialEmail: string
   onCancel: () => void
-  onSave: (email: string) => void
+  onSave: (email: string, turnstileToken: string) => void
   isSaving: boolean
 }) {
   const [email, setEmail] = useState(initialEmail)
   const [error, setError] = useState<string | null>(null)
+  const turnstileContainerRef = useRef<HTMLDivElement | null>(null)
+  const widgetIdRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!turnstileSiteKey) return
+
+    const renderOptions = {
+      sitekey: turnstileSiteKey,
+      theme: "light" as const,
+      size: "flexible" as const,
+    }
+
+    let pollHandle: ReturnType<typeof setInterval> | null = null
+    let cancelled = false
+
+    function mount() {
+      if (cancelled) return
+      if (!turnstileContainerRef.current) return
+      if (!window.turnstile) return
+      if (widgetIdRef.current) return
+
+      const id = window.turnstile.render(turnstileContainerRef.current, renderOptions)
+      if (id) widgetIdRef.current = id
+    }
+
+    if (window.turnstile) {
+      mount()
+    } else {
+      pollHandle = setInterval(() => {
+        if (window.turnstile) {
+          if (pollHandle) clearInterval(pollHandle)
+          pollHandle = null
+          mount()
+        }
+      }, 100)
+    }
+
+    return () => {
+      cancelled = true
+      if (pollHandle) clearInterval(pollHandle)
+      if (widgetIdRef.current && window.turnstile) {
+        window.turnstile.remove(widgetIdRef.current)
+        widgetIdRef.current = null
+      }
+    }
+  }, [])
 
   const handleSave = () => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError("Please enter a valid email.")
       return
     }
+
+    const tokenInput = turnstileContainerRef.current?.querySelector(
+      '[name="cf-turnstile-response"]'
+    ) as HTMLInputElement | null
+    const token = tokenInput?.value ?? ""
+
+    if (!token) {
+      setError("Please complete the spam check before saving.")
+      return
+    }
+
     setError(null)
-    onSave(email.trim())
+    onSave(email.trim(), token)
   }
 
   return (
-    <div className="my-6 rounded-3xl border border-brand-orange/30 bg-brand-orange/5 p-6">
-      <p className="text-sm font-semibold text-brand-navy">
-        Save your progress
-      </p>
-      <p className="mt-2 text-sm text-slate-700">
-        Enter the parent/guardian email so we can send you a link to resume this
-        application anytime in the next thirty days.
-      </p>
-      <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
+    <div className="my-6 space-y-4 rounded-3xl border border-brand-orange/30 bg-brand-orange/5 p-6">
+      <div>
+        <p className="text-sm font-semibold text-brand-navy">
+          Save your progress
+        </p>
+        <p className="mt-2 text-sm text-slate-700">
+          Enter the parent/guardian email so we can send you a link to resume
+          this application anytime in the next thirty days.
+        </p>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-[1fr_auto_auto] sm:items-end">
         <TextField
           label="Email"
           name="draft_email_prompt"
@@ -2126,6 +2189,14 @@ function DraftEmailPrompt({
           Cancel
         </button>
       </div>
+
+      {turnstileSiteKey ? (
+        <div ref={turnstileContainerRef} />
+      ) : (
+        <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          Turnstile is not configured yet.
+        </p>
+      )}
     </div>
   )
 }

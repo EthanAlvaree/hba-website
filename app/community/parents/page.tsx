@@ -48,26 +48,6 @@ export default function ParentsPage() {
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <a
-              href={siteConfig.external.enrollment}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
-            >
-              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
-                Parent portal
-              </div>
-              <h3 className="text-xl font-extrabold text-brand-navy mb-3">
-                Gradelink portal
-              </h3>
-              <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                Grades, attendance, assignments, and progress reports — all in one place.
-              </p>
-              <span className="mt-auto text-sm font-semibold text-brand-navy group-hover:text-brand-orange">
-                Open Gradelink →
-              </span>
-            </a>
-
-            <a
               href="/calendar"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >
@@ -197,7 +177,7 @@ export default function ParentsPage() {
               How we keep you in the loop
             </h4>
             <ul className="space-y-3 text-sm">
-              <li>• Real-time grades and attendance via Gradelink</li>
+              <li>• Real-time grades and attendance updates</li>
               <li>• Quarterly progress reports</li>
               <li>• Parent-teacher conferences twice a year</li>
               <li>• Email updates on school events and deadlines</li>

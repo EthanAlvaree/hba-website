@@ -1,8 +1,8 @@
 // lib/summer-courses.ts
 //
 // Summer 2026 course catalogue. Update this file each year; the page renders
-// directly from it. All courses link to the same Gradelink enrollment URL —
-// HBA's enrollment flow is a single application regardless of course.
+// directly from it. All courses link to the same enrollment URL — HBA's
+// enrollment flow is a single application regardless of course.
 
 import { siteConfig } from "@/lib/site"
 

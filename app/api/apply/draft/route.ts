@@ -7,6 +7,7 @@ import {
 } from "@/lib/applications"
 import { sendApplicationDraftMagicLink } from "@/lib/graph"
 import { siteConfig } from "@/lib/site"
+import { verifyTurnstileToken } from "@/lib/turnstile"
 
 export const dynamic = "force-dynamic"
 
@@ -89,9 +90,28 @@ export async function POST(request: Request) {
       )
     }
 
-    // Drafts don't require Turnstile — the email magic-link is the security
-    // control. Worst-case abuse is a single email per request to whatever
-    // address was provided; final submit still verifies Turnstile.
+    // First-draft creation requires Turnstile: this endpoint triggers an
+    // outbound Graph email to draft_email, so without a spam gate any client
+    // could spray "resume your application" emails at arbitrary addresses.
+    // Subsequent draft updates carry a valid draft_token and skip this check.
+    if (!input.turnstile_token) {
+      return NextResponse.json(
+        { success: false, error: "Please complete the spam check before saving." },
+        { status: 400 }
+      )
+    }
+
+    const turnstileResult = await verifyTurnstileToken(input.turnstile_token)
+
+    if (!turnstileResult.success) {
+      console.error("Turnstile verification failed (draft).", turnstileResult.errors)
+
+      return NextResponse.json(
+        { success: false, error: "Please complete the spam check and try again." },
+        { status: 400 }
+      )
+    }
+
     const created = await createApplicationDraft(input)
 
     let magicLinkSent = true
