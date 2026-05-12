@@ -1626,6 +1626,81 @@ export const profileRolesUpdateSchema = z.object({
 })
 export type ProfileRolesUpdateInput = z.infer<typeof profileRolesUpdateSchema>
 
+// Hard-deletes a profile after checking that no SIS data depends on it.
+// Safety rules (refuses delete + throws if any apply):
+//   - profile has a student record (would orphan all academic data)
+//   - profile has parent_links rows (would orphan parent-child relationships)
+//   - profile is currently active (force admin to deactivate first as an
+//     intentional double-check)
+//   - profile is the only active admin (last-admin guard)
+//
+// Course_sections referencing this profile as teacher get teacher_profile_id
+// set to null automatically by the existing FK (on delete set null), so
+// teaching history isn't lost; the section just shows "unassigned" until
+// re-staffed.
+export async function deleteProfile(profileId: string): Promise<void> {
+  const supabase = getSupabase()
+
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("id, email, active, roles")
+    .eq("id", profileId)
+    .single<{ id: string; email: string; active: boolean; roles: ProfileRole[] }>()
+
+  if (profileError) {
+    throw new Error(`Failed to load profile before delete: ${profileError.message}`)
+  }
+
+  if (profile.active) {
+    throw new Error(
+      "Deactivate this profile first (untoggle Active and save), then try delete again. The deactivation step is an intentional safety check."
+    )
+  }
+
+  if (profile.roles.includes("admin")) {
+    const adminCount = await countActiveAdminProfiles()
+    if (adminCount <= 1) {
+      throw new Error("Can't delete the last admin profile.")
+    }
+  }
+
+  // Student record check.
+  const { count: studentCount, error: studentError } = await supabase
+    .from("students")
+    .select("id", { count: "exact", head: true })
+    .eq("profile_id", profileId)
+  if (studentError) {
+    throw new Error(`Failed to check students: ${studentError.message}`)
+  }
+  if (studentCount && studentCount > 0) {
+    throw new Error(
+      `This profile is linked to a student record (${profile.email}). Delete the student record first if you really want this gone — or just leave the profile inactive.`
+    )
+  }
+
+  // Parent links check.
+  const { count: parentLinkCount, error: parentError } = await supabase
+    .from("parent_links")
+    .select("id", { count: "exact", head: true })
+    .eq("parent_profile_id", profileId)
+  if (parentError) {
+    throw new Error(`Failed to check parent links: ${parentError.message}`)
+  }
+  if (parentLinkCount && parentLinkCount > 0) {
+    throw new Error(
+      `This profile is linked as a parent to ${parentLinkCount} student(s). Detach those links first.`
+    )
+  }
+
+  const { error: deleteError } = await supabase
+    .from("profiles")
+    .delete()
+    .eq("id", profileId)
+  if (deleteError) {
+    throw new Error(`Failed to delete profile: ${deleteError.message}`)
+  }
+}
+
 // Counts how many active profiles have 'admin' in their roles. Used by the
 // last-admin guard below.
 export async function countActiveAdminProfiles(): Promise<number> {

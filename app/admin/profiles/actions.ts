@@ -6,6 +6,7 @@ import { auth, signOut } from "@/auth"
 import { emailFromM365User, listM365Users } from "@/lib/graph"
 import { isHbaEmail } from "@/lib/admin"
 import {
+  deleteProfile,
   profileActiveUpdateSchema,
   profileContactUpdateSchema,
   profileRoleSchema,
@@ -16,6 +17,7 @@ import {
   updateProfileRoles,
   type M365SyncRow,
 } from "@/lib/sis"
+import { z } from "zod"
 import { seedTeacherQualificationsFromBios } from "@/lib/scheduler"
 
 async function assertAdmin() {
@@ -182,6 +184,18 @@ export async function seedQualificationsFromBiosAction() {
     no_course: result.courses_no_match.slice(0, 12).join(" | "),
   })
   redirect(`/admin/profiles?${params.toString()}`)
+}
+
+const deleteProfileSchema = z.object({ id: z.uuid() })
+
+export async function deleteProfileAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = deleteProfileSchema.safeParse({ id: formData.get("id") })
+  if (!parsed.success) throw new Error("Invalid request.")
+
+  await deleteProfile(parsed.data.id)
+  revalidateProfiles()
+  redirect("/admin/profiles?deleted=1")
 }
 
 export async function signOutProfilesAdminAction() {

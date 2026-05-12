@@ -10,6 +10,7 @@ import {
   type ProfileRole,
 } from "@/lib/sis"
 import {
+  deleteProfileAction,
   seedQualificationsFromBiosAction,
   signOutProfilesAdminAction,
   syncM365Action,
@@ -44,6 +45,7 @@ type ProfilesPageProps = {
     skipped?: string
     filtered?: string
     sync_error?: string
+    deleted?: string
     bio_seed_ok?: string
     bio_seed_error?: string
     bios_matched?: string
@@ -182,6 +184,14 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
             </p>
             <p className="mt-1 text-sm text-rose-800 whitespace-pre-wrap">
               {raw.sync_error}
+            </p>
+          </section>
+        )}
+
+        {raw.deleted === "1" && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">
+              Profile deleted.
             </p>
           </section>
         )}
@@ -449,6 +459,28 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                         Save active flag
                       </button>
                     </form>
+
+                    {!profile.active && !isBootstrapAdmin && (
+                      <form action={deleteProfileAction} className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50/50 px-4 py-3">
+                        <input type="hidden" name="id" value={profile.id} />
+                        <div>
+                          <p className="text-sm font-semibold text-rose-900">Hard delete</p>
+                          <p className="text-xs text-rose-800">
+                            Permanently removes this profile row. Refused if
+                            the profile has a student record or parent_links
+                            (those carry SIS data we shouldn&rsquo;t lose).
+                            Course sections taught by this profile have the
+                            teacher cleared automatically.
+                          </p>
+                        </div>
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                        >
+                          Delete forever
+                        </button>
+                      </form>
+                    )}
                   </div>
                 </details>
               )

@@ -481,6 +481,194 @@ function computeScore(input: {
 // Persistence
 // ============================================================================
 
+// ============================================================================
+// Draft section editing (Turn D)
+// ============================================================================
+
+// Updates one schedule_draft_sections row in place. Used by the admin
+// review UI to fix solver decisions before commit. The set of editable
+// fields mirrors what gets copied to course_sections on commit, so a
+// review-time edit reaches the live schedule.
+export async function updateDraftSection(input: {
+  draft_section_id: string
+  teacher_profile_id: string | null
+  period: SectionPeriod | null
+  section_code: string | null
+  room: string | null
+  max_enrollment: number | null
+  modality: "in_person" | "online_async" | "online_sync" | "hybrid"
+  notes: string | null
+}): Promise<void> {
+  const { error } = await getSupabase()
+    .from("schedule_draft_sections")
+    .update({
+      teacher_profile_id: input.teacher_profile_id,
+      period: input.period,
+      section_code: input.section_code,
+      room: input.room,
+      max_enrollment: input.max_enrollment,
+      modality: input.modality,
+      notes: input.notes,
+    })
+    .eq("id", input.draft_section_id)
+
+  if (error) {
+    throw new Error(`Failed to update draft section: ${error.message}`)
+  }
+}
+
+// ============================================================================
+// Commit draft → course_sections + enrollments
+// ============================================================================
+
+export type CommitDraftResult = {
+  sections_created: number
+  enrollments_created: number
+  warnings: string[]
+}
+
+// Promotes a schedule_draft into the live SIS. For each draft_section
+// row, creates a course_sections row with the same shape; for each
+// draft_assignment, creates an enrollments row pointing at the new
+// section. Idempotent in the sense that the draft is marked 'committed'
+// after success — re-committing the same draft is blocked.
+//
+// We do NOT clear pre-existing course_sections for the term. If the
+// office wants to re-do a term's schedule from scratch, they need to
+// delete the existing sections first. This is intentional caution:
+// silently nuking live data on commit would be terrifying.
+export async function commitDraftToSis(input: {
+  draft_id: string
+}): Promise<CommitDraftResult> {
+  const supabase = getSupabase()
+
+  // Load draft header so we know the target term + status.
+  const { data: draft, error: draftError } = await supabase
+    .from("schedule_drafts")
+    .select("id, term_id, status")
+    .eq("id", input.draft_id)
+    .single<{ id: string; term_id: string; status: string }>()
+
+  if (draftError) throw new Error(`Failed to load draft: ${draftError.message}`)
+  if (draft.status === "committed") {
+    throw new Error("This draft has already been committed.")
+  }
+  if (draft.status === "discarded") {
+    throw new Error("This draft was discarded. Generate a fresh one to commit.")
+  }
+
+  // Load all draft sections + assignments for this draft.
+  const { data: draftSections, error: dsError } = await supabase
+    .from("schedule_draft_sections")
+    .select(
+      "id, course_id, teacher_profile_id, section_code, period, room, max_enrollment, modality, notes"
+    )
+    .eq("draft_id", input.draft_id)
+    .returns<
+      Array<{
+        id: string
+        course_id: string
+        teacher_profile_id: string | null
+        section_code: string | null
+        period: SectionPeriod | null
+        room: string | null
+        max_enrollment: number | null
+        modality: "in_person" | "online_async" | "online_sync" | "hybrid"
+        notes: string | null
+      }>
+    >()
+
+  if (dsError) throw new Error(`Failed to load draft sections: ${dsError.message}`)
+
+  const sections = draftSections ?? []
+  if (sections.length === 0) {
+    throw new Error("This draft has no sections to commit.")
+  }
+
+  // Bulk-load assignments tied to those sections.
+  const sectionIds = sections.map((s) => s.id)
+  const { data: draftAssignments, error: daError } = await supabase
+    .from("schedule_draft_assignments")
+    .select("id, draft_section_id, student_id")
+    .in("draft_section_id", sectionIds)
+    .returns<Array<{ id: string; draft_section_id: string; student_id: string }>>()
+
+  if (daError) throw new Error(`Failed to load draft assignments: ${daError.message}`)
+  const assignments = draftAssignments ?? []
+
+  // Insert course_sections one-by-one so we can capture the returned ids
+  // in the order they correspond to draft sections. A bulk insert would
+  // work too, but we want the mapping draft_section_id → real_section_id.
+  const sectionIdMap = new Map<string, string>()
+  for (const draftSection of sections) {
+    const { data: realSection, error: insertError } = await supabase
+      .from("course_sections")
+      .insert({
+        course_id: draftSection.course_id,
+        term_id: draft.term_id,
+        teacher_profile_id: draftSection.teacher_profile_id,
+        section_code: draftSection.section_code,
+        period: draftSection.period,
+        room: draftSection.room,
+        max_enrollment: draftSection.max_enrollment,
+        modality: draftSection.modality,
+        notes: draftSection.notes,
+      })
+      .select("id")
+      .single<{ id: string }>()
+
+    if (insertError) {
+      throw new Error(
+        `Failed to create section for course ${draftSection.course_id}: ${insertError.message}`
+      )
+    }
+    sectionIdMap.set(draftSection.id, realSection.id)
+  }
+
+  // Now insert enrollments. We use upsert with onConflict to ignore the
+  // (student_id, section_id) unique constraint — re-committing onto an
+  // already-existing enrollment is benign.
+  const enrollmentRows = assignments
+    .map((a) => {
+      const realSectionId = sectionIdMap.get(a.draft_section_id)
+      if (!realSectionId) return null
+      return {
+        student_id: a.student_id,
+        section_id: realSectionId,
+        status: "enrolled" as const,
+      }
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null)
+
+  let enrollmentsCreated = 0
+  if (enrollmentRows.length > 0) {
+    const { error: enrollmentError, count } = await supabase
+      .from("enrollments")
+      .upsert(enrollmentRows, { onConflict: "student_id,section_id", count: "exact" })
+
+    if (enrollmentError) {
+      throw new Error(`Failed to create enrollments: ${enrollmentError.message}`)
+    }
+    enrollmentsCreated = count ?? enrollmentRows.length
+  }
+
+  // Mark the draft committed.
+  const { error: statusError } = await supabase
+    .from("schedule_drafts")
+    .update({ status: "committed" })
+    .eq("id", input.draft_id)
+
+  if (statusError) {
+    throw new Error(`Failed to mark draft committed: ${statusError.message}`)
+  }
+
+  return {
+    sections_created: sections.length,
+    enrollments_created: enrollmentsCreated,
+    warnings: [],
+  }
+}
+
 export async function persistDraft(input: {
   term_id: string
   created_by: string | null

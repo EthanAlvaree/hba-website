@@ -4,7 +4,13 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 import { auth, signOut } from "@/auth"
-import { persistDraft, solveScheduleForTerm } from "@/lib/scheduler-solver"
+import {
+  commitDraftToSis,
+  persistDraft,
+  solveScheduleForTerm,
+  updateDraftSection,
+} from "@/lib/scheduler-solver"
+import { sectionPeriodSchema, sectionModalitySchema } from "@/lib/sis"
 import { createClient } from "@supabase/supabase-js"
 
 async function assertAdmin() {
@@ -93,6 +99,118 @@ export async function setDraftStatusAction(formData: FormData) {
 
   revalidateScheduler()
   redirect(`/admin/academics/scheduler?draft_id=${parsed.data.draft_id}`)
+}
+
+// ============================================================================
+// Commit draft → SIS
+// ============================================================================
+
+const commitDraftSchema = z.object({ draft_id: z.uuid() })
+
+export async function commitDraftAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = commitDraftSchema.safeParse({ draft_id: formData.get("draft_id") })
+  if (!parsed.success) throw new Error("Invalid request.")
+
+  try {
+    const result = await commitDraftToSis(parsed.data)
+    revalidateScheduler()
+    revalidatePath("/admin/academics/sections")
+    redirect(
+      `/admin/academics/scheduler?draft_id=${parsed.data.draft_id}&committed=${result.sections_created}_${result.enrollments_created}`
+    )
+  } catch (error) {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "digest" in error &&
+      typeof (error as { digest?: string }).digest === "string" &&
+      (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+    ) {
+      throw error
+    }
+    const message = error instanceof Error ? error.message : "Commit failed"
+    redirect(
+      `/admin/academics/scheduler?draft_id=${parsed.data.draft_id}&commit_error=${encodeURIComponent(message)}`
+    )
+  }
+}
+
+// ============================================================================
+// Edit a draft section (teacher / period / room / etc.)
+// ============================================================================
+
+const updateDraftSectionSchema = z.object({
+  draft_id: z.uuid(),
+  draft_section_id: z.uuid(),
+  teacher_profile_id: z
+    .union([z.uuid(), z.literal("")])
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  period: z
+    .union([sectionPeriodSchema, z.literal("")])
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  section_code: z
+    .string()
+    .trim()
+    .max(20)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  room: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  max_enrollment: z
+    .union([z.coerce.number().int().positive(), z.literal(""), z.null()])
+    .optional()
+    .transform((value) =>
+      value === "" || value === null || value === undefined ? null : value
+    ),
+  modality: sectionModalitySchema.default("in_person"),
+  notes: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+})
+
+export async function updateDraftSectionAction(formData: FormData) {
+  await assertAdmin()
+
+  const parsed = updateDraftSectionSchema.safeParse({
+    draft_id: formData.get("draft_id"),
+    draft_section_id: formData.get("draft_section_id"),
+    teacher_profile_id: formData.get("teacher_profile_id") ?? "",
+    period: formData.get("period") ?? "",
+    section_code: formData.get("section_code") ?? "",
+    room: formData.get("room") ?? "",
+    max_enrollment: formData.get("max_enrollment") ?? "",
+    modality: formData.get("modality") ?? "in_person",
+    notes: formData.get("notes") ?? "",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Update failed.")
+  }
+
+  await updateDraftSection({
+    draft_section_id: parsed.data.draft_section_id,
+    teacher_profile_id: parsed.data.teacher_profile_id,
+    period: parsed.data.period,
+    section_code: parsed.data.section_code,
+    room: parsed.data.room,
+    max_enrollment: parsed.data.max_enrollment,
+    modality: parsed.data.modality,
+    notes: parsed.data.notes,
+  })
+
+  revalidateScheduler()
+  redirect(
+    `/admin/academics/scheduler?draft_id=${parsed.data.draft_id}&section_saved=1`
+  )
 }
 
 export async function signOutSchedulerAdminAction() {

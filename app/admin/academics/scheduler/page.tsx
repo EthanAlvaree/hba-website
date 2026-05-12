@@ -1,12 +1,24 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { listTerms } from "@/lib/sis"
+import {
+  facultyLabel,
+  listFaculty,
+  listTerms,
+  sectionModalitySchema,
+  sectionPeriodSchema,
+  type FacultyOption,
+} from "@/lib/sis"
 import { periodDisplayLabel } from "@/lib/scheduler"
 import type { SolverWarning } from "@/lib/scheduler-solver"
 import { createClient } from "@supabase/supabase-js"
 import AcademicsHeader from "../AcademicsHeader"
-import { generateScheduleDraftAction, setDraftStatusAction } from "./actions"
+import {
+  commitDraftAction,
+  generateScheduleDraftAction,
+  setDraftStatusAction,
+  updateDraftSectionAction,
+} from "./actions"
 
 export const dynamic = "force-dynamic"
 
@@ -14,6 +26,9 @@ type PageProps = {
   searchParams: Promise<{
     draft_id?: string
     solver_error?: string
+    commit_error?: string
+    committed?: string  // "N_M" — sections_M_enrollments
+    section_saved?: string
   }>
 }
 
@@ -93,7 +108,7 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
-  const [terms, draftsRes] = await Promise.all([
+  const [terms, draftsRes, faculty] = await Promise.all([
     listTerms(),
     supabase
       .from("schedule_drafts")
@@ -104,6 +119,7 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
       .order("created_at", { ascending: false })
       .limit(20)
       .returns<DraftRow[]>(),
+    listFaculty(),
   ])
 
   if (draftsRes.error) throw new Error(draftsRes.error.message)
@@ -307,12 +323,39 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
           )}
         </section>
 
+        {/* Commit status banners */}
+        {raw.commit_error && (
+          <section className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-rose-900">Commit failed.</p>
+            <p className="mt-1 text-sm text-rose-800 whitespace-pre-wrap">{raw.commit_error}</p>
+          </section>
+        )}
+        {raw.committed && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">
+              Draft committed to the live SIS.
+            </p>
+            <p className="mt-1 text-sm text-emerald-800">
+              {(() => {
+                const [sections, enrollments] = raw.committed.split("_")
+                return `${sections ?? 0} sections + ${enrollments ?? 0} enrollments created. View them on the Sections tab.`
+              })()}
+            </p>
+          </section>
+        )}
+        {raw.section_saved === "1" && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">Section saved.</p>
+          </section>
+        )}
+
         {/* Selected draft details */}
         {selectedDraft && (
           <DraftDetail
             draft={selectedDraft}
             sections={selectedSections}
             assignmentsBySection={assignmentsBySection}
+            faculty={faculty}
           />
         )}
       </div>
@@ -324,10 +367,12 @@ function DraftDetail({
   draft,
   sections,
   assignmentsBySection,
+  faculty,
 }: {
   draft: DraftRow
   sections: DraftSectionRow[]
   assignmentsBySection: Map<string, AssignmentRow[]>
+  faculty: FacultyOption[]
 }) {
   const summary = draft.summary ?? {}
   const warnings = summary.warnings ?? []
@@ -386,9 +431,17 @@ function DraftDetail({
               </button>
             </form>
           ))}
-          <p className="text-xs text-slate-500">
-            Commit-to-SIS lands in Turn D.
-          </p>
+          {draft.status !== "committed" && draft.status !== "discarded" && (
+            <form action={commitDraftAction}>
+              <input type="hidden" name="draft_id" value={draft.id} />
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-700 px-5 py-2 text-xs font-semibold text-white shadow-md transition hover:brightness-110"
+              >
+                Commit to SIS →
+              </button>
+            </form>
+          )}
         </div>
       </div>
 
@@ -423,40 +476,52 @@ function DraftDetail({
                   {periodSections.map((section) => {
                     const assignments = assignmentsBySection.get(section.id) ?? []
                     return (
-                      <li
-                        key={section.id}
-                        className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-                      >
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold text-slate-900">
-                            {section.course?.name ?? "(deleted course)"}
-                          </p>
-                          {section.course?.code && (
-                            <code className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
-                              {section.course.code}
-                            </code>
-                          )}
-                          {section.section_code && (
-                            <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
-                              Sec {section.section_code}
-                            </span>
-                          )}
-                          <span className="text-xs text-slate-500">
-                            · {teacherShortName(section.teacher)}
-                          </span>
-                          <span className="text-xs font-semibold text-slate-700">
-                            · {assignments.length} student
-                            {assignments.length === 1 ? "" : "s"}
-                          </span>
-                        </div>
+                      <li key={section.id}>
+                        <details className="rounded-2xl border border-slate-200 bg-slate-50">
+                          <summary className="cursor-pointer list-none px-4 py-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <p className="text-sm font-semibold text-slate-900">
+                                {section.course?.name ?? "(deleted course)"}
+                              </p>
+                              {section.course?.code && (
+                                <code className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
+                                  {section.course.code}
+                                </code>
+                              )}
+                              {section.section_code && (
+                                <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
+                                  Sec {section.section_code}
+                                </span>
+                              )}
+                              <span className="text-xs text-slate-500">
+                                · {teacherShortName(section.teacher)}
+                              </span>
+                              <span className="text-xs font-semibold text-slate-700">
+                                · {assignments.length} student
+                                {assignments.length === 1 ? "" : "s"}
+                              </span>
+                              <span className="ml-auto inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+                                Edit
+                              </span>
+                            </div>
 
-                        {assignments.length > 0 && (
-                          <ul className="mt-2 grid gap-1 text-xs text-slate-700 sm:grid-cols-2">
-                            {assignments.map((a) => (
-                              <li key={a.id}>· {studentDisplay(a.student)}</li>
-                            ))}
-                          </ul>
-                        )}
+                            {assignments.length > 0 && (
+                              <ul className="mt-2 grid gap-1 text-xs text-slate-700 sm:grid-cols-2">
+                                {assignments.map((a) => (
+                                  <li key={a.id}>· {studentDisplay(a.student)}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </summary>
+
+                          {draft.status !== "committed" && (
+                            <DraftSectionEditForm
+                              draft={draft}
+                              section={section}
+                              faculty={faculty}
+                            />
+                          )}
+                        </details>
                       </li>
                     )
                   })}
@@ -501,6 +566,131 @@ function summarizeWarning(w: SolverWarning): string {
     case "section_at_capacity":
       return `${w.course_name} (${w.period}) — section is at max enrollment; later requests will get bumped to alternates.`
   }
+}
+
+function DraftSectionEditForm({
+  draft,
+  section,
+  faculty,
+}: {
+  draft: DraftRow
+  section: DraftSectionRow
+  faculty: FacultyOption[]
+}) {
+  return (
+    <form
+      action={updateDraftSectionAction}
+      className="space-y-3 border-t border-slate-200 px-4 py-3"
+    >
+      <input type="hidden" name="draft_id" value={draft.id} />
+      <input type="hidden" name="draft_section_id" value={section.id} />
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Teacher</span>
+          <select
+            name="teacher_profile_id"
+            defaultValue={section.teacher_profile_id ?? ""}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            <option value="">Unassigned</option>
+            {faculty.map((option) => (
+              <option key={option.id} value={option.id}>
+                {facultyLabel(option)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Period</span>
+          <select
+            name="period"
+            defaultValue={section.period ?? ""}
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            <option value="">Unscheduled</option>
+            {sectionPeriodSchema.options.map((option) => (
+              <option key={option} value={option}>
+                {periodDisplayLabel[option]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Section code</span>
+          <input
+            name="section_code"
+            defaultValue={section.section_code ?? ""}
+            maxLength={20}
+            placeholder="A, B, etc."
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Room</span>
+          <input
+            name="room"
+            defaultValue=""
+            maxLength={40}
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Max enrollment</span>
+          <input
+            name="max_enrollment"
+            type="number"
+            min="1"
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Modality</span>
+          <select
+            name="modality"
+            defaultValue="in_person"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            {sectionModalitySchema.options.map((option) => (
+              <option key={option} value={option}>
+                {option.replace("_", " ")}
+              </option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      <label className="space-y-1 text-xs font-medium text-slate-700">
+        <span className="block">Notes (optional)</span>
+        <textarea
+          name="notes"
+          rows={2}
+          maxLength={2000}
+          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+        />
+      </label>
+
+      <p className="text-xs text-slate-500">
+        Editing here only changes the draft — the live schedule isn&rsquo;t
+        touched until you click Commit to SIS at the top. Student
+        assignments per section aren&rsquo;t editable inline yet; for now,
+        edit the underlying course requests / availability / qualifications
+        and regenerate the draft if you need different placements.
+      </p>
+
+      <button
+        type="submit"
+        className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+      >
+        Save section
+      </button>
+    </form>
+  )
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
