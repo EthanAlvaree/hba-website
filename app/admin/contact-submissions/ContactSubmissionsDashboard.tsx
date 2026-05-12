@@ -304,6 +304,24 @@ export default function ContactSubmissionsDashboard({
                 >
                   Applications
                 </Link>
+                <Link
+                  href="/admin/academics"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Academics
+                </Link>
+                <Link
+                  href="/admin/students"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Students
+                </Link>
+                <Link
+                  href="/admin/profiles"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Profiles
+                </Link>
                 <form action={signOutAdminAction}>
                   <button
                     type="submit"

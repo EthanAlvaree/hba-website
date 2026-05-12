@@ -8,6 +8,7 @@ import {
 import type { ApplicationDocumentRecord } from "@/lib/application-storage"
 import {
   deleteApplicationAction,
+  enrollApplicationAction,
   signOutApplicationsAdminAction,
   updateApplicationAction,
 } from "./actions"
@@ -436,6 +437,24 @@ export default function ApplicationsDashboard({
                   Signed in as {adminEmail}
                 </div>
                 <Link
+                  href="/admin/academics"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Academics
+                </Link>
+                <Link
+                  href="/admin/students"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Students
+                </Link>
+                <Link
+                  href="/admin/profiles"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Profiles
+                </Link>
+                <Link
                   href="/admin/contact-submissions"
                   className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
                 >
@@ -863,6 +882,72 @@ export default function ApplicationsDashboard({
                         Save triage
                       </button>
                     </form>
+
+                    {application.status === "accepted" && (
+                      <form
+                        action={enrollApplicationAction}
+                        className="space-y-4 rounded-3xl border border-emerald-200 bg-emerald-50/60 p-5"
+                      >
+                        <input
+                          type="hidden"
+                          name="application_id"
+                          value={application.id}
+                        />
+                        <input type="hidden" name="redirectTo" value={currentPath} />
+
+                        <div className="space-y-1">
+                          <p className="text-sm font-semibold text-emerald-900">
+                            Enroll this student
+                          </p>
+                          <p className="text-sm text-emerald-800">
+                            Creates the student record, the parent/guardian profiles,
+                            and links them together. Run this once the family has
+                            accepted and the student&rsquo;s HBA Microsoft 365 account
+                            has been provisioned.
+                          </p>
+                        </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <label className="space-y-2 text-sm font-medium text-slate-700">
+                            <span className="block">Student HBA email</span>
+                            <input
+                              name="student_hba_email"
+                              type="email"
+                              required
+                              placeholder="firstname.lastname@highbluffacademy.com"
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
+                            />
+                          </label>
+                          <label className="space-y-2 text-sm font-medium text-slate-700">
+                            <span className="block">
+                              Registered at HBA (optional)
+                            </span>
+                            <input
+                              name="registered_at_hba"
+                              type="date"
+                              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
+                            />
+                          </label>
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-full bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition hover:brightness-110"
+                        >
+                          Enroll student
+                        </button>
+                      </form>
+                    )}
+
+                    {application.status === "enrolled" && (
+                      <div className="rounded-3xl border border-emerald-200 bg-emerald-50/60 p-5 text-sm text-emerald-900">
+                        <p className="font-semibold">Enrolled.</p>
+                        <p className="mt-1 text-emerald-800">
+                          A student record, profile, and parent links have been
+                          created from this application.
+                        </p>
+                      </div>
+                    )}
 
                     {isArchivedView && (
                       <form

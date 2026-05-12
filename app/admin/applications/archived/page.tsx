@@ -41,7 +41,7 @@ export default async function ArchivedApplicationsPage({
 }: ArchivedApplicationsPageProps) {
   const session = await auth()
 
-  if (!isAllowedAdminEmail(session?.user?.email)) {
+  if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
 

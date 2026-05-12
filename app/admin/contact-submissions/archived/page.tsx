@@ -46,7 +46,7 @@ export default async function ArchivedContactSubmissionsPage({
 }: ArchivedContactSubmissionsPageProps) {
   const session = await auth()
 
-  if (!isAllowedAdminEmail(session?.user?.email)) {
+  if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
 

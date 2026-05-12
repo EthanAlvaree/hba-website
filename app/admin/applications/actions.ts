@@ -11,6 +11,7 @@ import {
   deleteApplication,
   updateApplicationStatus,
 } from "@/lib/applications"
+import { enrollAcceptedApplication, enrollApplicationSchema } from "@/lib/sis"
 
 const optionalText = z
   .string()
@@ -41,7 +42,7 @@ const applicationDeleteFormSchema = z.object({
 
 async function assertAdmin() {
   const session = await auth()
-  if (!isAllowedAdminEmail(session?.user?.email)) {
+  if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
   return session
@@ -99,6 +100,26 @@ export async function deleteApplicationAction(formData: FormData) {
   }
 
   await deleteApplication(parsed.data.id)
+  revalidateApplicationViews()
+  redirectBackToQueue(redirectTo)
+}
+
+export async function enrollApplicationAction(formData: FormData) {
+  await assertAdmin()
+  const redirectTo = formData.get("redirectTo")
+
+  const parsed = enrollApplicationSchema.safeParse({
+    application_id: formData.get("application_id"),
+    student_hba_email: formData.get("student_hba_email"),
+    registered_at_hba: formData.get("registered_at_hba") ?? "",
+  })
+
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Enrollment failed.")
+  }
+
+  await enrollAcceptedApplication(parsed.data)
+
   revalidateApplicationViews()
   redirectBackToQueue(redirectTo)
 }

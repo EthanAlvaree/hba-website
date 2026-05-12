@@ -42,7 +42,7 @@ export const dynamic = "force-dynamic"
 export default async function ApplicationsPage({ searchParams }: ApplicationsPageProps) {
   const session = await auth()
 
-  if (!isAllowedAdminEmail(session?.user?.email)) {
+  if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
 

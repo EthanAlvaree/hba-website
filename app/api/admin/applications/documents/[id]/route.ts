@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   createAdminDownloadUrl,
   getApplicationDocumentById,
@@ -13,7 +12,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth()
-  if (!isAllowedAdminEmail(session?.user?.email)) {
+  if (!session?.isAdmin) {
     return NextResponse.redirect(new URL("/admin/sign-in", _request.url))
   }
 
