@@ -8,9 +8,12 @@ import {
 import type { ApplicationDocumentRecord } from "@/lib/application-storage"
 import {
   deleteApplicationAction,
+  deleteApplicationDocumentAdminAction,
   enrollApplicationAction,
   signOutApplicationsAdminAction,
   updateApplicationAction,
+  updateApplicationDataAction,
+  uploadApplicationDocumentAdminAction,
 } from "./actions"
 
 export const applicationSortOptions = ["newest", "oldest", "name"] as const
@@ -800,6 +803,17 @@ export default function ApplicationsDashboard({
                       </div>
                     </div>
 
+                    <AdminEditApplicationData
+                      application={application}
+                      redirectTo={currentPath}
+                    />
+
+                    <AdminManageDocuments
+                      application={application}
+                      documents={documentsByApp.get(application.id) ?? []}
+                      redirectTo={currentPath}
+                    />
+
                     <form
                       action={updateApplicationAction}
                       className="space-y-4 rounded-3xl border border-brand-navy/15 bg-white p-5"
@@ -987,5 +1001,370 @@ export default function ApplicationsDashboard({
         </section>
       </div>
     </main>
+  )
+}
+
+// ============================================================================
+// Admin edit / docs subcomponents
+// ============================================================================
+
+function AdminEditApplicationData({
+  application,
+  redirectTo,
+}: {
+  application: ApplicationRecord
+  redirectTo: string
+}) {
+  return (
+    <details className="rounded-3xl border border-brand-navy/15 bg-white">
+      <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-brand-navy">
+        Edit application data (fix typos, fill omissions)
+      </summary>
+
+      <form
+        action={updateApplicationDataAction}
+        className="space-y-6 border-t border-slate-200 px-5 py-5"
+      >
+        <input type="hidden" name="id" value={application.id} />
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+
+        <FormSection title="Enrollment type">
+          <SelectField
+            name="enrollment_type"
+            defaultValue={application.enrollment_type ?? ""}
+            options={[
+              { value: "", label: "Not set" },
+              { value: "summer", label: "Summer" },
+              { value: "part_time", label: "Part-time" },
+              { value: "full_time", label: "Full-time" },
+            ]}
+            label="Enrollment type"
+          />
+        </FormSection>
+
+        <FormSection title="Student">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField name="student_first_name" label="Legal first name" defaultValue={application.student_first_name} />
+            <TextField name="student_middle_name" label="Legal middle name" defaultValue={application.student_middle_name} />
+            <TextField name="student_last_name" label="Legal last name" defaultValue={application.student_last_name} />
+            <TextField name="student_suffix" label="Suffix" defaultValue={application.student_suffix} />
+            <TextField name="student_preferred_name" label="Preferred name" defaultValue={application.student_preferred_name} className="sm:col-span-2" />
+            <TextField name="student_dob" label="Date of birth" type="date" defaultValue={application.student_dob} />
+            <TextField name="student_gender" label="Gender" defaultValue={application.student_gender} />
+            <TextField name="student_pronouns" label="Pronouns" defaultValue={application.student_pronouns} />
+            <TextField name="student_birthplace" label="Birthplace" defaultValue={application.student_birthplace} />
+            <TextField name="student_primary_language" label="Primary language" defaultValue={application.student_primary_language} />
+            <TextField name="student_secondary_language" label="Secondary language" defaultValue={application.student_secondary_language} />
+            <TextField name="student_english_proficiency" label="English proficiency" defaultValue={application.student_english_proficiency} />
+            <TextField name="student_current_grade" label="Current grade" defaultValue={application.student_current_grade} />
+            <TextField name="student_desired_grade" label="Desired entry grade" defaultValue={application.student_desired_grade} />
+            <TextField name="student_personal_email" label="Student personal email" type="email" defaultValue={application.student_personal_email} />
+            <TextField name="student_phone" label="Student phone" type="tel" defaultValue={application.student_phone} />
+          </div>
+
+          <AddressFields prefix="student" application={application} />
+        </FormSection>
+
+        <FormSection title="Guardian 1">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField name="guardian1_name" label="Full name" defaultValue={application.guardian1_name} />
+            <TextField name="guardian1_relationship" label="Relationship" defaultValue={application.guardian1_relationship} />
+            <TextField name="guardian1_mobile" label="Mobile phone" type="tel" defaultValue={application.guardian1_mobile} />
+            <TextField name="guardian1_work_phone" label="Work phone" type="tel" defaultValue={application.guardian1_work_phone} />
+            <TextField name="guardian1_email" label="Email" type="email" defaultValue={application.guardian1_email} className="sm:col-span-2" />
+          </div>
+
+          <CheckboxRow
+            name="guardian1_address_same_as_student"
+            label="Same address as student"
+            defaultChecked={application.guardian1_address_same_as_student}
+          />
+          <AddressFields prefix="guardian1" application={application} />
+        </FormSection>
+
+        <FormSection title="Guardian 2 (optional)">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField name="guardian2_name" label="Full name" defaultValue={application.guardian2_name} />
+            <TextField name="guardian2_relationship" label="Relationship" defaultValue={application.guardian2_relationship} />
+            <TextField name="guardian2_mobile" label="Mobile phone" type="tel" defaultValue={application.guardian2_mobile} />
+            <TextField name="guardian2_work_phone" label="Work phone" type="tel" defaultValue={application.guardian2_work_phone} />
+            <TextField name="guardian2_email" label="Email" type="email" defaultValue={application.guardian2_email} className="sm:col-span-2" />
+          </div>
+
+          <CheckboxRow
+            name="guardian2_address_same_as_student"
+            label="Same address as student"
+            defaultChecked={application.guardian2_address_same_as_student}
+          />
+          <AddressFields prefix="guardian2" application={application} />
+        </FormSection>
+
+        <FormSection title="Homestay (optional)">
+          <CheckboxRow
+            name="has_homestay"
+            label="Has homestay family"
+            defaultChecked={application.has_homestay}
+          />
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <TextField name="homestay_name" label="Contact name" defaultValue={application.homestay_name} />
+            <TextField name="homestay_relationship" label="Relationship" defaultValue={application.homestay_relationship} />
+            <TextField name="homestay_mobile" label="Mobile phone" type="tel" defaultValue={application.homestay_mobile} />
+            <TextField name="homestay_work_phone" label="Work phone" type="tel" defaultValue={application.homestay_work_phone} />
+            <TextField name="homestay_email" label="Email" type="email" defaultValue={application.homestay_email} className="sm:col-span-2" />
+          </div>
+
+          <AddressFields prefix="homestay" application={application} />
+        </FormSection>
+
+        <FormSection title="Source + notes">
+          <div className="grid gap-3">
+            <TextField name="how_did_you_hear" label="How they heard about HBA" defaultValue={application.how_did_you_hear} />
+            <label className="space-y-1 text-xs font-medium text-slate-700">
+              <span className="block">Notes from family</span>
+              <textarea
+                name="notes_from_family"
+                rows={4}
+                defaultValue={application.notes_from_family ?? ""}
+                maxLength={4000}
+                className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+              />
+            </label>
+          </div>
+        </FormSection>
+
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+        >
+          Save application data
+        </button>
+      </form>
+    </details>
+  )
+}
+
+function AdminManageDocuments({
+  application,
+  documents,
+  redirectTo,
+}: {
+  application: ApplicationRecord
+  documents: ApplicationDocumentRecord[]
+  redirectTo: string
+}) {
+  return (
+    <details className="rounded-3xl border border-brand-navy/15 bg-white">
+      <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-brand-navy">
+        Manage transcript PDFs ({documents.length})
+      </summary>
+
+      <div className="space-y-4 border-t border-slate-200 px-5 py-5">
+        {documents.length === 0 ? (
+          <p className="text-sm text-slate-600">No documents on file yet.</p>
+        ) : (
+          <ul className="space-y-2">
+            {documents.map((doc) => (
+              <li
+                key={doc.id}
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <div className="min-w-0 flex-1">
+                  <a
+                    href={`/api/admin/applications/documents/${doc.id}`}
+                    target="_blank"
+                    rel="noopener"
+                    className="text-sm font-semibold text-brand-navy underline-offset-4 hover:underline"
+                  >
+                    📎 {doc.filename}
+                  </a>
+                  {doc.prior_school_name && (
+                    <p className="text-xs text-slate-500">
+                      For school: {doc.prior_school_name}
+                    </p>
+                  )}
+                </div>
+                <form action={deleteApplicationDocumentAdminAction}>
+                  <input type="hidden" name="document_id" value={doc.id} />
+                  <input type="hidden" name="redirectTo" value={redirectTo} />
+                  <button
+                    type="submit"
+                    className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                  >
+                    Delete
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form
+          action={uploadApplicationDocumentAdminAction}
+          encType="multipart/form-data"
+          className="space-y-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-4 py-4"
+        >
+          <input type="hidden" name="application_id" value={application.id} />
+          <input type="hidden" name="kind" value="transcript" />
+          <input type="hidden" name="redirectTo" value={redirectTo} />
+
+          <p className="text-sm font-semibold text-brand-navy">
+            Upload a replacement transcript
+          </p>
+          <p className="text-xs text-slate-500">
+            Max 4 MB per file. For larger PDFs, ask the family to re-upload
+            via their draft link.
+          </p>
+
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">For which prior school? (optional)</span>
+            <input
+              name="prior_school_name"
+              maxLength={200}
+              placeholder="e.g. La Jolla Country Day School"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">File</span>
+            <input
+              type="file"
+              name="file"
+              required
+              accept=".pdf,.png,.jpg,.jpeg,.gif,.heic,.doc,.docx"
+              className="block w-full text-sm text-slate-700 file:mr-3 file:rounded-full file:border-0 file:bg-brand-navy file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:brightness-110"
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          >
+            Upload
+          </button>
+        </form>
+      </div>
+    </details>
+  )
+}
+
+// ============================================================================
+// Tiny form primitives — keep the big edit form readable above
+// ============================================================================
+
+function FormSection({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <fieldset className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <legend className="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+        {title}
+      </legend>
+      {children}
+    </fieldset>
+  )
+}
+
+function TextField({
+  name,
+  label,
+  defaultValue,
+  type = "text",
+  className = "",
+}: {
+  name: string
+  label: string
+  defaultValue?: string | null
+  type?: string
+  className?: string
+}) {
+  return (
+    <label className={`space-y-1 text-xs font-medium text-slate-700 ${className}`}>
+      <span className="block">{label}</span>
+      <input
+        name={name}
+        type={type}
+        defaultValue={defaultValue ?? ""}
+        className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+      />
+    </label>
+  )
+}
+
+function SelectField({
+  name,
+  label,
+  defaultValue,
+  options,
+}: {
+  name: string
+  label: string
+  defaultValue: string
+  options: Array<{ value: string; label: string }>
+}) {
+  return (
+    <label className="space-y-1 text-xs font-medium text-slate-700">
+      <span className="block">{label}</span>
+      <select
+        name={name}
+        defaultValue={defaultValue}
+        className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
+}
+
+function CheckboxRow({
+  name,
+  label,
+  defaultChecked,
+}: {
+  name: string
+  label: string
+  defaultChecked: boolean
+}) {
+  return (
+    <label className="flex items-center gap-2 text-sm text-slate-700">
+      <input
+        type="checkbox"
+        name={name}
+        defaultChecked={defaultChecked}
+        className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+      />
+      <span>{label}</span>
+    </label>
+  )
+}
+
+function AddressFields({
+  prefix,
+  application,
+}: {
+  prefix: "student" | "guardian1" | "guardian2" | "homestay"
+  application: ApplicationRecord
+}) {
+  const v = (suffix: string) =>
+    application[`${prefix}_${suffix}` as keyof ApplicationRecord] as string | null
+
+  return (
+    <div className="grid gap-3 sm:grid-cols-2">
+      <TextField name={`${prefix}_address_line1`} label="Street address" defaultValue={v("address_line1")} className="sm:col-span-2" />
+      <TextField name={`${prefix}_address_line2`} label="Address line 2" defaultValue={v("address_line2")} className="sm:col-span-2" />
+      <TextField name={`${prefix}_address_city`} label="City" defaultValue={v("address_city")} />
+      <TextField name={`${prefix}_address_region`} label="State / region" defaultValue={v("address_region")} />
+      <TextField name={`${prefix}_address_postal_code`} label="Postal code" defaultValue={v("address_postal_code")} />
+      <TextField name={`${prefix}_address_country`} label="Country" defaultValue={v("address_country")} />
+    </div>
   )
 }

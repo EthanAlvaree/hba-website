@@ -235,6 +235,133 @@ export const applicationSubmitSchema = z
 export type ApplicationSubmitInput = z.infer<typeof applicationSubmitSchema>
 
 // ============================================================================
+// Admin data-edit schema — fixes typos and omissions on a submitted (but
+// not-yet-enrolled) application. Distinct from the admin status/notes update
+// below: this one mutates the family-provided fields, mostly the same set
+// the apply wizard collects.
+// ============================================================================
+
+const optionalEditedString = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null))
+
+const optionalEditedEmail = () =>
+  z
+    .union([z.email(), z.literal("")])
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null))
+
+const optionalEditedDate = () =>
+  z
+    .union([z.iso.date(), z.literal("")])
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null))
+
+export const applicationDataUpdateSchema = z.object({
+  id: z.uuid(),
+
+  enrollment_type: z
+    .union([applicationEnrollmentTypeSchema, z.literal("")])
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+
+  // Student
+  student_first_name: optionalEditedString(80),
+  student_middle_name: optionalEditedString(80),
+  student_last_name: optionalEditedString(80),
+  student_suffix: optionalEditedString(20),
+  student_preferred_name: optionalEditedString(80),
+  student_dob: optionalEditedDate(),
+  student_gender: optionalEditedString(40),
+  student_pronouns: optionalEditedString(40),
+  student_birthplace: optionalEditedString(200),
+  student_primary_language: optionalEditedString(80),
+  student_secondary_language: optionalEditedString(80),
+  student_english_proficiency: optionalEditedString(40),
+  student_current_grade: optionalEditedString(20),
+  student_desired_grade: optionalEditedString(20),
+  student_personal_email: optionalEditedEmail(),
+  student_phone: optionalEditedString(40),
+  student_address_line1: optionalEditedString(200),
+  student_address_line2: optionalEditedString(200),
+  student_address_city: optionalEditedString(120),
+  student_address_region: optionalEditedString(120),
+  student_address_postal_code: optionalEditedString(40),
+  student_address_country: optionalEditedString(120),
+
+  // Guardian 1
+  guardian1_name: optionalEditedString(200),
+  guardian1_relationship: optionalEditedString(80),
+  guardian1_mobile: optionalEditedString(40),
+  guardian1_work_phone: optionalEditedString(40),
+  guardian1_email: optionalEditedEmail(),
+  guardian1_address_same_as_student: z.coerce.boolean().optional().default(false),
+  guardian1_address_line1: optionalEditedString(200),
+  guardian1_address_line2: optionalEditedString(200),
+  guardian1_address_city: optionalEditedString(120),
+  guardian1_address_region: optionalEditedString(120),
+  guardian1_address_postal_code: optionalEditedString(40),
+  guardian1_address_country: optionalEditedString(120),
+
+  // Guardian 2
+  guardian2_name: optionalEditedString(200),
+  guardian2_relationship: optionalEditedString(80),
+  guardian2_mobile: optionalEditedString(40),
+  guardian2_work_phone: optionalEditedString(40),
+  guardian2_email: optionalEditedEmail(),
+  guardian2_address_same_as_student: z.coerce.boolean().optional().default(false),
+  guardian2_address_line1: optionalEditedString(200),
+  guardian2_address_line2: optionalEditedString(200),
+  guardian2_address_city: optionalEditedString(120),
+  guardian2_address_region: optionalEditedString(120),
+  guardian2_address_postal_code: optionalEditedString(40),
+  guardian2_address_country: optionalEditedString(120),
+
+  // Homestay
+  has_homestay: z.coerce.boolean().optional().default(false),
+  homestay_name: optionalEditedString(200),
+  homestay_relationship: optionalEditedString(80),
+  homestay_mobile: optionalEditedString(40),
+  homestay_work_phone: optionalEditedString(40),
+  homestay_email: optionalEditedEmail(),
+  homestay_address_line1: optionalEditedString(200),
+  homestay_address_line2: optionalEditedString(200),
+  homestay_address_city: optionalEditedString(120),
+  homestay_address_region: optionalEditedString(120),
+  homestay_address_postal_code: optionalEditedString(40),
+  homestay_address_country: optionalEditedString(120),
+
+  how_did_you_hear: optionalEditedString(400),
+  notes_from_family: optionalEditedString(4000),
+})
+export type ApplicationDataUpdateInput = z.infer<typeof applicationDataUpdateSchema>
+
+export async function updateApplicationData(input: ApplicationDataUpdateInput) {
+  const { id, ...rest } = input
+
+  const { data, error } = await getSupabase()
+    .from("applications")
+    .update(rest)
+    .eq("id", id)
+    .select(applicationSelectColumns)
+    .single<ApplicationRecord>()
+
+  if (error) {
+    throw new Error(`Failed to update application data: ${error.message}`)
+  }
+
+  return data
+}
+
+// ============================================================================
 // Admin update schema
 // ============================================================================
 

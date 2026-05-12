@@ -285,6 +285,115 @@ export async function deleteApplicationDocument(input: ApplicationDocumentDelete
   }
 }
 
+// ============================================================================
+// Admin-only document management (no draft-token check — caller asserts admin)
+// ============================================================================
+
+// Removes the storage object AND the application_documents row. Used by
+// admins editing a submitted application to swap a wrong PDF for a correct
+// one. Unlike the family-facing deleteApplicationDocument, this doesn't
+// require a draft_token because the application is past draft state.
+export async function adminDeleteApplicationDocument(documentId: string) {
+  const existing = await getApplicationDocumentById(documentId)
+  if (!existing) {
+    throw new Error("Document not found.")
+  }
+
+  const { error: storageError } = await getSupabase()
+    .storage.from(bucketName)
+    .remove([existing.storage_path])
+
+  if (storageError) {
+    console.error("Failed to remove storage object:", storageError)
+  }
+
+  const { error: deleteError } = await getSupabase()
+    .from("application_documents")
+    .delete()
+    .eq("id", documentId)
+
+  if (deleteError) {
+    throw new Error(`Failed to delete document: ${deleteError.message}`)
+  }
+}
+
+const adminUploadInputSchema = z.object({
+  application_id: z.uuid(),
+  kind: applicationDocumentKindSchema,
+  filename: z.string().trim().min(1).max(200),
+  content_type: z.string().trim().min(1).max(120),
+  prior_school_name: z.string().trim().max(200).optional().nullable(),
+})
+
+export type AdminUploadInput = {
+  application_id: string
+  kind: ApplicationDocumentKind
+  filename: string
+  content_type: string
+  prior_school_name?: string | null
+  data: ArrayBuffer | Uint8Array | Buffer
+}
+
+// Uploads a file to Supabase Storage and records it in application_documents.
+// Direct server-side upload because the caller (admin server action) already
+// holds the service-role key and can write to the bucket without a signed
+// URL round trip.
+export async function adminUploadApplicationDocument(input: AdminUploadInput) {
+  // Parse the metadata fields through the same validation the family-facing
+  // init endpoint uses; ensures filename + content-type stay reasonable.
+  const parsed = adminUploadInputSchema.safeParse({
+    application_id: input.application_id,
+    kind: input.kind,
+    filename: input.filename,
+    content_type: input.content_type,
+    prior_school_name: input.prior_school_name ?? null,
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid upload metadata.")
+  }
+  if (!isAllowedContentType(parsed.data.content_type)) {
+    throw new Error("File type not allowed. Upload a PDF, image, or document.")
+  }
+
+  const sanitized = sanitizeFilename(parsed.data.filename)
+  const id = randomBytes(8).toString("hex")
+  const storage_path = `applications/${parsed.data.application_id}/${parsed.data.kind}/${id}-${sanitized}`
+
+  const supabase = getSupabase()
+
+  const { error: uploadError } = await supabase.storage
+    .from(bucketName)
+    .upload(storage_path, input.data, {
+      contentType: parsed.data.content_type,
+      upsert: false,
+    })
+
+  if (uploadError) {
+    throw new Error(`Failed to upload to storage: ${uploadError.message}`)
+  }
+
+  const { data, error: insertError } = await supabase
+    .from("application_documents")
+    .insert({
+      application_id: parsed.data.application_id,
+      kind: parsed.data.kind,
+      prior_school_name: parsed.data.prior_school_name?.trim() || null,
+      filename: parsed.data.filename.slice(0, 200),
+      storage_path,
+    })
+    .select("id, application_id, kind, prior_school_name, filename, storage_path, uploaded_at")
+    .single<ApplicationDocumentRecord>()
+
+  if (insertError) {
+    // Best-effort cleanup if the DB insert fails after the storage write
+    // succeeded. Mismatched storage/DB state is the worst outcome here.
+    await supabase.storage.from(bucketName).remove([storage_path]).catch(() => {})
+    throw new Error(`Failed to record document: ${insertError.message}`)
+  }
+
+  return data
+}
+
 export async function createAdminDownloadUrl(storagePath: string, expiresInSeconds = 300) {
   const { data, error } = await getSupabase()
     .storage.from(bucketName)
