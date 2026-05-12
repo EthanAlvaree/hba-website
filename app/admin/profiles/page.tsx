@@ -10,6 +10,7 @@ import {
   type ProfileRole,
 } from "@/lib/sis"
 import {
+  seedQualificationsFromBiosAction,
   signOutProfilesAdminAction,
   syncM365Action,
   updateProfileActiveAction,
@@ -43,6 +44,16 @@ type ProfilesPageProps = {
     skipped?: string
     filtered?: string
     sync_error?: string
+    bio_seed_ok?: string
+    bio_seed_error?: string
+    bios_matched?: string
+    bios_total?: string
+    inserted?: string
+    existing?: string
+    no_profile_count?: string
+    no_course_count?: string
+    no_profile?: string
+    no_course?: string
   }>
 }
 
@@ -175,6 +186,41 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
           </section>
         )}
 
+        {raw.bio_seed_ok === "1" && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">
+              Bio import complete.
+            </p>
+            <p className="mt-1 text-sm text-emerald-800">
+              Matched {raw.bios_matched ?? 0} of {raw.bios_total ?? 0} bios to
+              profiles. Inserted {raw.inserted ?? 0} new qualifications,{" "}
+              {raw.existing ?? 0} already existed.
+            </p>
+            {(raw.no_profile_count && Number(raw.no_profile_count) > 0) && (
+              <p className="mt-2 text-xs text-emerald-800">
+                <strong>{raw.no_profile_count}</strong> bio(s) had no matching
+                profile (no <code>firstname@highbluffacademy.com</code> in the
+                DB yet): {raw.no_profile}
+                {Number(raw.no_profile_count) > 8 && " … and more"}
+              </p>
+            )}
+            {(raw.no_course_count && Number(raw.no_course_count) > 0) && (
+              <p className="mt-2 text-xs text-emerald-800">
+                <strong>{raw.no_course_count}</strong> bio course entries
+                didn&rsquo;t match the catalog: {raw.no_course}
+                {Number(raw.no_course_count) > 12 && " … and more"}
+              </p>
+            )}
+          </section>
+        )}
+
+        {raw.bio_seed_error && (
+          <section className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-rose-900">Bio import failed.</p>
+            <p className="mt-1 text-sm text-rose-800 whitespace-pre-wrap">{raw.bio_seed_error}</p>
+          </section>
+        )}
+
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -196,6 +242,35 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                 className="inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
               >
                 Sync from M365
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-extrabold text-brand-navy">
+                Seed teacher qualifications from bios
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Reads <code className="text-xs">lib/faculty.ts</code> and
+                creates a <code className="text-xs">teacher_qualifications</code>{" "}
+                row for every (faculty member × course) pair listed on their
+                public bio. Matches bio → profile by first-name email
+                (e.g. Ellen Sullivan → ellen@highbluffacademy.com); courses
+                match the catalog by exact name. Idempotent &mdash; rows
+                that already exist are left alone. Faculty can refine
+                rank/notes on{" "}
+                <code className="text-xs">/faculty-portal/teaching</code> after.
+              </p>
+            </div>
+            <form action={seedQualificationsFromBiosAction}>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+              >
+                Seed from bios
               </button>
             </form>
           </div>

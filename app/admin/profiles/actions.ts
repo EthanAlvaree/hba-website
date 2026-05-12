@@ -16,6 +16,7 @@ import {
   updateProfileRoles,
   type M365SyncRow,
 } from "@/lib/sis"
+import { seedTeacherQualificationsFromBios } from "@/lib/scheduler"
 
 async function assertAdmin() {
   const session = await auth()
@@ -151,6 +152,34 @@ export async function syncM365Action() {
     updated: String(result.updated),
     skipped: String(result.skipped),
     filtered: String(nonHba + missingEmail),
+  })
+  redirect(`/admin/profiles?${params.toString()}`)
+}
+
+export async function seedQualificationsFromBiosAction() {
+  await assertAdmin()
+
+  let result
+  try {
+    result = await seedTeacherQualificationsFromBios()
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Bio seed failed"
+    redirect(`/admin/profiles?bio_seed_error=${encodeURIComponent(message)}`)
+  }
+
+  revalidateProfiles()
+
+  const params = new URLSearchParams({
+    bio_seed_ok: "1",
+    bios_matched: String(result.bios_matched_to_profile),
+    bios_total: String(result.bios_total),
+    inserted: String(result.courses_inserted),
+    existing: String(result.courses_skipped_existing),
+    no_profile_count: String(result.bios_no_profile.length),
+    no_course_count: String(result.courses_no_match.length),
+    // Truncate the freetext arrays so URL doesn't explode on big mismatches.
+    no_profile: result.bios_no_profile.slice(0, 8).join(", "),
+    no_course: result.courses_no_match.slice(0, 12).join(" | "),
   })
   redirect(`/admin/profiles?${params.toString()}`)
 }

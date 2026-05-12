@@ -116,6 +116,14 @@ export default async function StudentPortalPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
+              {student.enrollment_type === "full_time" && (
+                <Link
+                  href="/portal/course-requests"
+                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
+                >
+                  Course requests
+                </Link>
+              )}
               <Link
                 href="/portal/transcript"
                 className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"

@@ -290,6 +290,353 @@ export async function upsertTeacherWorkload(
 }
 
 // ============================================================================
+// Graduation requirements
+// ============================================================================
+
+// Standard subject-area list. Free-text in the DB so the office can add
+// niche ones, but the UI offers these as defaults.
+export const subjectAreas = [
+  "English",
+  "Math",
+  "Science",
+  "Social Studies",
+  "Foreign Language",
+  "Arts",
+  "PE / Wellness",
+  "Elective",
+] as const
+
+export type GraduationRequirementRecord = {
+  id: string
+  created_at: string
+  updated_at: string
+  name: string
+  subject_area: string
+  required_credits: number
+  applies_to_grade_levels: string[]
+  notes: string | null
+}
+
+const graduationRequirementColumns =
+  "id, created_at, updated_at, name, subject_area, required_credits, applies_to_grade_levels, notes"
+
+export const graduationRequirementUpsertSchema = z.object({
+  id: z.uuid().optional(),
+  name: z.string().trim().min(1, "Name is required.").max(120),
+  subject_area: z.string().trim().min(1, "Subject area is required.").max(80),
+  required_credits: z.coerce.number().min(0).default(0),
+  applies_to_grade_levels: z.array(z.string().trim().min(1).max(4)).max(10).default([]),
+  notes: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+})
+export type GraduationRequirementUpsertInput = z.infer<typeof graduationRequirementUpsertSchema>
+
+export async function listGraduationRequirements(): Promise<GraduationRequirementRecord[]> {
+  const { data, error } = await getSupabase()
+    .from("graduation_requirements")
+    .select(graduationRequirementColumns)
+    .order("subject_area", { ascending: true })
+    .order("name", { ascending: true })
+    .returns<GraduationRequirementRecord[]>()
+
+  if (error) {
+    throw new Error(`Failed to list graduation requirements: ${error.message}`)
+  }
+  return data
+}
+
+export async function upsertGraduationRequirement(
+  input: GraduationRequirementUpsertInput
+): Promise<GraduationRequirementRecord> {
+  const supabase = getSupabase()
+
+  if (input.id) {
+    const { id, ...rest } = input
+    const { data, error } = await supabase
+      .from("graduation_requirements")
+      .update(rest)
+      .eq("id", id)
+      .select(graduationRequirementColumns)
+      .single<GraduationRequirementRecord>()
+    if (error) throw new Error(`Failed to update requirement: ${error.message}`)
+    return data
+  }
+
+  const { data, error } = await supabase
+    .from("graduation_requirements")
+    .insert({ ...input, id: undefined })
+    .select(graduationRequirementColumns)
+    .single<GraduationRequirementRecord>()
+  if (error) throw new Error(`Failed to create requirement: ${error.message}`)
+  return data
+}
+
+export async function deleteGraduationRequirement(id: string): Promise<void> {
+  const { error } = await getSupabase()
+    .from("graduation_requirements")
+    .delete()
+    .eq("id", id)
+  if (error) throw new Error(`Failed to delete requirement: ${error.message}`)
+}
+
+// ============================================================================
+// Course subject assignments
+// ============================================================================
+
+export type CourseSubjectAssignmentRecord = {
+  course_id: string
+  subject_area: string
+  updated_at: string
+}
+
+export async function listCourseSubjectAssignments(): Promise<CourseSubjectAssignmentRecord[]> {
+  const { data, error } = await getSupabase()
+    .from("course_subject_assignments")
+    .select("course_id, subject_area, updated_at")
+    .returns<CourseSubjectAssignmentRecord[]>()
+  if (error) throw new Error(`Failed to list subject assignments: ${error.message}`)
+  return data
+}
+
+export async function setCourseSubjectArea(input: {
+  course_id: string
+  subject_area: string | null
+}): Promise<void> {
+  const supabase = getSupabase()
+  if (!input.subject_area) {
+    const { error } = await supabase
+      .from("course_subject_assignments")
+      .delete()
+      .eq("course_id", input.course_id)
+    if (error) throw new Error(`Failed to clear subject area: ${error.message}`)
+    return
+  }
+  const { error } = await supabase
+    .from("course_subject_assignments")
+    .upsert(
+      { course_id: input.course_id, subject_area: input.subject_area },
+      { onConflict: "course_id" }
+    )
+  if (error) throw new Error(`Failed to set subject area: ${error.message}`)
+}
+
+// ============================================================================
+// Student course requests
+// ============================================================================
+
+export const studentCourseRequestKindSchema = z.enum(["core", "elective", "alternate"])
+export type StudentCourseRequestKind = z.infer<typeof studentCourseRequestKindSchema>
+
+export type StudentCourseRequestRecord = {
+  id: string
+  created_at: string
+  updated_at: string
+  student_id: string
+  term_id: string
+  course_id: string
+  kind: StudentCourseRequestKind
+  preference_rank: number
+  notes: string | null
+  submitted_at: string | null
+}
+
+export type StudentCourseRequestWithCourse = StudentCourseRequestRecord & {
+  course: { id: string; code: string; name: string; subject: string | null } | null
+}
+
+const studentCourseRequestColumns =
+  "id, created_at, updated_at, student_id, term_id, course_id, kind, preference_rank, notes, submitted_at"
+
+export async function listStudentCourseRequests(input: {
+  student_id: string
+  term_id: string
+}): Promise<StudentCourseRequestWithCourse[]> {
+  const { data, error } = await getSupabase()
+    .from("student_course_requests")
+    .select(`${studentCourseRequestColumns}, course:courses(id, code, name, subject)`)
+    .eq("student_id", input.student_id)
+    .eq("term_id", input.term_id)
+    .order("kind", { ascending: true })
+    .order("preference_rank", { ascending: true })
+    .returns<StudentCourseRequestWithCourse[]>()
+  if (error) throw new Error(`Failed to list course requests: ${error.message}`)
+  return data
+}
+
+export const studentCourseRequestUpsertSchema = z.object({
+  student_id: z.uuid(),
+  term_id: z.uuid(),
+  course_id: z.uuid(),
+  kind: studentCourseRequestKindSchema,
+  preference_rank: z.coerce.number().int().min(1).default(1),
+  notes: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+})
+export type StudentCourseRequestUpsertInput = z.infer<typeof studentCourseRequestUpsertSchema>
+
+export async function upsertStudentCourseRequest(
+  input: StudentCourseRequestUpsertInput
+): Promise<StudentCourseRequestRecord> {
+  const { data, error } = await getSupabase()
+    .from("student_course_requests")
+    .upsert(input, { onConflict: "student_id,term_id,course_id" })
+    .select(studentCourseRequestColumns)
+    .single<StudentCourseRequestRecord>()
+  if (error) throw new Error(`Failed to upsert course request: ${error.message}`)
+  return data
+}
+
+export async function deleteStudentCourseRequest(input: {
+  student_id: string
+  term_id: string
+  course_id: string
+}): Promise<void> {
+  const { error } = await getSupabase()
+    .from("student_course_requests")
+    .delete()
+    .eq("student_id", input.student_id)
+    .eq("term_id", input.term_id)
+    .eq("course_id", input.course_id)
+  if (error) throw new Error(`Failed to delete course request: ${error.message}`)
+}
+
+export async function markCourseRequestsSubmitted(input: {
+  student_id: string
+  term_id: string
+}): Promise<void> {
+  const { error } = await getSupabase()
+    .from("student_course_requests")
+    .update({ submitted_at: new Date().toISOString() })
+    .eq("student_id", input.student_id)
+    .eq("term_id", input.term_id)
+  if (error) throw new Error(`Failed to mark requests submitted: ${error.message}`)
+}
+
+// ============================================================================
+// Bio → qualifications seed
+// ============================================================================
+//
+// One-shot import that walks lib/faculty.ts bios and creates
+// teacher_qualifications rows from each bio's coursesTaught list. Matches
+// bio → profile by first-name email pattern (e.g. "Ellen Sullivan" maps
+// to ellen@highbluffacademy.com), and bio.coursesTaught → courses table
+// by exact (case-insensitive) name match. Skips items that don't match,
+// and reports counts so admins can fix the mismatches.
+
+export type BioSeedResult = {
+  bios_total: number
+  bios_matched_to_profile: number
+  bios_no_profile: string[]    // bio names with no email match
+  courses_inserted: number     // newly inserted qualifications
+  courses_skipped_existing: number
+  courses_no_match: string[]   // "<bio name>: <course string>" pairs we couldn't resolve
+}
+
+export async function seedTeacherQualificationsFromBios(): Promise<BioSeedResult> {
+  // Import faculty module dynamically to avoid pulling its assets into
+  // every page that imports lib/scheduler.ts.
+  const { faculty } = await import("@/lib/faculty")
+
+  const supabase = getSupabase()
+
+  // Fetch all profiles + all courses once.
+  const [profilesRes, coursesRes] = await Promise.all([
+    supabase.from("profiles").select("id, email, display_name").returns<
+      Array<{ id: string; email: string; display_name: string | null }>
+    >(),
+    supabase.from("courses").select("id, name").returns<Array<{ id: string; name: string }>>(),
+  ])
+
+  if (profilesRes.error) throw new Error(profilesRes.error.message)
+  if (coursesRes.error) throw new Error(coursesRes.error.message)
+
+  const profiles = profilesRes.data ?? []
+  const courses = coursesRes.data ?? []
+
+  const coursesByName = new Map<string, string>()
+  for (const course of courses) {
+    coursesByName.set(course.name.toLowerCase().trim(), course.id)
+  }
+
+  const result: BioSeedResult = {
+    bios_total: faculty.length,
+    bios_matched_to_profile: 0,
+    bios_no_profile: [],
+    courses_inserted: 0,
+    courses_skipped_existing: 0,
+    courses_no_match: [],
+  }
+
+  for (const bio of faculty) {
+    // Extract first name from the slug (e.g. "ellen-sullivan" → "ellen").
+    const firstName = bio.slug.split("-")[0]?.toLowerCase() ?? ""
+    if (!firstName) {
+      result.bios_no_profile.push(bio.name)
+      continue
+    }
+
+    const expectedEmail = `${firstName}@highbluffacademy.com`
+    const profile = profiles.find((p) => p.email === expectedEmail)
+    if (!profile) {
+      result.bios_no_profile.push(bio.name)
+      continue
+    }
+
+    result.bios_matched_to_profile += 1
+
+    if (!bio.coursesTaught || bio.coursesTaught.length === 0) continue
+
+    for (const courseName of bio.coursesTaught) {
+      const courseId = coursesByName.get(courseName.toLowerCase().trim())
+      if (!courseId) {
+        result.courses_no_match.push(`${bio.name}: ${courseName}`)
+        continue
+      }
+
+      // Check existence first so we can distinguish inserted vs skipped.
+      const { data: existing } = await supabase
+        .from("teacher_qualifications")
+        .select("id")
+        .eq("profile_id", profile.id)
+        .eq("course_id", courseId)
+        .maybeSingle<{ id: string }>()
+
+      if (existing) {
+        result.courses_skipped_existing += 1
+        continue
+      }
+
+      const { error: insertError } = await supabase
+        .from("teacher_qualifications")
+        .insert({
+          profile_id: profile.id,
+          course_id: courseId,
+          preference_rank: 1,
+        })
+
+      if (insertError) {
+        throw new Error(
+          `Failed to insert qualification for ${bio.name} / ${courseName}: ${insertError.message}`
+        )
+      }
+      result.courses_inserted += 1
+    }
+  }
+
+  return result
+}
+
+// ============================================================================
 // Display helpers shared by faculty + admin views
 // ============================================================================
 

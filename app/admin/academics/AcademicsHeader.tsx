@@ -1,12 +1,13 @@
 import Link from "next/link"
 import { signOutAcademicsAdminAction } from "./actions"
 
-type AcademicsTab = "terms" | "courses" | "sections"
+type AcademicsTab = "terms" | "courses" | "sections" | "requirements"
 
 const tabs: Array<{ id: AcademicsTab; label: string; href: string }> = [
   { id: "terms", label: "Terms", href: "/admin/academics/terms" },
   { id: "courses", label: "Courses", href: "/admin/academics/courses" },
   { id: "sections", label: "Sections", href: "/admin/academics/sections" },
+  { id: "requirements", label: "Graduation reqs", href: "/admin/academics/requirements" },
 ]
 
 export default function AcademicsHeader({
