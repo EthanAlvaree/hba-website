@@ -182,12 +182,18 @@ export default async function ParentStudentOverviewPage({
   return (
     <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
       <div className="mx-auto max-w-5xl space-y-6">
-        <div>
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
             href="/parent"
             className="text-sm font-semibold text-brand-navy underline-offset-4 hover:underline"
           >
             ← Back to family portal
+          </Link>
+          <Link
+            href={`/parent/students/${studentId}/complete-file`}
+            className="inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          >
+            Complete file →
           </Link>
         </div>
 

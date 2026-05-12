@@ -13,6 +13,8 @@ import {
   updateStudentAdmin,
   updateStudentDemographics,
 } from "@/lib/sis"
+import { z } from "zod"
+import { createClient } from "@supabase/supabase-js"
 
 async function assertAdmin() {
   const session = await auth()
@@ -135,6 +137,51 @@ export async function updateParentLinkAction(formData: FormData) {
     redirect(`/admin/students/${studentId}`)
   }
   redirect("/admin/students")
+}
+
+// Marks a student's post-enrollment file verified (or un-verified). Hits the
+// table directly via the service-role client to avoid pulling in the bigger
+// post-enrollment lib just for two-field updates.
+const fileVerifySchema = z.object({
+  student_id: z.uuid(),
+  verified: z.coerce.boolean(),
+})
+
+export async function setPostEnrollmentVerifiedAction(formData: FormData) {
+  const session = await assertAdmin()
+
+  const parsed = fileVerifySchema.safeParse({
+    student_id: formData.get("student_id"),
+    verified: formData.get("verified") === "1",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Verify update failed.")
+  }
+
+  const supabase = createClient(
+    process.env.HBA_SUPABASE_URL!,
+    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  const patch = parsed.data.verified
+    ? {
+        admin_verified_at: new Date().toISOString(),
+        admin_verified_by: session?.user?.email ?? null,
+      }
+    : { admin_verified_at: null, admin_verified_by: null }
+
+  const { error } = await supabase
+    .from("student_post_enrollment_data")
+    .update(patch)
+    .eq("student_id", parsed.data.student_id)
+
+  if (error) {
+    throw new Error(`Failed to update verification: ${error.message}`)
+  }
+
+  revalidateStudent(parsed.data.student_id)
+  redirect(`/admin/students/${parsed.data.student_id}`)
 }
 
 export async function signOutStudentsAdminAction() {

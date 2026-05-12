@@ -11,8 +11,14 @@ import {
   type StudentDetailParentLink,
   type StudentStatus,
 } from "@/lib/sis"
+import {
+  getPostEnrollmentData,
+  listStudentDocuments,
+  studentDocumentKindLabels,
+} from "@/lib/post-enrollment"
 import StudentsHeader from "../StudentsHeader"
 import {
+  setPostEnrollmentVerifiedAction,
   updateParentLinkAction,
   updateProfileContactAction,
   updateStudentAdminAction,
@@ -29,6 +35,15 @@ function formatDate(value: string | null) {
     dateStyle: "medium",
     timeZone: pacific,
   }).format(new Date(`${value}T00:00:00`))
+}
+
+function formatTimestamp(value: string | null) {
+  if (!value) return ""
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: pacific,
+  }).format(new Date(value))
 }
 
 function statusLabel(status: StudentStatus): string {
@@ -178,6 +193,11 @@ export default async function StudentDetailPage({
   if (!student) {
     notFound()
   }
+
+  const [postEnrollmentData, studentDocuments] = await Promise.all([
+    getPostEnrollmentData(id),
+    listStudentDocuments(id),
+  ])
 
   const displayName = student.preferred_name?.trim()
     ? `${student.preferred_name} (${student.legal_first_name} ${student.legal_last_name})`
@@ -733,6 +753,12 @@ export default async function StudentDetailPage({
           )}
         </section>
 
+        <PostEnrollmentFileCard
+          studentId={student.id}
+          data={postEnrollmentData}
+          documents={studentDocuments}
+        />
+
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <h3 className="text-lg font-extrabold text-brand-navy">Enrollments</h3>
           <p className="mt-1 text-sm text-slate-600">
@@ -908,5 +934,216 @@ export default async function StudentDetailPage({
         </section>
       </div>
     </main>
+  )
+}
+
+type PostEnrollmentFileData = Awaited<ReturnType<typeof getPostEnrollmentData>>
+type StudentDocsList = Awaited<ReturnType<typeof listStudentDocuments>>
+
+function PostEnrollmentFileCard({
+  studentId,
+  data,
+  documents,
+}: {
+  studentId: string
+  data: PostEnrollmentFileData
+  documents: StudentDocsList
+}) {
+  const submittedAt = data?.family_completed_at ?? null
+  const verifiedAt = data?.admin_verified_at ?? null
+  const status = !data
+    ? "not_started"
+    : verifiedAt
+    ? "verified"
+    : submittedAt
+    ? "submitted"
+    : "in_progress"
+
+  const statusLabel = {
+    not_started: "Not started",
+    in_progress: "In progress",
+    submitted: "Submitted, awaiting review",
+    verified: "Verified",
+  }[status]
+
+  const statusClass = {
+    not_started: "border border-slate-200 bg-slate-100 text-slate-700",
+    in_progress: "border border-amber-200 bg-amber-50 text-amber-800",
+    submitted: "border border-sky-200 bg-sky-50 text-sky-700",
+    verified: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+  }[status]
+
+  const filledSections = data ? countFilledSections(data) : 0
+
+  return (
+    <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-lg font-extrabold text-brand-navy">
+              Post-enrollment file
+            </h3>
+            <span
+              className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${statusClass}`}
+            >
+              {statusLabel}
+            </span>
+          </div>
+          <p className="text-sm text-slate-600">
+            Immunizations, medical history, insurance, accommodations, and
+            citizenship/visa data collected from the family after admission.
+            Edited by parents on /parent/students/{studentId.slice(0, 8)}…/complete-file.
+          </p>
+          <p className="text-xs text-slate-500">
+            {filledSections} of 6 sections have data
+            {data?.family_completed_at && (
+              <> &middot; Submitted {formatTimestamp(data.family_completed_at)}</>
+            )}
+            {data?.admin_verified_at && (
+              <>
+                {" "}&middot; Verified {formatTimestamp(data.admin_verified_at)} by{" "}
+                {data.admin_verified_by ?? "unknown"}
+              </>
+            )}
+          </p>
+        </div>
+
+        {data && (
+          <form action={setPostEnrollmentVerifiedAction}>
+            <input type="hidden" name="student_id" value={studentId} />
+            <input type="hidden" name="verified" value={verifiedAt ? "0" : "1"} />
+            <button
+              type="submit"
+              className={`inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-md transition ${
+                verifiedAt
+                  ? "border border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
+                  : "bg-emerald-700 text-white hover:brightness-110"
+              }`}
+            >
+              {verifiedAt ? "Clear verification" : "Mark verified"}
+            </button>
+          </form>
+        )}
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+        <SectionStatusRow label="Immunizations" filled={hasImmunizations(data)} />
+        <SectionStatusRow label="Medical history" filled={hasMedical(data)} />
+        <SectionStatusRow label="Medical insurance" filled={hasInsurance(data)} />
+        <SectionStatusRow label="Financial aid" filled={hasFinancialAid(data)} />
+        <SectionStatusRow label="Accommodations / IEP" filled={hasAccommodations(data)} />
+        <SectionStatusRow label="Citizenship / visa" filled={hasCitizenship(data)} />
+      </div>
+
+      <div className="mt-6">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Documents on file ({documents.length})
+        </p>
+        {documents.length === 0 ? (
+          <p className="mt-2 text-sm text-slate-600">No documents uploaded yet.</p>
+        ) : (
+          <ul className="mt-2 space-y-1">
+            {documents.map((doc) => (
+              <li key={doc.id} className="flex flex-wrap items-center justify-between gap-2 text-sm">
+                <span className="text-slate-800">
+                  📎 {doc.filename}{" "}
+                  <span className="text-xs text-slate-500">
+                    ({studentDocumentKindLabels[doc.kind]})
+                  </span>
+                </span>
+                <span className="text-xs text-slate-500">
+                  Uploaded {formatTimestamp(doc.uploaded_at)}
+                  {doc.uploaded_by && <> by {doc.uploaded_by}</>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </section>
+  )
+}
+
+function SectionStatusRow({ label, filled }: { label: string; filled: boolean }) {
+  return (
+    <div className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm">
+      <span className="text-slate-800">{label}</span>
+      <span
+        className={`rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] ${
+          filled
+            ? "border border-emerald-200 bg-emerald-50 text-emerald-700"
+            : "border border-slate-200 bg-white text-slate-500"
+        }`}
+      >
+        {filled ? "Filled" : "Empty"}
+      </span>
+    </div>
+  )
+}
+
+function countFilledSections(data: NonNullable<PostEnrollmentFileData>): number {
+  let count = 0
+  if (hasImmunizations(data)) count++
+  if (hasMedical(data)) count++
+  if (hasInsurance(data)) count++
+  if (hasFinancialAid(data)) count++
+  if (hasAccommodations(data)) count++
+  if (hasCitizenship(data)) count++
+  return count
+}
+
+function hasImmunizations(data: PostEnrollmentFileData): boolean {
+  if (!data) return false
+  return (
+    data.immunizations_complete ||
+    Boolean(data.immunizations_notes) ||
+    Boolean(data.immunizations_exemption_reason)
+  )
+}
+
+function hasMedical(data: PostEnrollmentFileData): boolean {
+  if (!data) return false
+  return Boolean(
+    data.medical_blood_type ||
+      data.medical_allergies ||
+      data.medical_conditions ||
+      data.medical_medications ||
+      data.medical_emergency_contact_name ||
+      data.medical_pediatrician_name ||
+      data.medical_notes
+  )
+}
+
+function hasInsurance(data: PostEnrollmentFileData): boolean {
+  if (!data) return false
+  return Boolean(
+    data.insurance_provider ||
+      data.insurance_policy_number ||
+      data.insurance_subscriber_name
+  )
+}
+
+function hasFinancialAid(data: PostEnrollmentFileData): boolean {
+  if (!data) return false
+  return data.financial_aid_requested || Boolean(data.financial_aid_notes)
+}
+
+function hasAccommodations(data: PostEnrollmentFileData): boolean {
+  if (!data) return false
+  return (
+    data.has_iep ||
+    data.has_504 ||
+    Boolean(data.accommodations_needed) ||
+    Boolean(data.accommodation_notes)
+  )
+}
+
+function hasCitizenship(data: PostEnrollmentFileData): boolean {
+  if (!data) return false
+  return Boolean(
+    data.citizenship_country ||
+      data.visa_type ||
+      data.i20_number ||
+      data.passport_number
   )
 }
