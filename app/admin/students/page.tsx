@@ -79,7 +79,6 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const params = await searchParams
 
@@ -107,9 +106,8 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
   ]
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <StudentsHeader adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <StudentsHeader />
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <div className="flex flex-wrap items-center gap-3">
@@ -209,7 +207,6 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
             })
           )}
         </section>
-      </div>
-    </main>
+    </div>
   )
 }

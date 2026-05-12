@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import { listCourses, type CourseRecord } from "@/lib/sis"
 import AcademicsHeader from "../AcademicsHeader"
 import { createCourseAction, updateCourseAction } from "../actions"
@@ -14,14 +13,12 @@ export default async function CoursesPage() {
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const courses = await listCourses()
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <AcademicsHeader active="courses" adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <AcademicsHeader active="courses" />
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <h2 className="text-xl font-extrabold text-brand-navy">Add a course</h2>
@@ -123,8 +120,7 @@ export default async function CoursesPage() {
             ))
           )}
         </section>
-      </div>
-    </main>
+    </div>
   )
 }
 

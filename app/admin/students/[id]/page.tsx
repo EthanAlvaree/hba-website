@@ -185,7 +185,6 @@ export default async function StudentDetailPage({
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const { id } = await params
 
@@ -227,9 +226,8 @@ export default async function StudentDetailPage({
   const activeEnrollments = student.enrollments.filter((e) => e.status === "enrolled")
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <StudentsHeader adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <StudentsHeader />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -932,8 +930,7 @@ export default async function StudentDetailPage({
             </div>
           </form>
         </section>
-      </div>
-    </main>
+    </div>
   )
 }
 

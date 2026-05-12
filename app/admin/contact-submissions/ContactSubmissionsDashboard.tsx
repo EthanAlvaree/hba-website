@@ -7,7 +7,6 @@ import {
 } from "@/lib/contact-submissions"
 import {
   deleteArchivedContactSubmissionAction,
-  signOutAdminAction,
   updateContactSubmissionAction,
 } from "./actions"
 
@@ -275,88 +274,40 @@ export default function ContactSubmissionsDashboard({
   const queueTabs = getQueueTabs(mode, filters, summary)
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-[2rem] bg-brand-navy px-8 py-8 text-white shadow-2xl">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-              <div className="space-y-3">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-                  Admin dashboard
-                </p>
-                <h1 className="text-4xl font-extrabold">
-                  {isArchivedView ? "Archived submissions" : "Contact submissions"}
-                </h1>
-                <p className="max-w-3xl text-sm leading-relaxed text-white/80">
-                  {isArchivedView
-                    ? "Keep archived conversations out of the main queue, but restore them anytime if the office team needs them again."
-                    : "Work the active queue first. Keep each row compact, use notes for handoff context, and move finished conversations into the archive once the front desk is done with them."}
-                </p>
-              </div>
+    <div className="space-y-6">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-extrabold text-brand-navy">
+          {isArchivedView ? "Archived submissions" : "Contact submissions"}
+        </h1>
+        <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
+          {isArchivedView
+            ? "Keep archived conversations out of the main queue, but restore them anytime if the office team needs them again."
+            : "Work the active queue first. Keep each row compact, use notes for handoff context, and move finished conversations into the archive once the front desk is done with them."}
+        </p>
+      </header>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <div className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/85">
-                  Signed in as {adminEmail}
-                </div>
-                <Link
-                  href="/admin/applications"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Applications
-                </Link>
-                <Link
-                  href="/admin/academics"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Academics
-                </Link>
-                <Link
-                  href="/admin/students"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Students
-                </Link>
-                <Link
-                  href="/admin/profiles"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Profiles
-                </Link>
-                <form action={signOutAdminAction}>
-                  <button
-                    type="submit"
-                    className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                  >
-                    Sign out
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {queueTabs.map((tab) => (
-                <Link
-                  key={tab.label}
-                  href={tab.href}
-                  className={`inline-flex items-center gap-3 rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                    tab.active
-                      ? "border-white bg-white text-brand-navy"
-                      : "border-white/20 bg-transparent text-white hover:bg-white/10"
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs ${
-                      tab.active ? "bg-slate-100 text-brand-navy" : "bg-white/10 text-white"
-                    }`}
-                  >
-                    {tab.count}
-                  </span>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+      <nav className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
+        {queueTabs.map((tab) => (
+          <Link
+            key={tab.label}
+            href={tab.href}
+            className={`inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-semibold transition ${
+              tab.active
+                ? "bg-brand-navy text-white"
+                : "text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            {tab.label}
+            <span
+              className={`rounded-full px-2 py-0.5 text-xs ${
+                tab.active ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+              }`}
+            >
+              {tab.count}
+            </span>
+          </Link>
+        ))}
+      </nav>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <form
@@ -610,7 +561,6 @@ export default function ContactSubmissionsDashboard({
             })
           )}
         </section>
-      </div>
-    </main>
+    </div>
   )
 }

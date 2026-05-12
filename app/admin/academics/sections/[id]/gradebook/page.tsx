@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   listAssignmentCategories,
   listAssignments,
@@ -48,7 +47,6 @@ export default async function GradebookSetupPage({
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const { id } = await params
 
@@ -66,9 +64,8 @@ export default async function GradebookSetupPage({
   const weightOk = Math.abs(totalWeight - 100) < 0.01
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <AcademicsHeader active="sections" adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <AcademicsHeader active="sections" />
 
         <div>
           <Link
@@ -227,8 +224,7 @@ export default async function GradebookSetupPage({
             </details>
           )}
         </section>
-      </div>
-    </main>
+    </div>
   )
 }
 

@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   attendanceStatusLabels,
   attendanceStatusSchema,
@@ -48,7 +47,6 @@ export default async function AttendanceEntryPage({
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const { id: sectionId } = await params
   const { date: dateParam } = await searchParams
@@ -80,9 +78,8 @@ export default async function AttendanceEntryPage({
   const recordedCount = gradableEnrollments.filter((e) => recordByEnrollment.has(e.id)).length
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <AcademicsHeader active="sections" adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <AcademicsHeader active="sections" />
 
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Link
@@ -214,7 +211,6 @@ export default async function AttendanceEntryPage({
             </div>
           </form>
         )}
-      </div>
-    </main>
+    </div>
   )
 }

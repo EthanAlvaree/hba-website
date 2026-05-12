@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   listCourseSections,
   listCourses,
@@ -27,7 +26,6 @@ export default async function CourseSectionsPage() {
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const [sections, courses, terms, faculty] = await Promise.all([
     listCourseSections(),
@@ -40,9 +38,8 @@ export default async function CourseSectionsPage() {
   const canCreate = activeCourses.length > 0 && terms.length > 0
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <AcademicsHeader active="sections" adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <AcademicsHeader active="sections" />
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <h2 className="text-xl font-extrabold text-brand-navy">Add a section</h2>
@@ -130,7 +127,6 @@ export default async function CourseSectionsPage() {
             ))
           )}
         </section>
-      </div>
-    </main>
+    </div>
   )
 }

@@ -12,7 +12,6 @@ import {
 import {
   deleteProfileAction,
   seedQualificationsFromBiosAction,
-  signOutProfilesAdminAction,
   syncM365Action,
   updateProfileActiveAction,
   updateProfileRolesAction,
@@ -82,7 +81,6 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const raw = await searchParams
   const parsed = profileListFilterSchema.parse({
@@ -102,67 +100,21 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
   ]
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-[2rem] bg-brand-navy px-8 py-8 text-white shadow-2xl">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-            <div className="space-y-3">
-              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-                Admin dashboard
-              </p>
-              <h1 className="text-4xl font-extrabold">Profiles</h1>
-              <p className="max-w-3xl text-sm leading-relaxed text-white/80">
-                Identity records for every person in the SIS. Roles control
-                what each account sees: admin → admin dashboard, faculty →
-                future teacher tools, student → /portal, parent → /parent.
-                The four bootstrap admin emails ({" "}
-                <code className="font-mono text-xs">molly@</code>,{" "}
-                <code className="font-mono text-xs">kristin@</code>,{" "}
-                <code className="font-mono text-xs">ethan@</code>,{" "}
-                <code className="font-mono text-xs">kun@</code>) always have
-                admin access regardless of what&rsquo;s set here.
-              </p>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/85">
-                Signed in as {adminEmail}
-              </div>
-              <Link
-                href="/admin/applications"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-              >
-                Applications
-              </Link>
-              <Link
-                href="/admin/students"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-              >
-                Students
-              </Link>
-              <Link
-                href="/admin/academics"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-              >
-                Academics
-              </Link>
-              <Link
-                href="/admin/contact-submissions"
-                className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-              >
-                Contact submissions
-              </Link>
-              <form action={signOutProfilesAdminAction}>
-                <button
-                  type="submit"
-                  className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-                >
-                  Sign out
-                </button>
-              </form>
-            </div>
-          </div>
-        </section>
+    <div className="space-y-6">
+      <header className="space-y-2">
+        <h1 className="text-3xl font-extrabold text-brand-navy">Profiles</h1>
+        <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
+          Identity records for every person in the SIS. Roles control what
+          each account sees: admin → admin dashboard, faculty → faculty
+          portal, student → /portal, parent → /parent. The four bootstrap
+          admin emails (
+          <code className="font-mono text-xs">molly@</code>,{" "}
+          <code className="font-mono text-xs">kristin@</code>,{" "}
+          <code className="font-mono text-xs">ethan@</code>,{" "}
+          <code className="font-mono text-xs">kun@</code>) always have admin
+          access regardless of what&rsquo;s set here.
+        </p>
+      </header>
 
         {raw.sync_ok === "1" && (
           <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
@@ -487,7 +439,6 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
             })
           )}
         </section>
-      </div>
-    </main>
+    </div>
   )
 }

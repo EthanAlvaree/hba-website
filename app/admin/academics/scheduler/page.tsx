@@ -98,7 +98,6 @@ function studentDisplay(s: AssignmentRow["student"]) {
 export default async function SchedulerAdminPage({ searchParams }: PageProps) {
   const session = await auth()
   if (!session?.isAdmin) redirect("/admin/sign-in")
-  const adminEmail = session?.user?.email ?? ""
 
   const raw = await searchParams
 
@@ -179,9 +178,8 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <AcademicsHeader active="scheduler" adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <AcademicsHeader active="scheduler" />
 
         {raw.solver_error && (
           <section className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-4 shadow-sm">
@@ -358,8 +356,7 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
             faculty={faculty}
           />
         )}
-      </div>
-    </main>
+    </div>
   )
 }
 

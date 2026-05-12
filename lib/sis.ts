@@ -2012,6 +2012,26 @@ export async function getParentLinkForStudent(
   }
 }
 
+// Checks whether an HBA-domain email matches a faculty bio's slug. Used by
+// the sign-in bootstrap to decide whether a first-time HBA sign-in is
+// faculty. Match heuristic: extract the local-part of the email, compare
+// against the first-name segment of each bio's slug (e.g. "ellen-sullivan"
+// matches ellen@highbluffacademy.com).
+async function emailMatchesFacultyBio(email: string): Promise<boolean> {
+  const localPart = email.split("@")[0]?.toLowerCase() ?? ""
+  if (!localPart) return false
+  try {
+    const { faculty } = await import("@/lib/faculty")
+    return faculty.some((bio) => {
+      const bioFirst = bio.slug.split("-")[0]?.toLowerCase() ?? ""
+      return bioFirst === localPart
+    })
+  } catch (error) {
+    console.error("Failed to load faculty bios for bootstrap match", error)
+    return false
+  }
+}
+
 // ============================================================================
 // Sign-in profile bootstrap
 // ============================================================================
@@ -2042,17 +2062,34 @@ export async function bootstrapProfileForSignIn(
 ): Promise<ProfileRecord> {
   const email = normalizeEmail(input.email)
   const existing = await getProfileByEmail(email)
-  // Default role for a *new* profile created at sign-in time. Pre-existing
-  // profiles win — see the existing-profile branch below. The auth boundary
-  // in auth.ts already gates who reaches this code: HBA emails or emails
-  // matching a parent profile. So a non-HBA email arriving here without an
-  // existing profile shouldn't normally happen, but we default to 'parent'
-  // for safety since that's the only legitimate non-HBA path.
-  const defaultRole: ProfileRole = isAllowedAdminEmail(email)
-    ? "admin"
-    : isHbaEmail(email)
-    ? "faculty"
-    : "parent"
+
+  // Default role(s) for a *new* profile created at sign-in time. Pre-existing
+  // profiles win — see the existing-profile branch below. Rules:
+  //   - admin bootstrap allowlist → 'admin'
+  //   - HBA email matching a faculty bio (by first-name prefix on the slug)
+  //     → 'faculty'. The bios in lib/faculty.ts are admin-curated, so they
+  //     accurately reflect who's actually faculty. Avoids the bug where any
+  //     HBA email — student, alumni, future admit — would get auto-promoted
+  //     to faculty just by signing in.
+  //   - HBA email NOT in bios → empty roles. Admin must explicitly assign
+  //     via /admin/profiles. Students get role='student' set by
+  //     enrollAcceptedApplication BEFORE they ever sign in, so the
+  //     bootstrap leaves them alone.
+  //   - non-HBA email → 'parent'. auth.ts only lets these through when a
+  //     parent profile already exists, so we're not creating one fresh
+  //     here; this branch is a safety default if we ever do.
+  let defaultRoles: ProfileRole[] = []
+  if (isAllowedAdminEmail(email)) {
+    defaultRoles = ["admin"]
+  } else if (isHbaEmail(email)) {
+    const matchesBio = await emailMatchesFacultyBio(email)
+    if (matchesBio) {
+      defaultRoles = ["faculty"]
+    }
+    // else: empty roles, admin sets manually
+  } else {
+    defaultRoles = ["parent"]
+  }
 
   if (existing) {
     const patch: Record<string, unknown> = {}
@@ -2062,9 +2099,12 @@ export async function bootstrapProfileForSignIn(
     if (!existing.first_name && input.first_name) patch.first_name = input.first_name
     if (!existing.last_name && input.last_name) patch.last_name = input.last_name
 
-    // Backfill role only when the profile has none. Pre-existing roles win.
-    if (existing.roles.length === 0) {
-      patch.roles = [defaultRole]
+    // Backfill role only when the profile has none AND we figured out a
+    // default. Pre-existing roles always win — students enrolled via the
+    // workflow already have role='student', and admin-promoted faculty
+    // already have role='faculty'. Don't clobber them.
+    if (existing.roles.length === 0 && defaultRoles.length > 0) {
+      patch.roles = defaultRoles
     }
 
     if (Object.keys(patch).length === 0) {
@@ -2093,7 +2133,7 @@ export async function bootstrapProfileForSignIn(
       display_name: input.display_name ?? null,
       first_name: input.first_name ?? null,
       last_name: input.last_name ?? null,
-      roles: [defaultRole],
+      roles: defaultRoles,
     })
     .select(profileColumns)
     .single<ProfileRecord>()

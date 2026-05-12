@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import { listTerms, type TermRecord } from "@/lib/sis"
 import AcademicsHeader from "../AcademicsHeader"
 import {
@@ -37,14 +36,12 @@ export default async function TermsPage() {
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const terms = await listTerms()
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <AcademicsHeader active="terms" adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <AcademicsHeader active="terms" />
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <h2 className="text-xl font-extrabold text-brand-navy">Add a term</h2>
@@ -166,8 +163,7 @@ export default async function TermsPage() {
             ))
           )}
         </section>
-      </div>
-    </main>
+    </div>
   )
 }
 

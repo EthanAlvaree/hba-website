@@ -1,5 +1,4 @@
 import Link from "next/link"
-import { signOutAcademicsAdminAction } from "./actions"
 
 type AcademicsTab = "terms" | "courses" | "sections" | "requirements" | "scheduler"
 
@@ -11,81 +10,35 @@ const tabs: Array<{ id: AcademicsTab; label: string; href: string }> = [
   { id: "scheduler", label: "Scheduler", href: "/admin/academics/scheduler" },
 ]
 
-export default function AcademicsHeader({
-  active,
-  adminEmail,
-}: {
-  active: AcademicsTab
-  adminEmail: string
-}) {
+// Page header for /admin/academics/* pages. The shared admin shell handles
+// cross-section navigation + sign-out; this component renders the section
+// title plus the sub-tab nav for the Academics namespace.
+export default function AcademicsHeader({ active }: { active: AcademicsTab }) {
   return (
-    <section className="rounded-[2rem] bg-brand-navy px-8 py-8 text-white shadow-2xl">
-      <div className="flex flex-col gap-6 xl:flex-row xl:items-end xl:justify-between">
-        <div className="space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-white/70">
-            Admin dashboard
-          </p>
-          <h1 className="text-4xl font-extrabold">Academics</h1>
-          <p className="max-w-3xl text-sm leading-relaxed text-white/80">
-            Manage academic terms, the course catalog, and the sections that
-            connect a course to a term, a teacher, and a bell-schedule period.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="rounded-full border border-white/15 px-4 py-2 text-sm text-white/85">
-            Signed in as {adminEmail}
-          </div>
-          <Link
-            href="/admin/applications"
-            className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-          >
-            Applications
-          </Link>
-          <Link
-            href="/admin/students"
-            className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-          >
-            Students
-          </Link>
-          <Link
-            href="/admin/profiles"
-            className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-          >
-            Profiles
-          </Link>
-          <Link
-            href="/admin/contact-submissions"
-            className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-          >
-            Contact submissions
-          </Link>
-          <form action={signOutAcademicsAdminAction}>
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-full border border-white/25 px-5 py-2 text-sm font-semibold text-white transition hover:bg-white hover:text-brand-navy"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
+    <header className="space-y-3">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-extrabold text-brand-navy">Academics</h1>
+        <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
+          Manage academic terms, the course catalog, sections, graduation
+          requirements, and the auto-scheduler.
+        </p>
       </div>
 
-      <div className="mt-6 flex flex-wrap items-center gap-3">
+      <nav className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
         {tabs.map((tab) => (
           <Link
             key={tab.id}
             href={tab.href}
-            className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold transition ${
+            className={`inline-flex items-center rounded-full px-3 py-1.5 text-sm font-semibold transition ${
               tab.id === active
-                ? "border-white bg-white text-brand-navy"
-                : "border-white/20 bg-transparent text-white hover:bg-white/10"
+                ? "bg-brand-navy text-white"
+                : "text-slate-700 hover:bg-slate-100"
             }`}
           >
             {tab.label}
           </Link>
         ))}
-      </div>
-    </section>
+      </nav>
+    </header>
   )
 }

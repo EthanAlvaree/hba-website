@@ -23,7 +23,6 @@ export default async function GraduationRequirementsPage() {
   if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
-  const adminEmail = session?.user?.email ?? ""
 
   const [requirements, courses, assignments] = await Promise.all([
     listGraduationRequirements(),
@@ -35,9 +34,8 @@ export default async function GraduationRequirementsPage() {
   for (const a of assignments) subjectByCourse.set(a.course_id, a.subject_area)
 
   return (
-    <main className="min-h-screen bg-slate-100 px-6 py-10 lg:px-10">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <AcademicsHeader active="requirements" adminEmail={adminEmail} />
+    <div className="space-y-6">
+        <AcademicsHeader active="requirements" />
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <h2 className="text-2xl font-extrabold text-brand-navy">
@@ -157,8 +155,7 @@ export default async function GraduationRequirementsPage() {
               ))}
           </div>
         </section>
-      </div>
-    </main>
+    </div>
   )
 }
 

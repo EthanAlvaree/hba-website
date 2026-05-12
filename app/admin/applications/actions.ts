@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 import { auth, signOut } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   applicationDataUpdateSchema,
   applicationEnrollmentTypeSchema,
