@@ -1491,6 +1491,89 @@ export function facultyLabel(option: FacultyOption): string {
 }
 
 // ============================================================================
+// M365 sync (called from /admin/profiles "Sync from M365" action)
+// ============================================================================
+
+export type M365SyncRow = {
+  email: string
+  entra_oid: string
+  display_name: string | null
+  first_name: string | null
+  last_name: string | null
+  active: boolean
+}
+
+export type M365SyncResult = {
+  created: number
+  updated: number
+  skipped: number  // existing rows we left fully untouched (no fields to patch)
+}
+
+// Upserts a single M365 user into the profiles table. Strategy:
+//   - If no profile exists for this email: insert with role defaulted to
+//     'admin' for bootstrap-list emails, else empty. Empty-role profiles
+//     get backfilled to 'faculty' on first sign-in (the existing
+//     bootstrapProfileForSignIn logic handles that). Students get role
+//     'student' set explicitly by enrollAcceptedApplication, so we don't
+//     guess from M365 alone.
+//   - If a profile exists: never touch the roles array. Patch entra_oid
+//     when null. Patch first/last/display name when null. Always sync the
+//     active flag from M365's accountEnabled (so disabled M365 accounts
+//     can't sign in here either).
+async function upsertProfileFromM365(row: M365SyncRow): Promise<"created" | "updated" | "skipped"> {
+  const supabase = getSupabase()
+  const existing = await getProfileByEmail(row.email)
+
+  if (!existing) {
+    const defaultRoles: ProfileRole[] = isAllowedAdminEmail(row.email) ? ["admin"] : []
+    const { error } = await supabase.from("profiles").insert({
+      email: row.email,
+      entra_oid: row.entra_oid,
+      display_name: row.display_name,
+      first_name: row.first_name,
+      last_name: row.last_name,
+      roles: defaultRoles,
+      active: row.active,
+    })
+    if (error) {
+      throw new Error(`M365 sync: failed to insert ${row.email}: ${error.message}`)
+    }
+    return "created"
+  }
+
+  const patch: Record<string, unknown> = {}
+  if (!existing.entra_oid && row.entra_oid) patch.entra_oid = row.entra_oid
+  if (!existing.display_name && row.display_name) patch.display_name = row.display_name
+  if (!existing.first_name && row.first_name) patch.first_name = row.first_name
+  if (!existing.last_name && row.last_name) patch.last_name = row.last_name
+  // Always sync active from M365 — that's the source of truth for "is this
+  // person still on staff." We don't preserve a local override here on
+  // purpose; if you deactivate someone in SIS but they're still in M365,
+  // they'll be reactivated on the next sync. The right move is to disable
+  // them in M365.
+  if (existing.active !== row.active) patch.active = row.active
+
+  if (Object.keys(patch).length === 0) {
+    return "skipped"
+  }
+
+  const { error } = await supabase.from("profiles").update(patch).eq("id", existing.id)
+  if (error) {
+    throw new Error(`M365 sync: failed to update ${row.email}: ${error.message}`)
+  }
+  return "updated"
+}
+
+export async function syncProfilesFromM365(rows: M365SyncRow[]): Promise<M365SyncResult> {
+  const result: M365SyncResult = { created: 0, updated: 0, skipped: 0 }
+  for (const row of rows) {
+    const outcome = await upsertProfileFromM365(row)
+    result[outcome] += 1
+  }
+  return result
+}
+
+// ============================================================================
 // Profile directory + role management (admin)
 // ============================================================================
 

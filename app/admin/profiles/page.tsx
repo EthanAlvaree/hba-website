@@ -9,7 +9,12 @@ import {
   type ProfileRecord,
   type ProfileRole,
 } from "@/lib/sis"
-import { signOutProfilesAdminAction, updateProfileActiveAction, updateProfileRolesAction } from "./actions"
+import {
+  signOutProfilesAdminAction,
+  syncM365Action,
+  updateProfileActiveAction,
+  updateProfileRolesAction,
+} from "./actions"
 
 export const dynamic = "force-dynamic"
 
@@ -32,6 +37,12 @@ type ProfilesPageProps = {
     role?: string
     search?: string
     include_inactive?: string
+    sync_ok?: string
+    created?: string
+    updated?: string
+    skipped?: string
+    filtered?: string
+    sync_error?: string
   }>
 }
 
@@ -137,6 +148,56 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                 </button>
               </form>
             </div>
+          </div>
+        </section>
+
+        {raw.sync_ok === "1" && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">
+              M365 sync complete.
+            </p>
+            <p className="mt-1 text-sm text-emerald-800">
+              Created {raw.created ?? 0} new profile(s), updated{" "}
+              {raw.updated ?? 0}, left {raw.skipped ?? 0} unchanged. Filtered{" "}
+              {raw.filtered ?? 0} non-HBA / mailbox-less account(s).
+            </p>
+          </section>
+        )}
+
+        {raw.sync_error && (
+          <section className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-rose-900">
+              M365 sync failed.
+            </p>
+            <p className="mt-1 text-sm text-rose-800 whitespace-pre-wrap">
+              {raw.sync_error}
+            </p>
+          </section>
+        )}
+
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-extrabold text-brand-navy">
+                Sync from Microsoft 365
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Pulls every @highbluffacademy.com mailbox from your tenant and
+                creates/updates a profile row for each. Existing roles are
+                preserved; new profiles start with empty roles and get
+                role <code className="text-xs">faculty</code> backfilled on
+                their first sign-in. Disabled M365 accounts are deactivated
+                here too.
+              </p>
+            </div>
+            <form action={syncM365Action}>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+              >
+                Sync from M365
+              </button>
+            </form>
           </div>
         </section>
 

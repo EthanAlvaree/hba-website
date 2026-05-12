@@ -309,3 +309,65 @@ export async function sendApplicationDraftMagicLink(options: {
     toRecipients: [options.toEmail],
   })
 }
+
+// ============================================================================
+// M365 directory sync
+// ============================================================================
+//
+// Uses the HBA Graph Mailer app's User.Read.All permission to enumerate every
+// user in the HBA tenant. Caller is expected to filter to HBA-domain emails
+// and ignore external guests.
+
+export type M365User = {
+  id: string
+  mail: string | null
+  userPrincipalName: string
+  displayName: string | null
+  givenName: string | null
+  surname: string | null
+  accountEnabled: boolean
+}
+
+type GraphUsersResponse = {
+  value: M365User[]
+  "@odata.nextLink"?: string
+}
+
+// Paginates `/users` via @odata.nextLink. HBA's tenant is small (likely under
+// a few hundred users including students), so iterating all pages is fine.
+export async function listM365Users(): Promise<M365User[]> {
+  const accessToken = await getGraphAccessToken()
+
+  const select = "id,mail,userPrincipalName,displayName,givenName,surname,accountEnabled"
+  let nextUrl: string | undefined =
+    `https://graph.microsoft.com/v1.0/users?$select=${select}&$top=999`
+
+  const users: M365User[] = []
+
+  while (nextUrl) {
+    const response = await fetch(nextUrl, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      const responseText = await response.text()
+      throw new Error(`Failed to list M365 users: ${response.status} ${responseText}`)
+    }
+
+    const page = (await response.json()) as GraphUsersResponse
+    users.push(...page.value)
+    nextUrl = page["@odata.nextLink"]
+  }
+
+  return users
+}
+
+// Resolves a Graph user to a canonical lowercase email. Prefers `mail` when
+// set; falls back to `userPrincipalName`. Returns null when neither is usable.
+export function emailFromM365User(user: M365User): string | null {
+  const candidate = user.mail || user.userPrincipalName
+  if (!candidate) return null
+  const lowered = candidate.toLowerCase().trim()
+  return lowered.length > 0 ? lowered : null
+}
