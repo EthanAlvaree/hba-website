@@ -12,10 +12,13 @@ export default async function AdminSignInPage() {
   }
 
   // For signed-in non-admins, route to whichever portal matches their role.
-  // Parents go to /parent, students go to /portal. Anyone else (faculty
-  // without admin access) gets the "signed in but admin-only" branch below.
+  // Faculty go to /faculty-portal, parents to /parent, students to /portal.
+  // Anyone else gets the "signed in but admin-only" branch below.
   if (signedInEmail) {
     const profile = await getProfileByEmail(signedInEmail)
+    if (profile?.roles.includes("faculty")) {
+      redirect("/faculty-portal")
+    }
     if (profile?.roles.includes("parent")) {
       redirect("/parent")
     }
