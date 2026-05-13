@@ -7,6 +7,8 @@ import {
   getStudentDetail,
   type StudentDetailEnrollment,
 } from "@/lib/sis"
+import { buildTranscriptForStudent } from "@/lib/transcripts"
+import GpaSummary from "@/components/portal/GpaSummary"
 
 export const dynamic = "force-dynamic"
 
@@ -102,7 +104,10 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
     redirect("/admin/sign-in")
   }
 
-  const student = await getStudentDetail(targetStudentId)
+  const [student, transcript] = await Promise.all([
+    getStudentDetail(targetStudentId),
+    buildTranscriptForStudent(targetStudentId),
+  ])
   if (!student) {
     notFound()
   }
@@ -139,6 +144,10 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
           {student.current_grade ? ` · Grade ${student.current_grade}` : ""}
         </p>
       </header>
+
+      {transcript && transcript.terms.length > 0 && (
+        <GpaSummary transcript={transcript} viewerLabel="Your" />
+      )}
 
       {activeEnrollments.length === 0 ? (
         <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">

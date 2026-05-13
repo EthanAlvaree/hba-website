@@ -21,6 +21,8 @@ import {
   type SectionPeriod,
   type StudentDetailEnrollment,
 } from "@/lib/sis"
+import { buildTranscriptForStudent } from "@/lib/transcripts"
+import GpaSummary from "@/components/portal/GpaSummary"
 import { createClient } from "@supabase/supabase-js"
 
 export const dynamic = "force-dynamic"
@@ -91,7 +93,12 @@ export default async function ParentStudentOverviewPage({
     notFound()
   }
 
-  const student = await getStudentDetail(studentId)
+  const [student, transcript] = await Promise.all([
+    getStudentDetail(studentId),
+    // Parents need can_view_grades to see GPA. For admins previewing the
+    // parent portal we always show the transcript-derived GPA.
+    link.can_view_grades ? buildTranscriptForStudent(studentId) : Promise.resolve(null),
+  ])
   if (!student) {
     notFound()
   }
@@ -213,6 +220,14 @@ export default async function ParentStudentOverviewPage({
             {student.current_grade && <> &middot; Grade {student.current_grade}</>}
           </p>
         </section>
+
+        {transcript && transcript.terms.length > 0 && (
+          <GpaSummary
+            transcript={transcript}
+            viewerLabel={`${student.preferred_name?.trim() || student.legal_first_name}'s`}
+            transcriptHref={`/parent/students/${studentId}/transcript`}
+          />
+        )}
 
         {activeEnrollments.length === 0 ? (
           <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">

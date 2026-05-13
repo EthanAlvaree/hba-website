@@ -451,6 +451,8 @@ function DraftDetail({
         <Stat label="Requests unfulfilled" value={summary.unfulfilled_requests ?? 0} />
       </div>
 
+      <CapacityRollup sections={sections} assignmentsBySection={assignmentsBySection} />
+
       {/* Drag/drop assignment board */}
       {sections.length > 0 && (
         <DraftAssignmentsBoard
@@ -502,10 +504,10 @@ function DraftDetail({
                               <span className="text-xs text-slate-500">
                                 · {teacherShortName(section.teacher)}
                               </span>
-                              <span className="text-xs font-semibold text-slate-700">
-                                · {assignments.length} student
-                                {assignments.length === 1 ? "" : "s"}
-                              </span>
+                              <CapacityBadge
+                                count={assignments.length}
+                                cap={section.max_enrollment}
+                              />
                               <span className="ml-auto inline-flex items-center rounded-full border border-slate-200 bg-white px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
                                 Edit
                               </span>
@@ -750,5 +752,113 @@ function Stat({ label, value }: { label: string; value: number }) {
       </p>
       <p className="text-2xl font-extrabold text-slate-900">{value}</p>
     </div>
+  )
+}
+
+// Inline badge for "N students / M cap." Green well under cap, amber at or
+// near cap, rose when over cap. cap === null means unlimited (gray).
+function CapacityBadge({ count, cap }: { count: number; cap: number | null }) {
+  if (cap === null) {
+    return (
+      <span className="text-xs font-semibold text-slate-700">
+        · {count} student{count === 1 ? "" : "s"}
+      </span>
+    )
+  }
+  const over = count > cap
+  const atOrNear = !over && count >= cap
+  const cls = over
+    ? "border border-rose-200 bg-rose-50 text-rose-700"
+    : atOrNear
+    ? "border border-amber-200 bg-amber-50 text-amber-800"
+    : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+  return (
+    <span
+      className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] ${cls}`}
+    >
+      {count} / {cap}
+      {over && " · over"}
+      {atOrNear && " · full"}
+    </span>
+  )
+}
+
+// Surfaces "sections over capacity" + "sections at capacity" at the top of
+// a draft so the admin sees the problem without scrolling. Solver also
+// emits its own capacity warnings, but those don't reflect post-drag/drop
+// state. This recomputes from current assignment counts.
+function CapacityRollup({
+  sections,
+  assignmentsBySection,
+}: {
+  sections: DraftSectionRow[]
+  assignmentsBySection: Map<string, AssignmentRow[]>
+}) {
+  type Row = {
+    section: DraftSectionRow
+    count: number
+    cap: number
+  }
+  const over: Row[] = []
+  const atCap: Row[] = []
+  for (const section of sections) {
+    if (section.max_enrollment === null) continue
+    const count = (assignmentsBySection.get(section.id) ?? []).length
+    if (count > section.max_enrollment) {
+      over.push({ section, count, cap: section.max_enrollment })
+    } else if (count === section.max_enrollment) {
+      atCap.push({ section, count, cap: section.max_enrollment })
+    }
+  }
+
+  if (over.length === 0 && atCap.length === 0) return null
+
+  return (
+    <section
+      className={`rounded-2xl border px-4 py-3 ${
+        over.length > 0
+          ? "border-rose-200 bg-rose-50"
+          : "border-amber-200 bg-amber-50"
+      }`}
+    >
+      <p
+        className={`text-sm font-semibold ${
+          over.length > 0 ? "text-rose-900" : "text-amber-900"
+        }`}
+      >
+        {over.length > 0
+          ? `${over.length} section${over.length === 1 ? " is" : "s are"} over capacity.`
+          : `${atCap.length} section${atCap.length === 1 ? " is" : "s are"} at capacity.`}
+      </p>
+      {over.length > 0 && (
+        <ul className="mt-2 space-y-1 text-xs text-rose-900">
+          {over.map(({ section, count, cap }) => (
+            <li key={section.id}>
+              <strong className="font-semibold">
+                {section.course?.name ?? "(deleted course)"}
+              </strong>
+              {section.section_code ? ` (Sec ${section.section_code})` : ""} —{" "}
+              {count} students assigned, cap {cap}.
+            </li>
+          ))}
+        </ul>
+      )}
+      {atCap.length > 0 && over.length === 0 && (
+        <ul className="mt-2 space-y-1 text-xs text-amber-900">
+          {atCap.slice(0, 5).map(({ section, count, cap }) => (
+            <li key={section.id}>
+              {section.course?.name ?? "(deleted course)"}
+              {section.section_code ? ` (Sec ${section.section_code})` : ""} —{" "}
+              {count} / {cap}
+            </li>
+          ))}
+          {atCap.length > 5 && <li>… and {atCap.length - 5} more.</li>}
+        </ul>
+      )}
+      <p className="mt-2 text-xs text-slate-600">
+        Edit a section&rsquo;s cap below, or use the drag/drop board to move
+        students into a less-full section.
+      </p>
+    </section>
   )
 }
