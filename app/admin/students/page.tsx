@@ -10,6 +10,8 @@ import {
   studentStatusSchema,
   type StudentStatus,
 } from "@/lib/sis"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
+import Avatar from "@/components/ui/Avatar"
 import StudentsHeader from "./StudentsHeader"
 
 export const dynamic = "force-dynamic"
@@ -229,7 +231,18 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
                   href={`/admin/students/${student.id}`}
                   className="block rounded-[1.75rem] border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:border-brand-navy/30 hover:shadow-md sm:px-6"
                 >
-                  <div className="grid gap-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_auto] lg:items-center">
+                  <div className="grid gap-3 lg:grid-cols-[auto_minmax(0,2fr)_minmax(0,1.5fr)_auto] lg:items-center">
+                    <Avatar
+                      photoUrl={profilePhotoUrl(student.profile?.photo_path)}
+                      initials={initialsFor({
+                        first_name: student.legal_first_name,
+                        last_name: student.legal_last_name,
+                        display_name: student.profile?.display_name,
+                        email: student.profile?.email,
+                      })}
+                      alt={displayName}
+                      size="md"
+                    />
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-lg font-extrabold text-brand-navy">

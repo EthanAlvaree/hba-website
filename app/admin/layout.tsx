@@ -1,4 +1,5 @@
 import { auth } from "@/auth"
+import { avatarForEmail } from "@/lib/profile-photos"
 import PortalShell, { type CrossPortalLink, type PortalNavItem } from "@/app/_components/PortalShell"
 
 const adminNav: PortalNavItem[] = [
@@ -54,10 +55,15 @@ export default async function AdminLayout({
     return <>{children}</>
   }
 
+  const userEmail = session.user?.email ?? ""
+  const avatar = await avatarForEmail(userEmail)
+
   return (
     <PortalShell
       audience="admin"
-      userEmail={session.user?.email ?? ""}
+      userEmail={userEmail}
+      userPhotoUrl={avatar.photoUrl}
+      userInitials={avatar.initials}
       navSections={adminNav}
       crossPortalLinks={adminCrossPortal}
     >

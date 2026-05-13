@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Avatar from "@/components/ui/Avatar"
 import { signOutPortalAction } from "./portal-sign-out-action"
 
 export type PortalNavItem = {
@@ -40,6 +41,8 @@ function isPathActive(pathname: string, href: string): boolean {
 export default function PortalShell({
   audience,
   userEmail,
+  userPhotoUrl,
+  userInitials,
   navSections,
   crossPortalLinks,
   preview,
@@ -47,6 +50,11 @@ export default function PortalShell({
 }: {
   audience: PortalAudience
   userEmail: string
+  /** Optional: signed-in user's profile photo URL. Renders an Avatar
+   *  in the header. Pass null if the user has no photo set. */
+  userPhotoUrl?: string | null
+  /** Initials fallback when no photo is set. */
+  userInitials?: string
   navSections: PortalNavItem[]
   // Links shown in a small "Other portals" footer of the sidebar. Admins
   // typically get all three other portals; faculty/parents/students typically
@@ -97,6 +105,14 @@ export default function PortalShell({
           </div>
 
           <div className="flex items-center gap-3">
+            {(userPhotoUrl || userInitials) && (
+              <Avatar
+                photoUrl={userPhotoUrl ?? null}
+                initials={userInitials ?? ""}
+                alt={userEmail}
+                size="sm"
+              />
+            )}
             <span className="hidden text-xs text-white/85 sm:inline">{userEmail}</span>
             <form action={signOutPortalAction}>
               <button

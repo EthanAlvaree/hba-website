@@ -7,6 +7,7 @@ import {
   getStudentDetail,
   type StudentRecord,
 } from "@/lib/sis"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 
 export default async function StudentPortalLayout({
   children,
@@ -68,6 +69,13 @@ export default async function StudentPortalLayout({
     <PortalShell
       audience="student"
       userEmail={profile.email}
+      userPhotoUrl={profilePhotoUrl(profile.photo_path)}
+      userInitials={initialsFor({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        display_name: profile.display_name,
+        email: profile.email,
+      })}
       navSections={studentNav}
       crossPortalLinks={cross}
     >

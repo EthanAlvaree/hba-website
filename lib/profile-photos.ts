@@ -168,6 +168,33 @@ export function profilePhotoUrl(photoPath: string | null | undefined): string | 
   return `${cleanBase}/storage/v1/object/public/${BUCKET}/${photoPath}`
 }
 
+/** Look up a user's profile by email and return avatar props. Used by
+ *  every portal layout to feed PortalShell. Returns sensible defaults
+ *  (no photo, "?" initials) if the lookup fails so layouts never crash
+ *  over a missing avatar. */
+export async function avatarForEmail(
+  email: string | null | undefined
+): Promise<{ photoUrl: string | null; initials: string }> {
+  if (!email) return { photoUrl: null, initials: "?" }
+  try {
+    const { getProfileByEmail } = await import("@/lib/sis")
+    const profile = await getProfileByEmail(email)
+    if (!profile) return { photoUrl: null, initials: email.charAt(0).toUpperCase() }
+    return {
+      photoUrl: profilePhotoUrl(profile.photo_path),
+      initials: initialsFor({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        display_name: profile.display_name,
+        email: profile.email,
+      }),
+    }
+  } catch (err) {
+    console.error("avatarForEmail failed:", err)
+    return { photoUrl: null, initials: email.charAt(0).toUpperCase() }
+  }
+}
+
 /** Initials fallback rendered when there's no photo. */
 export function initialsFor(input: {
   first_name?: string | null

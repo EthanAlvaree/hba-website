@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import PortalShell, { type CrossPortalLink, type PortalNavItem } from "@/app/_components/PortalShell"
 import { getProfileByEmail } from "@/lib/sis"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 
 const facultyNav: PortalNavItem[] = [
   { id: "home", label: "My sections", href: "/faculty-portal" },
@@ -48,6 +49,13 @@ export default async function FacultyPortalLayout({
     <PortalShell
       audience="faculty"
       userEmail={profile.email}
+      userPhotoUrl={profilePhotoUrl(profile.photo_path)}
+      userInitials={initialsFor({
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        display_name: profile.display_name,
+        email: profile.email,
+      })}
       navSections={facultyNav}
       crossPortalLinks={cross}
     >

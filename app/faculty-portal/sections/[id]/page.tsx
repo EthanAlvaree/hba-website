@@ -38,6 +38,8 @@ import {
   createAnnouncementAction,
   deleteAnnouncementAction,
 } from "./announcements/actions"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
+import Avatar from "@/components/ui/Avatar"
 
 export const dynamic = "force-dynamic"
 
@@ -300,7 +302,18 @@ export default async function FacultySectionDetailPage({
                   key={enrollment.id}
                   className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
                 >
-                  <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto_auto] sm:items-center">
+                  <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,2fr)_minmax(0,1fr)_auto_auto] sm:items-center">
+                    <Avatar
+                      photoUrl={profilePhotoUrl(enrollment.student?.profile?.photo_path)}
+                      initials={initialsFor({
+                        first_name: enrollment.student?.legal_first_name,
+                        last_name: enrollment.student?.legal_last_name,
+                        display_name: enrollment.student?.profile?.display_name,
+                        email: enrollment.student?.profile?.email,
+                      })}
+                      alt={rosterName(enrollment)}
+                      size="md"
+                    />
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-base font-semibold text-slate-900">

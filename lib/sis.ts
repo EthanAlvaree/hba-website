@@ -977,6 +977,7 @@ export type EnrollmentRecord = {
       id: string
       email: string
       display_name: string | null
+      photo_path: string | null
     } | null
   } | null
 }
@@ -986,7 +987,7 @@ const enrollmentSelect = `
   enrolled_at, dropped_at, final_grade_percentage, final_grade_letter, grade_locked,
   student:students(
     id, legal_first_name, legal_last_name, preferred_name, current_grade, status,
-    profile:profiles(id, email, display_name)
+    profile:profiles(id, email, display_name, photo_path)
   )
 `
 
@@ -1100,6 +1101,7 @@ export type StudentDirectoryRow = {
     id: string
     email: string
     display_name: string | null
+    photo_path: string | null
   } | null
 }
 
@@ -1116,7 +1118,7 @@ export async function listStudentsForDirectory(filters?: {
     .select(
       `id, legal_first_name, legal_last_name, preferred_name, current_grade,
        enrollment_type, status, registered_at_hba, application_id, updated_at,
-       profile:profiles(id, email, display_name)`
+       profile:profiles(id, email, display_name, photo_path)`
     )
     .order("legal_last_name", { ascending: true })
     .order("legal_first_name", { ascending: true })
@@ -1159,7 +1161,7 @@ export async function listStudentsForDirectory(filters?: {
       .select(
         `id, legal_first_name, legal_last_name, preferred_name, current_grade,
          enrollment_type, status, registered_at_hba, application_id, updated_at,
-         profile:profiles!inner(id, email, display_name)`
+         profile:profiles!inner(id, email, display_name, photo_path)`
       )
       .ilike("profile.email", `%${term}%`)
       .returns<StudentDirectoryRow[]>()
@@ -1445,7 +1447,7 @@ export async function listStudents(filters?: {
     .from("students")
     .select(
       `id, legal_first_name, legal_last_name, preferred_name, current_grade, status,
-       profile:profiles(id, email, display_name)`
+       profile:profiles(id, email, display_name, photo_path)`
     )
     .order("legal_last_name", { ascending: true })
     .order("legal_first_name", { ascending: true })
