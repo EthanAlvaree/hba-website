@@ -3,7 +3,10 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { getProfileByEmail, listStudentsForParent } from "@/lib/sis"
 import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
+import { signCalendarToken } from "@/lib/calendar-tokens"
+import { siteConfig } from "@/lib/site"
 import Avatar from "@/components/ui/Avatar"
+import CalendarSubscribeCard from "./CalendarSubscribeCard"
 
 export const dynamic = "force-dynamic"
 
@@ -44,6 +47,19 @@ export default async function ParentPortalPage() {
   const children = await listStudentsForParent(profile.id)
   const greetingName =
     profile.first_name?.trim() || profile.display_name?.trim() || profile.email
+
+  // Personal calendar subscription URL. If no token secret is
+  // configured (development with neither env var set), skip rendering
+  // the card so the page still renders.
+  let calendarSubscribeUrl: string | null = null
+  try {
+    if (children.length > 0) {
+      const token = signCalendarToken(profile.id)
+      calendarSubscribeUrl = `${siteConfig.url}/api/calendar/parent/${profile.id}?token=${token}`
+    }
+  } catch {
+    calendarSubscribeUrl = null
+  }
 
   return (
     <div className="space-y-6">
@@ -160,6 +176,10 @@ export default async function ParentPortalPage() {
               )
             })}
           </section>
+        )}
+
+        {calendarSubscribeUrl && (
+          <CalendarSubscribeCard icsUrl={calendarSubscribeUrl} />
         )}
     </div>
   )
