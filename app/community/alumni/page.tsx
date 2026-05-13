@@ -63,14 +63,16 @@ export default function AlumniPage() {
               >
                 Update your info
               </a>
-              <a
-                href={siteConfig.social.instagram.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
-              >
-                Follow on Instagram
-              </a>
+              {siteConfig.social.instagram && (
+                <a
+                  href={siteConfig.social.instagram.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
+                >
+                  Follow on Instagram
+                </a>
+              )}
             </div>
           </div>
 

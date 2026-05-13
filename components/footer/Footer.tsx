@@ -50,26 +50,38 @@ export default function Footer() {
               {contact.infoEmail}
             </p>
 
-            {/* Social Icons */}
+            {/* Social Icons — each renders only if the school has that network. */}
             <div className="flex flex-wrap gap-4 mt-5 text-2xl">
-              <Link href={social.instagram.url} target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
-                <FaInstagram />
-              </Link>
-              <Link href={social.facebook.url} target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
-                <FaFacebookF />
-              </Link>
-              <Link href={social.tiktok.url} target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
-                <FaTiktok />
-              </Link>
-              <Link href={social.youtube.url} target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
-                <FaYoutube />
-              </Link>
-              <Link href={social.linkedin.url} target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
-                <FaLinkedinIn />
-              </Link>
-              <Link href={social.yelp.url} target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
-                <FaYelp />
-              </Link>
+              {social.instagram && (
+                <Link href={social.instagram.url} target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
+                  <FaInstagram />
+                </Link>
+              )}
+              {social.facebook && (
+                <Link href={social.facebook.url} target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
+                  <FaFacebookF />
+                </Link>
+              )}
+              {social.tiktok && (
+                <Link href={social.tiktok.url} target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
+                  <FaTiktok />
+                </Link>
+              )}
+              {social.youtube && (
+                <Link href={social.youtube.url} target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
+                  <FaYoutube />
+                </Link>
+              )}
+              {social.linkedin && (
+                <Link href={social.linkedin.url} target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
+                  <FaLinkedinIn />
+                </Link>
+              )}
+              {social.yelp && (
+                <Link href={social.yelp.url} target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
+                  <FaYelp />
+                </Link>
+              )}
             </div>
           </div>
 
