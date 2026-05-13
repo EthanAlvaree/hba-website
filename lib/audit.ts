@@ -66,6 +66,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   faculty_bio_seed: "faculty_bio.seed",
   faculty_bio_bulk_seed: "faculty_bio.bulk_seed",
   faculty_bio_admin_edit: "faculty_bio.admin_edit",
+  faculty_portrait_bulk_seed: "faculty_portrait.bulk_seed",
 } as const
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[keyof typeof ADMIN_AUDIT_ACTIONS]
 

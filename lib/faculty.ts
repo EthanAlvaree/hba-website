@@ -753,3 +753,104 @@ export async function bulkSeedFacultyBios(): Promise<{
     skipped_no_profile: skippedNoProfile,
   }
 }
+
+/** Promote the code-side portrait (under public/images/faculty/…) into
+ *  the profile-photos bucket so the public faculty page renders it
+ *  from the same path the faculty member would upload to. Only runs
+ *  when no portrait override exists — never replaces a faculty
+ *  member's already-uploaded photo. */
+export async function seedFacultyPortraitFromCodeForProfile(
+  profileId: string,
+  codeImagePath: string
+): Promise<{ seeded: boolean; reason?: string }> {
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const supabase = getServiceSupabase()
+  const { data: existing } = await supabase
+    .from("faculty_bios")
+    .select("public_photo_path")
+    .eq("profile_id", profileId)
+    .maybeSingle<{ public_photo_path: string | null }>()
+  if (existing?.public_photo_path) {
+    return { seeded: false, reason: "already-seeded" }
+  }
+
+  // Map "/images/faculty/foo.webp" → "<repo>/public/images/faculty/foo.webp".
+  const [{ join }, { readFile }] = await Promise.all([
+    import("node:path"),
+    import("node:fs/promises"),
+  ])
+  const abs = join(process.cwd(), "public", codeImagePath.replace(/^\//, ""))
+  let buffer: Buffer
+  try {
+    buffer = await readFile(abs)
+  } catch {
+    return { seeded: false, reason: "file-missing" }
+  }
+
+  // Best-effort MIME guess from the extension; the upload pipeline
+  // re-encodes everything as WebP anyway so this only gates allowed-list
+  // validation.
+  const ext = codeImagePath.toLowerCase().split(".").pop() ?? ""
+  const mime =
+    ext === "jpg" || ext === "jpeg"
+      ? "image/jpeg"
+      : ext === "png"
+        ? "image/png"
+        : ext === "webp"
+          ? "image/webp"
+          : "image/jpeg"
+
+  const result = await setFacultyPortraitFromBuffer(profileId, buffer, mime)
+  if (!result.ok) return { seeded: false, reason: result.error }
+  return { seeded: true }
+}
+
+/** Bulk-seed portraits alongside bios. Walks every code-side faculty
+ *  member, resolves to a profile, and copies the code image into the
+ *  profile-photos bucket if no portrait override exists yet. Tolerates
+ *  missing files — e.g. a faculty member whose image isn't tracked in
+ *  the repo. */
+export async function bulkSeedFacultyPortraits(): Promise<{
+  seeded: number
+  skipped_already_seeded: number
+  skipped_no_profile: string[]
+  skipped_no_image: string[]
+  failed: Array<{ slug: string; reason: string }>
+}> {
+  let seeded = 0
+  let skippedAlreadySeeded = 0
+  const skippedNoProfile: string[] = []
+  const skippedNoImage: string[] = []
+  const failed: Array<{ slug: string; reason: string }> = []
+  for (const member of faculty) {
+    if (!member.image) {
+      skippedNoImage.push(member.slug)
+      continue
+    }
+    const profile = await resolveProfileForFacultySlug(member.slug)
+    if (!profile) {
+      skippedNoProfile.push(member.slug)
+      continue
+    }
+    const result = await seedFacultyPortraitFromCodeForProfile(
+      profile.id,
+      member.image
+    )
+    if (result.seeded) {
+      seeded += 1
+    } else if (result.reason === "already-seeded") {
+      skippedAlreadySeeded += 1
+    } else if (result.reason === "file-missing") {
+      skippedNoImage.push(member.slug)
+    } else {
+      failed.push({ slug: member.slug, reason: result.reason ?? "unknown" })
+    }
+  }
+  return {
+    seeded,
+    skipped_already_seeded: skippedAlreadySeeded,
+    skipped_no_profile: skippedNoProfile,
+    skipped_no_image: skippedNoImage,
+    failed,
+  }
+}

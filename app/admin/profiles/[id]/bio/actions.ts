@@ -8,6 +8,7 @@ import {
   resolveProfileForFacultySlug,
   seedFacultyBioFromCodeForProfile,
   bulkSeedFacultyBios,
+  bulkSeedFacultyPortraits,
 } from "@/lib/faculty"
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 import { getServiceSupabase } from "@/lib/supabase-server"
@@ -88,6 +89,37 @@ export async function bulkSeedFacultyBiosAction() {
     faculty_bio_seed_count: String(result.seeded),
     faculty_bio_seed_skipped: String(result.skipped_already_seeded),
     faculty_bio_seed_no_profile: String(result.skipped_no_profile.length),
+  })
+  redirect(`/admin/profiles?${params.toString()}`)
+}
+
+// Bulk-seed every faculty member's portrait from the code-side
+// /public/images/faculty/<slug>.webp file into the profile-photos
+// bucket. Mirrors the bio bulk-seed but for the rectangular portrait.
+// Won't overwrite a faculty member who has already uploaded a portrait.
+export async function bulkSeedFacultyPortraitsAction() {
+  await assertAdmin()
+  const result = await bulkSeedFacultyPortraits()
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.faculty_portrait_bulk_seed,
+    target_kind: "faculty_bios",
+    details: {
+      seeded: result.seeded,
+      skipped_already_seeded: result.skipped_already_seeded,
+      skipped_no_profile: result.skipped_no_profile,
+      skipped_no_image: result.skipped_no_image,
+      failed: result.failed,
+    },
+  })
+  revalidatePath("/admin/profiles")
+  revalidatePath("/faculty")
+  const params = new URLSearchParams({
+    faculty_portrait_seed_ok: "1",
+    faculty_portrait_seed_count: String(result.seeded),
+    faculty_portrait_seed_skipped: String(result.skipped_already_seeded),
+    faculty_portrait_seed_no_profile: String(result.skipped_no_profile.length),
+    faculty_portrait_seed_no_image: String(result.skipped_no_image.length),
+    faculty_portrait_seed_failed: String(result.failed.length),
   })
   redirect(`/admin/profiles?${params.toString()}`)
 }
