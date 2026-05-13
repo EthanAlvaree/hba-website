@@ -12,6 +12,8 @@ import {
   updateProfileContact,
   updateStudentAdmin,
   updateStudentDemographics,
+  withdrawStudent,
+  withdrawStudentInputSchema,
 } from "@/lib/sis"
 import { z } from "zod"
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
@@ -184,6 +186,33 @@ export async function setPostEnrollmentVerifiedAction(formData: FormData) {
 
   revalidateStudent(parsed.data.student_id)
   redirect(`/admin/students/${parsed.data.student_id}`)
+}
+
+export async function withdrawStudentAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = withdrawStudentInputSchema.safeParse({
+    id: formData.get("id"),
+    reason: formData.get("reason") ?? "",
+    withdraw_enrollments: formData.get("withdraw_enrollments") === "on",
+  })
+  if (!parsed.success) {
+    const msg = parsed.error.issues[0]?.message ?? "Invalid withdrawal."
+    throw new Error(msg)
+  }
+
+  const result = await withdrawStudent(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.student_withdraw,
+    target_kind: "student",
+    target_id: parsed.data.id,
+    details: {
+      reason: parsed.data.reason,
+      enrollments_withdrawn: result.enrollments_withdrawn,
+    },
+  })
+
+  revalidateStudent(parsed.data.id)
+  redirect(`/admin/students/${parsed.data.id}?withdrawn=1`)
 }
 
 export async function signOutStudentsAdminAction() {

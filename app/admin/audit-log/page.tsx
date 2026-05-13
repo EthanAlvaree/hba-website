@@ -73,6 +73,8 @@ function actionLabel(code: string): string {
       return "Remove profile photo"
     case "profile_photo.m365_resync":
       return "Resync photo from M365"
+    case "student.withdraw":
+      return "Withdraw student"
     default:
       return code
   }

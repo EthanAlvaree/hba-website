@@ -81,6 +81,7 @@ export type StudentRecord = {
   registered_at_hba: string | null
   graduated_at: string | null
   withdrawn_at: string | null
+  withdrawn_reason: string | null
 
   internal_notes: string | null
   assigned_to: string | null
@@ -113,7 +114,8 @@ const studentColumns =
   "english_proficiency, address_line1, address_line2, address_city, " +
   "address_region, address_postal_code, address_country, " +
   "enrollment_type, current_grade, status, " +
-  "registered_at_hba, graduated_at, withdrawn_at, internal_notes, assigned_to"
+  "registered_at_hba, graduated_at, withdrawn_at, withdrawn_reason, " +
+  "internal_notes, assigned_to"
 
 const parentLinkColumns =
   "id, created_at, updated_at, student_id, parent_profile_id, relationship, " +
@@ -1391,6 +1393,66 @@ export async function updateStudentDemographics(
     throw new Error(`Failed to update student demographics: ${error.message}`)
   }
   return data
+}
+
+export const withdrawStudentInputSchema = z.object({
+  id: z.uuid(),
+  reason: z.string().trim().min(1, "Reason is required.").max(2000),
+  /** When true, also mark every current-status enrollment as
+   *  withdrawn. Default true — withdrawing a student usually means
+   *  they're not attending anything anymore. */
+  withdraw_enrollments: z.coerce.boolean().default(true),
+})
+export type WithdrawStudentInput = z.infer<typeof withdrawStudentInputSchema>
+
+export type WithdrawStudentResult = {
+  student: StudentRecord
+  enrollments_withdrawn: number
+}
+
+export async function withdrawStudent(
+  input: WithdrawStudentInput
+): Promise<WithdrawStudentResult> {
+  const today = new Date().toISOString().slice(0, 10)
+  const supabase = getSupabase()
+  const { data: student, error } = await supabase
+    .from("students")
+    .update({
+      status: "withdrawn",
+      withdrawn_at: today,
+      withdrawn_reason: input.reason,
+    })
+    .eq("id", input.id)
+    .select(studentColumns)
+    .single<StudentRecord>()
+
+  if (error || !student) {
+    throw new Error(`Failed to withdraw student: ${error?.message ?? "no row"}`)
+  }
+
+  let enrollmentsWithdrawn = 0
+  if (input.withdraw_enrollments) {
+    const { data: updated, error: enrollErr } = await supabase
+      .from("enrollments")
+      .update({
+        status: "withdrawn",
+        dropped_at: new Date().toISOString(),
+      })
+      .eq("student_id", input.id)
+      .in("status", ["enrolled", "audit"])
+      .select("id")
+    if (enrollErr) {
+      // Log but don't roll back — the student status is the source
+      // of truth; enrollments can be cleaned up manually if needed.
+      console.error(
+        `withdrawStudent: enrollment-flip failed for ${input.id}: ${enrollErr.message}`
+      )
+    } else {
+      enrollmentsWithdrawn = updated?.length ?? 0
+    }
+  }
+
+  return { student, enrollments_withdrawn: enrollmentsWithdrawn }
 }
 
 export async function updateStudentAdmin(

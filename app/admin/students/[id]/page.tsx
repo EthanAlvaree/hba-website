@@ -23,6 +23,7 @@ import {
   updateProfileContactAction,
   updateStudentAdminAction,
   updateStudentDemographicsAction,
+  withdrawStudentAction,
 } from "../actions"
 import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 import ProfilePhotoCard from "./ProfilePhotoCard"
@@ -951,14 +952,19 @@ export default async function StudentDetailPage({
             </label>
 
             {(student.graduated_at || student.withdrawn_at) && (
-              <p className="sm:col-span-2 text-xs text-slate-500">
+              <div className="sm:col-span-2 space-y-1 text-xs text-slate-500">
                 {student.graduated_at && (
-                  <>Graduated on {formatDate(student.graduated_at)}. </>
+                  <p>Graduated on {formatDate(student.graduated_at)}.</p>
                 )}
                 {student.withdrawn_at && (
-                  <>Withdrew on {formatDate(student.withdrawn_at)}.</>
+                  <p>
+                    <strong>Withdrew on {formatDate(student.withdrawn_at)}.</strong>
+                    {student.withdrawn_reason && (
+                      <> Reason: {student.withdrawn_reason}</>
+                    )}
+                  </p>
                 )}
-              </p>
+              </div>
             )}
 
             <div className="sm:col-span-2">
@@ -971,7 +977,71 @@ export default async function StudentDetailPage({
             </div>
           </form>
         </section>
+
+        {student.status === "active" && (
+          <WithdrawCard studentId={student.id} />
+        )}
     </div>
+  )
+}
+
+function WithdrawCard({ studentId }: { studentId: string }) {
+  return (
+    <section className="rounded-[2rem] border border-rose-200 bg-rose-50/40 px-6 py-6 shadow-sm">
+      <h2 className="text-lg font-extrabold text-brand-navy">
+        Withdraw this student
+      </h2>
+      <p className="mt-1 text-sm text-slate-700">
+        Marks the student as withdrawn, records today as the withdrawal
+        date, and (by default) drops every active enrollment so faculty
+        rosters drop them too. The reason is stored on the student record
+        and logged in the audit log.
+      </p>
+      <details className="mt-4">
+        <summary className="cursor-pointer text-sm font-semibold text-rose-800 hover:underline">
+          Open the withdrawal form
+        </summary>
+        <form
+          action={withdrawStudentAction}
+          className="mt-4 space-y-3 rounded-2xl border border-rose-200 bg-white px-4 py-4"
+        >
+          <input type="hidden" name="id" value={studentId} />
+          <label className="block space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">
+              Reason for withdrawal <span className="text-rose-700">*</span>
+            </span>
+            <textarea
+              name="reason"
+              required
+              rows={3}
+              maxLength={2000}
+              placeholder="e.g. Moving out of state · Family chose another school · Transferred to public · etc."
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="withdraw_enrollments"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-rose-700 focus:ring-rose-600"
+            />
+            <span>Also mark every active enrollment as withdrawn</span>
+          </label>
+          <p className="text-[11px] text-slate-500">
+            This is reversible from the admin field above (set status back
+            to active), but enrollments dropped here would have to be
+            re-added manually.
+          </p>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-full bg-rose-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          >
+            Withdraw student
+          </button>
+        </form>
+      </details>
+    </section>
   )
 }
 
