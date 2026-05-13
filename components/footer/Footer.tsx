@@ -129,6 +129,7 @@ export default function Footer() {
               <h4 className="text-xl font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm text-gray-200">
                 <li><Link href="/admissions" className="hover:text-orange-300">Admissions</Link></li>
+                <li><Link href="/admissions/financial-aid" className="hover:text-orange-300">Financial aid</Link></li>
                 <li><Link href="/reviews" className="hover:text-orange-300">Reviews</Link></li>
                 <li><Link href="/about/college-acceptances" className="hover:text-orange-300">College acceptances</Link></li>
                 <li><Link href="/calendar" className="hover:text-orange-300">Academic calendar</Link></li>
