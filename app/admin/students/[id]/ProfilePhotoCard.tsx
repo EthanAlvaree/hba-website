@@ -50,7 +50,7 @@ export default function ProfilePhotoCard({
             ref={inputRef}
             type="file"
             name="photo"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif"
             onChange={(e) => setPreviewName(e.target.files?.[0]?.name ?? null)}
             className="block w-full text-xs text-slate-700 file:mr-3 file:rounded-full file:border-0 file:bg-brand-navy file:px-4 file:py-2 file:text-xs file:font-semibold file:text-white hover:file:brightness-110"
           />
@@ -75,8 +75,9 @@ export default function ProfilePhotoCard({
           </form>
         )}
         <p className="text-[11px] text-slate-500">
-          JPEG, PNG, or WebP. Up to 5 MB. Visible on the student&rsquo;s
-          roster cards and portal home.
+          JPEG, PNG, WebP, or HEIC (iPhone). Up to 10 MB — we&rsquo;ll
+          resize and re-encode automatically. Visible on the
+          student&rsquo;s roster cards and portal home.
         </p>
         {state?.ok === false && (
           <p className="text-xs text-rose-700">{state.error}</p>

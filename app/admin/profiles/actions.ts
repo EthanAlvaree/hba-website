@@ -138,6 +138,8 @@ export async function syncM365Action() {
       updated: result.updated,
       skipped: result.skipped,
       filtered: result.filtered,
+      photos_pulled: result.photos_pulled,
+      photos_failed: result.photos_failed,
     },
   })
 
@@ -149,6 +151,8 @@ export async function syncM365Action() {
     updated: String(result.updated),
     skipped: String(result.skipped),
     filtered: String(result.filtered),
+    photos_pulled: String(result.photos_pulled),
+    photos_failed: String(result.photos_failed),
   })
   redirect(`/admin/profiles?${params.toString()}`)
 }

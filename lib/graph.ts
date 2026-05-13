@@ -561,3 +561,31 @@ export function emailFromM365User(user: M365User): string | null {
   const lowered = candidate.toLowerCase().trim()
   return lowered.length > 0 ? lowered : null
 }
+
+// Fetch a user's profile photo from Microsoft Graph. Returns the binary
+// (always JPEG per Graph spec) or null if the user has no photo set.
+// Requires User.Read.All app permission which we already have.
+//
+// Graph returns 404 for users without a photo (very common — most staff
+// never set one). We treat that as "no photo, nothing to sync" rather
+// than an error.
+export async function fetchM365UserPhoto(
+  userEmail: string
+): Promise<{ buffer: Buffer; contentType: string } | null> {
+  const accessToken = await getGraphAccessToken()
+  const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(userEmail)}/photo/$value`
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: "no-store",
+  })
+
+  if (response.status === 404) return null
+  if (!response.ok) {
+    const text = await response.text().catch(() => "")
+    throw new Error(`Failed to fetch M365 photo for ${userEmail}: ${response.status} ${text}`)
+  }
+
+  const arrayBuf = await response.arrayBuffer()
+  const contentType = response.headers.get("content-type") || "image/jpeg"
+  return { buffer: Buffer.from(arrayBuf), contentType }
+}

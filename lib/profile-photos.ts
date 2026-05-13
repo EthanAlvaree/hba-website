@@ -5,50 +5,93 @@
 // active photo; uploading a new one deletes the previous file so the
 // bucket doesn't accumulate orphans.
 //
-// Path scheme: `<profile-id>/<crypto-random>.<ext>`. Keeping each
+// Pipeline: every upload, regardless of input format, is routed
+// through sharp. We:
+//   - resize so the longest side is at most 1024px
+//   - strip EXIF (privacy: removes location, camera, sometimes name)
+//   - re-encode as WebP (q=85) and store as .webp
+//
+// Why: it normalizes everything to one format that every browser
+// renders, shrinks 5–10 MB phone photos to ~120 KB, and lets us
+// accept HEIC (which <img> doesn't render natively) by converting
+// it server-side. Sharp on Vercel ships with libheif, so HEIC works.
+//
+// Path scheme: `<profile-id>/<crypto-random>.webp`. Keeping each
 // profile's photo under a folder of its own makes "delete this
 // profile's photos" a single listObjects + remove call.
 
 import "server-only"
 import { randomBytes } from "node:crypto"
+import sharp from "sharp"
 import { getServiceSupabase } from "@/lib/supabase-server"
 
 const BUCKET = "profile-photos"
-const MAX_BYTES = 5 * 1024 * 1024 // 5 MB
+const MAX_INPUT_BYTES = 10 * 1024 * 1024 // 10 MB; matches bucket
+const MAX_DIMENSION = 1024
 
-// Subset of image MIME types we trust. JPEG + PNG + WebP cover any
-// photo a school office would upload from a phone or laptop.
-const ALLOWED_MIME: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/jpg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-}
+// Input formats we accept. Output is always WebP regardless.
+// image/heic + image/heif from iPhone uploads work via sharp+libheif
+// on Vercel's runtime.
+const ALLOWED_MIME = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+])
 
 export type SetProfilePhotoResult =
   | { ok: true; photoPath: string }
   | { ok: false; error: string }
+
+/** Normalize any supported input buffer to a square-ish WebP under
+ *  MAX_DIMENSION on the longest side. Strips EXIF. */
+async function normalizeToWebp(input: Buffer): Promise<Buffer> {
+  return await sharp(input, { failOn: "none" })
+    .rotate() // honor EXIF orientation, then strip
+    .resize({
+      width: MAX_DIMENSION,
+      height: MAX_DIMENSION,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
+    .webp({ quality: 85 })
+    .toBuffer()
+}
 
 export async function setProfilePhotoFromBuffer(
   profileId: string,
   buffer: Buffer,
   mimeType: string
 ): Promise<SetProfilePhotoResult> {
-  const ext = ALLOWED_MIME[mimeType.toLowerCase()]
-  if (!ext) {
+  if (!ALLOWED_MIME.has(mimeType.toLowerCase())) {
     return {
       ok: false,
-      error: "Unsupported image type. Use JPEG, PNG, or WebP.",
-    }
-  }
-  if (buffer.byteLength > MAX_BYTES) {
-    return {
-      ok: false,
-      error: `Photo is too large. Keep it under ${Math.round(MAX_BYTES / 1024 / 1024)} MB.`,
+      error: "Unsupported image type. Use JPEG, PNG, WebP, or HEIC.",
     }
   }
   if (buffer.byteLength === 0) {
     return { ok: false, error: "Empty file." }
+  }
+  if (buffer.byteLength > MAX_INPUT_BYTES) {
+    return {
+      ok: false,
+      error: `Photo is too large. Keep it under ${Math.round(MAX_INPUT_BYTES / 1024 / 1024)} MB.`,
+    }
+  }
+
+  let normalized: Buffer
+  try {
+    normalized = await normalizeToWebp(buffer)
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "Unknown image processing error."
+    console.error("profile-photos: sharp failed", err)
+    return {
+      ok: false,
+      error: `Couldn't process the image (${message}). Try a different file.`,
+    }
   }
 
   const supabase = getServiceSupabase()
@@ -69,13 +112,13 @@ export async function setProfilePhotoFromBuffer(
     // Continue — the new upload still works.
   }
 
-  const filename = `${randomBytes(8).toString("hex")}.${ext}`
+  const filename = `${randomBytes(8).toString("hex")}.webp`
   const photoPath = `${profileId}/${filename}`
 
   const { error: uploadError } = await supabase.storage
     .from(BUCKET)
-    .upload(photoPath, buffer, {
-      contentType: mimeType,
+    .upload(photoPath, normalized, {
+      contentType: "image/webp",
       upsert: false,
     })
   if (uploadError) {

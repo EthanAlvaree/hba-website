@@ -37,7 +37,7 @@ export async function GET(request: Request) {
   }
 
   console.log(
-    `M365 cron sync ok: +${result.created} created, ${result.updated} updated, ${result.skipped} unchanged, ${result.filtered} filtered.`
+    `M365 cron sync ok: +${result.created} created, ${result.updated} updated, ${result.skipped} unchanged, ${result.filtered} filtered. Photos: +${result.photos_pulled} pulled, ${result.photos_failed} failed.`
   )
   return NextResponse.json(result)
 }

@@ -48,6 +48,8 @@ type ProfilesPageProps = {
     updated?: string
     skipped?: string
     filtered?: string
+    photos_pulled?: string
+    photos_failed?: string
     sync_error?: string
     deleted?: string
     bio_seed_ok?: string
@@ -129,6 +131,19 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
               Created {raw.created ?? 0} new profile(s), updated{" "}
               {raw.updated ?? 0}, left {raw.skipped ?? 0} unchanged. Filtered{" "}
               {raw.filtered ?? 0} non-HBA / mailbox-less account(s).
+              {raw.photos_pulled && Number(raw.photos_pulled) > 0 && (
+                <>
+                  {" "}Pulled <strong>{raw.photos_pulled}</strong> profile
+                  photo(s) from M365.
+                </>
+              )}
+              {raw.photos_failed && Number(raw.photos_failed) > 0 && (
+                <>
+                  {" "}<span className="text-amber-800">
+                    {raw.photos_failed} photo(s) failed — see server logs.
+                  </span>
+                </>
+              )}
             </p>
           </section>
         )}
