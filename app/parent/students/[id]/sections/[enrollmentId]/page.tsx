@@ -75,6 +75,14 @@ export default async function ParentStudentSectionDetailPage({
   const displayName = student.preferred_name?.trim()
     ? `${student.preferred_name} (${student.legal_first_name} ${student.legal_last_name})`
     : `${student.legal_first_name} ${student.legal_last_name}`
+  // Short student name for the message ("I'm <Jane>'s parent…").
+  const shortStudentName =
+    student.preferred_name?.trim() || student.legal_first_name
+
+  const parentDisplayName =
+    profile.first_name?.trim() ||
+    profile.display_name?.trim() ||
+    profile.email
 
   return (
     <StudentSectionDetail
@@ -88,6 +96,9 @@ export default async function ParentStudentSectionDetailPage({
       backLabel={`Back to ${displayName}`}
       studentSubtitle={displayName}
       showAttendance={canViewAttendance}
+      contactAudience="parent"
+      studentNameForMessage={shortStudentName}
+      fromName={parentDisplayName}
     />
   )
 }

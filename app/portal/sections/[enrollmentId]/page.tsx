@@ -56,6 +56,11 @@ export default async function StudentPortalSectionPage({
     listAnnouncementsForSection(enrollment.section.id),
   ])
 
+  const studentDisplayName =
+    student.preferred_name?.trim() ||
+    `${student.legal_first_name} ${student.legal_last_name}`.trim() ||
+    profile.email
+
   return (
     <StudentSectionDetail
       enrollment={enrollment}
@@ -66,6 +71,8 @@ export default async function StudentPortalSectionPage({
       announcements={announcements}
       backHref="/portal"
       backLabel="Back to portal"
+      contactAudience="student"
+      fromName={studentDisplayName}
     />
   )
 }

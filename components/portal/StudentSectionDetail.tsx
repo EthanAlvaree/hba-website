@@ -24,6 +24,7 @@ import {
 } from "@/lib/gradebook"
 import type { StudentDetailEnrollment } from "@/lib/sis"
 import type { AnnouncementRecord } from "@/lib/announcements"
+import TeacherContactButtons from "./TeacherContactButtons"
 
 const pacific = "America/Los_Angeles"
 
@@ -97,6 +98,16 @@ type Props = {
   showAttendance?: boolean
   /** Optional announcements posted by the teacher to this section. */
   announcements?: AnnouncementRecord[]
+  /** Audience hint — drives the "Message teacher" pre-filled template.
+   *  Default "student" (the viewer is the student themselves). Parent
+   *  view passes "parent" + studentNameForMessage. */
+  contactAudience?: "student" | "parent"
+  /** When contactAudience="parent", the student's display name to
+   *  mention in the message body. */
+  studentNameForMessage?: string
+  /** Optional viewer's name for the signature line of the pre-filled
+   *  message (helps the teacher recognize who's writing). */
+  fromName?: string
 }
 
 export function StudentSectionDetail({
@@ -110,6 +121,9 @@ export function StudentSectionDetail({
   studentSubtitle,
   showAttendance = true,
   announcements = [],
+  contactAudience = "student",
+  studentNameForMessage,
+  fromName,
 }: Props) {
   const section = enrollment.section
   if (!section) {
@@ -177,6 +191,16 @@ export function StudentSectionDetail({
               {teacherShortName(section.teacher)}
             </span>
           </p>
+          <div className="mt-2">
+            <TeacherContactButtons
+              teacherEmail={section.teacher?.email ?? null}
+              teacherName={teacherShortName(section.teacher)}
+              courseName={section.course?.name ?? "this class"}
+              audience={contactAudience}
+              aboutStudentName={studentNameForMessage}
+              fromName={fromName}
+            />
+          </div>
         </div>
       </section>
 
