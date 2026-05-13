@@ -36,6 +36,7 @@ export async function saveRequirementAction(formData: FormData) {
     subject_area: formData.get("subject_area"),
     required_credits: formData.get("required_credits") ?? 0,
     applies_to_grade_levels: gradeLevels,
+    track: formData.get("track") ?? "all",
     notes: formData.get("notes") ?? "",
   })
   if (!parsed.success) {

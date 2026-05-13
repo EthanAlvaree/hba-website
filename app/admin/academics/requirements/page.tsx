@@ -3,8 +3,10 @@ import { auth } from "@/auth"
 import {
   listCourseSubjectAssignments,
   listGraduationRequirements,
+  subjectAreaLabel,
   subjectAreas,
   type GraduationRequirementRecord,
+  type GraduationRequirementTrack,
 } from "@/lib/scheduler"
 import { listCourses, type CourseRecord } from "@/lib/sis"
 import AcademicsHeader from "../AcademicsHeader"
@@ -17,6 +19,24 @@ import {
 export const dynamic = "force-dynamic"
 
 const gradeLevelOptions = ["6", "7", "8", "9", "10", "11", "12"] as const
+
+function trackLabel(track: GraduationRequirementTrack): string {
+  if (track === "basic") return "Basic diploma"
+  if (track === "college_bound") return "College-bound"
+  return "Both tracks"
+}
+
+function trackBadgeClass(track: GraduationRequirementTrack): string {
+  const base =
+    "rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em]"
+  if (track === "basic") {
+    return `${base} border border-amber-200 bg-amber-50 text-amber-800`
+  }
+  if (track === "college_bound") {
+    return `${base} border border-sky-200 bg-sky-50 text-sky-700`
+  }
+  return `${base} border border-slate-200 bg-slate-100 text-slate-700`
+}
 
 export default async function GraduationRequirementsPage() {
   const session = await auth()
@@ -85,7 +105,10 @@ export default async function GraduationRequirementsPage() {
                           {req.name}
                         </h3>
                         <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
-                          {req.subject_area}
+                          {subjectAreaLabel(req.subject_area)}
+                        </span>
+                        <span className={trackBadgeClass(req.track)}>
+                          {trackLabel(req.track)}
                         </span>
                       </div>
                       <p className="text-xs text-slate-500">
@@ -188,7 +211,7 @@ function CourseSubjectRow({
         <option value="">(not tagged)</option>
         {subjectAreas.map((area) => (
           <option key={area} value={area}>
-            {area}
+            {subjectAreaLabel(area)}
           </option>
         ))}
       </select>
@@ -223,14 +246,27 @@ function RequirementFields({ defaults }: { defaults?: GraduationRequirementRecor
         <select
           name="subject_area"
           required
-          defaultValue={defaults?.subject_area ?? "English"}
+          defaultValue={defaults?.subject_area ?? "english"}
           className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
         >
           {subjectAreas.map((area) => (
             <option key={area} value={area}>
-              {area}
+              {subjectAreaLabel(area)}
             </option>
           ))}
+        </select>
+      </label>
+
+      <label className="space-y-1 text-xs font-medium text-slate-700">
+        <span className="block">Diploma track</span>
+        <select
+          name="track"
+          defaultValue={defaults?.track ?? "all"}
+          className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+        >
+          <option value="all">Both tracks</option>
+          <option value="basic">Basic diploma</option>
+          <option value="college_bound">College-bound</option>
         </select>
       </label>
 

@@ -301,16 +301,44 @@ export async function upsertTeacherWorkload(
 
 // Standard subject-area list. Free-text in the DB so the office can add
 // niche ones, but the UI offers these as defaults.
+// Canonical subject-area identifiers. Stored in the DB as-is; the
+// trajectory UI + admin pages render them via subjectAreaLabel().
+// Keep this list in sync with migration 0029's seed.
 export const subjectAreas = [
-  "English",
-  "Math",
-  "Science",
-  "Social Studies",
-  "Foreign Language",
-  "Arts",
-  "PE / Wellness",
-  "Elective",
+  "english",
+  "math",
+  "science",
+  "social_studies",
+  "world_languages",
+  "visual_performing_arts",
+  "physical_education",
+  "college_preparatory",
+  "elective",
 ] as const
+export type SubjectArea = (typeof subjectAreas)[number]
+
+export const subjectAreaLabels: Record<SubjectArea, string> = {
+  english: "English",
+  math: "Math",
+  science: "Science",
+  social_studies: "Social studies",
+  world_languages: "World languages",
+  visual_performing_arts: "Visual & performing arts",
+  physical_education: "Physical education",
+  college_preparatory: "College-preparatory",
+  elective: "Elective",
+}
+
+export function subjectAreaLabel(value: string): string {
+  return (subjectAreaLabels as Record<string, string>)[value] ?? value
+}
+
+export const graduationRequirementTrackSchema = z.enum([
+  "all",
+  "basic",
+  "college_bound",
+])
+export type GraduationRequirementTrack = z.infer<typeof graduationRequirementTrackSchema>
 
 export type GraduationRequirementRecord = {
   id: string
@@ -320,11 +348,12 @@ export type GraduationRequirementRecord = {
   subject_area: string
   required_credits: number
   applies_to_grade_levels: string[]
+  track: GraduationRequirementTrack
   notes: string | null
 }
 
 const graduationRequirementColumns =
-  "id, created_at, updated_at, name, subject_area, required_credits, applies_to_grade_levels, notes"
+  "id, created_at, updated_at, name, subject_area, required_credits, applies_to_grade_levels, track, notes"
 
 export const graduationRequirementUpsertSchema = z.object({
   id: z.uuid().optional(),
@@ -332,6 +361,7 @@ export const graduationRequirementUpsertSchema = z.object({
   subject_area: z.string().trim().min(1, "Subject area is required.").max(80),
   required_credits: z.coerce.number().min(0).default(0),
   applies_to_grade_levels: z.array(z.string().trim().min(1).max(4)).max(10).default([]),
+  track: graduationRequirementTrackSchema.default("all"),
   notes: z
     .string()
     .trim()
