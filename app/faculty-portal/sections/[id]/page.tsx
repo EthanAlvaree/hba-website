@@ -104,6 +104,12 @@ export default async function FacultySectionDetailPage({
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <Link
+            href={`/faculty-portal/sections/${section.id}/attendance`}
+            className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy shadow-md transition hover:bg-brand-navy hover:text-white"
+          >
+            Take attendance →
+          </Link>
+          <Link
             href={`/faculty-portal/sections/${section.id}/gradebook`}
             className="inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
           >
@@ -208,13 +214,6 @@ export default async function FacultySectionDetailPage({
         )}
       </section>
 
-      <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-        <p className="text-sm text-slate-600">
-          Attendance entry is in the admin dashboard for now &mdash; we&rsquo;ll
-          add a teacher-scoped attendance page in a follow-up. Ping the office
-          if you need today&rsquo;s attendance recorded.
-        </p>
-      </section>
     </div>
   )
 }

@@ -1,34 +1,26 @@
-import { notFound, redirect } from "next/navigation"
-import { auth } from "@/auth"
+import { notFound } from "next/navigation"
 import {
   listAttendanceForSectionAndDate,
   todayInPacific,
 } from "@/lib/attendance"
-import { getCourseSectionById, listEnrollmentsForSection } from "@/lib/sis"
-import AcademicsHeader from "../../../AcademicsHeader"
+import { listEnrollmentsForSection } from "@/lib/sis"
+import { assertCanEditSection } from "@/lib/section-auth"
 import { AttendanceEntry } from "@/components/attendance/AttendanceEntry"
 
 export const dynamic = "force-dynamic"
 
-export default async function AttendanceEntryPage({
+export default async function FacultyAttendanceEntryPage({
   params,
   searchParams,
 }: {
   params: Promise<{ id: string }>
   searchParams: Promise<{ date?: string }>
 }) {
-  const session = await auth()
-  if (!session?.isAdmin) {
-    redirect("/admin/sign-in")
-  }
-
   const { id: sectionId } = await params
   const { date: dateParam } = await searchParams
 
-  const section = await getCourseSectionById(sectionId)
-  if (!section) {
-    notFound()
-  }
+  const { section } = await assertCanEditSection(sectionId)
+  if (!section) notFound()
 
   const isoDateMatcher = /^\d{4}-\d{2}-\d{2}$/
   const date = dateParam && isoDateMatcher.test(dateParam) ? dateParam : todayInPacific()
@@ -39,15 +31,12 @@ export default async function AttendanceEntryPage({
   ])
 
   return (
-    <div className="space-y-6">
-      <AcademicsHeader active="sections" />
-      <AttendanceEntry
-        section={section}
-        enrollments={enrollments}
-        attendance={attendance}
-        date={date}
-        surface="admin"
-      />
-    </div>
+    <AttendanceEntry
+      section={section}
+      enrollments={enrollments}
+      attendance={attendance}
+      date={date}
+      surface="faculty"
+    />
   )
 }

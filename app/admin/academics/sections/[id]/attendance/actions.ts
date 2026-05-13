@@ -3,25 +3,36 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
+import { assertCanEditSection } from "@/lib/section-auth"
 import {
   attendanceStatusSchema,
   saveAttendanceForSection,
   saveAttendanceInputSchema,
 } from "@/lib/attendance"
 
-async function assertAdmin() {
-  const session = await auth()
-  if (!session?.isAdmin) {
-    redirect("/admin/sign-in")
-  }
-  return session
+type Surface = "admin" | "faculty"
+
+function surfaceFromFormData(formData: FormData): Surface {
+  return formData.get("surface") === "faculty" ? "faculty" : "admin"
+}
+
+function sectionBasePath(surface: Surface, sectionId: string): string {
+  return surface === "faculty"
+    ? `/faculty-portal/sections/${sectionId}`
+    : `/admin/academics/sections/${sectionId}`
 }
 
 export async function saveAttendanceAction(formData: FormData) {
-  const session = await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const sectionId = formData.get("section_id")
   const date = formData.get("date")
+
+  if (typeof sectionId !== "string" || sectionId.length === 0) {
+    redirect("/admin/sign-in")
+  }
+
+  await assertCanEditSection(sectionId)
+  const session = await auth()
 
   const enrollmentIds = formData.getAll("enrollment_id").map(String)
   const statuses = formData.getAll("status").map(String)
@@ -55,10 +66,9 @@ export async function saveAttendanceAction(formData: FormData) {
 
   await saveAttendanceForSection(parsed.data)
 
-  revalidatePath(`/admin/academics/sections/${parsed.data.section_id}`)
-  revalidatePath(`/admin/academics/sections/${parsed.data.section_id}/attendance`)
+  const base = sectionBasePath(surface, parsed.data.section_id)
+  revalidatePath(base)
+  revalidatePath(`${base}/attendance`)
 
-  redirect(
-    `/admin/academics/sections/${parsed.data.section_id}/attendance?date=${encodeURIComponent(parsed.data.date)}`
-  )
+  redirect(`${base}/attendance?date=${encodeURIComponent(parsed.data.date)}`)
 }

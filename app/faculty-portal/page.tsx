@@ -176,10 +176,8 @@ export default async function FacultyHomePage() {
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <p className="text-sm text-slate-600">
-            Click any section above to see the roster, set up the gradebook
-            (categories + assignments), and enter scores. Attendance entry
-            still lives in the admin dashboard for now &mdash; a teacher-scoped
-            version is on the roadmap.
+            Click any section above to see the roster, take attendance, set
+            up the gradebook (categories + assignments), and enter scores.
           </p>
         </section>
     </div>
