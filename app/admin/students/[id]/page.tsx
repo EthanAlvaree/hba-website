@@ -24,6 +24,8 @@ import {
   updateStudentAdminAction,
   updateStudentDemographicsAction,
 } from "../actions"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
+import ProfilePhotoCard from "./ProfilePhotoCard"
 
 export const dynamic = "force-dynamic"
 
@@ -263,6 +265,25 @@ export default async function StudentDetailPage({
             </Link>
           </div>
         </div>
+
+        {student.profile && (
+          <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
+            <h2 className="mb-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
+              Profile photo
+            </h2>
+            <ProfilePhotoCard
+              profileId={student.profile.id}
+              studentId={student.id}
+              photoUrl={profilePhotoUrl(student.profile.photo_path)}
+              initials={initialsFor({
+                first_name: student.legal_first_name,
+                last_name: student.legal_last_name,
+                display_name: student.profile.display_name,
+                email: student.profile.email,
+              })}
+            />
+          </section>
+        )}
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">

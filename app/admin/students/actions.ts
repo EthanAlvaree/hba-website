@@ -14,7 +14,11 @@ import {
   updateStudentDemographics,
 } from "@/lib/sis"
 import { z } from "zod"
-import { createClient } from "@supabase/supabase-js"
+import {
+  clearProfilePhoto,
+  setProfilePhotoFromBuffer,
+} from "@/lib/profile-photos"
+import { getServiceSupabase } from "@/lib/supabase-server"
 
 async function assertAdmin() {
   const session = await auth()
@@ -158,11 +162,7 @@ export async function setPostEnrollmentVerifiedAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Verify update failed.")
   }
 
-  const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const supabase = getServiceSupabase()
 
   const patch = parsed.data.verified
     ? {
@@ -187,4 +187,58 @@ export async function setPostEnrollmentVerifiedAction(formData: FormData) {
 export async function signOutStudentsAdminAction() {
   await assertAdmin()
   await signOut({ redirectTo: "/admin/sign-in" })
+}
+
+// ---- Profile photos ----
+
+const profilePhotoFormSchema = z.object({
+  profile_id: z.uuid(),
+  student_id: z.uuid(),
+})
+
+export type ProfilePhotoResult = { ok: true } | { ok: false; error: string }
+
+export async function uploadProfilePhotoAction(
+  _prev: ProfilePhotoResult | null,
+  formData: FormData
+): Promise<ProfilePhotoResult> {
+  await assertAdmin()
+
+  const parsed = profilePhotoFormSchema.safeParse({
+    profile_id: formData.get("profile_id"),
+    student_id: formData.get("student_id"),
+  })
+  if (!parsed.success) {
+    return { ok: false, error: "Missing profile or student id." }
+  }
+
+  const file = formData.get("photo")
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "Choose a photo to upload." }
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const result = await setProfilePhotoFromBuffer(
+    parsed.data.profile_id,
+    buffer,
+    file.type
+  )
+  if (!result.ok) return result
+
+  revalidateStudent(parsed.data.student_id)
+  return { ok: true }
+}
+
+export async function clearProfilePhotoAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = profilePhotoFormSchema.safeParse({
+    profile_id: formData.get("profile_id"),
+    student_id: formData.get("student_id"),
+  })
+  if (!parsed.success) {
+    throw new Error("Missing profile or student id.")
+  }
+  await clearProfilePhoto(parsed.data.profile_id)
+  revalidateStudent(parsed.data.student_id)
+  redirect(`/admin/students/${parsed.data.student_id}`)
 }

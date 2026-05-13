@@ -43,6 +43,7 @@ export type ProfileRecord = {
   mobile_phone: string | null
   work_phone: string | null
   active: boolean
+  photo_path: string | null
 }
 
 export type StudentRecord = {
@@ -102,7 +103,8 @@ export type ParentLinkRecord = {
 
 const profileColumns =
   "id, created_at, updated_at, entra_oid, email, first_name, middle_name, " +
-  "last_name, display_name, roles, personal_email, mobile_phone, work_phone, active"
+  "last_name, display_name, roles, personal_email, mobile_phone, work_phone, active, " +
+  "photo_path"
 
 const studentColumns =
   "id, created_at, updated_at, profile_id, application_id, " +
