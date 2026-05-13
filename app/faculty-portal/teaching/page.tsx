@@ -21,16 +21,18 @@ import {
 import { QualificationsDragList } from "./QualificationsDragList"
 import { listAdminAuditEvents } from "@/lib/audit"
 import {
+  facultyPortraitUrl,
   getFacultyBioOverrideForProfile,
   faculty as codeFaculty,
   type FacultyMember,
 } from "@/lib/faculty"
 import { siteConfig } from "@/lib/site"
+import FacultyPortraitCard from "@/components/faculty/PortraitCard"
 
 export const dynamic = "force-dynamic"
 
 type PageProps = {
-  searchParams: Promise<{ saved?: string }>
+  searchParams: Promise<{ saved?: string; portrait?: string }>
 }
 
 export default async function TeachingProfilePage({ searchParams }: PageProps) {
@@ -81,6 +83,8 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
       ? "Workload preferences saved."
       : raw.saved === "bio"
       ? "Public bio saved. Changes appear on /faculty in a few minutes."
+      : raw.portrait === "cleared"
+      ? "Portrait override removed. The code-side default is in use again."
       : null
 
   return (
@@ -110,6 +114,12 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
             {savedMessage}
           </div>
         )}
+
+        <FacultyPortraitCard
+          profileId={profile.id}
+          currentPortraitUrl={facultyPortraitUrl(bioOverride?.public_photo_path ?? null)}
+          codeImagePath={codeFacultyEntry?.image ?? null}
+        />
 
         <BioCard
           profileId={profile.id}

@@ -369,6 +369,29 @@ type FacultyBioOverride = {
   courses_taught: string[] | null
   short_bio: string | null
   full_bio: string | null
+  public_photo_path: string | null
+}
+
+const PORTRAIT_BUCKET = "profile-photos"
+const PORTRAIT_MAX_DIMENSION = 1200
+const PORTRAIT_MAX_INPUT_BYTES = 10 * 1024 * 1024
+
+const PORTRAIT_ALLOWED_MIME = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+])
+
+/** Build the public URL for a faculty_bios.public_photo_path value.
+ *  Same scheme as profilePhotoUrl — public Supabase Storage URL. */
+export function facultyPortraitUrl(path: string | null | undefined): string | null {
+  if (!path) return null
+  const base = process.env.HBA_SUPABASE_URL
+  if (!base) return null
+  return `${base.replace(/\/$/, "")}/storage/v1/object/public/${PORTRAIT_BUCKET}/${path}`
 }
 
 async function loadOverridesByEmail(): Promise<Map<string, FacultyBioOverride>> {
@@ -378,7 +401,7 @@ async function loadOverridesByEmail(): Promise<Map<string, FacultyBioOverride>> 
   const { data, error } = await supabase
     .from("faculty_bios")
     .select(
-      `profile_id, title, area, hba_start, career_start, courses_taught, short_bio, full_bio,
+      `profile_id, title, area, hba_start, career_start, courses_taught, short_bio, full_bio, public_photo_path,
        profile:profiles!faculty_bios_profile_id_fkey(email)`
     )
     .returns<
@@ -391,6 +414,7 @@ async function loadOverridesByEmail(): Promise<Map<string, FacultyBioOverride>> 
         courses_taught: string[] | null
         short_bio: string | null
         full_bio: string | null
+        public_photo_path: string | null
         profile: { email: string } | null
       }>
     >()
@@ -411,6 +435,7 @@ async function loadOverridesByEmail(): Promise<Map<string, FacultyBioOverride>> 
       courses_taught: row.courses_taught,
       short_bio: row.short_bio,
       full_bio: row.full_bio,
+      public_photo_path: row.public_photo_path,
     })
   }
   return out
@@ -426,6 +451,11 @@ function mergeMember(
   base: FacultyMember,
   ov: FacultyBioOverride
 ): FacultyMember {
+  // public_photo_path is a storage key; convert to a public URL so
+  // the public faculty pages can render it as the portrait. The
+  // existing code-side `image` field is a /public path; both are
+  // valid src values for next/image.
+  const portraitUrl = facultyPortraitUrl(ov.public_photo_path)
   return {
     ...base,
     title: ov.title ?? base.title,
@@ -435,6 +465,7 @@ function mergeMember(
     coursesTaught: ov.courses_taught ?? base.coursesTaught,
     shortBio: ov.short_bio ?? base.shortBio,
     fullBio: ov.full_bio ?? base.fullBio,
+    image: portraitUrl ?? base.image,
   }
 }
 
@@ -472,12 +503,13 @@ export async function getFacultyBioOverrideForProfile(
   courses_taught: string[] | null
   short_bio: string | null
   full_bio: string | null
+  public_photo_path: string | null
 } | null> {
   const { getServiceSupabase } = await import("@/lib/supabase-server")
   const { data } = await getServiceSupabase()
     .from("faculty_bios")
     .select(
-      "title, area, hba_start, career_start, courses_taught, short_bio, full_bio"
+      "title, area, hba_start, career_start, courses_taught, short_bio, full_bio, public_photo_path"
     )
     .eq("profile_id", profileId)
     .maybeSingle<{
@@ -488,6 +520,7 @@ export async function getFacultyBioOverrideForProfile(
       courses_taught: string[] | null
       short_bio: string | null
       full_bio: string | null
+      public_photo_path: string | null
     }>()
   return data
 }
@@ -509,6 +542,139 @@ export async function upsertFacultyBioOverride(input: {
   if (error) {
     throw new Error(`Failed to save faculty bio: ${error.message}`)
   }
+}
+
+// ============================================================================
+// Portrait upload (rectangular, public faculty page)
+// ============================================================================
+
+export type SetFacultyPortraitResult =
+  | { ok: true; path: string }
+  | { ok: false; error: string }
+
+/** Resize + EXIF-strip + re-encode the input as a WebP and store it
+ *  under <profile-id>/portrait-<rand>.webp in the profile-photos
+ *  bucket. Aspect ratio is preserved (no square crop) so portraits
+ *  stay rectangular. Updates faculty_bios.public_photo_path. */
+export async function setFacultyPortraitFromBuffer(
+  profileId: string,
+  buffer: Buffer,
+  mimeType: string
+): Promise<SetFacultyPortraitResult> {
+  if (!PORTRAIT_ALLOWED_MIME.has(mimeType.toLowerCase())) {
+    return {
+      ok: false,
+      error: "Unsupported image type. Use JPEG, PNG, WebP, or HEIC.",
+    }
+  }
+  if (buffer.byteLength === 0) return { ok: false, error: "Empty file." }
+  if (buffer.byteLength > PORTRAIT_MAX_INPUT_BYTES) {
+    return {
+      ok: false,
+      error: `Photo is too large. Keep it under ${Math.round(PORTRAIT_MAX_INPUT_BYTES / 1024 / 1024)} MB.`,
+    }
+  }
+
+  const [{ default: sharp }, { randomBytes }] = await Promise.all([
+    import("sharp"),
+    import("node:crypto"),
+  ])
+
+  let normalized: Buffer
+  try {
+    normalized = await sharp(buffer, { failOn: "none" })
+      .rotate()
+      .resize({
+        width: PORTRAIT_MAX_DIMENSION,
+        height: PORTRAIT_MAX_DIMENSION,
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .webp({ quality: 85 })
+      .toBuffer()
+  } catch (err) {
+    console.error("setFacultyPortraitFromBuffer: sharp failed", err)
+    return {
+      ok: false,
+      error:
+        "Couldn't process this image. If it's a HEIC, try converting to JPEG first.",
+    }
+  }
+
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const supabase = getServiceSupabase()
+
+  // Clean up any prior portrait files under this profile's folder so
+  // the bucket doesn't accumulate orphans. We only delete files whose
+  // names start with "portrait-" so the round-avatar files (managed by
+  // lib/profile-photos) are untouched.
+  try {
+    const { data: existing } = await supabase.storage
+      .from(PORTRAIT_BUCKET)
+      .list(profileId, { limit: 100 })
+    const toRemove = (existing ?? [])
+      .filter((f) => f.name.startsWith("portrait-"))
+      .map((f) => `${profileId}/${f.name}`)
+    if (toRemove.length > 0) {
+      await supabase.storage.from(PORTRAIT_BUCKET).remove(toRemove)
+    }
+  } catch (err) {
+    console.error("portrait cleanup failed:", err)
+  }
+
+  const filename = `portrait-${randomBytes(8).toString("hex")}.webp`
+  const path = `${profileId}/${filename}`
+  const { error: uploadError } = await supabase.storage
+    .from(PORTRAIT_BUCKET)
+    .upload(path, normalized, {
+      contentType: "image/webp",
+      upsert: false,
+    })
+  if (uploadError) {
+    return { ok: false, error: `Upload failed: ${uploadError.message}` }
+  }
+
+  // Upsert the override row so a faculty member who's never used the
+  // bio editor still gets the portrait linked.
+  const { error: updateError } = await supabase
+    .from("faculty_bios")
+    .upsert(
+      { profile_id: profileId, public_photo_path: path },
+      { onConflict: "profile_id" }
+    )
+  if (updateError) {
+    // Roll back storage so we don't leak an orphan file.
+    await supabase.storage.from(PORTRAIT_BUCKET).remove([path])
+    return { ok: false, error: `DB update failed: ${updateError.message}` }
+  }
+
+  return { ok: true, path }
+}
+
+/** Removes the portrait override, falling the public page back to
+ *  the code-side image. */
+export async function clearFacultyPortrait(profileId: string): Promise<void> {
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const supabase = getServiceSupabase()
+  try {
+    const { data: existing } = await supabase.storage
+      .from(PORTRAIT_BUCKET)
+      .list(profileId, { limit: 100 })
+    const toRemove = (existing ?? [])
+      .filter((f) => f.name.startsWith("portrait-"))
+      .map((f) => `${profileId}/${f.name}`)
+    if (toRemove.length > 0) {
+      await supabase.storage.from(PORTRAIT_BUCKET).remove(toRemove)
+    }
+  } catch (err) {
+    console.error("portrait clear failed:", err)
+  }
+  // Null the column. Use update (not upsert) so we don't create a row
+  // just to null one field.
+  await supabase
+    .from("faculty_bios")
+    .update({ public_photo_path: null })
+    .eq("profile_id", profileId)
 }
 
 /** Copy a code-side faculty member's defaults into a faculty_bios row.

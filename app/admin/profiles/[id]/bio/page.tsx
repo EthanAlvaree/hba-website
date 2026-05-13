@@ -10,10 +10,12 @@ import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
+  facultyPortraitUrl,
   faculty as codeFaculty,
   getFacultyBioOverrideForProfile,
   type FacultyMember,
 } from "@/lib/faculty"
+import FacultyPortraitCard from "@/components/faculty/PortraitCard"
 import { siteConfig } from "@/lib/site"
 import { getServiceSupabase } from "@/lib/supabase-server"
 import { saveBioAction } from "@/app/faculty-portal/teaching/actions"
@@ -23,7 +25,7 @@ export const dynamic = "force-dynamic"
 
 type PageProps = {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ saved?: string; seeded?: string; seed_error?: string }>
+  searchParams: Promise<{ saved?: string; seeded?: string; seed_error?: string; portrait?: string }>
 }
 
 export default async function AdminFacultyBioPage({
@@ -120,6 +122,11 @@ export default async function AdminFacultyBioPage({
           Bio saved. Changes appear on /faculty in a few minutes.
         </div>
       )}
+      {raw.portrait === "cleared" && (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+          Portrait override removed. The code-side default is in use again.
+        </div>
+      )}
 
       {!override && codeFacultyEntry && (
         <section className="rounded-2xl border border-sky-200 bg-sky-50/60 px-5 py-4 shadow-sm">
@@ -142,6 +149,13 @@ export default async function AdminFacultyBioPage({
           </form>
         </section>
       )}
+
+      <FacultyPortraitCard
+        profileId={profile.id}
+        currentPortraitUrl={facultyPortraitUrl(override?.public_photo_path ?? null)}
+        codeImagePath={codeFacultyEntry?.image ?? null}
+        asAdmin
+      />
 
       <AdminBioEditor
         profileId={profile.id}

@@ -16,7 +16,11 @@ import {
   upsertTeacherWorkload,
 } from "@/lib/scheduler"
 import { sectionPeriodSchema } from "@/lib/sis"
-import { upsertFacultyBioOverride } from "@/lib/faculty"
+import {
+  clearFacultyPortrait,
+  setFacultyPortraitFromBuffer,
+  upsertFacultyBioOverride,
+} from "@/lib/faculty"
 
 // Faculty edit their OWN teaching profile. Admins may also edit anyone's
 // via an admin path later; for now we keep it scoped to self.
@@ -250,4 +254,53 @@ export async function saveBioAction(formData: FormData) {
     redirect(`/admin/profiles/${targetProfileId}/bio?saved=bio`)
   }
   redirect("/faculty-portal/teaching?saved=bio")
+}
+
+// ============================================================================
+// Portrait upload / clear
+// ============================================================================
+
+export type FacultyPortraitResult = { ok: true } | { ok: false; error: string }
+
+export async function uploadFacultyPortraitAction(
+  _prev: FacultyPortraitResult | null,
+  formData: FormData
+): Promise<FacultyPortraitResult> {
+  const targetProfileId = String(formData.get("profile_id") ?? "").trim()
+  if (!targetProfileId) return { ok: false, error: "Missing profile_id." }
+  await assertCanEditTeachingProfile(targetProfileId)
+
+  const file = formData.get("portrait")
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, error: "Choose a portrait image to upload." }
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer())
+  const result = await setFacultyPortraitFromBuffer(
+    targetProfileId,
+    buffer,
+    file.type
+  )
+  if (!result.ok) return result
+
+  revalidateTeaching(targetProfileId)
+  revalidatePath("/faculty")
+  revalidatePath(`/admin/profiles/${targetProfileId}/bio`)
+  return { ok: true }
+}
+
+export async function clearFacultyPortraitAction(formData: FormData) {
+  const targetProfileId = String(formData.get("profile_id") ?? "").trim()
+  if (!targetProfileId) throw new Error("Missing profile_id.")
+  await assertCanEditTeachingProfile(targetProfileId)
+  await clearFacultyPortrait(targetProfileId)
+  revalidateTeaching(targetProfileId)
+  revalidatePath("/faculty")
+  revalidatePath(`/admin/profiles/${targetProfileId}/bio`)
+
+  const fromAdmin = formData.get("admin") === "1"
+  if (fromAdmin) {
+    redirect(`/admin/profiles/${targetProfileId}/bio?portrait=cleared`)
+  }
+  redirect("/faculty-portal/teaching?portrait=cleared")
 }
