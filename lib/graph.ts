@@ -323,6 +323,53 @@ export async function sendApplicationDraftMagicLink(options: {
   })
 }
 
+// Fires the moment an applicant submits. They worry "did it go through?"
+// the way every applicant does — this is the email that answers yes.
+// Reply-to is the office so they can ask a follow-up question from the
+// same thread.
+export async function sendApplicationSubmittedConfirmation(options: {
+  application: ApplicationRecord
+}) {
+  const { application } = options
+  const guardianEmails: string[] = []
+  if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
+  if (application.guardian2_email) guardianEmails.push(application.guardian2_email)
+  if (guardianEmails.length === 0) return // nothing to do
+
+  const studentName =
+    [application.student_first_name, application.student_last_name]
+      .filter(Boolean)
+      .join(" ") || "your student"
+  const parentName = application.guardian1_name?.trim() || "there"
+
+  const subject = `We received ${studentName}'s ${siteConfig.shortName} application`
+  const html = [
+    `<p>Hi ${escapeHtml(parentName)},</p>`,
+    `<p>This is just a quick note to confirm we received your application for <strong>${escapeHtml(studentName)}</strong>. The admissions team typically responds within one business day to set up a conversation.</p>`,
+    `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;">`,
+    `<strong>Reference:</strong><br />`,
+    `<span style="font-family:Consolas,Menlo,monospace;font-size:13px;color:${brand.navy};">${escapeHtml(application.id)}</span>`,
+    `</p>`,
+    `<p style="font-size:14px;color:#555;">A few things to know:</p>`,
+    `<ul style="font-size:14px;color:#555;line-height:1.6;">`,
+    `<li>Reply to this email any time — it routes back to the admissions office and we'd love to hear what drew you to ${escapeHtml(siteConfig.name)}.</li>`,
+    `<li>If you have additional documents (recent transcripts, recommendation letters), feel free to send them as attachments.</li>`,
+    `<li>For international families: please have your child's passport and prior transcripts ready in PDF for the F-1 paperwork.</li>`,
+    `</ul>`,
+    `<p style="font-size:14px;color:#555;">Warmly,<br />The ${escapeHtml(siteConfig.name)} admissions team</p>`,
+  ].join("")
+
+  const { applicationRecipients } = getGraphConfig()
+  await sendMail({
+    subject,
+    htmlBody: html,
+    toRecipients: guardianEmails,
+    replyTo: applicationRecipients[0]
+      ? { address: applicationRecipients[0] }
+      : undefined,
+  })
+}
+
 // ============================================================================
 // Application status updates (family-facing)
 // ============================================================================

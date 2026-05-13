@@ -519,41 +519,106 @@ const relationshipOptions = [
 // ============================================================================
 
 function ProgressBar({ current, total, labels }: { current: number; total: number; labels: string[] }) {
-  return (
-    <ol className="mb-10 flex flex-wrap items-center gap-3 text-sm">
-      {labels.map((label, index) => {
-        const stepNumber = index + 1
-        const isActive = stepNumber === current
-        const isDone = stepNumber < current
+  // Percent complete = (current - 1) / (total - 1). At step 1 we show
+  // 0% (no progress yet); at the final step we show 100%.
+  const percent = total > 1 ? Math.round(((current - 1) / (total - 1)) * 100) : 0
+  const currentLabel = labels[current - 1] ?? `Step ${current}`
 
-        return (
-          <li key={label} className="flex items-center gap-3">
-            <span
-              className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold ${
-                isActive
-                  ? "bg-brand-orange text-white"
-                  : isDone
-                  ? "bg-brand-navy text-white"
-                  : "bg-slate-200 text-slate-600"
-              }`}
-              aria-current={isActive ? "step" : undefined}
+  return (
+    <div className="mb-10 space-y-4" aria-label="Application progress">
+      {/* Mobile: compact "Step X of Y — Name" header with a fill bar. */}
+      <div className="sm:hidden">
+        <div className="flex items-baseline justify-between">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
+            Step {current} of {total}
+          </p>
+          <p className="text-xs text-slate-600">{percent}% complete</p>
+        </div>
+        <p className="mt-1 text-base font-extrabold text-brand-navy">
+          {currentLabel}
+        </p>
+        <div className="mt-3 h-2 w-full overflow-hidden rounded-full bg-slate-200">
+          <div
+            className="h-full bg-brand-orange transition-all duration-300"
+            style={{ width: `${percent}%` }}
+            role="progressbar"
+            aria-valuenow={percent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          />
+        </div>
+      </div>
+
+      {/* Desktop: full numbered ol with a connecting line that fills as
+          steps complete. */}
+      <ol className="hidden sm:flex items-center text-sm" aria-current="step">
+        {labels.map((label, index) => {
+          const stepNumber = index + 1
+          const isActive = stepNumber === current
+          const isDone = stepNumber < current
+          const isLast = stepNumber === total
+
+          return (
+            <li
+              key={label}
+              className={`flex items-center ${isLast ? "" : "flex-1"}`}
             >
-              {stepNumber}
-            </span>
-            <span
-              className={`font-semibold ${
-                isActive ? "text-brand-navy" : isDone ? "text-slate-700" : "text-slate-500"
-              }`}
-            >
-              {label}
-            </span>
-            {stepNumber < total && (
-              <span className="hidden h-px w-8 bg-slate-200 sm:inline-block" aria-hidden="true" />
-            )}
-          </li>
-        )
-      })}
-    </ol>
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-colors ${
+                    isActive
+                      ? "bg-brand-orange text-white ring-4 ring-brand-orange/15"
+                      : isDone
+                      ? "bg-brand-navy text-white"
+                      : "bg-slate-200 text-slate-600"
+                  }`}
+                  aria-current={isActive ? "step" : undefined}
+                >
+                  {isDone ? (
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      aria-hidden="true"
+                    >
+                      <path
+                        d="M11 4 5.5 9.5 3 7"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  ) : (
+                    stepNumber
+                  )}
+                </span>
+                <span
+                  className={`whitespace-nowrap font-semibold ${
+                    isActive
+                      ? "text-brand-navy"
+                      : isDone
+                      ? "text-slate-700"
+                      : "text-slate-500"
+                  }`}
+                >
+                  {label}
+                </span>
+              </div>
+              {!isLast && (
+                <div className="mx-3 h-px flex-1 bg-slate-200" aria-hidden="true">
+                  <div
+                    className="h-full bg-brand-navy transition-all duration-300"
+                    style={{ width: isDone ? "100%" : "0%" }}
+                  />
+                </div>
+              )}
+            </li>
+          )
+        })}
+      </ol>
+    </div>
   )
 }
 
@@ -606,7 +671,7 @@ type SubmissionState =
   | { type: "saving" }
   | { type: "submitting" }
   | { type: "draft-saved"; magicLinkSent: boolean }
-  | { type: "submitted" }
+  | { type: "submitted"; applicationId?: string; guardianEmail?: string }
   | { type: "error"; message: string }
 
 // Key for localStorage backup of in-progress wizard state. Stored under one
@@ -883,7 +948,16 @@ export default function ApplyWizard({
         return
       }
 
-      setSubmission({ type: "submitted" })
+      setSubmission({
+        type: "submitted",
+        applicationId: result.application_id,
+        guardianEmail: state.guardian1_email?.trim() || undefined,
+      })
+      // Successful submit — drop the localStorage backup so a refresh
+      // doesn't offer to restore stale data.
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(localBackupKey)
+      }
     } catch {
       setSubmission({ type: "error", message: "Network error while submitting. Please try again." })
       window.turnstile?.reset()
@@ -896,17 +970,130 @@ export default function ApplyWizard({
 
   if (submission.type === "submitted") {
     return (
-      <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 px-8 py-12 text-center shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
-          Thank you
-        </p>
-        <h2 className="mt-4 text-3xl font-extrabold text-brand-navy">
-          Your application was submitted.
-        </h2>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-700">
-          We typically respond within one business day. The HBA office will be in
-          touch about next steps — including a campus visit if you’d like one.
-        </p>
+      <div className="rounded-[2rem] border border-emerald-200 bg-emerald-50 px-8 py-12 shadow-sm">
+        <div className="text-center">
+          <div className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <path
+                d="M5 12l5 5L20 7"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <p className="mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">
+            Application submitted
+          </p>
+          <h2 className="mt-2 text-3xl font-extrabold text-brand-navy sm:text-4xl">
+            Thank you, we got it.
+          </h2>
+          {submission.guardianEmail && (
+            <p className="mx-auto mt-3 max-w-xl text-sm text-slate-700">
+              A confirmation email is on its way to{" "}
+              <strong>{submission.guardianEmail}</strong>. If you don&rsquo;t see
+              it in a few minutes, check spam — and feel free to email us
+              directly to confirm.
+            </p>
+          )}
+          {submission.applicationId && (
+            <p className="mx-auto mt-2 max-w-xl text-xs text-slate-600">
+              Reference:{" "}
+              <span className="font-mono">{submission.applicationId}</span>
+            </p>
+          )}
+        </div>
+
+        <div className="mx-auto mt-10 max-w-2xl space-y-4 text-left">
+          <h3 className="text-center text-sm font-bold uppercase tracking-[0.18em] text-brand-orange">
+            What to expect
+          </h3>
+          <ol className="space-y-3 text-sm leading-relaxed text-slate-800">
+            <li className="flex gap-3">
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy text-xs font-bold text-white">
+                1
+              </span>
+              <div>
+                <strong className="font-semibold">Within one business day:</strong>{" "}
+                the admissions team reviews your application and reaches out by
+                email to schedule a conversation.
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy text-xs font-bold text-white">
+                2
+              </span>
+              <div>
+                <strong className="font-semibold">Campus visit:</strong> if it&rsquo;s
+                a good fit on both sides, we&rsquo;ll invite you to tour the
+                campus, meet faculty, and talk through schedules and academics.
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <span className="mt-0.5 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-brand-navy text-xs font-bold text-white">
+                3
+              </span>
+              <div>
+                <strong className="font-semibold">Admissions decision &amp; enrollment:</strong>{" "}
+                we&rsquo;ll communicate a decision and, if accepted, walk you
+                through the enrollment paperwork and post-enrollment file.
+              </div>
+            </li>
+          </ol>
+        </div>
+
+        <div className="mx-auto mt-8 max-w-2xl rounded-2xl border border-emerald-200 bg-white px-5 py-4 text-sm text-slate-700">
+          <p className="font-semibold text-brand-navy">In the meantime…</p>
+          <ul className="mt-2 space-y-1 list-disc pl-5">
+            <li>
+              Browse our{" "}
+              <a
+                href="/programs"
+                className="font-semibold text-brand-navy underline-offset-4 hover:underline"
+              >
+                programs and courses
+              </a>{" "}
+              and{" "}
+              <a
+                href="/student-life"
+                className="font-semibold text-brand-navy underline-offset-4 hover:underline"
+              >
+                student life
+              </a>
+              .
+            </li>
+            <li>
+              Questions you want to ask on the call? Jot them down — we cover
+              schedules, academics, and college support during the conversation.
+            </li>
+            <li>
+              For international families: have your child&rsquo;s passport and
+              transcripts ready in PDF for the F-1 paperwork.
+            </li>
+          </ul>
+        </div>
+
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <a
+            href="/"
+            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          >
+            Back to home
+          </a>
+          <a
+            href="/contact"
+            className="inline-flex items-center justify-center rounded-full border border-brand-navy text-brand-navy px-6 py-3 text-sm font-semibold transition hover:bg-brand-navy hover:text-white"
+          >
+            Contact admissions
+          </a>
+        </div>
       </div>
     )
   }

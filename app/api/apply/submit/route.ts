@@ -4,7 +4,10 @@ import {
   applicationSubmitSchema,
   submitApplication,
 } from "@/lib/applications"
-import { sendApplicationNotification } from "@/lib/graph"
+import {
+  sendApplicationNotification,
+  sendApplicationSubmittedConfirmation,
+} from "@/lib/graph"
 import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit"
 import { verifyTurnstileToken } from "@/lib/turnstile"
 
@@ -113,6 +116,15 @@ export async function POST(request: Request) {
     } catch (error) {
       notificationDelivered = false
       console.error("Application notification email failed.", error)
+    }
+
+    // Applicant confirmation — best-effort, never fails the request.
+    // The admin notification above is the higher-priority side; the
+    // family confirmation is a courtesy.
+    try {
+      await sendApplicationSubmittedConfirmation({ application })
+    } catch (error) {
+      console.error("Applicant confirmation email failed.", error)
     }
 
     return NextResponse.json({
