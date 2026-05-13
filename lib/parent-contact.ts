@@ -15,23 +15,7 @@
 // no-reply address).
 
 import "server-only"
-import { createClient } from "@supabase/supabase-js"
-
-function createServerSupabaseClient() {
-  const supabaseUrl = process.env.HBA_SUPABASE_URL
-  const supabaseServiceRoleKey = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
-  if (!supabaseUrl || !supabaseServiceRoleKey) {
-    throw new Error("Supabase server environment variables are missing.")
-  }
-  return createClient(supabaseUrl, supabaseServiceRoleKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  })
-}
-let cachedSupabase: ReturnType<typeof createServerSupabaseClient> | undefined
-function getSupabase() {
-  if (!cachedSupabase) cachedSupabase = createServerSupabaseClient()
-  return cachedSupabase
-}
+import { getServiceSupabase as getSupabase } from "@/lib/supabase-server"
 
 export type ParentContact = {
   parent_email: string
