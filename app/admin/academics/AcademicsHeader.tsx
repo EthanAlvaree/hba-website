@@ -5,6 +5,7 @@ type AcademicsTab =
   | "terms"
   | "courses"
   | "sections"
+  | "teaching-grid"
   | "requirements"
   | "scheduler"
   | "calendar"
@@ -16,6 +17,11 @@ const tabs: Array<{ id: AcademicsTab; label: string; href: string }> = [
   { id: "calendar", label: "Calendar", href: "/admin/academics/calendar" },
   { id: "courses", label: "Courses", href: "/admin/academics/courses" },
   { id: "sections", label: "Sections", href: "/admin/academics/sections" },
+  {
+    id: "teaching-grid",
+    label: "Teaching grid",
+    href: "/admin/academics/teaching-grid",
+  },
   { id: "requirements", label: "Graduation reqs", href: "/admin/academics/requirements" },
   { id: "scheduler", label: "Scheduler", href: "/admin/academics/scheduler" },
   { id: "conferences", label: "Conferences", href: "/admin/academics/conferences" },
