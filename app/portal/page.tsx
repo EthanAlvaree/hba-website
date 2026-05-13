@@ -9,6 +9,7 @@ import {
 } from "@/lib/sis"
 import { buildTranscriptForStudent } from "@/lib/transcripts"
 import GpaSummary from "@/components/portal/GpaSummary"
+import NoStudentRecord from "@/components/portal/NoStudentRecord"
 import { listUpcomingAssignmentsForSections } from "@/lib/gradebook"
 import { todayInPacific } from "@/lib/attendance"
 
@@ -81,12 +82,7 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
   if (isStudent) {
     const stub = await getStudentByProfileId(profile.id)
     if (!stub) {
-      return (
-        <EmptyState
-          title="No student record yet"
-          body="Your profile is marked as a student, but no student record is linked to it. Contact the office so they can finish the enrollment."
-        />
-      )
+      return <NoStudentRecord />
     }
     targetStudentId = stub.id
   } else if (isAdmin && raw.as) {

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { notFound, redirect } from "next/navigation"
+import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
   getProfileByEmail,
@@ -8,6 +8,7 @@ import {
 } from "@/lib/sis"
 import { WeekSchedule, type ScheduleEntry } from "@/components/schedule/WeekSchedule"
 import PrintButton from "@/components/transcripts/PrintButton"
+import NoStudentRecord from "@/components/portal/NoStudentRecord"
 import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 
 export const dynamic = "force-dynamic"
@@ -32,7 +33,7 @@ export default async function StudentScheduleWeekPage({ searchParams }: PageProp
 
   if (isStudent) {
     const stub = await getStudentByProfileId(profile.id)
-    if (!stub) notFound()
+    if (!stub) return <NoStudentRecord />
     targetStudentId = stub.id
   } else if (isAdmin && raw.as) {
     targetStudentId = raw.as
@@ -42,7 +43,8 @@ export default async function StudentScheduleWeekPage({ searchParams }: PageProp
   }
 
   const student = await getStudentDetail(targetStudentId!)
-  if (!student) notFound()
+  if (!student) return <NoStudentRecord />
+
 
   // Active (or auditing) enrollments in the current term only.
   const enrollments = student.enrollments.filter(

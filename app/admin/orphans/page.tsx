@@ -1,19 +1,23 @@
 // Orphan / data-quality view.
 //
-// Surfaces the four classes of broken-relationship state that silently
+// Surfaces the five classes of broken-relationship state that silently
 // degrade portal experiences without any obvious admin error:
 //
-//   1. Active student → no parent_links row → parent portal is empty.
-//   2. Parent profile → no parent_links row pointing at them → parent
+//   1. Profile with role 'student' but no students row → student signs
+//      in to a "no record yet" page on /portal. Common right after
+//      M365 sync promotes someone to student before the enrollment
+//      workflow runs.
+//   2. Active student → no parent_links row → parent portal is empty.
+//   3. Parent profile → no parent_links row pointing at them → parent
 //      signs in to nothing.
-//   3. Active student → no enrollments in the current term → student
+//   4. Active student → no enrollments in the current term → student
 //      portal home is empty.
-//   4. Faculty profile → no course_sections for the current term →
+//   5. Faculty profile → no course_sections for the current term →
 //      faculty portal teaching list is empty.
 //
 // These all silently fail with a generic "nothing here yet" state in the
 // affected portal, which means the user thinks they're broken instead of
-// reporting a real bug. This page is the triage view: see all four
+// reporting a real bug. This page is the triage view: see all five
 // classes at once, click through to fix.
 
 import Link from "next/link"
@@ -54,6 +58,8 @@ export default async function OrphansPage() {
     parentLinksRes,
     parentProfilesRes,
     facultyProfilesRes,
+    studentProfilesRes,
+    studentRowsRes,
     currentTermRes,
   ] = await Promise.all([
     supabase
@@ -77,6 +83,15 @@ export default async function OrphansPage() {
       .eq("active", true)
       .returns<ProfileRow[]>(),
     supabase
+      .from("profiles")
+      .select("id, email, display_name, first_name, last_name, roles, active")
+      .contains("roles", ["student"])
+      .eq("active", true)
+      .returns<ProfileRow[]>(),
+    // ALL students (any status) — used to detect orphan profiles where
+    // the role is student but no students row exists at all.
+    supabase.from("students").select("profile_id"),
+    supabase
       .from("terms")
       .select("id, name")
       .eq("is_current", true)
@@ -87,7 +102,18 @@ export default async function OrphansPage() {
   const parentLinks = parentLinksRes.data ?? []
   const parentProfiles = parentProfilesRes.data ?? []
   const facultyProfiles = facultyProfilesRes.data ?? []
+  const studentProfiles = studentProfilesRes.data ?? []
+  const profileIdsWithStudentRow = new Set(
+    (studentRowsRes.data ?? [])
+      .map((r) => (r as { profile_id: string | null }).profile_id)
+      .filter((id): id is string => Boolean(id))
+  )
   const currentTerm = currentTermRes.data
+
+  // ---- Class 0 (rendered first): student-role profile with no students row. ----
+  const studentProfilesWithoutStudentRow = studentProfiles.filter(
+    (p) => !profileIdsWithStudentRow.has(p.id)
+  )
 
   // ---- Class 1: active students with no parent_link. ----
   const studentIdsWithParents = new Set(parentLinks.map((p) => p.student_id))
@@ -171,6 +197,21 @@ export default async function OrphansPage() {
           )}
         </p>
       </header>
+
+      <OrphanCard
+        title="Profiles tagged as student but with no student record"
+        impact="These users can sign in but /portal says “your student record isn&rsquo;t set up yet.” Either run the enrollment workflow from an accepted application, or remove the 'student' role from their profile if they shouldn&rsquo;t have it."
+        countLabel="profile"
+        items={studentProfilesWithoutStudentRow.map((p) => ({
+          id: p.id,
+          primary:
+            p.display_name ||
+            [p.first_name, p.last_name].filter(Boolean).join(" ") ||
+            p.email,
+          secondary: p.email,
+          href: `/admin/profiles?email=${encodeURIComponent(p.email)}`,
+        }))}
+      />
 
       <OrphanCard
         title="Active students with no parent on file"
