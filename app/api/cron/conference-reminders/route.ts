@@ -2,25 +2,24 @@
 //
 // At 08:00 UTC (~midnight Pacific) we find every parent whose booked
 // conference slot is between 24 and 48 hours from now, and email them a
-// reminder. Idempotent if the cron runs more than once a day: we just
-// re-send. Most operators will run it once per day per the vercel.json
-// schedule, so duplicate sends are unlikely.
+// reminder. Now also attaches an .ics calendar invite + CC's the
+// co-parent (any other parent_link with can_receive_communications=true).
+//
+// Idempotent if the cron runs more than once a day: we just re-send.
+// Most operators will run it once per day per the vercel.json schedule,
+// so duplicate sends are unlikely.
 
 import { NextResponse } from "next/server"
-import { createClient } from "@supabase/supabase-js"
 import { sendCustomEmail } from "@/lib/graph"
+import {
+  buildConferenceReminderEmail,
+  findCoParentEmails,
+  type ConferenceSlotForEmail,
+} from "@/lib/conference-emails"
+import { getServiceSupabase } from "@/lib/supabase-server"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
-
-function esc(s: string): string {
-  return s
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;")
-}
 
 export async function GET(request: Request) {
   const secret = process.env.CRON_SECRET
@@ -35,11 +34,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 })
   }
 
-  const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const supabase = getServiceSupabase()
 
   // Window: [now+24h, now+48h). We send a reminder once when the slot is
   // ~24 hours away.
@@ -60,31 +55,7 @@ export async function GET(request: Request) {
     .lt("start_at", windowEnd.toISOString())
     .not("booked_by_parent_email", "is", null)
     .is("cancelled_at", null)
-    .returns<
-      Array<{
-        id: string
-        start_at: string
-        end_at: string
-        parent_notes: string | null
-        booked_by_parent_email: string
-        booked_for_student_id: string | null
-        teacher: {
-          first_name: string | null
-          last_name: string | null
-          display_name: string | null
-          email: string
-        } | null
-        student: {
-          legal_first_name: string
-          legal_last_name: string
-          preferred_name: string | null
-        } | null
-        event: {
-          name: string
-          slot_minutes: number
-        } | null
-      }>
-    >()
+    .returns<ConferenceSlotForEmail[]>()
 
   if (error) {
     console.error("Conference reminder query failed:", error.message)
@@ -96,48 +67,30 @@ export async function GET(request: Request) {
   const errors: Array<{ slot_id: string; message: string }> = []
 
   for (const slot of slots ?? []) {
-    if (!slot.teacher) continue
-    const teacherName =
-      `${slot.teacher.first_name ?? ""} ${slot.teacher.last_name ?? ""}`.trim() ||
-      slot.teacher.display_name ||
-      slot.teacher.email
-    const studentName = slot.student
-      ? slot.student.preferred_name?.trim() ||
-        `${slot.student.legal_first_name} ${slot.student.legal_last_name}`
-      : "your student"
-    const eventName = slot.event?.name ?? "the conference"
-    const minutes = slot.event?.slot_minutes ?? 15
+    if (!slot.teacher || !slot.booked_by_parent_email) continue
 
-    const when = new Intl.DateTimeFormat("en-US", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      timeZone: "America/Los_Angeles",
-    }).format(new Date(slot.start_at))
-
-    const subject = `Reminder: your ${teacherName} conference is tomorrow`
-    const htmlBody = [
-      `<p>Hi,</p>`,
-      `<p>This is a reminder that you have a parent-teacher conference scheduled for <strong>${esc(studentName)}</strong>:</p>`,
-      `<ul>`,
-      `<li><strong>Teacher:</strong> ${esc(teacherName)}</li>`,
-      `<li><strong>When:</strong> ${esc(when)} (${minutes} minutes)</li>`,
-      `<li><strong>Event:</strong> ${esc(eventName)}</li>`,
-      `</ul>`,
-      slot.parent_notes
-        ? `<p><strong>Topic / notes you left when booking:</strong><br />${esc(slot.parent_notes).replace(/\n/g, "<br />")}</p>`
-        : "",
-      `<p>Need to cancel or reschedule? Sign in to the family portal at <a href="https://highbluffacademy.com/parent/conferences">highbluffacademy.com/parent/conferences</a>.</p>`,
-      `<p>— High Bluff Academy</p>`,
-    ].join("")
+    const { subject, htmlBody, icsFilename, icsContent } =
+      buildConferenceReminderEmail(slot)
+    const cc = slot.booked_for_student_id
+      ? await findCoParentEmails(
+          slot.booked_for_student_id,
+          slot.booked_by_parent_email
+        )
+      : []
 
     try {
       await sendCustomEmail({
         subject,
         htmlBody,
         toRecipients: [slot.booked_by_parent_email],
+        ccRecipients: cc,
+        attachments: [
+          {
+            name: icsFilename,
+            contentType: "text/calendar; charset=utf-8; method=REQUEST",
+            content: icsContent,
+          },
+        ],
       })
       sent += 1
     } catch (error) {

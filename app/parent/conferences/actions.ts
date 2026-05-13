@@ -6,6 +6,8 @@ import { z } from "zod"
 import { auth } from "@/auth"
 import { getProfileByEmail, getParentLinkForStudent } from "@/lib/sis"
 import { bookSlot, cancelSlot } from "@/lib/conferences"
+import { sendConferenceBookingConfirmation } from "@/lib/conference-emails"
+import { getServiceSupabase } from "@/lib/supabase-server"
 
 const bookSchema = z.object({
   slot_id: z.uuid(),
@@ -48,6 +50,31 @@ export async function bookConferenceSlotAction(formData: FormData) {
     const message = error instanceof Error ? error.message : "Booking failed."
     redirect(`/parent/conferences?error=${encodeURIComponent(message)}`)
   }
+
+  // Send the booking confirmation + ICS attachment, with the co-parent
+  // CC'd when there is one. Best-effort: if email fails the booking
+  // itself is still committed, the parent sees the success page, and
+  // they can find the slot in /parent/conferences.
+  try {
+    const supabase = getServiceSupabase()
+    const { data: slot } = await supabase
+      .from("conference_slots")
+      .select(
+        `id, start_at, end_at, parent_notes,
+         booked_by_parent_email, booked_for_student_id,
+         teacher:profiles!conference_slots_teacher_profile_id_fkey(first_name, last_name, display_name, email),
+         student:students(legal_first_name, legal_last_name, preferred_name),
+         event:conference_events(name, slot_minutes)`
+      )
+      .eq("id", parsed.data.slot_id)
+      .maybeSingle()
+    if (slot && slot.booked_by_parent_email) {
+      await sendConferenceBookingConfirmation(slot as never)
+    }
+  } catch (error) {
+    console.error("Conference booking confirmation send failed:", error)
+  }
+
   revalidatePath("/parent/conferences")
   revalidatePath("/faculty-portal/conferences")
   redirect(`/parent/conferences?saved=1`)

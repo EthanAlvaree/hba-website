@@ -146,12 +146,21 @@ type SendMailOptions = {
   subject: string
   htmlBody: string
   toRecipients: string[]
+  /** Optional CC list. */
+  ccRecipients?: string[]
   replyTo?: { address: string; name?: string }
   /** Override the mailbox we send AS. Defaults to GRAPH_MAIL_SENDER
    *  (typically a no-reply address). Use this for mass-email sends where
    *  you want replies routed to a real shared mailbox like
    *  info@highbluffacademy.com. */
   fromMailbox?: string
+  /** Optional file attachments (e.g. an .ics calendar invite). */
+  attachments?: Array<{
+    name: string
+    contentType: string
+    /** Raw bytes; the mailer base64-encodes for the Graph payload. */
+    content: Buffer | string
+  }>
 }
 
 async function sendMail(options: SendMailOptions) {
@@ -174,6 +183,13 @@ async function sendMail(options: SendMailOptions) {
           toRecipients: options.toRecipients.map((email) => ({
             emailAddress: { address: email },
           })),
+          ...(options.ccRecipients && options.ccRecipients.length > 0
+            ? {
+                ccRecipients: options.ccRecipients.map((email) => ({
+                  emailAddress: { address: email },
+                })),
+              }
+            : {}),
           ...(options.replyTo
             ? {
                 replyTo: [
@@ -184,6 +200,18 @@ async function sendMail(options: SendMailOptions) {
                     },
                   },
                 ],
+              }
+            : {}),
+          ...(options.attachments && options.attachments.length > 0
+            ? {
+                attachments: options.attachments.map((a) => ({
+                  "@odata.type": "#microsoft.graph.fileAttachment",
+                  name: a.name,
+                  contentType: a.contentType,
+                  contentBytes: Buffer.isBuffer(a.content)
+                    ? a.content.toString("base64")
+                    : Buffer.from(a.content, "utf-8").toString("base64"),
+                })),
               }
             : {}),
         },
