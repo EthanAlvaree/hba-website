@@ -226,16 +226,24 @@ export default async function AdminCourseRequestsPage({ searchParams }: PageProp
                         <> · <span className="text-rose-700">Not started</span></>
                       )}
                     </p>
-                    <Link
-                      href={`/admin/academics/scheduler/course-requests?term_id=${targetTermId}&student_id=${s.student.id}#focus`}
-                      className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
-                        isFocused
-                          ? "border-brand-navy bg-brand-navy text-white"
-                          : "border-slate-300 bg-white text-slate-700 hover:border-slate-500"
-                      }`}
-                    >
-                      {isFocused ? "Showing below" : "View list"}
-                    </Link>
+                    <div className="flex flex-wrap gap-1">
+                      <Link
+                        href={`/admin/academics/scheduler/course-requests?term_id=${targetTermId}&student_id=${s.student.id}#focus`}
+                        className={`inline-flex items-center justify-center rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
+                          isFocused
+                            ? "border-brand-navy bg-brand-navy text-white"
+                            : "border-slate-300 bg-white text-slate-700 hover:border-slate-500"
+                        }`}
+                      >
+                        {isFocused ? "Showing below" : "Preview"}
+                      </Link>
+                      <Link
+                        href={`/admin/students/${s.student.id}/course-requests?term_id=${targetTermId}`}
+                        className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                      >
+                        Edit →
+                      </Link>
+                    </div>
                   </div>
                 </li>
               )

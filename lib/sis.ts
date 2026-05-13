@@ -277,6 +277,20 @@ export async function getStudentByProfileId(profileId: string) {
   return data
 }
 
+export async function getStudentById(
+  studentId: string
+): Promise<StudentRecord | null> {
+  const { data, error } = await getSupabase()
+    .from("students")
+    .select(studentColumns)
+    .eq("id", studentId)
+    .maybeSingle<StudentRecord>()
+  if (error) {
+    throw new Error(`Failed to look up student: ${error.message}`)
+  }
+  return data
+}
+
 /** Bulk variant: which of the supplied profile IDs already have an
  *  associated students row? Used by /admin/profiles so we only show
  *  the "Create student record" button for profiles that don't have one

@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 import { auth } from "@/auth"
-import { getProfileByEmail, getStudentByProfileId } from "@/lib/sis"
+import {
+  getProfileByEmail,
+  getStudentById,
+  getStudentByProfileId,
+  type StudentRecord,
+} from "@/lib/sis"
 import {
   deleteStudentCourseRequest,
   listStudentCourseRequests,
@@ -15,12 +20,25 @@ import {
 import { sendCourseRequestsSubmittedNotification } from "@/lib/graph"
 import { siteConfig } from "@/lib/site"
 import { getServiceSupabase } from "@/lib/supabase-server"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
-// Authorizes the signed-in user as a student and ensures the request they're
-// editing belongs to them. Returns the student row.
-async function assertSelfStudent(studentId: string) {
+// Permits the signed-in student editing their own requests OR an
+// admin editing on their behalf (form posts admin=1). Returns the
+// student row.
+async function assertCanEditCourseRequests(
+  studentId: string,
+  fromAdmin: boolean
+): Promise<StudentRecord> {
   const session = await auth()
   if (!session?.user?.email) redirect("/admin/sign-in")
+
+  if (fromAdmin) {
+    if (!session.isAdmin) redirect("/admin/sign-in")
+    const student = await getStudentById(studentId)
+    if (!student) redirect("/admin/students")
+    return student
+  }
+
   const profile = await getProfileByEmail(session.user.email)
   if (!profile || !profile.roles.includes("student")) redirect("/admin/sign-in")
   const student = await getStudentByProfileId(profile.id)
@@ -28,16 +46,37 @@ async function assertSelfStudent(studentId: string) {
   return student
 }
 
-function revalidateCourseRequests(termId: string) {
+function revalidateCourseRequests(studentId: string, termId: string) {
   revalidatePath(`/portal/course-requests?term_id=${termId}`)
   revalidatePath("/portal/course-requests")
   revalidatePath("/portal")
+  revalidatePath("/admin/academics/scheduler/course-requests")
+  revalidatePath(`/admin/students/${studentId}/course-requests`)
+}
+
+// Where to send the caller after a save. Admin path = the admin
+// per-student course-requests editor; student path = the portal
+// course-requests page (or the trajectory page if redirect_to hint).
+function courseRequestsRedirect(
+  formData: FormData,
+  studentId: string,
+  termId: string,
+  query: string
+): string {
+  if (formData.get("admin") === "1") {
+    return `/admin/students/${studentId}/course-requests?term_id=${termId}&${query}`
+  }
+  if (formData.get("redirect_to") === "trajectory") {
+    return `/portal/trajectory?${query}`
+  }
+  return `/portal/course-requests?term_id=${termId}&${query}`
 }
 
 export async function addCourseRequestAction(formData: FormData) {
   const studentId = formData.get("student_id")
   if (typeof studentId !== "string") throw new Error("Missing student_id.")
-  await assertSelfStudent(studentId)
+  const fromAdmin = formData.get("admin") === "1"
+  await assertCanEditCourseRequests(studentId, fromAdmin)
 
   const parsed = studentCourseRequestUpsertSchema.safeParse({
     student_id: studentId,
@@ -52,18 +91,25 @@ export async function addCourseRequestAction(formData: FormData) {
   }
 
   await upsertStudentCourseRequest(parsed.data)
-  revalidateCourseRequests(parsed.data.term_id)
+  revalidateCourseRequests(studentId, parsed.data.term_id)
 
-  // Trajectory page also calls this action so the per-course "Add"
-  // forms can stay where the student picked them. Honor a non-leaking
-  // redirect hint so we don't ping-pong them back to the requests list.
-  const redirectTo = formData.get("redirect_to")
-  if (redirectTo === "trajectory") {
-    revalidatePath("/portal/trajectory")
-    redirect("/portal/trajectory?saved=1")
+  if (fromAdmin) {
+    await logAdminAuditEvent({
+      action: ADMIN_AUDIT_ACTIONS.course_request_admin_edit,
+      target_kind: "student",
+      target_id: studentId,
+      details: {
+        action: "add",
+        course_id: parsed.data.course_id,
+        kind: parsed.data.kind,
+        term_id: parsed.data.term_id,
+      },
+    })
   }
 
-  redirect(`/portal/course-requests?term_id=${parsed.data.term_id}&saved=1`)
+  redirect(
+    courseRequestsRedirect(formData, studentId, parsed.data.term_id, "saved=1")
+  )
 }
 
 const deleteRequestSchema = z.object({
@@ -79,11 +125,33 @@ export async function deleteCourseRequestAction(formData: FormData) {
     course_id: formData.get("course_id"),
   })
   if (!parsed.success) throw new Error("Invalid request.")
-  await assertSelfStudent(parsed.data.student_id)
+  const fromAdmin = formData.get("admin") === "1"
+  await assertCanEditCourseRequests(parsed.data.student_id, fromAdmin)
 
   await deleteStudentCourseRequest(parsed.data)
-  revalidateCourseRequests(parsed.data.term_id)
-  redirect(`/portal/course-requests?term_id=${parsed.data.term_id}&deleted=1`)
+  revalidateCourseRequests(parsed.data.student_id, parsed.data.term_id)
+
+  if (fromAdmin) {
+    await logAdminAuditEvent({
+      action: ADMIN_AUDIT_ACTIONS.course_request_admin_edit,
+      target_kind: "student",
+      target_id: parsed.data.student_id,
+      details: {
+        action: "delete",
+        course_id: parsed.data.course_id,
+        term_id: parsed.data.term_id,
+      },
+    })
+  }
+
+  redirect(
+    courseRequestsRedirect(
+      formData,
+      parsed.data.student_id,
+      parsed.data.term_id,
+      "deleted=1"
+    )
+  )
 }
 
 const submitSchema = z.object({
@@ -97,45 +165,65 @@ export async function submitCourseRequestsAction(formData: FormData) {
     term_id: formData.get("term_id"),
   })
   if (!parsed.success) throw new Error("Invalid request.")
-  const student = await assertSelfStudent(parsed.data.student_id)
+  const fromAdmin = formData.get("admin") === "1"
+  const student = await assertCanEditCourseRequests(
+    parsed.data.student_id,
+    fromAdmin
+  )
 
   await markCourseRequestsSubmitted(parsed.data)
-  revalidateCourseRequests(parsed.data.term_id)
-  revalidatePath("/admin/academics/scheduler/course-requests")
+  revalidateCourseRequests(parsed.data.student_id, parsed.data.term_id)
 
   // Ping the office so they don't have to remember to check the
   // dashboard. Best-effort: a Graph failure shouldn't roll back the
-  // submit — the student's done their part and the data is saved.
-  try {
-    const session = await auth()
-    const supabase = getServiceSupabase()
-    const [{ data: term }, requests] = await Promise.all([
-      supabase
-        .from("terms")
-        .select("name")
-        .eq("id", parsed.data.term_id)
-        .maybeSingle<{ name: string }>(),
-      listStudentCourseRequests({
-        student_id: parsed.data.student_id,
-        term_id: parsed.data.term_id,
-      }),
-    ])
-    const studentName =
-      student.preferred_name?.trim() ||
-      `${student.legal_first_name} ${student.legal_last_name}`
-    const dashboardUrl = `${siteConfig.url}/admin/academics/scheduler/course-requests?term_id=${parsed.data.term_id}`
-    await sendCourseRequestsSubmittedNotification({
-      studentName,
-      studentEmail: session?.user?.email ?? null,
-      termName: term?.name ?? "the upcoming term",
-      coreCount: requests.filter((r) => r.kind === "core").length,
-      electiveCount: requests.filter((r) => r.kind === "elective").length,
-      alternateCount: requests.filter((r) => r.kind === "alternate").length,
-      dashboardUrl,
+  // submit — the data is saved. Skip the notification when an admin
+  // is submitting (they already know).
+  if (!fromAdmin) {
+    try {
+      const session = await auth()
+      const supabase = getServiceSupabase()
+      const [{ data: term }, requests] = await Promise.all([
+        supabase
+          .from("terms")
+          .select("name")
+          .eq("id", parsed.data.term_id)
+          .maybeSingle<{ name: string }>(),
+        listStudentCourseRequests({
+          student_id: parsed.data.student_id,
+          term_id: parsed.data.term_id,
+        }),
+      ])
+      const studentName =
+        student.preferred_name?.trim() ||
+        `${student.legal_first_name} ${student.legal_last_name}`
+      const dashboardUrl = `${siteConfig.url}/admin/academics/scheduler/course-requests?term_id=${parsed.data.term_id}`
+      await sendCourseRequestsSubmittedNotification({
+        studentName,
+        studentEmail: session?.user?.email ?? null,
+        termName: term?.name ?? "the upcoming term",
+        coreCount: requests.filter((r) => r.kind === "core").length,
+        electiveCount: requests.filter((r) => r.kind === "elective").length,
+        alternateCount: requests.filter((r) => r.kind === "alternate").length,
+        dashboardUrl,
+      })
+    } catch (err) {
+      console.error("Course requests submit notification failed:", err)
+    }
+  } else {
+    await logAdminAuditEvent({
+      action: ADMIN_AUDIT_ACTIONS.course_request_admin_edit,
+      target_kind: "student",
+      target_id: parsed.data.student_id,
+      details: { action: "submit", term_id: parsed.data.term_id },
     })
-  } catch (err) {
-    console.error("Course requests submit notification failed:", err)
   }
 
-  redirect(`/portal/course-requests?term_id=${parsed.data.term_id}&submitted=1`)
+  redirect(
+    courseRequestsRedirect(
+      formData,
+      parsed.data.student_id,
+      parsed.data.term_id,
+      "submitted=1"
+    )
+  )
 }

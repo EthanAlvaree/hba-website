@@ -280,6 +280,12 @@ export default async function StudentDetailPage({
               Print profile →
             </Link>
             <Link
+              href={`/admin/students/${id}/course-requests`}
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              Course requests →
+            </Link>
+            <Link
               href={`/portal/schedule?as=${id}`}
               className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
             >
