@@ -1130,6 +1130,10 @@ export type StudentDirectoryRow = {
 export async function listStudentsForDirectory(filters?: {
   status?: StudentStatus | "all"
   enrollmentType?: ApplicationEnrollmentType | "all"
+  /** Free-text search across legal/preferred name, profile email, and grade. */
+  search?: string
+  /** Filter by current_grade string (e.g. "9", "10", "K"). */
+  grade?: string | "all"
 }): Promise<StudentDirectoryRow[]> {
   let query = getSupabase()
     .from("students")
@@ -1147,10 +1151,48 @@ export async function listStudentsForDirectory(filters?: {
   if (filters?.enrollmentType && filters.enrollmentType !== "all") {
     query = query.eq("enrollment_type", filters.enrollmentType)
   }
+  if (filters?.grade && filters.grade !== "all") {
+    query = query.eq("current_grade", filters.grade)
+  }
+  if (filters?.search && filters.search.trim().length > 0) {
+    const term = filters.search.trim()
+    // ILIKE search across the three name columns. Profile email search isn't
+    // supported in the same query without a join filter, so we do that in
+    // app code after fetching.
+    query = query.or(
+      [
+        `legal_first_name.ilike.%${term}%`,
+        `legal_last_name.ilike.%${term}%`,
+        `preferred_name.ilike.%${term}%`,
+      ].join(",")
+    )
+  }
 
   const { data, error } = await query.returns<StudentDirectoryRow[]>()
   if (error) {
     throw new Error(`Failed to list students: ${error.message}`)
+  }
+  // If searching, also include matches by profile email (post-filter).
+  // This is approximate — Supabase's PostgREST .or() doesn't filter joined
+  // tables. We re-fetch a separate query by email and merge if the search
+  // looks like an email substring.
+  if (filters?.search && filters.search.includes("@")) {
+    const term = filters.search.trim()
+    const { data: byEmail } = await getSupabase()
+      .from("students")
+      .select(
+        `id, legal_first_name, legal_last_name, preferred_name, current_grade,
+         enrollment_type, status, registered_at_hba, application_id, updated_at,
+         profile:profiles!inner(id, email, display_name)`
+      )
+      .ilike("profile.email", `%${term}%`)
+      .returns<StudentDirectoryRow[]>()
+    if (byEmail) {
+      const seen = new Set(data.map((s) => s.id))
+      for (const row of byEmail) {
+        if (!seen.has(row.id)) data.push(row)
+      }
+    }
   }
   return data
 }

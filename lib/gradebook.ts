@@ -920,6 +920,37 @@ export async function unlockSectionFinalGrades(sectionId: string): Promise<numbe
   return count ?? 0
 }
 
+// Returns published assignments due in the [dueFrom, dueTo] range across
+// every section in `sectionIds`. The result row carries section context so
+// the student portal "what's due this week" view can show the course name.
+export type UpcomingAssignmentRow = AssignmentWithCategory & {
+  section: {
+    id: string
+    course: { name: string; code: string } | null
+  } | null
+}
+export async function listUpcomingAssignmentsForSections(
+  sectionIds: string[],
+  dueFrom: string,
+  dueTo: string
+): Promise<UpcomingAssignmentRow[]> {
+  if (sectionIds.length === 0) return []
+  const { data, error } = await getSupabase()
+    .from("assignments")
+    .select(
+      `${assignmentColumns}, category:assignment_categories(id, name),
+       section:course_sections(id, course:courses(name, code))`
+    )
+    .in("section_id", sectionIds)
+    .eq("is_published", true)
+    .gte("due_date", dueFrom)
+    .lte("due_date", dueTo)
+    .order("due_date", { ascending: true })
+    .returns<UpcomingAssignmentRow[]>()
+  if (error) throw new Error(`Failed to list upcoming assignments: ${error.message}`)
+  return data
+}
+
 // Published-only assignment fetch — used by the student/parent portal so
 // drafts stay hidden until the teacher publishes.
 export async function listPublishedAssignmentsForSection(

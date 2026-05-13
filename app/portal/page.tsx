@@ -9,6 +9,8 @@ import {
 } from "@/lib/sis"
 import { buildTranscriptForStudent } from "@/lib/transcripts"
 import GpaSummary from "@/components/portal/GpaSummary"
+import { listUpcomingAssignmentsForSections } from "@/lib/gradebook"
+import { todayInPacific } from "@/lib/attendance"
 
 export const dynamic = "force-dynamic"
 
@@ -123,6 +125,20 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
       bucket.enrollments.some((enrollment) => enrollment.section?.term?.id)
     ) ?? buckets[0]
 
+  // Upcoming assignments — next 7 days across every active enrollment.
+  const today = todayInPacific()
+  const sevenDaysOut = new Date()
+  sevenDaysOut.setDate(sevenDaysOut.getDate() + 7)
+  const sevenDaysIso = sevenDaysOut.toISOString().slice(0, 10)
+  const sectionIds = activeEnrollments
+    .map((e) => e.section?.id)
+    .filter((id): id is string => Boolean(id))
+  const upcoming = await listUpcomingAssignmentsForSections(
+    sectionIds,
+    today,
+    sevenDaysIso
+  )
+
   return (
     <div className="space-y-6">
       {previewing && (
@@ -147,6 +163,56 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
 
       {transcript && transcript.terms.length > 0 && (
         <GpaSummary transcript={transcript} viewerLabel="Your" />
+      )}
+
+      {upcoming.length > 0 && (
+        <section className="rounded-[2rem] border border-amber-200 bg-amber-50/60 px-6 py-6 shadow-sm">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-extrabold text-amber-900">Due this week</h2>
+              <p className="mt-1 text-sm text-amber-800">
+                Published assignments due in the next 7 days. Open a section
+                below to see all assignments + your scores.
+              </p>
+            </div>
+            <span className="rounded-full border border-amber-200 bg-white px-3 py-1 text-xs font-semibold text-amber-800">
+              {upcoming.length}
+            </span>
+          </div>
+          <ul className="mt-4 space-y-2">
+            {upcoming.map((a) => (
+              <li
+                key={a.id}
+                className="rounded-2xl border border-amber-200 bg-white px-4 py-3"
+              >
+                <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-center">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">{a.title}</p>
+                    <p className="text-xs text-slate-500">
+                      {a.section?.course?.name ?? "(course)"}
+                      {a.points_possible > 0 && ` · ${Number(a.points_possible).toFixed(0)} pts`}
+                    </p>
+                  </div>
+                  <p className="text-xs text-slate-600">
+                    Due{" "}
+                    {a.due_date &&
+                      new Intl.DateTimeFormat("en-US", {
+                        weekday: "short",
+                        month: "short",
+                        day: "numeric",
+                        timeZone: "America/Los_Angeles",
+                      }).format(new Date(`${a.due_date}T12:00:00Z`))}
+                  </p>
+                  {a.is_extra_credit && (
+                    <span className="inline-flex items-center rounded-full border border-violet-200 bg-violet-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-violet-700">
+                      Extra credit
+                    </span>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
 
       {activeEnrollments.length === 0 ? (

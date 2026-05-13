@@ -18,6 +18,8 @@ type StudentsPageProps = {
   searchParams: Promise<{
     status?: string
     enrollment_type?: string
+    search?: string
+    grade?: string
   }>
 }
 
@@ -63,12 +65,16 @@ function enrollmentTypeLabel(type: ApplicationEnrollmentType | null): string {
 function buildPath(filters: {
   status: StudentStatus | "all"
   enrollmentType: ApplicationEnrollmentType | "all"
+  search?: string
+  grade?: string
 }) {
   const params = new URLSearchParams()
   if (filters.status !== "all") params.set("status", filters.status)
   if (filters.enrollmentType !== "all") {
     params.set("enrollment_type", filters.enrollmentType)
   }
+  if (filters.search && filters.search.length > 0) params.set("search", filters.search)
+  if (filters.grade && filters.grade !== "all") params.set("grade", filters.grade)
   const qs = params.toString()
   return qs ? `/admin/students?${qs}` : "/admin/students"
 }
@@ -89,13 +95,22 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
     ? parsedEnrollment.data
     : "all"
 
+  const search = (params.search ?? "").trim()
+  const grade = params.grade && params.grade !== "all" ? params.grade : "all"
+
   const students = await listStudentsForDirectory({
     status,
     enrollmentType,
+    search: search || undefined,
+    grade,
   })
 
-  const buildFilterHref = (overrides: Partial<{ status: StudentStatus | "all"; enrollmentType: ApplicationEnrollmentType | "all" }>) =>
-    buildPath({ status, enrollmentType, ...overrides })
+  const buildFilterHref = (overrides: Partial<{
+    status: StudentStatus | "all"
+    enrollmentType: ApplicationEnrollmentType | "all"
+    search: string
+    grade: string
+  }>) => buildPath({ status, enrollmentType, search, grade, ...overrides })
 
   const statusTabs: Array<{ label: string; value: StudentStatus | "all" }> = [
     { label: "All", value: "all" },
@@ -134,8 +149,17 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
             ))}
           </div>
 
-          <form className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,220px)_auto] sm:items-end">
-            <label className="space-y-2 text-sm font-medium text-slate-700">
+          <form className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)_minmax(0,160px)_auto] sm:items-end">
+            <label className="space-y-1 text-sm font-medium text-slate-700">
+              <span className="block">Search</span>
+              <input
+                name="search"
+                defaultValue={search}
+                placeholder="Name or email"
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
+              />
+            </label>
+            <label className="space-y-1 text-sm font-medium text-slate-700">
               <span className="block">Enrollment type</span>
               <select
                 name="enrollment_type"
@@ -146,6 +170,29 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
                 <option value="summer">Summer</option>
                 <option value="part_time">Part-time</option>
                 <option value="full_time">Full-time</option>
+              </select>
+            </label>
+            <label className="space-y-1 text-sm font-medium text-slate-700">
+              <span className="block">Grade</span>
+              <select
+                name="grade"
+                defaultValue={grade}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
+              >
+                <option value="all">All grades</option>
+                <option value="K">K</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+                <option value="10">10</option>
+                <option value="11">11</option>
+                <option value="12">12</option>
               </select>
             </label>
             {status !== "all" && <input type="hidden" name="status" value={status} />}

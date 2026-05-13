@@ -18,6 +18,7 @@ import {
   saveWorkloadAction,
 } from "./actions"
 import { QualificationsDragList } from "./QualificationsDragList"
+import { listAdminAuditEvents } from "@/lib/audit"
 
 export const dynamic = "force-dynamic"
 
@@ -37,11 +38,12 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
     redirect("/admin/sign-in")
   }
 
-  const [qualifications, availability, workload, courses] = await Promise.all([
+  const [qualifications, availability, workload, courses, recentAudit] = await Promise.all([
     listTeacherQualifications(profile.id),
     listTeacherAvailability(profile.id),
     getTeacherWorkload(profile.id),
     listCourses(),
+    listAdminAuditEvents({ target_kind: "profile", target_id: profile.id, limit: 25 }),
   ])
 
   const availabilityMap = buildAvailabilityMap(availability)
@@ -100,6 +102,34 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
         />
 
         <WorkloadCard profileId={profile.id} workload={workload} />
+
+        {recentAudit.length > 0 && (
+          <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
+            <h2 className="text-lg font-extrabold text-brand-navy">Recent admin activity on my profile</h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Last {recentAudit.length} admin action{recentAudit.length === 1 ? "" : "s"}
+              {" "}affecting your profile — visible for transparency.
+            </p>
+            <ul className="mt-3 space-y-2 text-sm">
+              {recentAudit.map((ev) => (
+                <li
+                  key={ev.id}
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2"
+                >
+                  <span className="font-semibold text-slate-900">{ev.action}</span>
+                  <span className="text-xs text-slate-600">
+                    by {ev.actor_email} ·{" "}
+                    {new Intl.DateTimeFormat("en-US", {
+                      dateStyle: "medium",
+                      timeStyle: "short",
+                      timeZone: "America/Los_Angeles",
+                    }).format(new Date(ev.created_at))}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
     </div>
   )
 }
