@@ -14,11 +14,18 @@ import {
 } from "@/lib/scheduler"
 import {
   saveAvailabilityAction,
+  saveBioAction,
   saveQualificationAction,
   saveWorkloadAction,
 } from "./actions"
 import { QualificationsDragList } from "./QualificationsDragList"
 import { listAdminAuditEvents } from "@/lib/audit"
+import {
+  getFacultyBioOverrideForProfile,
+  faculty as codeFaculty,
+  type FacultyMember,
+} from "@/lib/faculty"
+import { siteConfig } from "@/lib/site"
 
 export const dynamic = "force-dynamic"
 
@@ -38,13 +45,25 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
     redirect("/admin/sign-in")
   }
 
-  const [qualifications, availability, workload, courses, recentAudit] = await Promise.all([
+  const [qualifications, availability, workload, courses, recentAudit, bioOverride] = await Promise.all([
     listTeacherQualifications(profile.id),
     listTeacherAvailability(profile.id),
     getTeacherWorkload(profile.id),
     listCourses(),
     listAdminAuditEvents({ target_kind: "profile", target_id: profile.id, limit: 25 }),
+    getFacultyBioOverrideForProfile(profile.id),
   ])
+
+  // Find the code-side faculty entry that corresponds to this profile,
+  // matched by the email convention (slug.split("-")[0] @ emailDomain).
+  // null when there's no matching entry (e.g. a brand-new hire not yet
+  // added to lib/faculty.ts).
+  const codeFacultyEntry: FacultyMember | null =
+    codeFaculty.find(
+      (m) =>
+        profile.email.toLowerCase() ===
+        `${m.slug.split("-")[0]?.toLowerCase()}@${siteConfig.contact.emailDomain}`
+    ) ?? null
 
   const availabilityMap = buildAvailabilityMap(availability)
   const qualifiedCourseIds = new Set(qualifications.map((q) => q.course_id))
@@ -60,6 +79,8 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
       ? "Availability saved."
       : raw.saved === "workload"
       ? "Workload preferences saved."
+      : raw.saved === "bio"
+      ? "Public bio saved. Changes appear on /faculty in a few minutes."
       : null
 
   return (
@@ -89,6 +110,12 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
             {savedMessage}
           </div>
         )}
+
+        <BioCard
+          profileId={profile.id}
+          codeDefaults={codeFacultyEntry}
+          override={bioOverride}
+        />
 
         <QualificationsCard
           profileId={profile.id}
@@ -375,6 +402,166 @@ function WorkloadCard({
           className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
         >
           Save workload preferences
+        </button>
+      </form>
+    </section>
+  )
+}
+
+// ============================================================================
+// Bio card — faculty edit their public-page bio
+// ============================================================================
+
+type BioOverride = Awaited<ReturnType<typeof getFacultyBioOverrideForProfile>>
+
+function BioCard({
+  profileId,
+  codeDefaults,
+  override,
+}: {
+  profileId: string
+  codeDefaults: FacultyMember | null
+  override: BioOverride
+}) {
+  // What ends up in each input: prefer the saved override; fall back
+  // to the code-side default. Empty fields render the code default as
+  // a placeholder so the faculty member knows what the public page
+  // will show if they leave it blank.
+  const title = override?.title ?? codeDefaults?.title ?? ""
+  const area = override?.area ?? codeDefaults?.area ?? ""
+  const hbaStart = override?.hba_start ?? codeDefaults?.hbaStart ?? ""
+  const careerStart = override?.career_start ?? codeDefaults?.careerStart ?? ""
+  const coursesTaught = (
+    override?.courses_taught ??
+    codeDefaults?.coursesTaught ??
+    []
+  ).join("\n")
+  const shortBio = override?.short_bio ?? codeDefaults?.shortBio ?? ""
+  const fullBio = override?.full_bio ?? codeDefaults?.fullBio ?? ""
+  const hasOverride = override !== null
+
+  return (
+    <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-extrabold text-brand-navy">Public bio</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            What appears on{" "}
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">
+              /faculty
+            </code>{" "}
+            and{" "}
+            <code className="rounded bg-slate-100 px-1.5 py-0.5 text-xs">
+              /faculty/&lt;you&gt;
+            </code>
+            . Updates apply within a few minutes (no code change
+            required).
+          </p>
+        </div>
+        {hasOverride && (
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+            Customized
+          </span>
+        )}
+      </div>
+
+      {!codeDefaults && (
+        <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900">
+          You aren&rsquo;t in the static faculty list yet — your bio
+          here will show up on the public page once an admin adds you
+          to the directory.
+        </p>
+      )}
+
+      <form action={saveBioAction} className="mt-4 space-y-3">
+        <input type="hidden" name="profile_id" value={profileId} />
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">Title</span>
+            <input
+              name="title"
+              defaultValue={title}
+              maxLength={200}
+              placeholder="e.g. Director of Instruction and Curriculum"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">Subject area / department</span>
+            <input
+              name="area"
+              defaultValue={area}
+              maxLength={200}
+              placeholder="e.g. Leadership · Mathematics · Technology"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">When you started at HBA</span>
+            <input
+              name="hba_start"
+              defaultValue={hbaStart}
+              maxLength={80}
+              placeholder="e.g. June 2007"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">When your teaching career began</span>
+            <input
+              name="career_start"
+              defaultValue={careerStart}
+              maxLength={200}
+              placeholder="e.g. 2008 in Santiago, Chile"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+        </div>
+
+        <label className="block space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Courses taught (one per line)</span>
+          <textarea
+            name="courses_taught"
+            defaultValue={coursesTaught}
+            rows={5}
+            maxLength={4000}
+            placeholder={"Chemistry: In the Earth System\nAP Chemistry\nPhysics of the Universe"}
+            className="w-full rounded-3xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <label className="block space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">
+            Short bio (1–2 sentences for the faculty index card)
+          </span>
+          <textarea
+            name="short_bio"
+            defaultValue={shortBio}
+            rows={2}
+            maxLength={800}
+            className="w-full rounded-3xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <label className="block space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">
+            Full bio (paragraphs separated by a blank line)
+          </span>
+          <textarea
+            name="full_bio"
+            defaultValue={fullBio}
+            rows={10}
+            maxLength={12000}
+            className="w-full rounded-3xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+        >
+          Save public bio
         </button>
       </form>
     </section>

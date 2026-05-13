@@ -5,6 +5,12 @@
 // from this file. Slugs are explicit so that URLs stay stable even
 // if a name changes (e.g., a married name update should not break
 // the existing URL).
+//
+// Editable fields can be overridden per-profile via the faculty_bios
+// table (see migration 0024). The async getFaculty…WithOverrides()
+// helpers below merge those overrides on top.
+
+import { siteConfig } from "@/lib/site"
 
 export type FacultyMember = {
   /** URL slug — used at /faculty/<slug>. Keep stable; add a redirect if you change. */
@@ -337,4 +343,170 @@ export function getNeighbors(slug: string): {
   const prev = faculty[(i - 1 + faculty.length) % faculty.length]
   const next = faculty[(i + 1) % faculty.length]
   return { prev, next }
+}
+
+// ============================================================================
+// DB overrides
+// ============================================================================
+//
+// faculty_bios (see migration 0024) holds per-profile overrides for
+// the bio-like fields below. The public /faculty pages call the
+// async variants — the static functions above stay around for
+// places that don't need overrides (e.g. lib/scheduler.ts's bio
+// → qualifications seeder).
+//
+// Matching code → DB: profile_id keyed by the email convention
+// `${first}@${emailDomain}` where `first` is the slug's first
+// segment. Mirrors what scheduler.ts already does.
+
+type FacultyBioOverride = {
+  profile_id: string
+  email: string
+  title: string | null
+  area: string | null
+  hba_start: string | null
+  career_start: string | null
+  courses_taught: string[] | null
+  short_bio: string | null
+  full_bio: string | null
+}
+
+async function loadOverridesByEmail(): Promise<Map<string, FacultyBioOverride>> {
+  // Lazy import — keeps server-only Supabase code out of client bundles.
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const supabase = getServiceSupabase()
+  const { data, error } = await supabase
+    .from("faculty_bios")
+    .select(
+      `profile_id, title, area, hba_start, career_start, courses_taught, short_bio, full_bio,
+       profile:profiles!faculty_bios_profile_id_fkey(email)`
+    )
+    .returns<
+      Array<{
+        profile_id: string
+        title: string | null
+        area: string | null
+        hba_start: string | null
+        career_start: string | null
+        courses_taught: string[] | null
+        short_bio: string | null
+        full_bio: string | null
+        profile: { email: string } | null
+      }>
+    >()
+  if (error) {
+    console.error("loadOverridesByEmail failed:", error.message)
+    return new Map()
+  }
+  const out = new Map<string, FacultyBioOverride>()
+  for (const row of data ?? []) {
+    if (!row.profile?.email) continue
+    out.set(row.profile.email.toLowerCase(), {
+      profile_id: row.profile_id,
+      email: row.profile.email.toLowerCase(),
+      title: row.title,
+      area: row.area,
+      hba_start: row.hba_start,
+      career_start: row.career_start,
+      courses_taught: row.courses_taught,
+      short_bio: row.short_bio,
+      full_bio: row.full_bio,
+    })
+  }
+  return out
+}
+
+function emailFromSlug(slug: string): string | null {
+  const first = slug.split("-")[0]?.toLowerCase() ?? ""
+  if (!first) return null
+  return `${first}@${siteConfig.contact.emailDomain}`
+}
+
+function mergeMember(
+  base: FacultyMember,
+  ov: FacultyBioOverride
+): FacultyMember {
+  return {
+    ...base,
+    title: ov.title ?? base.title,
+    area: ov.area ?? base.area,
+    hbaStart: ov.hba_start ?? base.hbaStart,
+    careerStart: ov.career_start ?? base.careerStart,
+    coursesTaught: ov.courses_taught ?? base.coursesTaught,
+    shortBio: ov.short_bio ?? base.shortBio,
+    fullBio: ov.full_bio ?? base.fullBio,
+  }
+}
+
+/** Returns every faculty member with DB overrides merged on top of
+ *  the static defaults. Slug, name, image stay code-canonical. */
+export async function getFacultyMembersWithOverrides(): Promise<FacultyMember[]> {
+  const overrides = await loadOverridesByEmail()
+  return faculty.map((m) => {
+    const email = emailFromSlug(m.slug)
+    const ov = email ? overrides.get(email) : null
+    return ov ? mergeMember(m, ov) : m
+  })
+}
+
+export async function getFacultyBySlugWithOverrides(
+  slug: string
+): Promise<FacultyMember | undefined> {
+  const base = getFacultyBySlug(slug)
+  if (!base) return undefined
+  const overrides = await loadOverridesByEmail()
+  const email = emailFromSlug(slug)
+  const ov = email ? overrides.get(email) : null
+  return ov ? mergeMember(base, ov) : base
+}
+
+/** Helper for the self-edit form. Returns whatever override row
+ *  exists for this profile, or null if untouched. */
+export async function getFacultyBioOverrideForProfile(
+  profileId: string
+): Promise<{
+  title: string | null
+  area: string | null
+  hba_start: string | null
+  career_start: string | null
+  courses_taught: string[] | null
+  short_bio: string | null
+  full_bio: string | null
+} | null> {
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const { data } = await getServiceSupabase()
+    .from("faculty_bios")
+    .select(
+      "title, area, hba_start, career_start, courses_taught, short_bio, full_bio"
+    )
+    .eq("profile_id", profileId)
+    .maybeSingle<{
+      title: string | null
+      area: string | null
+      hba_start: string | null
+      career_start: string | null
+      courses_taught: string[] | null
+      short_bio: string | null
+      full_bio: string | null
+    }>()
+  return data
+}
+
+export async function upsertFacultyBioOverride(input: {
+  profile_id: string
+  title: string | null
+  area: string | null
+  hba_start: string | null
+  career_start: string | null
+  courses_taught: string[] | null
+  short_bio: string | null
+  full_bio: string | null
+}): Promise<void> {
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const { error } = await getServiceSupabase()
+    .from("faculty_bios")
+    .upsert(input, { onConflict: "profile_id" })
+  if (error) {
+    throw new Error(`Failed to save faculty bio: ${error.message}`)
+  }
 }

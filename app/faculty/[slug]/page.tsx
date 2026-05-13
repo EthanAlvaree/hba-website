@@ -5,8 +5,15 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
-import { faculty, getFacultyBySlug, getNeighbors } from "@/lib/faculty"
+import {
+  faculty,
+  getFacultyBySlug,
+  getFacultyBySlugWithOverrides,
+  getNeighbors,
+} from "@/lib/faculty"
 import { siteConfig } from "@/lib/site"
+
+export const dynamic = "force-dynamic"
 
 type Props = { params: Promise<{ slug: string }> }
 
@@ -16,6 +23,9 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
+  // Metadata uses the synchronous code-side data — the DB overrides
+  // don't add much to OG cards and keeping this sync makes
+  // generateMetadata cheaper.
   const member = getFacultyBySlug(slug)
   if (!member) return { title: "Faculty — High Bluff Academy" }
 
@@ -33,7 +43,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FacultyDetailPage({ params }: Props) {
   const { slug } = await params
-  const member = getFacultyBySlug(slug)
+  const member = await getFacultyBySlugWithOverrides(slug)
   if (!member) notFound()
 
   const neighbors = getNeighbors(slug)

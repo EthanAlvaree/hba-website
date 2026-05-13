@@ -16,6 +16,7 @@ import {
   upsertTeacherWorkload,
 } from "@/lib/scheduler"
 import { sectionPeriodSchema } from "@/lib/sis"
+import { upsertFacultyBioOverride } from "@/lib/faculty"
 
 // Faculty edit their OWN teaching profile. Admins may also edit anyone's
 // via an admin path later; for now we keep it scoped to self.
@@ -169,4 +170,75 @@ export async function saveWorkloadAction(formData: FormData) {
   await upsertTeacherWorkload(parsed.data)
   revalidateTeaching(targetProfileId)
   redirect("/faculty-portal/teaching?saved=workload")
+}
+
+// ============================================================================
+// Bio overrides — faculty self-edit their public-page paragraphs
+// ============================================================================
+
+const bioSchema = z.object({
+  profile_id: z.uuid(),
+  title: z.string().trim().max(200).optional().nullable(),
+  area: z.string().trim().max(200).optional().nullable(),
+  hba_start: z.string().trim().max(80).optional().nullable(),
+  career_start: z.string().trim().max(200).optional().nullable(),
+  courses_taught: z
+    .string()
+    .trim()
+    .max(4000)
+    .optional()
+    .nullable(),
+  short_bio: z.string().trim().max(800).optional().nullable(),
+  full_bio: z.string().trim().max(12000).optional().nullable(),
+})
+
+function emptyToNull(s: string | null | undefined): string | null {
+  if (s === undefined || s === null) return null
+  const trimmed = s.trim()
+  return trimmed.length === 0 ? null : trimmed
+}
+
+export async function saveBioAction(formData: FormData) {
+  const targetProfileId = formData.get("profile_id")
+  if (typeof targetProfileId !== "string") throw new Error("Missing profile_id.")
+  await assertCanEditTeachingProfile(targetProfileId)
+
+  const parsed = bioSchema.safeParse({
+    profile_id: targetProfileId,
+    title: formData.get("title") ?? "",
+    area: formData.get("area") ?? "",
+    hba_start: formData.get("hba_start") ?? "",
+    career_start: formData.get("career_start") ?? "",
+    courses_taught: formData.get("courses_taught") ?? "",
+    short_bio: formData.get("short_bio") ?? "",
+    full_bio: formData.get("full_bio") ?? "",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Save failed.")
+  }
+
+  // courses_taught arrives as a newline-separated textarea. Split,
+  // trim, drop blanks. Null when empty.
+  const coursesText = emptyToNull(parsed.data.courses_taught ?? null)
+  const coursesTaught = coursesText
+    ? coursesText
+        .split(/\r?\n/)
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0)
+    : null
+
+  await upsertFacultyBioOverride({
+    profile_id: targetProfileId,
+    title: emptyToNull(parsed.data.title ?? null),
+    area: emptyToNull(parsed.data.area ?? null),
+    hba_start: emptyToNull(parsed.data.hba_start ?? null),
+    career_start: emptyToNull(parsed.data.career_start ?? null),
+    courses_taught: coursesTaught,
+    short_bio: emptyToNull(parsed.data.short_bio ?? null),
+    full_bio: emptyToNull(parsed.data.full_bio ?? null),
+  })
+  revalidateTeaching(targetProfileId)
+  // Also revalidate the public faculty pages — they read the override.
+  revalidatePath("/faculty")
+  redirect("/faculty-portal/teaching?saved=bio")
 }
