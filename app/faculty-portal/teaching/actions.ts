@@ -18,9 +18,11 @@ import {
 import { sectionPeriodSchema } from "@/lib/sis"
 import {
   clearFacultyPortrait,
+  getFacultyBioOverrideForProfile,
   setFacultyPortraitFromBuffer,
   upsertFacultyBioOverride,
 } from "@/lib/faculty"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
 // Faculty edit their OWN teaching profile. Admins may also edit anyone's
 // via an admin path later; for now we keep it scoped to self.
@@ -231,7 +233,16 @@ export async function saveBioAction(formData: FormData) {
         .filter((s) => s.length > 0)
     : null
 
-  await upsertFacultyBioOverride({
+  const fromAdmin = formData.get("admin") === "1"
+
+  // When an admin saves on behalf of a faculty member, snapshot the
+  // existing override first so we can diff and record which fields
+  // actually changed in the audit log.
+  const before = fromAdmin
+    ? await getFacultyBioOverrideForProfile(targetProfileId)
+    : null
+
+  const nextOverride = {
     profile_id: targetProfileId,
     title: emptyToNull(parsed.data.title ?? null),
     area: emptyToNull(parsed.data.area ?? null),
@@ -240,7 +251,36 @@ export async function saveBioAction(formData: FormData) {
     courses_taught: coursesTaught,
     short_bio: emptyToNull(parsed.data.short_bio ?? null),
     full_bio: emptyToNull(parsed.data.full_bio ?? null),
-  })
+  }
+
+  await upsertFacultyBioOverride(nextOverride)
+
+  if (fromAdmin) {
+    const fields: Array<keyof typeof nextOverride> = [
+      "title",
+      "area",
+      "hba_start",
+      "career_start",
+      "courses_taught",
+      "short_bio",
+      "full_bio",
+    ]
+    const changedFields = fields.filter((f) => {
+      const a = before ? (before as Record<string, unknown>)[f] ?? null : null
+      const b = (nextOverride as Record<string, unknown>)[f] ?? null
+      return JSON.stringify(a) !== JSON.stringify(b)
+    })
+    await logAdminAuditEvent({
+      action: ADMIN_AUDIT_ACTIONS.faculty_bio_admin_edit,
+      target_kind: "profile",
+      target_id: targetProfileId,
+      details: {
+        had_override: before !== null,
+        changed_fields: changedFields,
+      },
+    })
+  }
+
   revalidateTeaching(targetProfileId)
   // Also revalidate the public faculty pages — they read the override.
   revalidatePath("/faculty")
@@ -249,7 +289,6 @@ export async function saveBioAction(formData: FormData) {
   // If the admin form submitted (hidden `admin=1`), bounce back to
   // the admin editor with the saved flag. Otherwise the faculty
   // self-edit path lands on /faculty-portal/teaching.
-  const fromAdmin = formData.get("admin") === "1"
   if (fromAdmin) {
     redirect(`/admin/profiles/${targetProfileId}/bio?saved=bio`)
   }

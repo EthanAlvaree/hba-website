@@ -433,6 +433,9 @@ function BioCard({
   codeDefaults: FacultyMember | null
   override: BioOverride
 }) {
+  const previewHref = codeDefaults?.slug
+    ? `/faculty/${codeDefaults.slug}`
+    : null
   // What ends up in each input: prefer the saved override; fall back
   // to the code-side default. Empty fields render the code default as
   // a placeholder so the faculty member knows what the public page
@@ -468,11 +471,24 @@ function BioCard({
             required).
           </p>
         </div>
-        {hasOverride && (
-          <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
-            Customized
-          </span>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {previewHref && (
+            <Link
+              href={previewHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-1.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+              title="Open your live public page in a new tab"
+            >
+              Preview public page ↗
+            </Link>
+          )}
+          {hasOverride && (
+            <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
+              Customized
+            </span>
+          )}
+        </div>
       </div>
 
       {!codeDefaults && (

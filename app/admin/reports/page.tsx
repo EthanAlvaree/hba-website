@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
+import { listAllStudentTags } from "@/lib/sis"
 
 export const dynamic = "force-dynamic"
 
@@ -53,6 +54,8 @@ const GRADES = ["K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "1
 export default async function ReportsPage() {
   const session = await auth()
   if (!session?.isAdmin) redirect("/admin/sign-in")
+
+  const tags = await listAllStudentTags()
 
   return (
     <div className="space-y-6">
@@ -148,6 +151,66 @@ export default async function ReportsPage() {
               Download CSV
             </button>
           </form>
+        </div>
+      </section>
+
+      {/* Tag-based parent contact export */}
+      <section className="rounded-2xl border border-slate-200 bg-white px-5 py-4 shadow-sm">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-base font-extrabold text-brand-navy">
+              Tag-based parent contact list
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Pulls every parent whose student carries a given tag. Useful
+              for activity-specific emails (e.g. soccer team, college-prep
+              cohort). Tags are managed from each student&rsquo;s profile.
+            </p>
+          </div>
+          {tags.length === 0 ? (
+            <p className="text-xs italic text-slate-500">
+              No student tags yet. Add one from any student profile to
+              enable this filter.
+            </p>
+          ) : (
+            <form
+              action="/api/admin/reports/parent-contacts.csv"
+              method="get"
+              className="flex flex-wrap items-end gap-2"
+            >
+              <input type="hidden" name="status" value="active" />
+              <label className="space-y-1 text-xs font-medium text-slate-700">
+                <span className="block">Tag</span>
+                <select
+                  name="tag"
+                  defaultValue={tags[0]}
+                  className="rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+                >
+                  {tags.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center gap-2 text-xs text-slate-700 self-end pb-2">
+                <input
+                  type="checkbox"
+                  name="comms_only"
+                  value="1"
+                  defaultChecked
+                  className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+                />
+                <span>Comms-opted-in only</span>
+              </label>
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+              >
+                Download CSV
+              </button>
+            </form>
+          )}
         </div>
       </section>
     </div>
