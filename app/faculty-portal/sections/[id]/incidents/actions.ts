@@ -17,6 +17,7 @@ import {
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 import {
   buildMailtoUrl,
+  buildTeamsChatUrl,
   generalMessage,
   listParentContactsForStudent,
   missingAssignmentMessage,
@@ -25,13 +26,15 @@ import {
 import { getCourseSectionById } from "@/lib/sis"
 
 // Picks a parent-contact email template appropriate to the incident kind.
+// Returns both a mailto: link and a Teams chat deeplink built from the
+// same message payload so callers can offer either.
 async function buildIncidentMailto(input: {
   student_id: string
   section_id: string
   kind: IncidentKind
   summary: string
   occurredAt: string
-}): Promise<string | null> {
+}): Promise<{ mailto: string; teams: string } | null> {
   const session = await auth()
   const [contacts, student, section] = await Promise.all([
     listParentContactsForStudent(input.student_id),
@@ -89,7 +92,10 @@ async function buildIncidentMailto(input: {
     }
   }
 
-  return buildMailtoUrl(mailto)
+  return {
+    mailto: buildMailtoUrl(mailto),
+    teams: buildTeamsChatUrl(mailto),
+  }
 }
 
 export async function createIncidentAction(formData: FormData) {
@@ -146,22 +152,24 @@ export async function createIncidentAction(formData: FormData) {
 
   revalidatePath(`/faculty-portal/sections/${sectionId}`)
 
-  // If the teacher asked us to draft an email, build a mailto: URL and pass
-  // it back via the redirect's query string. The page renders a prominent
-  // "Open in mail client" link the teacher clicks once to launch their email
-  // app with the message pre-filled.
+  // If the teacher asked us to draft an email, build mailto + Teams
+  // links and pass them back via the redirect's query string. The
+  // page renders both — teachers pick whichever the family is more
+  // likely to actually see.
   const sendEmail = formData.get("send_email") === "on"
   let emailQuery = ""
   if (sendEmail) {
-    const mailto = await buildIncidentMailto({
+    const links = await buildIncidentMailto({
       student_id: created.student_id,
       section_id: sectionId,
       kind: created.kind,
       summary: created.summary,
       occurredAt: created.occurred_at,
     })
-    if (mailto) {
-      emailQuery = `&email_link=${encodeURIComponent(mailto)}`
+    if (links) {
+      emailQuery =
+        `&email_link=${encodeURIComponent(links.mailto)}` +
+        `&teams_link=${encodeURIComponent(links.teams)}`
     } else {
       emailQuery = `&email_link_missing=1`
     }

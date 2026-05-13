@@ -15,6 +15,7 @@ import {
 import { modalityLabel, periodLabel } from "@/app/admin/academics/sections/SectionFormFields"
 import {
   buildMailtoUrl,
+  buildTeamsChatUrl,
   generalMessage,
   listParentContactsForStudent,
   type ParentContact,
@@ -96,6 +97,7 @@ type PageProps = {
     incident_saved?: string
     incident_error?: string
     email_link?: string
+    teams_link?: string
     email_link_missing?: string
     announcement_saved?: string
     announcement_error?: string
@@ -233,15 +235,28 @@ export default async function FacultySectionDetailPage({
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 shadow-sm">
           <p className="font-semibold">Incident saved.</p>
           <p className="mt-1">
-            A pre-filled email is ready — click below to open your mail client
-            with subject + body already drafted. You can edit before sending.
+            A pre-filled message is ready — open it in your mail client OR
+            in Teams (Teams works if the parent has a Microsoft account).
+            Edit before sending.
           </p>
-          <a
-            href={raw.email_link}
-            className="mt-3 inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-          >
-            ✉ Open email to parents →
-          </a>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <a
+              href={raw.email_link}
+              className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+            >
+              ✉ Open email to parents →
+            </a>
+            {raw.teams_link && (
+              <a
+                href={raw.teams_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center rounded-full border border-brand-navy bg-white px-5 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+              >
+                💬 Open in Teams →
+              </a>
+            )}
+          </div>
         </section>
       )}
       {raw.incident_saved === "1" && raw.email_link_missing && (
@@ -282,21 +297,21 @@ export default async function FacultySectionDetailPage({
               const contacts = studentId
                 ? parentContactsByStudent.get(studentId) ?? []
                 : []
-              const mailto =
+              const messageOptions =
                 contacts.length > 0 && enrollment.student
-                  ? buildMailtoUrl(
-                      generalMessage({
-                        contacts,
-                        student: {
-                          preferred_name: enrollment.student.preferred_name,
-                          legal_first_name: enrollment.student.legal_first_name,
-                          legal_last_name: enrollment.student.legal_last_name,
-                        },
-                        courseName: section.course.name,
-                        teacherName: teacherDisplayName,
-                      })
-                    )
+                  ? generalMessage({
+                      contacts,
+                      student: {
+                        preferred_name: enrollment.student.preferred_name,
+                        legal_first_name: enrollment.student.legal_first_name,
+                        legal_last_name: enrollment.student.legal_last_name,
+                      },
+                      courseName: section.course.name,
+                      teacherName: teacherDisplayName,
+                    })
                   : null
+              const mailto = messageOptions ? buildMailtoUrl(messageOptions) : null
+              const teamsUrl = messageOptions ? buildTeamsChatUrl(messageOptions) : null
               return (
                 <li
                   key={enrollment.id}
@@ -335,14 +350,25 @@ export default async function FacultySectionDetailPage({
                     <span className="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
                       {grade?.categories.reduce((sum, c) => sum + c.graded_count, 0) ?? 0} graded
                     </span>
-                    {mailto ? (
-                      <a
-                        href={mailto}
-                        className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
-                        title={`Email ${contacts.length} parent${contacts.length === 1 ? "" : "s"}`}
-                      >
-                        ✉ Email
-                      </a>
+                    {mailto && teamsUrl ? (
+                      <div className="inline-flex items-center gap-1.5">
+                        <a
+                          href={mailto}
+                          className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                          title={`Email ${contacts.length} parent${contacts.length === 1 ? "" : "s"}`}
+                        >
+                          ✉ Email
+                        </a>
+                        <a
+                          href={teamsUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                          title={`Start a Teams chat with ${contacts.length} parent${contacts.length === 1 ? "" : "s"} (works if they have a Microsoft account)`}
+                        >
+                          💬 Teams
+                        </a>
+                      </div>
                     ) : (
                       <span
                         className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-400"

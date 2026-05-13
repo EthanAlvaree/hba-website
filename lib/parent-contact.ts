@@ -98,6 +98,38 @@ export function buildMailtoUrl({
 }
 
 // ============================================================================
+// Teams chat deeplink builder
+// ============================================================================
+//
+// Same MailtoOptions shape so the call sites can hand either function
+// the same payload. Teams supports up to ~20 users in the URL; we cap
+// at a sensible 8 to keep the deeplink short.
+//
+// Format: https://teams.microsoft.com/l/chat/0/0?users=...&topicName=...&message=...
+// Subject becomes the topicName (Teams renders it as the chat title).
+// Body becomes a pre-filled draft in the compose field.
+//
+// External chat caveat: if a parent uses a non-Microsoft email,
+// they need a Microsoft account or external collaboration enabled on
+// the tenant for the chat to open. The email button stays the
+// universal fallback for parents without Teams.
+
+export function buildTeamsChatUrl({
+  toEmails,
+  subject,
+  body,
+}: MailtoOptions): string {
+  const users = toEmails.slice(0, 8).join(",")
+  const params = new URLSearchParams()
+  params.set("users", users)
+  // Teams uses topicName for the chat title. Trim to a reasonable
+  // length so it fits in the chat sidebar.
+  params.set("topicName", subject.slice(0, 100))
+  params.set("message", body)
+  return `https://teams.microsoft.com/l/chat/0/0?${params.toString().replace(/\+/g, "%20")}`
+}
+
+// ============================================================================
 // Pre-filled message templates for common teacher -> parent contexts
 // ============================================================================
 

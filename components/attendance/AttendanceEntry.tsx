@@ -14,6 +14,7 @@ import { periodLabel } from "@/app/admin/academics/sections/SectionFormFields"
 import { saveAttendanceAction } from "@/app/admin/academics/sections/[id]/attendance/actions"
 import {
   buildMailtoUrl,
+  buildTeamsChatUrl,
   tardyMessage,
   type ParentContact,
 } from "@/lib/parent-contact"
@@ -203,27 +204,39 @@ export function AttendanceEntry({
                         const contacts =
                           parentContactsByStudent.get(enrollment.student.id) ?? []
                         if (contacts.length === 0) return null
-                        const mailto = buildMailtoUrl(
-                          tardyMessage({
-                            contacts,
-                            student: {
-                              preferred_name: enrollment.student.preferred_name,
-                              legal_first_name: enrollment.student.legal_first_name,
-                              legal_last_name: enrollment.student.legal_last_name,
-                            },
-                            courseName: section.course.name,
-                            date,
-                            teacherName: teacherDisplayName ?? "Your teacher",
-                          })
-                        )
+                        const messageOpts = tardyMessage({
+                          contacts,
+                          student: {
+                            preferred_name: enrollment.student.preferred_name,
+                            legal_first_name: enrollment.student.legal_first_name,
+                            legal_last_name: enrollment.student.legal_last_name,
+                          },
+                          courseName: section.course.name,
+                          date,
+                          teacherName: teacherDisplayName ?? "Your teacher",
+                        })
+                        const mailto = buildMailtoUrl(messageOpts)
+                        const teams = buildTeamsChatUrl(messageOpts)
+                        const parentCount = contacts.length
                         return (
-                          <a
-                            href={mailto}
-                            className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-brand-navy underline-offset-2 hover:underline"
-                            title={`Email ${contacts.length} parent${contacts.length === 1 ? "" : "s"} the tardy template`}
-                          >
-                            ✉ Email parents (tardy)
-                          </a>
+                          <div className="mt-1 flex flex-wrap gap-2 text-[11px]">
+                            <a
+                              href={mailto}
+                              className="inline-flex items-center gap-1 font-semibold text-brand-navy underline-offset-2 hover:underline"
+                              title={`Email ${parentCount} parent${parentCount === 1 ? "" : "s"} the tardy template`}
+                            >
+                              ✉ Email tardy
+                            </a>
+                            <a
+                              href={teams}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 font-semibold text-brand-navy underline-offset-2 hover:underline"
+                              title={`Open a Teams chat with ${parentCount} parent${parentCount === 1 ? "" : "s"} (requires Microsoft account on their end)`}
+                            >
+                              💬 Teams
+                            </a>
+                          </div>
                         )
                       })()}
                     </div>
