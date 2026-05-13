@@ -240,5 +240,14 @@ export async function saveBioAction(formData: FormData) {
   revalidateTeaching(targetProfileId)
   // Also revalidate the public faculty pages — they read the override.
   revalidatePath("/faculty")
+  revalidatePath(`/admin/profiles/${targetProfileId}/bio`)
+
+  // If the admin form submitted (hidden `admin=1`), bounce back to
+  // the admin editor with the saved flag. Otherwise the faculty
+  // self-edit path lands on /faculty-portal/teaching.
+  const fromAdmin = formData.get("admin") === "1"
+  if (fromAdmin) {
+    redirect(`/admin/profiles/${targetProfileId}/bio?saved=bio`)
+  }
   redirect("/faculty-portal/teaching?saved=bio")
 }

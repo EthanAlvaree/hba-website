@@ -510,3 +510,80 @@ export async function upsertFacultyBioOverride(input: {
     throw new Error(`Failed to save faculty bio: ${error.message}`)
   }
 }
+
+/** Copy a code-side faculty member's defaults into a faculty_bios row.
+ *  Used by the "Seed from defaults" / bulk-seed buttons so faculty
+ *  start the self-edit form with their existing prose rather than a
+ *  blank slate. Only inserts when no row exists — does NOT overwrite
+ *  a faculty member's already-customized bio. */
+export async function seedFacultyBioFromCodeForProfile(
+  profileId: string,
+  facultyMember: FacultyMember
+): Promise<{ seeded: boolean }> {
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const supabase = getServiceSupabase()
+  const { data: existing } = await supabase
+    .from("faculty_bios")
+    .select("profile_id")
+    .eq("profile_id", profileId)
+    .maybeSingle<{ profile_id: string }>()
+  if (existing) return { seeded: false }
+  const { error } = await supabase.from("faculty_bios").insert({
+    profile_id: profileId,
+    title: facultyMember.title,
+    area: facultyMember.area,
+    hba_start: facultyMember.hbaStart ?? null,
+    career_start: facultyMember.careerStart ?? null,
+    courses_taught: facultyMember.coursesTaught ?? null,
+    short_bio: facultyMember.shortBio,
+    full_bio: facultyMember.fullBio,
+  })
+  if (error) {
+    throw new Error(`Failed to seed faculty bio: ${error.message}`)
+  }
+  return { seeded: true }
+}
+
+/** Resolve a slug → profile. Mirrors the email convention used
+ *  throughout (slug.split("-")[0] @ siteConfig.contact.emailDomain). */
+export async function resolveProfileForFacultySlug(
+  slug: string
+): Promise<{ id: string; email: string } | null> {
+  const email = emailFromSlug(slug)
+  if (!email) return null
+  const { getServiceSupabase } = await import("@/lib/supabase-server")
+  const { data } = await getServiceSupabase()
+    .from("profiles")
+    .select("id, email")
+    .eq("email", email)
+    .maybeSingle<{ id: string; email: string }>()
+  return data ?? null
+}
+
+/** Bulk-seed: for every code-side faculty member with a matching
+ *  profile in the DB, insert a faculty_bios row from the code
+ *  defaults. Skips profiles that already have a bio row. */
+export async function bulkSeedFacultyBios(): Promise<{
+  seeded: number
+  skipped_already_seeded: number
+  skipped_no_profile: string[]
+}> {
+  let seeded = 0
+  let skippedAlreadySeeded = 0
+  const skippedNoProfile: string[] = []
+  for (const member of faculty) {
+    const profile = await resolveProfileForFacultySlug(member.slug)
+    if (!profile) {
+      skippedNoProfile.push(member.slug)
+      continue
+    }
+    const result = await seedFacultyBioFromCodeForProfile(profile.id, member)
+    if (result.seeded) seeded += 1
+    else skippedAlreadySeeded += 1
+  }
+  return {
+    seeded,
+    skipped_already_seeded: skippedAlreadySeeded,
+    skipped_no_profile: skippedNoProfile,
+  }
+}
