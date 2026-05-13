@@ -1,6 +1,13 @@
 import Link from "next/link"
 
-type AcademicsTab = "terms" | "courses" | "sections" | "requirements" | "scheduler" | "calendar"
+type AcademicsTab =
+  | "terms"
+  | "courses"
+  | "sections"
+  | "requirements"
+  | "scheduler"
+  | "calendar"
+  | "conferences"
 
 const tabs: Array<{ id: AcademicsTab; label: string; href: string }> = [
   { id: "terms", label: "Terms", href: "/admin/academics/terms" },
@@ -9,6 +16,7 @@ const tabs: Array<{ id: AcademicsTab; label: string; href: string }> = [
   { id: "sections", label: "Sections", href: "/admin/academics/sections" },
   { id: "requirements", label: "Graduation reqs", href: "/admin/academics/requirements" },
   { id: "scheduler", label: "Scheduler", href: "/admin/academics/scheduler" },
+  { id: "conferences", label: "Conferences", href: "/admin/academics/conferences" },
 ]
 
 // Page header for /admin/academics/* pages. The shared admin shell handles

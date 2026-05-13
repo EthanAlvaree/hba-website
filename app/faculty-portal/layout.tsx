@@ -6,6 +6,7 @@ import { getProfileByEmail } from "@/lib/sis"
 const facultyNav: PortalNavItem[] = [
   { id: "home", label: "My sections", href: "/faculty-portal" },
   { id: "schedule", label: "Weekly schedule", href: "/faculty-portal/schedule" },
+  { id: "conferences", label: "Conferences", href: "/faculty-portal/conferences" },
   { id: "teaching", label: "Teaching profile", href: "/faculty-portal/teaching" },
 ]
 

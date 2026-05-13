@@ -5,6 +5,7 @@ import { getProfileByEmail } from "@/lib/sis"
 
 const parentNav: PortalNavItem[] = [
   { id: "home", label: "My children", href: "/parent" },
+  { id: "conferences", label: "Conferences", href: "/parent/conferences" },
 ]
 
 export default async function ParentPortalLayout({
