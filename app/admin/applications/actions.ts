@@ -16,6 +16,7 @@ import {
 import {
   isFamilyNotifiableStatus,
   sendApplicationStatusUpdateToFamily,
+  sendEnrollmentWelcomeToFamily,
 } from "@/lib/graph"
 import {
   adminDeleteApplicationDocument,
@@ -161,6 +162,21 @@ export async function enrollApplicationAction(formData: FormData) {
   }
 
   await enrollAcceptedApplication(parsed.data)
+
+  // Best-effort: notify the family that the school account is ready and
+  // point them at /welcome for setup. A Graph failure here shouldn't roll
+  // back the enrollment — it can be re-sent manually from /admin/messaging.
+  try {
+    const application = await getApplicationById(parsed.data.application_id)
+    if (application) {
+      await sendEnrollmentWelcomeToFamily({
+        application,
+        studentHbaEmail: parsed.data.student_hba_email,
+      })
+    }
+  } catch (err) {
+    console.error("[enroll] welcome email failed", err)
+  }
 
   revalidateApplicationViews()
   redirectBackToQueue(redirectTo)

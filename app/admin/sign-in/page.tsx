@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth, signIn, signOut } from "@/auth"
 import { getProfileByEmail } from "@/lib/sis"
@@ -87,6 +88,23 @@ export default async function AdminSignInPage() {
                 Continue with Microsoft 365
               </button>
             </form>
+
+            <div className="mt-10 border-t border-slate-200 pt-6 text-sm text-slate-600">
+              <p>
+                New here?{" "}
+                <Link
+                  href="/welcome"
+                  className="font-semibold text-brand-navy underline-offset-4 hover:underline"
+                >
+                  Start with the new-student account setup →
+                </Link>
+              </p>
+              <p className="mt-2 text-xs text-slate-500">
+                Walks you through your HBA email, installing Microsoft
+                Authenticator, and getting the Microsoft 365 apps on your phone
+                and computer. About 15 minutes.
+              </p>
+            </div>
           </>
         )}
       </div>

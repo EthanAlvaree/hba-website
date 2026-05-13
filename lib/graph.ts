@@ -409,6 +409,60 @@ function buildFamilyStatusHtml(
   }
 }
 
+// Sent the moment an admin enrolls an accepted applicant — i.e. the student
+// now has an HBA Microsoft account waiting for them. The family gets the
+// new email + a pointer at /welcome, which walks them through Authenticator
+// setup and installing the Microsoft 365 apps. Best-effort: the enrollment
+// itself succeeded; a Graph send failure shouldn't roll back the DB.
+export async function sendEnrollmentWelcomeToFamily(options: {
+  application: ApplicationRecord
+  studentHbaEmail: string
+}) {
+  const { application, studentHbaEmail } = options
+
+  const guardianEmails: string[] = []
+  if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
+  if (application.guardian2_email) guardianEmails.push(application.guardian2_email)
+  if (guardianEmails.length === 0) {
+    throw new Error("No guardian email on file; cannot send enrollment welcome.")
+  }
+
+  const studentName =
+    [application.student_first_name, application.student_last_name]
+      .filter(Boolean)
+      .join(" ") || "your student"
+  const parentName = application.guardian1_name?.trim() || "there"
+
+  const welcomeUrl = `${siteConfig.url}/welcome`
+  const subject = `${studentName} is enrolled — here's how to set up the school account`
+
+  const html = [
+    `<p>Hi ${escapeHtml(parentName)},</p>`,
+    `<p>Welcome to ${escapeHtml(siteConfig.name)}! <strong>${escapeHtml(studentName)}</strong> is now formally enrolled and has a school Microsoft 365 account waiting for them.</p>`,
+    `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid #1f3f66;background:#f5f7fb;">`,
+    `<strong>Their school email:</strong><br />`,
+    `<span style="font-family:Consolas,Menlo,monospace;font-size:16px;color:#1f3f66;">${escapeHtml(studentHbaEmail)}</span>`,
+    `</p>`,
+    `<p>Before the first day, please set up the account using our short walkthrough. It takes about 15 minutes and covers signing in, installing Microsoft Authenticator (required for security), and getting the Microsoft apps on the phone and computer.</p>`,
+    `<p style="margin:24px 0;">`,
+    `<a href="${welcomeUrl}" style="display:inline-block;padding:12px 24px;background:#1f3f66;color:#fff;text-decoration:none;border-radius:999px;font-weight:600;">Open the setup walkthrough</a>`,
+    `</p>`,
+    `<p style="color:#666;font-size:14px;">Or paste this link into your browser: <a href="${welcomeUrl}">${escapeHtml(welcomeUrl)}</a></p>`,
+    `<p style="color:#666;font-size:14px;">Reply to this email with any questions — the office team is happy to walk you through it on the phone or in person.</p>`,
+    `<p>Warmly,<br />The ${escapeHtml(siteConfig.name)} admissions team</p>`,
+  ].join("")
+
+  const { applicationRecipients } = getGraphConfig()
+  await sendMail({
+    subject,
+    htmlBody: html,
+    toRecipients: guardianEmails,
+    replyTo: applicationRecipients[0]
+      ? { address: applicationRecipients[0] }
+      : undefined,
+  })
+}
+
 export async function sendApplicationStatusUpdateToFamily(options: {
   application: ApplicationRecord
   newStatus: FamilyNotifiableStatus
