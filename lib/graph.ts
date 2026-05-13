@@ -351,6 +351,48 @@ export async function sendApplicationDraftMagicLink(options: {
   })
 }
 
+// Daily inactivity-reminder cron sends this to parents who started an
+// application but haven't touched it in a week. Same magic link, softer
+// subject — and the body says "no rush, but here's where you left off."
+function buildDraftReminderHtml(options: {
+  parentName: string
+  resumeUrl: string
+  daysUntilExpiry: number
+}) {
+  const { parentName, resumeUrl, daysUntilExpiry } = options
+  const expiryLine =
+    daysUntilExpiry <= 7
+      ? `<p>Your draft expires in ${daysUntilExpiry} day${daysUntilExpiry === 1 ? "" : "s"} — after that you'll need to start over.</p>`
+      : `<p>Your draft is saved for another ${daysUntilExpiry} days, so there's no rush — but the longer it sits, the more details you'll have to look up.</p>`
+  return [
+    `<p>Hi ${escapeHtml(parentName)},</p>`,
+    `<p>We noticed you started an application on the ${escapeHtml(siteConfig.name)} website but haven't finished. Whenever you're ready, the link below picks up right where you left off.</p>`,
+    `<p><a href="${escapeHtml(resumeUrl)}" style="display:inline-block;background:${brand.orange};color:#ffffff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;">Continue your application</a></p>`,
+    `<p>Or copy and paste this URL into your browser:</p>`,
+    `<p>${escapeHtml(resumeUrl)}</p>`,
+    expiryLine,
+    `<p>If you've decided not to apply, you can ignore this — we won't email you about it again.</p>`,
+    `<p>— ${escapeHtml(siteConfig.name)}</p>`,
+  ].join("")
+}
+
+export async function sendApplicationDraftReminder(options: {
+  toEmail: string
+  parentName: string
+  resumeUrl: string
+  daysUntilExpiry: number
+}) {
+  await sendMail({
+    subject: `Your ${siteConfig.name} application is waiting`,
+    htmlBody: buildDraftReminderHtml({
+      parentName: options.parentName,
+      resumeUrl: options.resumeUrl,
+      daysUntilExpiry: options.daysUntilExpiry,
+    }),
+    toRecipients: [options.toEmail],
+  })
+}
+
 // Fires the moment an applicant submits. They worry "did it go through?"
 // the way every applicant does — this is the email that answers yes.
 // Reply-to is the office so they can ask a follow-up question from the
