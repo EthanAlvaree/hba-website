@@ -96,6 +96,8 @@ export const faculty: FacultyMember[] = [
       "Honors Multivariable Calculus",
       "Honors Linear Algebra",
       "Honors Group Theory and Abstract Algebra",
+      "Honors Set Theory and Real Analysis",
+      "Honors Mathematics of Machine Learning",
       "AP Computer Science Principles",
       "AP Computer Science A",
       "AP Microeconomics",
@@ -207,7 +209,7 @@ export const faculty: FacultyMember[] = [
     shortBio:
       "Spanish teacher from Chile who brings language, culture, and lived experience into every lesson.",
     fullBio:
-      "Fran is a passionate Spanish teacher from Chile, with a deep love for her language and culture. She holds a degree in Spanish and a teaching credential, which enables her to inspire and educate students with a comprehensive understanding of the language. With years of experience in the classroom, Fran is dedicated to making Spanish come alive for her students, fostering not only language proficiency but also an appreciation for the rich traditions and history of the Spanish-speaking world.\n\nEach summer, Fran enjoys traveling back to her homeland of Chile, reconnecting with her roots and exploring new corners of the country. These travels enrich her teaching, providing firsthand experiences and stories that she shares with her students. Outside the classroom, Fran loves spending quality time with her two children, David and Victoria, cherishing family moments and creating lasting memories. Her passion for teaching, her cultural connection to Chile, and her devotion to her family make her an inspiring educator and a wonderful role model for her students.",
+      "With 15 years of dedicated teaching experience, Fran Dickson has cultivated a deep passion for education and a special affinity for working with high school and adult students. Over the years, Fran has embraced diverse teaching environments across Santiago, Chile; Scottsdale, Arizona; Seattle, Washington; and most recently Rancho Santa Fe, California. This journey reflects a commitment to embracing cultural diversity and continuously challenging personal and professional growth in new cities and settings.\n\nFran holds a degree in Spanish and a teaching credential, enabling her to inspire and educate students with a comprehensive understanding of the language and culture of the Spanish-speaking world.\n\nEach summer, Fran enjoys traveling back to her homeland of Chile, reconnecting with her roots and exploring new corners of the country. These travels enrich her teaching, providing firsthand experiences and stories that she shares with her students. Beyond the classroom, Fran enjoys running, cooking healthy meals and spending quality time with her two children, David and Victoria. Driven by a love for children and a belief in the transformative power of education, Fran strives to create meaningful, impactful learning experiences for every student.\n\nHer passion for teaching, her cultural connection to Chile, and her devotion to her family make her an inspiring educator and a wonderful role model for her students.",
   },
   {
     slug: "tricia-tigli",
