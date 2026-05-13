@@ -5,6 +5,7 @@ import {
   submitApplication,
 } from "@/lib/applications"
 import { sendApplicationNotification } from "@/lib/graph"
+import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit"
 import { verifyTurnstileToken } from "@/lib/turnstile"
 
 export const dynamic = "force-dynamic"
@@ -12,8 +13,34 @@ export const dynamic = "force-dynamic"
 const minimumSubmissionDelayMs = 1500
 const maximumSubmissionAgeMs = 1000 * 60 * 60 * 24
 
+// 3 application submissions per IP per hour. A real family submits once
+// (maybe twice if they hit a validation snag). Even the second-chance
+// case fits inside this budget.
+const APPLY_WINDOW_MS = 60 * 60 * 1000
+const APPLY_MAX_HITS = 3
+
 export async function POST(request: Request) {
   try {
+    const ip = await clientIpFromHeaders()
+    const limit = await checkRateLimit({
+      key: `apply:ip:${ip}`,
+      windowMs: APPLY_WINDOW_MS,
+      maxHits: APPLY_MAX_HITS,
+    })
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Too many application submissions from your network. Please email admissions directly if you need help.",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSeconds) },
+        }
+      )
+    }
+
     const body = (await request.json().catch(() => null)) as unknown
 
     if (!body || typeof body !== "object") {

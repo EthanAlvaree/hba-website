@@ -4,6 +4,7 @@ import {
   createContactSubmission,
 } from "@/lib/contact-submissions"
 import { sendContactNotification } from "@/lib/graph"
+import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit"
 import { verifyTurnstileToken } from "@/lib/turnstile"
 
 export const dynamic = "force-dynamic"
@@ -11,8 +12,36 @@ export const dynamic = "force-dynamic"
 const minimumSubmissionDelayMs = 1500
 const maximumSubmissionAgeMs = 1000 * 60 * 60 * 24
 
+// 5 contact submissions per IP per 10 minutes. A real prospective family
+// wouldn't ever hit this; an attacker who got past Turnstile would.
+const CONTACT_WINDOW_MS = 10 * 60 * 1000
+const CONTACT_MAX_HITS = 5
+
 export async function POST(request: Request) {
   try {
+    // Apply rate limit BEFORE parsing the body so an attacker can't waste
+    // our CPU on parsing. Turnstile + this combo means: bots get filtered
+    // first, then humans-with-a-script get capped here.
+    const ip = await clientIpFromHeaders()
+    const limit = await checkRateLimit({
+      key: `contact:ip:${ip}`,
+      windowMs: CONTACT_WINDOW_MS,
+      maxHits: CONTACT_MAX_HITS,
+    })
+    if (!limit.allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            "Too many submissions from your network. Please wait a few minutes and try again, or call the office directly.",
+        },
+        {
+          status: 429,
+          headers: { "Retry-After": String(limit.retryAfterSeconds) },
+        }
+      )
+    }
+
     const formData = await request.formData()
 
     const websiteHoneypot = formData.get("website")
