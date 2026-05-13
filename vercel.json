@@ -16,6 +16,10 @@
     {
       "path": "/api/cron/db-backup",
       "schedule": "0 8 * * 0"
+    },
+    {
+      "path": "/api/cron/scheduled-mass-emails",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

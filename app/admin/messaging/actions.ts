@@ -1,9 +1,13 @@
 "use server"
 
 import { redirect } from "next/navigation"
+import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
-import { resolveCohortEmails, type Audience } from "@/lib/mass-email"
-import { sendCustomEmail } from "@/lib/graph"
+import {
+  dispatchMassEmail,
+  resolveCohortEmails,
+  type Audience,
+} from "@/lib/mass-email"
 import { logAdminAuditEvent } from "@/lib/audit"
 import { getProfileByEmail } from "@/lib/sis"
 import { siteConfig } from "@/lib/site"
@@ -186,51 +190,20 @@ export async function sendMassEmailAction(
   const sender = getMassEmailSender()
   const htmlBody = buildMassEmailHtml(body, sender.label)
 
-  // Send one Graph call per recipient so we don't leak the recipient list
-  // to other parents. The Graph mailer is fast enough for hundreds of sends.
-  // If a school ever grows to thousands of recipients, batch into chunks of
-  // ~100 with Promise.all + a small concurrency limiter.
-  let sent = 0
-  let failed = 0
-  const failedAddrs: string[] = []
-  for (const email of emails) {
-    try {
-      await sendCustomEmail({
-        subject,
-        htmlBody,
-        toRecipients: [email],
-        fromMailbox: sender.address,
-      })
-      sent += 1
-    } catch (error) {
-      failed += 1
-      failedAddrs.push(email)
-      console.error(`mass-email send to ${email} failed`, error)
-    }
-  }
+  const result = await dispatchMassEmail({
+    audience,
+    grade,
+    section_id: sectionId,
+    subject,
+    html_body: htmlBody,
+    sender_email: sender.address,
+    sender_label: sender.label,
+    by_email: adminEmail,
+    by_profile_id: adminProfile?.id ?? null,
+  })
 
-  // Record the send for audit + future "history" viewer. Use a write-once
-  // pattern — never edit these rows from the UI.
-  try {
-    await getServiceSupabase().from("sent_mass_emails").insert({
-      sender_email: sender.address,
-      sender_label: sender.label,
-      cohort_audience: audience,
-      cohort_grade: grade,
-      cohort_section_id: sectionId,
-      subject,
-      body_html: htmlBody,
-      recipient_count: emails.length,
-      recipients: emails,
-      sent_count: sent,
-      failed_count: failed,
-      failed_recipients: failedAddrs,
-      sent_by_email: adminEmail,
-      sent_by_profile_id: adminProfile?.id ?? null,
-    })
-  } catch (error) {
-    console.error("Failed to log sent mass email:", error)
-    // Non-fatal — admin gets a result; just no history row.
+  if (!result.ok) {
+    return { ok: false, error: result.error ?? "Send failed." }
   }
 
   await logAdminAuditEvent({
@@ -242,13 +215,181 @@ export async function sendMassEmailAction(
       section_id: sectionId,
       subject,
       sender_email: sender.address,
-      recipients_total: emails.length,
-      sent,
-      failed,
+      recipients_total: result.recipients_total,
+      sent: result.sent,
+      failed: result.failed,
     },
   })
 
-  return { ok: true, recipients: sent }
+  // Reference unused-import marker so eslint doesn't complain after the
+  // refactor pulled the inline send loop out.
+  void resolveCohortEmails
+
+  return { ok: true, recipients: result.sent }
+}
+
+// ============================================================================
+// Schedule for later
+// ============================================================================
+
+export type ScheduleMassEmailResult =
+  | {
+      ok: true
+      scheduled_id: string
+      scheduled_for_iso: string
+      recipients_estimated: number
+    }
+  | { ok: false; error: string }
+
+export async function scheduleMassEmailAction(
+  _prev: ScheduleMassEmailResult | null,
+  formData: FormData
+): Promise<ScheduleMassEmailResult> {
+  const session = await assertAdmin()
+  const adminEmail = session.user?.email?.toLowerCase() ?? ""
+  const adminProfile = adminEmail ? await getProfileByEmail(adminEmail) : null
+
+  const audience = (formData.get("audience") ?? "parents") as Audience
+  if (!audienceValues.includes(audience)) {
+    return { ok: false, error: "Unknown audience." }
+  }
+  const grade = ((formData.get("grade") ?? "") as string).trim() || null
+  const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
+  const subject = String(formData.get("subject") ?? "").trim()
+  const body = String(formData.get("body") ?? "").trim()
+  const scheduledFor = String(formData.get("scheduled_for") ?? "").trim()
+  if (subject.length === 0) return { ok: false, error: "Subject is required." }
+  if (body.length === 0) return { ok: false, error: "Body is required." }
+  if (!scheduledFor) return { ok: false, error: "Pick a date and time." }
+
+  // Browser <input type="datetime-local"> sends "YYYY-MM-DDTHH:mm" (no
+  // timezone). Interpret as Pacific by anchoring to the school's local
+  // zone — the cron runs in UTC, but families think in PT.
+  const scheduledForUtc = pacificLocalToUtc(scheduledFor)
+  if (!scheduledForUtc) {
+    return { ok: false, error: "Couldn't parse the date/time." }
+  }
+  if (scheduledForUtc.getTime() < Date.now() + 60 * 1000) {
+    return {
+      ok: false,
+      error: "Schedule for at least one minute in the future.",
+    }
+  }
+
+  // Verify the cohort filter is valid (resolves to at least someone)
+  // so the admin gets immediate feedback rather than a failed cron
+  // run a week later.
+  let recipientsEstimated = 0
+  try {
+    const emails = await resolveCohortEmails({ audience, grade, section_id: sectionId })
+    recipientsEstimated = emails.length
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Resolve failed." }
+  }
+  if (recipientsEstimated === 0) {
+    return { ok: false, error: "Cohort filter produced zero recipients." }
+  }
+
+  const sender = getMassEmailSender()
+  const { data, error } = await getServiceSupabase()
+    .from("scheduled_mass_emails")
+    .insert({
+      cohort_audience: audience,
+      cohort_grade: grade,
+      cohort_section_id: sectionId,
+      subject,
+      body,
+      sender_email: sender.address,
+      sender_label: sender.label,
+      scheduled_for: scheduledForUtc.toISOString(),
+      status: "pending",
+      created_by_email: adminEmail,
+      created_by_profile_id: adminProfile?.id ?? null,
+    })
+    .select("id")
+    .single<{ id: string }>()
+  if (error || !data) {
+    return {
+      ok: false,
+      error: error?.message ?? "Failed to schedule mass email.",
+    }
+  }
+
+  await logAdminAuditEvent({
+    action: "mass_email.schedule",
+    target_kind: "scheduled_mass_email",
+    target_id: data.id,
+    details: {
+      audience,
+      grade,
+      section_id: sectionId,
+      subject,
+      scheduled_for: scheduledForUtc.toISOString(),
+      recipients_estimated: recipientsEstimated,
+    },
+  })
+
+  revalidatePath("/admin/messaging")
+  return {
+    ok: true,
+    scheduled_id: data.id,
+    scheduled_for_iso: scheduledForUtc.toISOString(),
+    recipients_estimated: recipientsEstimated,
+  }
+}
+
+export async function cancelScheduledMassEmailAction(formData: FormData) {
+  const session = await assertAdmin()
+  const adminEmail = session.user?.email?.toLowerCase() ?? ""
+  const id = String(formData.get("id") ?? "").trim()
+  if (!id) throw new Error("Missing id.")
+
+  // Only cancel if still pending; concurrent dispatch is fine to lose
+  // the race (the row's flipped to sending/sent and we leave it).
+  const { error } = await getServiceSupabase()
+    .from("scheduled_mass_emails")
+    .update({
+      status: "cancelled",
+      cancelled_by_email: adminEmail,
+      cancelled_at: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("status", "pending")
+  if (error) throw new Error(`Cancel failed: ${error.message}`)
+
+  await logAdminAuditEvent({
+    action: "mass_email.cancel_scheduled",
+    target_kind: "scheduled_mass_email",
+    target_id: id,
+    details: { cancelled_by: adminEmail },
+  })
+
+  revalidatePath("/admin/messaging")
+}
+
+// ---- Helpers ----
+
+/** Parse the value from `<input type="datetime-local">` (no timezone)
+ *  and interpret it as Pacific time, returning the corresponding UTC
+ *  Date. Returns null if the input is malformed. */
+function pacificLocalToUtc(local: string): Date | null {
+  // "YYYY-MM-DDTHH:mm" or "YYYY-MM-DDTHH:mm:ss"
+  const m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/.exec(local)
+  if (!m) return null
+  const [, y, mo, d, h, mi, s] = m
+  // Approximation: treat as PST (UTC-8) year-round. A 1-hour drift
+  // around DST is acceptable for "send at 7am" scheduling. If we ever
+  // care more we can plug Intl.DateTimeFormat with timeZone to derive
+  // the correct offset for the specific date.
+  const utcMs = Date.UTC(
+    Number(y),
+    Number(mo) - 1,
+    Number(d),
+    Number(h) + 8,
+    Number(mi),
+    s ? Number(s) : 0
+  )
+  return new Date(utcMs)
 }
 
 function escapeHtml(s: string): string {

@@ -75,6 +75,14 @@ function actionLabel(code: string): string {
       return "Resync photo from M365"
     case "student.withdraw":
       return "Withdraw student"
+    case "mass_email.send":
+      return "Mass email sent"
+    case "mass_email.schedule":
+      return "Mass email scheduled"
+    case "mass_email.cancel_scheduled":
+      return "Mass email scheduled-send cancelled"
+    case "mass_email.dispatch_scheduled":
+      return "Scheduled mass email dispatched"
     default:
       return code
   }

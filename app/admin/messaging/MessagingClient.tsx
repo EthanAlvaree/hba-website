@@ -4,9 +4,11 @@ import { useActionState, useEffect, useState } from "react"
 import {
   previewCohortAction,
   previewMassEmailAction,
+  scheduleMassEmailAction,
   sendMassEmailAction,
   type MassEmailPreviewResult,
   type MassEmailResult,
+  type ScheduleMassEmailResult,
 } from "./actions"
 
 type SectionOption = { id: string; label: string }
@@ -42,10 +44,16 @@ export function MessagingClient({
     FormData
   >(sendMassEmailAction, null)
 
+  const [scheduleState, scheduleActionFn, schedulePending] = useActionState<
+    ScheduleMassEmailResult | null,
+    FormData
+  >(scheduleMassEmailAction, null)
+
   // Body + subject as controlled state so the preview modal can hand the
   // same values back to the send form without the user re-typing.
   const [subject, setSubject] = useState("")
   const [body, setBody] = useState("")
+  const [scheduledFor, setScheduledFor] = useState("")
 
   // Each new preview opens the modal; Cancel sets dismissed=true to close
   // it without losing the composer draft.
@@ -198,6 +206,58 @@ export function MessagingClient({
             <p className="text-sm text-rose-800">{sendState.error}</p>
           )}
         </form>
+
+        <details className="mt-6 border-t border-slate-200 pt-6">
+          <summary className="cursor-pointer text-sm font-semibold text-brand-navy">
+            Or schedule this message for later
+          </summary>
+          <form action={scheduleActionFn} className="mt-3 space-y-3">
+            <input type="hidden" name="audience" value={audience} />
+            <input type="hidden" name="grade" value={grade} />
+            <input type="hidden" name="section_id" value={sectionId} />
+            <input type="hidden" name="subject" value={subject} />
+            <input type="hidden" name="body" value={body} />
+            <Field label="Send at (Pacific time)">
+              <input
+                type="datetime-local"
+                name="scheduled_for"
+                value={scheduledFor}
+                onChange={(e) => setScheduledFor(e.target.value)}
+                className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+              />
+            </Field>
+            <p className="text-xs text-slate-500">
+              Uses the same subject + body + audience filters above. A
+              cron dispatches scheduled messages every five minutes, so
+              actual send time may drift up to ~5 min past the
+              scheduled time. You can cancel anytime before then in
+              the &ldquo;Scheduled to send&rdquo; section below.
+            </p>
+            <button
+              type="submit"
+              disabled={
+                schedulePending ||
+                !subject.trim() ||
+                !body.trim() ||
+                !scheduledFor
+              }
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white disabled:opacity-50"
+            >
+              {schedulePending ? "Scheduling…" : "Schedule for later"}
+            </button>
+            {scheduleState?.ok && (
+              <p className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs text-emerald-900">
+                Scheduled. Estimated {scheduleState.recipients_estimated}{" "}
+                recipient{scheduleState.recipients_estimated === 1 ? "" : "s"}.
+                See the &ldquo;Scheduled to send&rdquo; section below to
+                cancel.
+              </p>
+            )}
+            {scheduleState?.ok === false && (
+              <p className="text-xs text-rose-800">{scheduleState.error}</p>
+            )}
+          </form>
+        </details>
       </section>
 
       {previewOpen && emailPreview?.ok && (
