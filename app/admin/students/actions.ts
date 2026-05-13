@@ -24,6 +24,10 @@ import {
   resyncProfilePhotoFromM365,
   setProfilePhotoFromBuffer,
 } from "@/lib/profile-photos"
+import {
+  grantStudentPrereqOverride,
+  revokeStudentPrereqOverride,
+} from "@/lib/scheduler"
 import { getServiceSupabase } from "@/lib/supabase-server"
 
 async function assertAdmin() {
@@ -430,4 +434,81 @@ export async function clearProfilePhotoAction(formData: FormData) {
   })
   revalidateStudent(parsed.data.student_id)
   redirect(`/admin/students/${parsed.data.student_id}`)
+}
+
+// ============================================================================
+// Prereq overrides — let admins clear a specific course's prereqs
+// for a single student. Used when a kid is ready to skip a level
+// (e.g. transferred in mid-sequence, already taken at a prior school).
+// ============================================================================
+
+const grantPrereqOverrideSchema = z.object({
+  student_id: z.uuid(),
+  course_id: z.uuid(),
+  notes: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+})
+
+export async function grantStudentPrereqOverrideAction(formData: FormData) {
+  const session = await assertAdmin()
+  const parsed = grantPrereqOverrideSchema.safeParse({
+    student_id: formData.get("student_id"),
+    course_id: formData.get("course_id"),
+    notes: formData.get("notes") ?? "",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid request.")
+  }
+
+  const grantedBy = session.user?.email ?? "unknown"
+  await grantStudentPrereqOverride({
+    student_id: parsed.data.student_id,
+    course_id: parsed.data.course_id,
+    granted_by_email: grantedBy,
+    notes: parsed.data.notes,
+  })
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.student_prereq_override_grant,
+    target_kind: "student",
+    target_id: parsed.data.student_id,
+    details: { course_id: parsed.data.course_id, notes: parsed.data.notes },
+  })
+  revalidateStudent(parsed.data.student_id)
+  revalidatePath(`/portal/trajectory`)
+  redirect(`/admin/students/${parsed.data.student_id}#prereq-overrides`)
+}
+
+const revokePrereqOverrideSchema = z.object({
+  student_id: z.uuid(),
+  course_id: z.uuid(),
+})
+
+export async function revokeStudentPrereqOverrideAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = revokePrereqOverrideSchema.safeParse({
+    student_id: formData.get("student_id"),
+    course_id: formData.get("course_id"),
+  })
+  if (!parsed.success) {
+    throw new Error("Invalid request.")
+  }
+
+  await revokeStudentPrereqOverride({
+    student_id: parsed.data.student_id,
+    course_id: parsed.data.course_id,
+  })
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.student_prereq_override_revoke,
+    target_kind: "student",
+    target_id: parsed.data.student_id,
+    details: { course_id: parsed.data.course_id },
+  })
+  revalidateStudent(parsed.data.student_id)
+  revalidatePath(`/portal/trajectory`)
+  redirect(`/admin/students/${parsed.data.student_id}#prereq-overrides`)
 }

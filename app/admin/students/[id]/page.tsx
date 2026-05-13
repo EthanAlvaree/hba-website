@@ -3,8 +3,10 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
   getStudentDetail,
+  listCourses,
   listStudentTags,
   studentStatusSchema,
+  type CourseRecord,
   type EnrollmentStatus,
   type SectionModality,
   type SectionPeriod,
@@ -17,10 +19,16 @@ import {
   listStudentDocuments,
   studentDocumentKindLabels,
 } from "@/lib/post-enrollment"
+import {
+  listStudentPrereqOverrides,
+  type StudentPrereqOverrideRecord,
+} from "@/lib/scheduler"
 import StudentsHeader from "../StudentsHeader"
 import {
   addStudentTagAction,
+  grantStudentPrereqOverrideAction,
   removeStudentTagAction,
+  revokeStudentPrereqOverrideAction,
   setPostEnrollmentVerifiedAction,
   updateParentLinkAction,
   updateProfileContactAction,
@@ -199,10 +207,18 @@ export default async function StudentDetailPage({
     notFound()
   }
 
-  const [postEnrollmentData, studentDocuments, tags] = await Promise.all([
+  const [
+    postEnrollmentData,
+    studentDocuments,
+    tags,
+    prereqOverrides,
+    allCourses,
+  ] = await Promise.all([
     getPostEnrollmentData(id),
     listStudentDocuments(id),
     listStudentTags(id),
+    listStudentPrereqOverrides(id),
+    listCourses(),
   ])
 
   const displayName = student.preferred_name?.trim()
@@ -990,10 +1006,150 @@ export default async function StudentDetailPage({
           </form>
         </section>
 
+        <PrereqOverridesCard
+          studentId={student.id}
+          overrides={prereqOverrides}
+          courses={allCourses}
+        />
+
         {student.status === "active" && (
           <WithdrawCard studentId={student.id} />
         )}
     </div>
+  )
+}
+
+function PrereqOverridesCard({
+  studentId,
+  overrides,
+  courses,
+}: {
+  studentId: string
+  overrides: StudentPrereqOverrideRecord[]
+  courses: CourseRecord[]
+}) {
+  const coursesById = new Map(courses.map((c) => [c.id, c]))
+  const overrideCourseIds = new Set(overrides.map((o) => o.course_id))
+  const grantable = courses
+    .filter((c) => c.active && !overrideCourseIds.has(c.id))
+    .sort((a, b) => a.name.localeCompare(b.name))
+
+  return (
+    <section
+      id="prereq-overrides"
+      className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm scroll-mt-24"
+    >
+      <h2 className="text-lg font-extrabold text-brand-navy">
+        Prereq overrides
+      </h2>
+      <p className="mt-1 text-sm text-slate-600">
+        Grants this student permission to take a course as if its
+        prerequisites were already cleared. Useful for transfer
+        students who took the prereq elsewhere, or accelerated kids
+        the school decides to advance. The student&rsquo;s trajectory
+        page picks the override up immediately. Audit-logged.
+      </p>
+
+      {overrides.length === 0 ? (
+        <p className="mt-4 text-sm italic text-slate-500">
+          No overrides granted.
+        </p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {overrides.map((o) => {
+            const course = coursesById.get(o.course_id)
+            return (
+              <li
+                key={o.id}
+                className="rounded-2xl border border-violet-200 bg-violet-50/40 px-4 py-3"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {course?.name ?? "(deleted course)"}
+                      {course?.code && (
+                        <code className="ml-2 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-700">
+                          {course.code}
+                        </code>
+                      )}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-600">
+                      Granted by {o.granted_by_email}
+                      {" · "}
+                      {new Intl.DateTimeFormat("en-US", {
+                        dateStyle: "medium",
+                        timeZone: pacific,
+                      }).format(new Date(o.created_at))}
+                    </p>
+                    {o.notes && (
+                      <p className="mt-1 text-xs italic text-slate-700">
+                        {o.notes}
+                      </p>
+                    )}
+                  </div>
+                  <form action={revokeStudentPrereqOverrideAction}>
+                    <input
+                      type="hidden"
+                      name="student_id"
+                      value={studentId}
+                    />
+                    <input
+                      type="hidden"
+                      name="course_id"
+                      value={o.course_id}
+                    />
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                    >
+                      Revoke
+                    </button>
+                  </form>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+
+      <form
+        action={grantStudentPrereqOverrideAction}
+        className="mt-5 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_auto] sm:items-end"
+      >
+        <input type="hidden" name="student_id" value={studentId} />
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Course</span>
+          <select
+            name="course_id"
+            required
+            defaultValue=""
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            <option value="">Pick a course…</option>
+            {grantable.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.code} — {c.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Notes (optional)</span>
+          <input
+            name="notes"
+            maxLength={2000}
+            placeholder="Why is this override warranted?"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full bg-violet-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
+        >
+          Grant override
+        </button>
+      </form>
+    </section>
   )
 }
 
