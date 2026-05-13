@@ -6,6 +6,10 @@ import {
 import { listEnrollmentsForSection } from "@/lib/sis"
 import { assertCanEditSection } from "@/lib/section-auth"
 import { AttendanceEntry } from "@/components/attendance/AttendanceEntry"
+import {
+  listParentContactsForStudent,
+  type ParentContact,
+} from "@/lib/parent-contact"
 
 export const dynamic = "force-dynamic"
 
@@ -30,6 +34,26 @@ export default async function FacultyAttendanceEntryPage({
     listAttendanceForSectionAndDate(section.id, date),
   ])
 
+  // Pre-fetch parent contacts so each row gets a one-click mailto: with
+  // the tardy template pre-filled. Skipped students with no parents on
+  // file with comms enabled get no link (the component handles that).
+  const parentContactsByStudent = new Map<string, ParentContact[]>()
+  await Promise.all(
+    enrollments
+      .map((e) => e.student?.id)
+      .filter((id): id is string => Boolean(id))
+      .map(async (sid) => {
+        parentContactsByStudent.set(sid, await listParentContactsForStudent(sid))
+      })
+  )
+
+  const teacherDisplayName =
+    section.teacher
+      ? `${section.teacher.first_name ?? ""} ${section.teacher.last_name ?? ""}`.trim() ||
+        section.teacher.display_name ||
+        section.teacher.email
+      : "Your teacher"
+
   return (
     <AttendanceEntry
       section={section}
@@ -37,6 +61,8 @@ export default async function FacultyAttendanceEntryPage({
       attendance={attendance}
       date={date}
       surface="faculty"
+      parentContactsByStudent={parentContactsByStudent}
+      teacherDisplayName={teacherDisplayName}
     />
   )
 }

@@ -52,6 +52,11 @@ export const ADMIN_AUDIT_ACTIONS = {
   schedule_draft_discard: "schedule_draft.discard",
   parent_links_bulk_import: "parent_links.bulk_import",
   m365_sync_manual: "m365_sync.manual",
+  incident_create: "incident.create",
+  incident_delete: "incident.delete",
+  calendar_event_create: "calendar_event.create",
+  calendar_event_update: "calendar_event.update",
+  calendar_event_delete: "calendar_event.delete",
 } as const
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[keyof typeof ADMIN_AUDIT_ACTIONS]
 

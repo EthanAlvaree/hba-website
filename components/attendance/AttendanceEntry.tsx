@@ -12,6 +12,11 @@ import {
 import type { CourseSectionRecord, EnrollmentRecord } from "@/lib/sis"
 import { periodLabel } from "@/app/admin/academics/sections/SectionFormFields"
 import { saveAttendanceAction } from "@/app/admin/academics/sections/[id]/attendance/actions"
+import {
+  buildMailtoUrl,
+  tardyMessage,
+  type ParentContact,
+} from "@/lib/parent-contact"
 
 const pacific = "America/Los_Angeles"
 
@@ -44,6 +49,12 @@ type Props = {
   attendance: AttendanceRecord[]
   date: string
   surface: AttendanceSurface
+  /** Optional parent contacts keyed by student_id. When provided, each row
+   *  gets a "✉ Tardy email" link pre-filled with the tardy message template
+   *  for that student's parents. */
+  parentContactsByStudent?: Map<string, ParentContact[]>
+  /** Used in the email signature when parent-contact links are rendered. */
+  teacherDisplayName?: string
 }
 
 export function AttendanceEntry({
@@ -52,6 +63,8 @@ export function AttendanceEntry({
   attendance,
   date,
   surface,
+  parentContactsByStudent,
+  teacherDisplayName,
 }: Props) {
   const gradableEnrollments = enrollments.filter(
     (e) => e.status === "enrolled" || e.status === "audit"
@@ -155,6 +168,33 @@ export function AttendanceEntry({
                       <p className="text-xs text-slate-500">
                         {enrollment.student?.profile?.email ?? "—"}
                       </p>
+                      {parentContactsByStudent && enrollment.student && (() => {
+                        const contacts =
+                          parentContactsByStudent.get(enrollment.student.id) ?? []
+                        if (contacts.length === 0) return null
+                        const mailto = buildMailtoUrl(
+                          tardyMessage({
+                            contacts,
+                            student: {
+                              preferred_name: enrollment.student.preferred_name,
+                              legal_first_name: enrollment.student.legal_first_name,
+                              legal_last_name: enrollment.student.legal_last_name,
+                            },
+                            courseName: section.course.name,
+                            date,
+                            teacherName: teacherDisplayName ?? "Your teacher",
+                          })
+                        )
+                        return (
+                          <a
+                            href={mailto}
+                            className="mt-1 inline-flex items-center gap-1 text-[11px] font-semibold text-brand-navy underline-offset-2 hover:underline"
+                            title={`Email ${contacts.length} parent${contacts.length === 1 ? "" : "s"} the tardy template`}
+                          >
+                            ✉ Email parents (tardy)
+                          </a>
+                        )
+                      })()}
                     </div>
 
                     <label className="block lg:hidden text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">

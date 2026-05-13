@@ -13,8 +13,27 @@ import {
   type EnrollmentStatus,
 } from "@/lib/sis"
 import { modalityLabel, periodLabel } from "@/app/admin/academics/sections/SectionFormFields"
+import {
+  buildMailtoUrl,
+  generalMessage,
+  listParentContactsForStudent,
+  type ParentContact,
+} from "@/lib/parent-contact"
+import {
+  incidentKindBadgeClass,
+  incidentKindLabels,
+  incidentKindSchema,
+  listIncidentsForSection,
+  type IncidentRecord,
+} from "@/lib/incidents"
+import {
+  createIncidentAction,
+  deleteIncidentAction,
+} from "./incidents/actions"
 
 export const dynamic = "force-dynamic"
+
+const pacific = "America/Los_Angeles"
 
 function statusBadgeClass(status: EnrollmentStatus): string {
   switch (status) {
@@ -53,24 +72,43 @@ function rosterName(enrollment: EnrollmentRecord): string {
   return preferred ? `${preferred} (${legal})` : legal
 }
 
+function formatTimestamp(value: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: pacific,
+  }).format(new Date(value))
+}
+
+type PageProps = {
+  params: Promise<{ id: string }>
+  searchParams: Promise<{ incident_saved?: string; incident_error?: string }>
+}
+
 export default async function FacultySectionDetailPage({
   params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+  searchParams,
+}: PageProps) {
   const { id } = await params
-  const { section, isAdmin } = await assertCanEditSection(id)
+  const raw = await searchParams
+  const { section, isAdmin, profileId } = await assertCanEditSection(id)
   if (!section) notFound()
 
-  const [enrollments, categories, assignments] = await Promise.all([
+  const teacherDisplayName =
+    section.teacher
+      ? `${section.teacher.first_name ?? ""} ${section.teacher.last_name ?? ""}`.trim() ||
+        section.teacher.display_name ||
+        section.teacher.email
+      : "Your teacher"
+
+  const [enrollments, categories, assignments, incidents] = await Promise.all([
     listEnrollmentsForSection(section.id),
     listAssignmentCategories(section.id),
     listAssignments(section.id),
+    listIncidentsForSection(section.id),
   ])
 
   // Compute current grade per enrollment using only published assignments.
-  // Faculty sees what a student would see — drafts in the gradebook
-  // contribute nothing until published.
   const publishedAssignments = assignments.filter((a) => a.is_published)
   const allScores = await listScoresForAssignmentIds(publishedAssignments.map((a) => a.id))
   const scoresByEnrollment = new Map<string, typeof allScores>()
@@ -90,6 +128,18 @@ export default async function FacultySectionDetailPage({
       })
     )
   }
+
+  // Batch-fetch parent contacts for every student on the roster, so each
+  // row's "Email parents" link is pre-filled with the right recipients.
+  const studentIds = enrollments
+    .map((e) => e.student?.id)
+    .filter((id): id is string => Boolean(id))
+  const parentContactsByStudent = new Map<string, ParentContact[]>()
+  await Promise.all(
+    studentIds.map(async (sid) => {
+      parentContactsByStudent.set(sid, await listParentContactsForStudent(sid))
+    })
+  )
 
   const enrolledCount = enrollments.filter((e) => e.status === "enrolled").length
 
@@ -156,19 +206,28 @@ export default async function FacultySectionDetailPage({
         </div>
       </section>
 
+      {raw.incident_saved === "1" && (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 shadow-sm">
+          Incident saved.
+        </section>
+      )}
+      {raw.incident_error && (
+        <section className="rounded-2xl border border-rose-200 bg-rose-50 px-5 py-3 text-sm text-rose-900 shadow-sm">
+          {raw.incident_error}
+        </section>
+      )}
+
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <h2 className="text-lg font-extrabold text-brand-navy">Roster</h2>
           <p className="text-xs text-slate-500">
-            Current grades use only published assignments. Drafts don&rsquo;t
-            count yet.
+            Current grades use only published assignments. Drafts don&rsquo;t count yet.
           </p>
         </div>
 
         {enrollments.length === 0 ? (
           <p className="mt-6 text-sm text-slate-600">
-            No students enrolled in this section yet. An admin assigns
-            students from the schedule, or you can ask the office to add one.
+            No students enrolled in this section yet.
           </p>
         ) : (
           <ul className="mt-6 space-y-2">
@@ -179,12 +238,31 @@ export default async function FacultySectionDetailPage({
                   ? `${grade.overall_percentage.toFixed(1)}%`
                   : "—"
               const letter = grade?.letter ?? null
+              const studentId = enrollment.student?.id
+              const contacts = studentId
+                ? parentContactsByStudent.get(studentId) ?? []
+                : []
+              const mailto =
+                contacts.length > 0 && enrollment.student
+                  ? buildMailtoUrl(
+                      generalMessage({
+                        contacts,
+                        student: {
+                          preferred_name: enrollment.student.preferred_name,
+                          legal_first_name: enrollment.student.legal_first_name,
+                          legal_last_name: enrollment.student.legal_last_name,
+                        },
+                        courseName: section.course.name,
+                        teacherName: teacherDisplayName,
+                      })
+                    )
+                  : null
               return (
                 <li
                   key={enrollment.id}
                   className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
                 >
-                  <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto] sm:items-center">
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_auto_auto] sm:items-center">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-base font-semibold text-slate-900">
@@ -206,6 +284,22 @@ export default async function FacultySectionDetailPage({
                     <span className="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
                       {grade?.categories.reduce((sum, c) => sum + c.graded_count, 0) ?? 0} graded
                     </span>
+                    {mailto ? (
+                      <a
+                        href={mailto}
+                        className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                        title={`Email ${contacts.length} parent${contacts.length === 1 ? "" : "s"}`}
+                      >
+                        ✉ Email
+                      </a>
+                    ) : (
+                      <span
+                        className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-400"
+                        title="No parents on file with comms enabled"
+                      >
+                        ✉ —
+                      </span>
+                    )}
                   </div>
                 </li>
               )
@@ -214,6 +308,193 @@ export default async function FacultySectionDetailPage({
         )}
       </section>
 
+      <IncidentsCard
+        sectionId={section.id}
+        enrollments={enrollments}
+        incidents={incidents}
+      />
     </div>
+  )
+}
+
+function IncidentsCard({
+  sectionId,
+  enrollments,
+  incidents,
+}: {
+  sectionId: string
+  enrollments: EnrollmentRecord[]
+  incidents: IncidentRecord[]
+}) {
+  const studentLookup = new Map(
+    enrollments
+      .filter((e) => e.student)
+      .map((e) => [
+        e.student!.id,
+        { enrollmentId: e.id, label: rosterName(e) },
+      ])
+  )
+
+  return (
+    <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-lg font-extrabold text-brand-navy">Incidents</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Quick log for tardies, missing assignments, classroom issues, or
+            kudos. Visible to the student&rsquo;s parents by default unless you
+            check &ldquo;internal only.&rdquo;
+          </p>
+        </div>
+      </div>
+
+      <form
+        action={createIncidentAction}
+        className="mt-4 grid gap-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4 sm:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_auto]"
+      >
+        <input type="hidden" name="section_id" value={sectionId} />
+
+        <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-3">
+          <span className="block">Student</span>
+          <select
+            name="student_id"
+            required
+            defaultValue=""
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            <option value="">Pick a student…</option>
+            {[...studentLookup.entries()].map(([sid, info]) => (
+              <option key={sid} value={sid}>
+                {info.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Kind</span>
+          <select
+            name="kind"
+            required
+            defaultValue="tardy"
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            {incidentKindSchema.options.map((k) => (
+              <option key={k} value={k}>
+                {incidentKindLabels[k]}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">When (optional)</span>
+          <input
+            name="occurred_at"
+            type="datetime-local"
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <div className="flex items-end">
+          <button
+            type="submit"
+            className="inline-flex w-full items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110 sm:w-auto"
+          >
+            Log incident
+          </button>
+        </div>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-3">
+          <span className="block">Summary (required, shown to parents)</span>
+          <input
+            name="summary"
+            required
+            maxLength={300}
+            placeholder="Late to class by 8 minutes, no excuse."
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-3">
+          <span className="block">Details (optional, longer narrative)</span>
+          <textarea
+            name="details"
+            rows={2}
+            maxLength={4000}
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+
+        <div className="flex flex-wrap items-center gap-6 sm:col-span-3">
+          <label className="flex items-center gap-2 text-xs text-slate-700">
+            <input
+              type="checkbox"
+              name="parent_notified"
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>I already notified the parent (email, phone, in person)</span>
+          </label>
+          <label className="flex items-center gap-2 text-xs text-slate-700">
+            <input
+              type="checkbox"
+              name="visible_to_parent"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>Visible to parents on the family portal</span>
+          </label>
+        </div>
+      </form>
+
+      {incidents.length === 0 ? (
+        <p className="mt-4 text-sm text-slate-600">No incidents logged yet.</p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {incidents.map((incident) => {
+            const student = studentLookup.get(incident.student_id)
+            return (
+              <li
+                key={incident.id}
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <div className="grid gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto_auto] sm:items-center">
+                  <span
+                    className={`rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] ${incidentKindBadgeClass[incident.kind]}`}
+                  >
+                    {incidentKindLabels[incident.kind]}
+                  </span>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">
+                      {student?.label ?? "(unknown student)"}
+                    </p>
+                    <p className="text-xs text-slate-600">{incident.summary}</p>
+                    <p className="text-[11px] text-slate-500">
+                      {formatTimestamp(incident.occurred_at)}
+                      {incident.parent_notified && (
+                        <> &middot; Parent notified ({incident.parent_notified_method ?? "email"})</>
+                      )}
+                      {!incident.visible_to_parent && (
+                        <> &middot; <span className="font-semibold">Internal only</span></>
+                      )}
+                    </p>
+                  </div>
+                  <form action={deleteIncidentAction}>
+                    <input type="hidden" name="id" value={incident.id} />
+                    <input type="hidden" name="section_id" value={sectionId} />
+                    <button
+                      type="submit"
+                      className="rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                    >
+                      Delete
+                    </button>
+                  </form>
+                </div>
+              </li>
+            )
+          })}
+        </ul>
+      )}
+    </section>
   )
 }
