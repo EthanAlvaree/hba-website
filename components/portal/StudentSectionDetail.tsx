@@ -23,6 +23,7 @@ import {
   type ScoreRecord,
 } from "@/lib/gradebook"
 import type { StudentDetailEnrollment } from "@/lib/sis"
+import type { AnnouncementRecord } from "@/lib/announcements"
 
 const pacific = "America/Los_Angeles"
 
@@ -94,6 +95,8 @@ type Props = {
   studentSubtitle?: string
   /** If false, hide the attendance section entirely (parent without can_view_attendance). */
   showAttendance?: boolean
+  /** Optional announcements posted by the teacher to this section. */
+  announcements?: AnnouncementRecord[]
 }
 
 export function StudentSectionDetail({
@@ -106,6 +109,7 @@ export function StudentSectionDetail({
   backLabel = "Back",
   studentSubtitle,
   showAttendance = true,
+  announcements = [],
 }: Props) {
   const section = enrollment.section
   if (!section) {
@@ -175,6 +179,39 @@ export function StudentSectionDetail({
           </p>
         </div>
       </section>
+
+      {announcements.length > 0 && (
+        <section className="rounded-[2rem] border border-amber-200 bg-amber-50/60 px-6 py-6 shadow-sm">
+          <h3 className="text-lg font-extrabold text-amber-900">
+            From your teacher
+          </h3>
+          <ul className="mt-3 space-y-3">
+            {announcements.map((ann) => (
+              <li
+                key={ann.id}
+                className="rounded-2xl border border-amber-200 bg-white px-4 py-3"
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  {ann.pinned && (
+                    <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-800">
+                      Pinned
+                    </span>
+                  )}
+                  <p className="text-sm font-semibold text-slate-900">{ann.title}</p>
+                </div>
+                <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{ann.body}</p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Posted{" "}
+                  {new Intl.DateTimeFormat("en-US", {
+                    dateStyle: "medium",
+                    timeZone: "America/Los_Angeles",
+                  }).format(new Date(ann.created_at))}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {enrollment.grade_locked && (
         <section className="rounded-[2rem] border border-brand-navy/30 bg-brand-navy text-white px-6 py-6 shadow-md">

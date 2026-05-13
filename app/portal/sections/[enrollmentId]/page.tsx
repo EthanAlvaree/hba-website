@@ -12,6 +12,7 @@ import {
   getStudentDetail,
 } from "@/lib/sis"
 import { StudentSectionDetail } from "@/components/portal/StudentSectionDetail"
+import { listAnnouncementsForSection } from "@/lib/announcements"
 
 export const dynamic = "force-dynamic"
 
@@ -47,11 +48,12 @@ export default async function StudentPortalSectionPage({
     notFound()
   }
 
-  const [categories, publishedAssignments, scores, attendance] = await Promise.all([
+  const [categories, publishedAssignments, scores, attendance, announcements] = await Promise.all([
     listAssignmentCategories(enrollment.section.id),
     listPublishedAssignmentsForSection(enrollment.section.id),
     listScoresForEnrollment(enrollment.id),
     listAttendanceForEnrollment(enrollment.id),
+    listAnnouncementsForSection(enrollment.section.id),
   ])
 
   return (
@@ -61,6 +63,7 @@ export default async function StudentPortalSectionPage({
       publishedAssignments={publishedAssignments}
       scores={scores}
       attendance={attendance}
+      announcements={announcements}
       backHref="/portal"
       backLabel="Back to portal"
     />

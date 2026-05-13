@@ -26,6 +26,8 @@ const adminNav: PortalNavItem[] = [
     label: "Contact submissions",
     href: "/admin/contact-submissions",
   },
+  { id: "messaging", label: "Messaging", href: "/admin/messaging" },
+  { id: "reports", label: "Reports", href: "/admin/reports" },
   { id: "audit-log", label: "Audit log", href: "/admin/audit-log" },
 ]
 

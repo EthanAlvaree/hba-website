@@ -2070,6 +2070,110 @@ export async function getParentLinkForStudent(
 }
 
 // ============================================================================
+// Bulk student import
+// ============================================================================
+
+export const bulkStudentRowSchema = z.object({
+  hba_email: z.string().trim().toLowerCase().email("Invalid hba_email"),
+  legal_first_name: z.string().trim().min(1, "legal_first_name is required").max(100),
+  legal_last_name: z.string().trim().min(1, "legal_last_name is required").max(100),
+  preferred_name: z.string().trim().max(100).optional().nullable().transform(
+    (v) => (v && v.length > 0 ? v : null)
+  ),
+  current_grade: z.string().trim().max(10).optional().nullable().transform(
+    (v) => (v && v.length > 0 ? v : null)
+  ),
+  dob: z
+    .union([z.iso.date(), z.literal("")])
+    .optional()
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  enrollment_type: z
+    .enum(["summer", "part_time", "full_time"])
+    .optional()
+    .nullable(),
+})
+export type BulkStudentRow = z.infer<typeof bulkStudentRowSchema>
+
+export type BulkStudentOutcome = {
+  total_rows: number
+  students_created: number
+  students_skipped_existing: number
+  profiles_created: number
+  rows_failed: number
+  errors: Array<{ row_number: number; message: string }>
+}
+
+export async function bulkCreateStudents(
+  rows: BulkStudentRow[]
+): Promise<BulkStudentOutcome> {
+  const outcome: BulkStudentOutcome = {
+    total_rows: rows.length,
+    students_created: 0,
+    students_skipped_existing: 0,
+    profiles_created: 0,
+    rows_failed: 0,
+    errors: [],
+  }
+
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i]
+    const rowNumber = i + 1
+    try {
+      const { profile, created: profileCreated } = await findOrCreateProfile({
+        email: row.hba_email,
+        role: "student",
+        first_name: row.legal_first_name,
+        last_name: row.legal_last_name,
+      })
+      if (profileCreated) outcome.profiles_created += 1
+
+      // Existing student on this profile? Skip — re-imports shouldn't dup.
+      const { data: existing, error: existingError } = await getSupabase()
+        .from("students")
+        .select("id")
+        .eq("profile_id", profile.id)
+        .maybeSingle<{ id: string }>()
+      if (existingError) {
+        outcome.rows_failed += 1
+        outcome.errors.push({ row_number: rowNumber, message: existingError.message })
+        continue
+      }
+      if (existing) {
+        outcome.students_skipped_existing += 1
+        continue
+      }
+
+      const { error: insertError } = await getSupabase().from("students").insert({
+        profile_id: profile.id,
+        legal_first_name: row.legal_first_name,
+        legal_last_name: row.legal_last_name,
+        preferred_name: row.preferred_name,
+        current_grade: row.current_grade,
+        dob: row.dob,
+        enrollment_type: row.enrollment_type,
+        status: "active",
+        registered_at_hba: new Date().toISOString().slice(0, 10),
+      })
+      if (insertError) {
+        outcome.rows_failed += 1
+        outcome.errors.push({ row_number: rowNumber, message: insertError.message })
+        continue
+      }
+      outcome.students_created += 1
+    } catch (error) {
+      outcome.rows_failed += 1
+      outcome.errors.push({
+        row_number: rowNumber,
+        message: error instanceof Error ? error.message : "Unknown error",
+      })
+    }
+  }
+
+  return outcome
+}
+
+// ============================================================================
 // Bulk parent-link import
 // ============================================================================
 

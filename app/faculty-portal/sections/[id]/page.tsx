@@ -30,6 +30,14 @@ import {
   createIncidentAction,
   deleteIncidentAction,
 } from "./incidents/actions"
+import {
+  listAnnouncementsForSection,
+  type AnnouncementRecord,
+} from "@/lib/announcements"
+import {
+  createAnnouncementAction,
+  deleteAnnouncementAction,
+} from "./announcements/actions"
 
 export const dynamic = "force-dynamic"
 
@@ -82,7 +90,12 @@ function formatTimestamp(value: string) {
 
 type PageProps = {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ incident_saved?: string; incident_error?: string }>
+  searchParams: Promise<{
+    incident_saved?: string
+    incident_error?: string
+    announcement_saved?: string
+    announcement_error?: string
+  }>
 }
 
 export default async function FacultySectionDetailPage({
@@ -101,11 +114,12 @@ export default async function FacultySectionDetailPage({
         section.teacher.email
       : "Your teacher"
 
-  const [enrollments, categories, assignments, incidents] = await Promise.all([
+  const [enrollments, categories, assignments, incidents, announcements] = await Promise.all([
     listEnrollmentsForSection(section.id),
     listAssignmentCategories(section.id),
     listAssignments(section.id),
     listIncidentsForSection(section.id),
+    listAnnouncementsForSection(section.id),
   ])
 
   // Compute current grade per enrollment using only published assignments.
@@ -308,12 +322,135 @@ export default async function FacultySectionDetailPage({
         )}
       </section>
 
+      <AnnouncementsCard
+        sectionId={section.id}
+        announcements={announcements}
+        savedFlag={raw.announcement_saved === "1"}
+        errorMessage={raw.announcement_error}
+      />
+
       <IncidentsCard
         sectionId={section.id}
         enrollments={enrollments}
         incidents={incidents}
       />
     </div>
+  )
+}
+
+function AnnouncementsCard({
+  sectionId,
+  announcements,
+  savedFlag,
+  errorMessage,
+}: {
+  sectionId: string
+  announcements: AnnouncementRecord[]
+  savedFlag: boolean
+  errorMessage?: string
+}) {
+  return (
+    <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+      <div>
+        <h2 className="text-lg font-extrabold text-brand-navy">Announcements</h2>
+        <p className="mt-1 text-sm text-slate-600">
+          Short messages to this class. Students see them at the top of their
+          section page; parents see them in their kid&rsquo;s section view.
+        </p>
+      </div>
+
+      {savedFlag && (
+        <p className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-900">
+          Announcement saved.
+        </p>
+      )}
+      {errorMessage && (
+        <p className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-900">
+          {errorMessage}
+        </p>
+      )}
+
+      <form
+        action={createAnnouncementAction}
+        className="mt-4 space-y-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4"
+      >
+        <input type="hidden" name="section_id" value={sectionId} />
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Title</span>
+          <input
+            name="title"
+            required
+            maxLength={200}
+            placeholder="Quiz moved to Friday"
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Body</span>
+          <textarea
+            name="body"
+            required
+            rows={3}
+            maxLength={8000}
+            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-xs text-slate-700">
+          <input
+            type="checkbox"
+            name="pinned"
+            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+          />
+          <span>Pin to top</span>
+        </label>
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+        >
+          Post announcement
+        </button>
+      </form>
+
+      {announcements.length === 0 ? (
+        <p className="mt-4 text-sm text-slate-600">No announcements yet.</p>
+      ) : (
+        <ul className="mt-4 space-y-2">
+          {announcements.map((ann) => (
+            <li
+              key={ann.id}
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
+            >
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {ann.pinned && (
+                      <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-800">
+                        Pinned
+                      </span>
+                    )}
+                    <p className="text-sm font-semibold text-slate-900">{ann.title}</p>
+                  </div>
+                  <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{ann.body}</p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {formatTimestamp(ann.created_at)} · {ann.author_email}
+                  </p>
+                </div>
+                <form action={deleteAnnouncementAction}>
+                  <input type="hidden" name="id" value={ann.id} />
+                  <input type="hidden" name="section_id" value={sectionId} />
+                  <button
+                    type="submit"
+                    className="rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+                  >
+                    Delete
+                  </button>
+                </form>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   )
 }
 

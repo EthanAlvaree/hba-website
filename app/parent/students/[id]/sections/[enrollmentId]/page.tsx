@@ -12,6 +12,7 @@ import {
   getStudentDetail,
 } from "@/lib/sis"
 import { StudentSectionDetail } from "@/components/portal/StudentSectionDetail"
+import { listAnnouncementsForSection } from "@/lib/announcements"
 
 export const dynamic = "force-dynamic"
 
@@ -63,11 +64,12 @@ export default async function ParentStudentSectionDetailPage({
     notFound()
   }
 
-  const [categories, publishedAssignments, scores, attendance] = await Promise.all([
+  const [categories, publishedAssignments, scores, attendance, announcements] = await Promise.all([
     listAssignmentCategories(enrollment.section.id),
     listPublishedAssignmentsForSection(enrollment.section.id),
     listScoresForEnrollment(enrollment.id),
     canViewAttendance ? listAttendanceForEnrollment(enrollment.id) : Promise.resolve([]),
+    listAnnouncementsForSection(enrollment.section.id),
   ])
 
   const displayName = student.preferred_name?.trim()
@@ -81,6 +83,7 @@ export default async function ParentStudentSectionDetailPage({
       publishedAssignments={publishedAssignments}
       scores={scores}
       attendance={attendance}
+      announcements={announcements}
       backHref={`/parent/students/${studentId}`}
       backLabel={`Back to ${displayName}`}
       studentSubtitle={displayName}
