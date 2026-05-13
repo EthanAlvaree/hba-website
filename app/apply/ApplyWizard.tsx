@@ -609,6 +609,17 @@ type SubmissionState =
   | { type: "submitted" }
   | { type: "error"; message: string }
 
+// Key for localStorage backup of in-progress wizard state. Stored under one
+// key (not per-tab) — if a user opens two tabs we accept the last-write-wins.
+// The backup is cleared as soon as we have a server-side draft token.
+const localBackupKey = "hba-apply-draft-backup-v1"
+
+type LocalBackup = {
+  state: WizardState
+  step: number
+  savedAt: number
+}
+
 export default function ApplyWizard({
   initialRecord,
 }: {
@@ -622,9 +633,107 @@ export default function ApplyWizard({
   const [errors, setErrors] = useState<FieldErrors>({})
   const [showDraftEmailPrompt, setShowDraftEmailPrompt] = useState(false)
   const [submittedAt] = useState(() => Date.now().toString())
+  // When set, offers to restore an in-progress wizard from localStorage.
+  // Only ever populated on first mount when there was NO initialRecord.
+  const [pendingBackup, setPendingBackup] = useState<LocalBackup | null>(null)
+  // Drives the post-save panel that shows the resume URL + copy button.
+  const [copiedLink, setCopiedLink] = useState(false)
 
   const setField = <K extends keyof WizardState>(key: K, value: WizardState[K]) => {
     setState((current) => ({ ...current, [key]: value }))
+  }
+
+  // ---- Local backup: restore on mount, save on changes, clear on draft save.
+  //
+  // The server-side draft (saved via "Save and continue later" + email magic
+  // link) is the official recovery path. localStorage is a *belt-and-
+  // suspenders* layer: if the applicant closes the tab without saving, they
+  // can pick up where they left off as long as they re-open in the same
+  // browser. Once the server has a draft token we trust that and clear the
+  // local copy.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (initialRecord) return // server-side restore wins; nothing to offer.
+    try {
+      const raw = window.localStorage.getItem(localBackupKey)
+      if (!raw) return
+      const parsed = JSON.parse(raw) as LocalBackup
+      if (!parsed.state || !parsed.savedAt) return
+      // Ignore backups older than 30 days (matches server-side draft TTL).
+      const ageMs = Date.now() - parsed.savedAt
+      if (ageMs > 1000 * 60 * 60 * 24 * 30) {
+        window.localStorage.removeItem(localBackupKey)
+        return
+      }
+      setPendingBackup(parsed)
+    } catch {
+      // Corrupt backup — drop it.
+      window.localStorage.removeItem(localBackupKey)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    // If the server has a draft token, the DB is authoritative — no need to
+    // shadow it in localStorage.
+    if (state.draft_token) {
+      window.localStorage.removeItem(localBackupKey)
+      return
+    }
+    // Don't snapshot a truly empty form (avoids overwriting a real backup
+    // immediately on first mount).
+    if (
+      !state.student_first_name &&
+      !state.student_last_name &&
+      !state.guardian1_name &&
+      !state.guardian1_email
+    ) {
+      return
+    }
+    const handle = window.setTimeout(() => {
+      try {
+        const payload: LocalBackup = {
+          state,
+          step,
+          savedAt: Date.now(),
+        }
+        window.localStorage.setItem(localBackupKey, JSON.stringify(payload))
+      } catch {
+        // Quota exceeded or storage unavailable — silently ignore.
+      }
+    }, 500)
+    return () => window.clearTimeout(handle)
+  }, [state, step])
+
+  // ---- URL sync: when we acquire a draft token, push it into the URL so a
+  // plain browser reload re-hydrates from the server. Without this the URL
+  // stays at /apply and a reload starts the form over.
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    if (!state.draft_token) return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get("draft") === state.draft_token) return
+    params.set("draft", state.draft_token)
+    const next = `${window.location.pathname}?${params.toString()}`
+    window.history.replaceState(window.history.state, "", next)
+  }, [state.draft_token])
+
+  const resumeUrl =
+    typeof window !== "undefined" && state.draft_token
+      ? `${window.location.origin}/apply?draft=${encodeURIComponent(state.draft_token)}`
+      : ""
+
+  async function copyResumeUrl() {
+    if (!resumeUrl) return
+    try {
+      await navigator.clipboard.writeText(resumeUrl)
+      setCopiedLink(true)
+      window.setTimeout(() => setCopiedLink(false), 2000)
+    } catch {
+      // Clipboard API can fail on insecure contexts / older browsers.
+      // The URL is still visible on screen for manual copy.
+    }
   }
 
   const goToStep = (next: number) => {
@@ -804,15 +913,77 @@ export default function ApplyWizard({
 
   return (
     <>
+      {pendingBackup && (
+        <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900 shadow-sm">
+          <p className="font-semibold">
+            We found in-progress work in this browser.
+          </p>
+          <p className="mt-1 text-amber-800">
+            Saved{" "}
+            {new Intl.DateTimeFormat("en-US", {
+              dateStyle: "medium",
+              timeStyle: "short",
+            }).format(new Date(pendingBackup.savedAt))}
+            . Restore it, or start a fresh application?
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setState(pendingBackup.state)
+                setStep(pendingBackup.step || 1)
+                setPendingBackup(null)
+              }}
+              className="inline-flex items-center justify-center rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:brightness-110"
+            >
+              Restore my work
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.localStorage.removeItem(localBackupKey)
+                }
+                setPendingBackup(null)
+              }}
+              className="inline-flex items-center justify-center rounded-full border border-amber-300 bg-white px-4 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-100"
+            >
+              Start fresh
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="rounded-[2rem] border border-slate-200 bg-white px-6 py-10 shadow-sm sm:px-10 sm:py-12">
         <ProgressBar current={step} total={stepLabels.length} labels={stepLabels} />
 
         {submission.type === "draft-saved" && (
-          <div className="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-            <strong className="font-semibold">Draft saved.</strong>{" "}
-            {submission.magicLinkSent
-              ? "We emailed you a resume link — keep working below or close this tab and come back later."
-              : "(Heads up: we couldn’t send the email this time, but your progress is saved.)"}
+          <div className="mb-6 space-y-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <div>
+              <strong className="font-semibold">Draft saved.</strong>{" "}
+              {submission.magicLinkSent
+                ? "We emailed you a resume link — keep working below or close this tab and come back later."
+                : "(Heads up: we couldn’t send the email this time, but your progress is saved.)"}
+            </div>
+            {resumeUrl && (
+              <div className="rounded-xl border border-emerald-200 bg-white px-3 py-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
+                  Resume link (also saved in this browser)
+                </p>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <code className="break-all rounded bg-emerald-50 px-2 py-1 text-xs text-emerald-900">
+                    {resumeUrl}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={copyResumeUrl}
+                    className="inline-flex items-center justify-center rounded-full border border-emerald-300 bg-white px-3 py-1 text-xs font-semibold text-emerald-800 transition hover:bg-emerald-100"
+                  >
+                    {copiedLink ? "Copied!" : "Copy link"}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -1574,6 +1745,47 @@ function Step3PriorSchools({
         <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {documentsError}
         </div>
+      )}
+
+      {draftToken && hasLoadedDocs && documents.length > 0 && (
+        <details className="rounded-2xl border border-slate-200 bg-white p-4 open:border-brand-navy/30">
+          <summary className="cursor-pointer text-sm font-semibold text-brand-navy">
+            All uploaded transcripts ({documents.length})
+          </summary>
+          <p className="mt-2 text-xs text-slate-600">
+            Every file attached to this draft, regardless of which school it
+            was originally filed under. If you renamed a school and a file
+            disappeared from its card below, find it here. Delete a file
+            here if it was uploaded by mistake.
+          </p>
+          <ul className="mt-3 space-y-2">
+            {documents.map((doc) => (
+              <li
+                key={doc.id}
+                className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm"
+              >
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-slate-800">
+                    {doc.filename}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    Filed under:{" "}
+                    <span className="font-semibold text-slate-700">
+                      {doc.prior_school_name?.trim() || "(no school)"}
+                    </span>
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleFileDelete(doc.id)}
+                  className="text-xs font-semibold text-rose-700 hover:underline"
+                >
+                  Remove
+                </button>
+              </li>
+            ))}
+          </ul>
+        </details>
       )}
 
       <div className="space-y-4">
