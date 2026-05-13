@@ -1,4 +1,4 @@
-import { siteConfig } from "@/lib/site"
+import { brand, siteConfig } from "@/lib/site"
 import type { ContactSubmissionRecord } from "@/lib/contact-submissions"
 import type { ApplicationRecord } from "@/lib/applications"
 
@@ -283,7 +283,7 @@ export async function sendApplicationNotification(application: ApplicationRecord
   const guardianName = application.guardian1_name ?? "(no guardian name)"
 
   await sendMail({
-    subject: `New HBA application — ${guardianName} (for ${studentName})`,
+    subject: `New ${siteConfig.shortName} application — ${guardianName} (for ${studentName})`,
     htmlBody: buildApplicationNotificationHtml(application, dashboardUrl),
     toRecipients: applicationRecipients,
     replyTo: application.guardian1_email
@@ -295,12 +295,12 @@ export async function sendApplicationNotification(application: ApplicationRecord
 function buildMagicLinkHtml(parentName: string, resumeUrl: string) {
   return [
     `<p>Hi ${escapeHtml(parentName)},</p>`,
-    `<p>You started an application on the High Bluff Academy website. Use the link below to resume where you left off — it's good for 30 days.</p>`,
-    `<p><a href="${escapeHtml(resumeUrl)}" style="display:inline-block;background:#f37021;color:#ffffff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;">Continue your application</a></p>`,
+    `<p>You started an application on the ${escapeHtml(siteConfig.name)} website. Use the link below to resume where you left off — it's good for 30 days.</p>`,
+    `<p><a href="${escapeHtml(resumeUrl)}" style="display:inline-block;background:${brand.orange};color:#ffffff;padding:12px 24px;border-radius:9999px;text-decoration:none;font-weight:600;">Continue your application</a></p>`,
     `<p>Or copy and paste this URL into your browser:</p>`,
     `<p>${escapeHtml(resumeUrl)}</p>`,
     `<p>If you didn't start an application, you can safely ignore this email.</p>`,
-    `<p>— High Bluff Academy</p>`,
+    `<p>— ${escapeHtml(siteConfig.name)}</p>`,
   ].join("")
 }
 
@@ -317,7 +317,7 @@ export async function sendApplicationDraftMagicLink(options: {
   resumeUrl: string
 }) {
   await sendMail({
-    subject: "Continue your High Bluff Academy application",
+    subject: `Continue your ${siteConfig.name} application`,
     htmlBody: buildMagicLinkHtml(options.parentName, options.resumeUrl),
     toRecipients: [options.toEmail],
   })
@@ -351,9 +351,9 @@ function buildFamilyStatusHtml(
   internalNote?: string | null
 ): { subject: string; html: string } {
   const greeting = `<p>Hi ${escapeHtml(parentName)},</p>`
-  const signature = `<p>Warmly,<br />The High Bluff Academy admissions team</p>`
+  const signature = `<p>Warmly,<br />The ${escapeHtml(siteConfig.name)} admissions team</p>`
   const noteBlock = internalNote
-    ? `<p style="margin-top:16px;padding:12px 16px;border-left:4px solid #f37021;background:#fff7ed;color:#7a3e0c;"><strong>Note from the office:</strong><br />${escapeHtml(internalNote).replace(/\n/g, "<br />")}</p>`
+    ? `<p style="margin-top:16px;padding:12px 16px;border-left:4px solid ${brand.orange};background:#fff7ed;color:#7a3e0c;"><strong>Note from the office:</strong><br />${escapeHtml(internalNote).replace(/\n/g, "<br />")}</p>`
     : ""
 
   const replyHint = `<p style="color:#666;font-size:14px;">Reply to this email if you have any questions. We typically respond within one business day.</p>`
@@ -361,7 +361,7 @@ function buildFamilyStatusHtml(
   switch (status) {
     case "info_requested":
       return {
-        subject: `Update on ${studentName}'s HBA application — we need a bit more information`,
+        subject: `Update on ${studentName}'s ${siteConfig.shortName} application — we need a bit more information`,
         html: [
           greeting,
           `<p>Thank you for submitting an application for <strong>${escapeHtml(studentName)}</strong>. We&rsquo;ve started our review and need a bit more information before we can move forward.</p>`,
@@ -372,10 +372,10 @@ function buildFamilyStatusHtml(
       }
     case "admit_offered":
       return {
-        subject: `Congratulations — ${studentName} has been offered admission to HBA`,
+        subject: `Congratulations — ${studentName} has been offered admission to ${siteConfig.shortName}`,
         html: [
           greeting,
-          `<p>We are delighted to offer <strong>${escapeHtml(studentName)}</strong> a place in the High Bluff Academy community.</p>`,
+          `<p>We are delighted to offer <strong>${escapeHtml(studentName)}</strong> a place in the ${escapeHtml(siteConfig.name)} community.</p>`,
           `<p>Our office will follow up with the next steps for accepting the offer and beginning the enrollment process. If you have questions in the meantime, please reach out to us directly.</p>`,
           noteBlock,
           replyHint,
@@ -384,10 +384,10 @@ function buildFamilyStatusHtml(
       }
     case "accepted":
       return {
-        subject: `Welcome to High Bluff Academy, ${studentName}!`,
+        subject: `Welcome to ${siteConfig.name}, ${studentName}!`,
         html: [
           greeting,
-          `<p>Thank you for accepting our offer of admission. We&rsquo;re thrilled that <strong>${escapeHtml(studentName)}</strong> will be joining the High Bluff Academy community.</p>`,
+          `<p>Thank you for accepting our offer of admission. We&rsquo;re thrilled that <strong>${escapeHtml(studentName)}</strong> will be joining the ${escapeHtml(siteConfig.name)} community.</p>`,
           `<p>You&rsquo;ll hear from our office shortly with onboarding details — schedule, orientation, and the practical bits of getting set up.</p>`,
           noteBlock,
           replyHint,
@@ -396,10 +396,10 @@ function buildFamilyStatusHtml(
       }
     case "declined":
       return {
-        subject: `Update on ${studentName}'s HBA application`,
+        subject: `Update on ${studentName}'s ${siteConfig.shortName} application`,
         html: [
           greeting,
-          `<p>Thank you for taking the time to apply to High Bluff Academy. After careful consideration, we are unable to offer <strong>${escapeHtml(studentName)}</strong> a place this year.</p>`,
+          `<p>Thank you for taking the time to apply to ${escapeHtml(siteConfig.name)}. After careful consideration, we are unable to offer <strong>${escapeHtml(studentName)}</strong> a place this year.</p>`,
           `<p>This decision is never an easy one. We wish you and your family the very best, and we&rsquo;d be glad to talk more if you have questions about our reasoning or next steps.</p>`,
           noteBlock,
           replyHint,
@@ -439,13 +439,13 @@ export async function sendEnrollmentWelcomeToFamily(options: {
   const html = [
     `<p>Hi ${escapeHtml(parentName)},</p>`,
     `<p>Welcome to ${escapeHtml(siteConfig.name)}! <strong>${escapeHtml(studentName)}</strong> is now formally enrolled and has a school Microsoft 365 account waiting for them.</p>`,
-    `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid #1f3f66;background:#f5f7fb;">`,
+    `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;">`,
     `<strong>Their school email:</strong><br />`,
-    `<span style="font-family:Consolas,Menlo,monospace;font-size:16px;color:#1f3f66;">${escapeHtml(studentHbaEmail)}</span>`,
+    `<span style="font-family:Consolas,Menlo,monospace;font-size:16px;color:${brand.navy};">${escapeHtml(studentHbaEmail)}</span>`,
     `</p>`,
     `<p>Before the first day, please set up the account using our short walkthrough. It takes about 15 minutes and covers signing in, installing Microsoft Authenticator (required for security), and getting the Microsoft apps on the phone and computer.</p>`,
     `<p style="margin:24px 0;">`,
-    `<a href="${welcomeUrl}" style="display:inline-block;padding:12px 24px;background:#1f3f66;color:#fff;text-decoration:none;border-radius:999px;font-weight:600;">Open the setup walkthrough</a>`,
+    `<a href="${welcomeUrl}" style="display:inline-block;padding:12px 24px;background:${brand.navy};color:#fff;text-decoration:none;border-radius:999px;font-weight:600;">Open the setup walkthrough</a>`,
     `</p>`,
     `<p style="color:#666;font-size:14px;">Or paste this link into your browser: <a href="${welcomeUrl}">${escapeHtml(welcomeUrl)}</a></p>`,
     `<p style="color:#666;font-size:14px;">Reply to this email with any questions — the office team is happy to walk you through it on the phone or in person.</p>`,

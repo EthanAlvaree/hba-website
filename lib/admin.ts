@@ -10,13 +10,17 @@
 // emails exist as admin profiles. After that runs, the role lives in the DB
 // like any other and can be promoted / demoted / deleted from /admin/profiles.
 
-export const hbaEmailDomain = "highbluffacademy.com"
+import { siteConfig } from "@/lib/site"
+
+/** Re-exported as a top-level constant for legacy call sites. Prefer
+ *  reading `siteConfig.contact.emailDomain` directly in new code. */
+export const hbaEmailDomain = siteConfig.contact.emailDomain
 
 export function isHbaEmail(email?: string | null) {
   if (!email) {
     return false
   }
-  return email.toLowerCase().endsWith(`@${hbaEmailDomain}`)
+  return email.toLowerCase().endsWith(`@${siteConfig.contact.emailDomain}`)
 }
 
 // Canonical admin check. Reads the `profiles` row for this email and

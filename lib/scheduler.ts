@@ -9,6 +9,7 @@
 // collect the inputs.
 
 import { z } from "zod"
+import { siteConfig } from "@/lib/site"
 import { sectionPeriodSchema, type SectionPeriod } from "@/lib/sis"
 import { getServiceSupabase as getSupabase } from "@/lib/supabase-server"
 
@@ -590,7 +591,7 @@ export async function seedTeacherQualificationsFromBios(): Promise<BioSeedResult
       continue
     }
 
-    const expectedEmail = `${firstName}@highbluffacademy.com`
+    const expectedEmail = `${firstName}@${siteConfig.contact.emailDomain}`
     const profile = profiles.find((p) => p.email === expectedEmail)
     if (!profile) {
       result.bios_no_profile.push(bio.name)

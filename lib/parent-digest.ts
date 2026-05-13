@@ -14,6 +14,7 @@
 
 import { attendanceStatusLabels, type AttendanceStatus } from "@/lib/attendance"
 import type { ScoreKind } from "@/lib/gradebook"
+import { siteConfig } from "@/lib/site"
 import { getServiceSupabase as getSupabase } from "@/lib/supabase-server"
 
 // ============================================================================
@@ -419,17 +420,20 @@ export function buildDigestEmailHtml(digest: ParentDigest): {
     ? `<p>Hi ${escapeHtml(digest.parent_name)},</p>`
     : `<p>Hello,</p>`
 
+  const portalUrl = `${siteConfig.url}/parent`
+  const portalDisplay = `${siteConfig.domain}/parent`
+
   const html = [
     greeting,
-    `<p>Here&rsquo;s the latest activity from HBA for the past 24 hours.</p>`,
+    `<p>Here&rsquo;s the latest activity from ${escapeHtml(siteConfig.shortName)} for the past 24 hours.</p>`,
     blocks,
-    `<p style="color:#666;font-size:13px;">Sign in to the family portal at <a href="https://highbluffacademy.com/parent">highbluffacademy.com/parent</a> to see full grades, attendance, and assignment details.</p>`,
+    `<p style="color:#666;font-size:13px;">Sign in to the family portal at <a href="${portalUrl}">${portalDisplay}</a> to see full grades, attendance, and assignment details.</p>`,
     `<p style="color:#666;font-size:13px;">To stop receiving these digests, ask the office to disable communications on your parent record.</p>`,
-    `<p>— High Bluff Academy</p>`,
+    `<p>— ${escapeHtml(siteConfig.name)}</p>`,
   ].join("")
 
   return {
-    subject: `HBA daily update — ${studentLabel}`,
+    subject: `${siteConfig.shortName} daily update — ${studentLabel}`,
     html,
   }
 }
