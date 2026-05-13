@@ -238,6 +238,12 @@ export default async function StudentDetailPage({
           </Link>
           <div className="flex flex-wrap items-center gap-2">
             <Link
+              href={`/portal/schedule?as=${id}`}
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              Print schedule →
+            </Link>
+            <Link
               href={`/portal?as=${id}`}
               className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
             >

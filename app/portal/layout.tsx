@@ -48,7 +48,8 @@ export default async function StudentPortalLayout({
   const isFullTime = studentForShell?.enrollment_type === "full_time"
 
   const studentNav: PortalNavItem[] = [
-    { id: "home", label: "My schedule", href: "/portal" },
+    { id: "home", label: "My classes", href: "/portal" },
+    { id: "schedule", label: "Weekly schedule", href: "/portal/schedule" },
     ...(isFullTime
       ? [{ id: "requests", label: "Course requests", href: "/portal/course-requests" }]
       : []),

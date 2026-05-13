@@ -196,6 +196,12 @@ export default async function ParentStudentOverviewPage({
             ← Back to family portal
           </Link>
           <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/parent/students/${studentId}/schedule`}
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              Weekly schedule →
+            </Link>
             {link.can_view_grades && (
               <Link
                 href={`/parent/students/${studentId}/transcript`}

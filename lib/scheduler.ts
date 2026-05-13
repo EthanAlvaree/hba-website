@@ -651,3 +651,81 @@ export const periodDisplayLabel: Record<SectionPeriod, string> = {
   elective_2: "Elective 2 (Fri 10:20-12:05)",
   async: "Online async (no fixed meeting time)",
 }
+
+// ============================================================================
+// Bell schedule — structured form of periodDisplayLabel
+// ============================================================================
+//
+// Drives the faculty + student weekly schedule grids. Keep in sync with the
+// label strings above so what's rendered visually matches the descriptive
+// label. Async periods appear nowhere on the grid.
+
+export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri"
+
+export const weekdayLabel: Record<Weekday, string> = {
+  mon: "Monday",
+  tue: "Tuesday",
+  wed: "Wednesday",
+  thu: "Thursday",
+  fri: "Friday",
+}
+
+export const weekdayShort: Record<Weekday, string> = {
+  mon: "Mon",
+  tue: "Tue",
+  wed: "Wed",
+  thu: "Thu",
+  fri: "Fri",
+}
+
+export const orderedWeekdays: Weekday[] = ["mon", "tue", "wed", "thu", "fri"]
+
+export type PeriodMeeting = {
+  day: Weekday
+  /** 24-hour HH:MM. */
+  start: string
+  end: string
+}
+
+export const periodMeetings: Record<SectionPeriod, PeriodMeeting[]> = {
+  period_1: (["mon", "tue", "wed", "thu"] as Weekday[]).map((day) => ({
+    day,
+    start: "08:30",
+    end: "09:30",
+  })),
+  period_2: (["mon", "tue", "wed", "thu"] as Weekday[]).map((day) => ({
+    day,
+    start: "09:35",
+    end: "10:35",
+  })),
+  period_3: (["mon", "tue", "wed", "thu"] as Weekday[]).map((day) => ({
+    day,
+    start: "10:40",
+    end: "11:40",
+  })),
+  period_4: (["mon", "tue", "wed", "thu"] as Weekday[]).map((day) => ({
+    day,
+    start: "12:25",
+    end: "13:25",
+  })),
+  period_5: [
+    { day: "mon", start: "13:30", end: "15:00" },
+    { day: "wed", start: "13:30", end: "15:00" },
+    { day: "fri", start: "12:55", end: "13:55" },
+  ],
+  period_6: [
+    { day: "tue", start: "13:30", end: "15:00" },
+    { day: "thu", start: "13:30", end: "15:00" },
+    { day: "fri", start: "14:00", end: "15:00" },
+  ],
+  elective_1: [{ day: "fri", start: "08:30", end: "10:15" }],
+  elective_2: [{ day: "fri", start: "10:20", end: "12:05" }],
+  async: [],
+}
+
+export function formatTimeHHMM(time: string): string {
+  const [h, m] = time.split(":").map(Number)
+  const hour12 = ((h + 11) % 12) + 1
+  const period = h < 12 ? "am" : "pm"
+  return `${hour12}:${m.toString().padStart(2, "0")}${period}`
+}
