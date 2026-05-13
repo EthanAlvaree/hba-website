@@ -35,11 +35,11 @@ import {
   type AnnouncementRecord,
 } from "@/lib/announcements"
 import {
-  createAnnouncementAction,
   deleteAnnouncementAction,
 } from "./announcements/actions"
 import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 import Avatar from "@/components/ui/Avatar"
+import AnnouncementComposer from "@/components/announcements/AnnouncementComposer"
 
 export const dynamic = "force-dynamic"
 
@@ -407,46 +407,7 @@ function AnnouncementsCard({
         </p>
       )}
 
-      <form
-        action={createAnnouncementAction}
-        className="mt-4 space-y-3 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-4"
-      >
-        <input type="hidden" name="section_id" value={sectionId} />
-        <label className="space-y-1 text-xs font-medium text-slate-700">
-          <span className="block">Title</span>
-          <input
-            name="title"
-            required
-            maxLength={200}
-            placeholder="Quiz moved to Friday"
-            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
-          />
-        </label>
-        <label className="space-y-1 text-xs font-medium text-slate-700">
-          <span className="block">Body</span>
-          <textarea
-            name="body"
-            required
-            rows={3}
-            maxLength={8000}
-            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
-          />
-        </label>
-        <label className="flex items-center gap-2 text-xs text-slate-700">
-          <input
-            type="checkbox"
-            name="pinned"
-            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
-          />
-          <span>Pin to top</span>
-        </label>
-        <button
-          type="submit"
-          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-        >
-          Post announcement
-        </button>
-      </form>
+      <AnnouncementComposer sectionId={sectionId} />
 
       {announcements.length === 0 ? (
         <p className="mt-4 text-sm text-slate-600">No announcements yet.</p>
