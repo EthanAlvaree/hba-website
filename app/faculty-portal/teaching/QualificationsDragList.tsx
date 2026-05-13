@@ -18,9 +18,12 @@ export type QualificationItem = {
 type Props = {
   profileId: string
   initial: QualificationItem[]
+  /** When true, the inline delete + reorder forms include admin=1 so
+   *  the server actions redirect back to the admin teaching page. */
+  admin?: boolean
 }
 
-export function QualificationsDragList({ profileId, initial }: Props) {
+export function QualificationsDragList({ profileId, initial, admin = false }: Props) {
   const [items, setItems] = useState<QualificationItem[]>(initial)
   const [dragIndex, setDragIndex] = useState<number | null>(null)
   const [overIndex, setOverIndex] = useState<number | null>(null)
@@ -130,6 +133,7 @@ export function QualificationsDragList({ profileId, initial }: Props) {
                 <form action={deleteQualificationAction}>
                   <input type="hidden" name="profile_id" value={profileId} />
                   <input type="hidden" name="course_id" value={item.course_id} />
+                  {admin && <input type="hidden" name="admin" value="1" />}
                   <button
                     type="submit"
                     className="rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
@@ -149,6 +153,7 @@ export function QualificationsDragList({ profileId, initial }: Props) {
         className="flex flex-wrap items-center justify-between gap-3 pt-1"
       >
         <input type="hidden" name="profile_id" value={profileId} />
+        {admin && <input type="hidden" name="admin" value="1" />}
         {items.map((item) => (
           <input
             key={item.id}

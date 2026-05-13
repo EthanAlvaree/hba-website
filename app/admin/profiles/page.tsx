@@ -650,22 +650,30 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                     </form>
 
                     {profile.roles.includes("faculty") && (
-                      <div className="border-t border-slate-200 pt-4">
+                      <div className="space-y-2 border-t border-slate-200 pt-4">
                         <p className="text-sm font-semibold text-slate-900">
-                          Public bio
+                          Faculty editor
                         </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          Edit what appears on{" "}
-                          <code className="text-xs">/faculty</code> for this
-                          person — title, subject area, courses taught, bio
-                          paragraphs.
+                        <p className="text-xs text-slate-500">
+                          Edit on this faculty member&rsquo;s behalf — public
+                          bio + portrait, plus the scheduler inputs the office
+                          team typically tunes (which courses, which periods,
+                          workload caps).
                         </p>
-                        <Link
-                          href={`/admin/profiles/${profile.id}/bio`}
-                          className="mt-2 inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
-                        >
-                          Manage public bio →
-                        </Link>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link
+                            href={`/admin/profiles/${profile.id}/bio`}
+                            className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                          >
+                            Manage public bio →
+                          </Link>
+                          <Link
+                            href={`/admin/profiles/${profile.id}/teaching`}
+                            className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                          >
+                            Teaching preferences →
+                          </Link>
+                        </div>
                       </div>
                     )}
 

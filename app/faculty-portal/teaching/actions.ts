@@ -56,8 +56,23 @@ async function assertCanEditTeachingProfile(targetProfileId: string): Promise<st
 function revalidateTeaching(profileId: string) {
   revalidatePath("/faculty-portal/teaching")
   revalidatePath("/faculty-portal")
-  // If we add /admin/profiles/[id]/teaching later, revalidate that too.
   revalidatePath(`/admin/profiles/${profileId}/teaching`)
+}
+
+// Centralized "where should we send the admin/faculty member after a
+// successful save?" Honors a hidden `admin=1` flag on the form: when
+// set, an admin is editing on someone else's behalf and we bounce
+// them back to /admin/profiles/<id>/teaching. Otherwise the faculty
+// member self-edits and lands back on their portal.
+function teachingRedirectPath(
+  formData: FormData,
+  profileId: string,
+  savedKey: string
+): string {
+  if (formData.get("admin") === "1") {
+    return `/admin/profiles/${profileId}/teaching?saved=${savedKey}`
+  }
+  return `/faculty-portal/teaching?saved=${savedKey}`
 }
 
 // ============================================================================
@@ -81,7 +96,7 @@ export async function saveQualificationAction(formData: FormData) {
 
   await upsertTeacherQualification(parsed.data)
   revalidateTeaching(targetProfileId)
-  redirect("/faculty-portal/teaching?saved=qualification")
+  redirect(teachingRedirectPath(formData, targetProfileId, "qualification"))
 }
 
 // Bulk-update preference_rank for a teacher's qualifications. The form
@@ -102,7 +117,7 @@ export async function saveQualificationOrderAction(formData: FormData) {
     ordered_course_ids: orderedCourseIds,
   })
   revalidateTeaching(targetProfileId)
-  redirect("/faculty-portal/teaching?saved=qualification")
+  redirect(teachingRedirectPath(formData, targetProfileId, "qualification"))
 }
 
 const qualificationDeleteSchema = z.object({
@@ -120,7 +135,7 @@ export async function deleteQualificationAction(formData: FormData) {
 
   await deleteTeacherQualification(parsed.data)
   revalidateTeaching(parsed.data.profile_id)
-  redirect("/faculty-portal/teaching?saved=qualification")
+  redirect(teachingRedirectPath(formData, parsed.data.profile_id, "qualification"))
 }
 
 // ============================================================================
@@ -150,7 +165,7 @@ export async function saveAvailabilityAction(formData: FormData) {
 
   await saveTeacherAvailability(parsed.data)
   revalidateTeaching(targetProfileId)
-  redirect("/faculty-portal/teaching?saved=availability")
+  redirect(teachingRedirectPath(formData, targetProfileId, "availability"))
 }
 
 // ============================================================================
@@ -175,7 +190,7 @@ export async function saveWorkloadAction(formData: FormData) {
 
   await upsertTeacherWorkload(parsed.data)
   revalidateTeaching(targetProfileId)
-  redirect("/faculty-portal/teaching?saved=workload")
+  redirect(teachingRedirectPath(formData, targetProfileId, "workload"))
 }
 
 // ============================================================================
