@@ -6,6 +6,8 @@ import {
   type ApplicationEnrollmentType,
 } from "@/lib/applications"
 import {
+  listAllStudentTags,
+  listStudentIdsByTag,
   listStudentsForDirectory,
   studentStatusSchema,
   type StudentStatus,
@@ -22,6 +24,7 @@ type StudentsPageProps = {
     enrollment_type?: string
     search?: string
     grade?: string
+    tag?: string
   }>
 }
 
@@ -69,6 +72,7 @@ function buildPath(filters: {
   enrollmentType: ApplicationEnrollmentType | "all"
   search?: string
   grade?: string
+  tag?: string
 }) {
   const params = new URLSearchParams()
   if (filters.status !== "all") params.set("status", filters.status)
@@ -77,6 +81,7 @@ function buildPath(filters: {
   }
   if (filters.search && filters.search.length > 0) params.set("search", filters.search)
   if (filters.grade && filters.grade !== "all") params.set("grade", filters.grade)
+  if (filters.tag && filters.tag.length > 0) params.set("tag", filters.tag)
   const qs = params.toString()
   return qs ? `/admin/students?${qs}` : "/admin/students"
 }
@@ -99,20 +104,36 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
 
   const search = (params.search ?? "").trim()
   const grade = params.grade && params.grade !== "all" ? params.grade : "all"
+  const tag = (params.tag ?? "").trim()
 
-  const students = await listStudentsForDirectory({
-    status,
-    enrollmentType,
-    search: search || undefined,
-    grade,
-  })
+  const [allTags, students, taggedStudentIdsList] = await Promise.all([
+    listAllStudentTags(),
+    listStudentsForDirectory({
+      status,
+      enrollmentType,
+      search: search || undefined,
+      grade,
+    }),
+    tag ? listStudentIdsByTag(tag) : Promise.resolve([] as string[]),
+  ])
+  // When a tag filter is active, intersect with the listStudentsForDirectory
+  // result. Done in app code because listStudentsForDirectory doesn't
+  // currently accept a tag filter and adding it through PostgREST joins
+  // would complicate the existing search OR clause.
+  const filteredStudents = tag
+    ? (() => {
+        const ids = new Set(taggedStudentIdsList)
+        return students.filter((s) => ids.has(s.id))
+      })()
+    : students
 
   const buildFilterHref = (overrides: Partial<{
     status: StudentStatus | "all"
     enrollmentType: ApplicationEnrollmentType | "all"
     search: string
     grade: string
-  }>) => buildPath({ status, enrollmentType, search, grade, ...overrides })
+    tag: string
+  }>) => buildPath({ status, enrollmentType, search, grade, tag, ...overrides })
 
   const statusTabs: Array<{ label: string; value: StudentStatus | "all" }> = [
     { label: "All", value: "all" },
@@ -157,7 +178,7 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
             ))}
           </div>
 
-          <form className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)_minmax(0,160px)_auto] sm:items-end">
+          <form className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,180px)_minmax(0,140px)_minmax(0,160px)_auto] sm:items-end">
             <label className="space-y-1 text-sm font-medium text-slate-700">
               <span className="block">Search</span>
               <input
@@ -203,6 +224,21 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
                 <option value="12">12</option>
               </select>
             </label>
+            <label className="space-y-1 text-sm font-medium text-slate-700">
+              <span className="block">Tag</span>
+              <select
+                name="tag"
+                defaultValue={tag}
+                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
+              >
+                <option value="">All tags</option>
+                {allTags.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </label>
             {status !== "all" && <input type="hidden" name="status" value={status} />}
             <button
               type="submit"
@@ -214,13 +250,17 @@ export default async function StudentsDirectoryPage({ searchParams }: StudentsPa
         </section>
 
         <section className="space-y-3">
-          {students.length === 0 ? (
+          {filteredStudents.length === 0 ? (
             <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">
-              No students match these filters. Students appear here after the
-              office runs the Enroll workflow on an accepted application.
+              {tag ? (
+                <>No students tagged <strong>{tag}</strong> match these filters.</>
+              ) : (
+                <>No students match these filters. Students appear here after the
+                office runs the Enroll workflow on an accepted application.</>
+              )}
             </div>
           ) : (
-            students.map((student) => {
+            filteredStudents.map((student) => {
               const displayName = student.preferred_name?.trim()
                 ? `${student.preferred_name} (${student.legal_first_name} ${student.legal_last_name})`
                 : `${student.legal_first_name} ${student.legal_last_name}`

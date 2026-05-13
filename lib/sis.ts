@@ -1455,6 +1455,101 @@ export async function withdrawStudent(
   return { student, enrollments_withdrawn: enrollmentsWithdrawn }
 }
 
+// ============================================================================
+// Student tags
+// ============================================================================
+
+const TAG_NORMALIZE_RE = /[^a-z0-9\-_+/. ]/g
+
+/** Normalize a free-form tag input for storage: trim, lowercase,
+ *  strip everything except letters/digits/whitespace/-_+/. Caps at 80 chars.
+ *  Returns null when nothing meaningful remains. */
+export function normalizeStudentTag(raw: string): string | null {
+  const cleaned = raw
+    .trim()
+    .toLowerCase()
+    .replace(TAG_NORMALIZE_RE, "")
+    .replace(/\s+/g, " ")
+    .trim()
+  if (!cleaned) return null
+  return cleaned.slice(0, 80)
+}
+
+export async function listStudentTags(studentId: string): Promise<string[]> {
+  const { data, error } = await getSupabase()
+    .from("student_tags")
+    .select("tag")
+    .eq("student_id", studentId)
+    .order("tag", { ascending: true })
+    .returns<Array<{ tag: string }>>()
+  if (error) {
+    throw new Error(`Failed to list student tags: ${error.message}`)
+  }
+  return (data ?? []).map((r) => r.tag)
+}
+
+export async function addStudentTag(
+  studentId: string,
+  rawTag: string,
+  createdByEmail: string | null
+): Promise<{ added: boolean; tag: string | null }> {
+  const tag = normalizeStudentTag(rawTag)
+  if (!tag) return { added: false, tag: null }
+  const { error } = await getSupabase()
+    .from("student_tags")
+    .upsert(
+      { student_id: studentId, tag, created_by_email: createdByEmail },
+      { onConflict: "student_id,tag", ignoreDuplicates: true }
+    )
+  if (error) {
+    throw new Error(`Failed to add student tag: ${error.message}`)
+  }
+  return { added: true, tag }
+}
+
+export async function removeStudentTag(studentId: string, tag: string) {
+  const normalized = normalizeStudentTag(tag)
+  if (!normalized) return
+  const { error } = await getSupabase()
+    .from("student_tags")
+    .delete()
+    .eq("student_id", studentId)
+    .eq("tag", normalized)
+  if (error) {
+    throw new Error(`Failed to remove student tag: ${error.message}`)
+  }
+}
+
+/** Distinct list of tags across every student. Used to populate the
+ *  filter dropdown on /admin/students. Bounded by query — at any
+ *  realistic school size this fits comfortably. */
+export async function listAllStudentTags(): Promise<string[]> {
+  const { data, error } = await getSupabase()
+    .from("student_tags")
+    .select("tag")
+    .returns<Array<{ tag: string }>>()
+  if (error) {
+    throw new Error(`Failed to list all student tags: ${error.message}`)
+  }
+  return Array.from(new Set((data ?? []).map((r) => r.tag))).sort()
+}
+
+/** Find every student tagged with `tag`. Returns just IDs — the caller
+ *  joins to full student records as needed. */
+export async function listStudentIdsByTag(tag: string): Promise<string[]> {
+  const normalized = normalizeStudentTag(tag)
+  if (!normalized) return []
+  const { data, error } = await getSupabase()
+    .from("student_tags")
+    .select("student_id")
+    .eq("tag", normalized)
+    .returns<Array<{ student_id: string }>>()
+  if (error) {
+    throw new Error(`Failed to list students by tag: ${error.message}`)
+  }
+  return (data ?? []).map((r) => r.student_id)
+}
+
 export async function updateStudentAdmin(
   input: StudentAdminUpdateInput
 ): Promise<StudentRecord> {
