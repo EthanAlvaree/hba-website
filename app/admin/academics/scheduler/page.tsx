@@ -587,6 +587,8 @@ function summarizeWarning(w: SolverWarning): string {
       return `${w.course_name} — offered_pattern is ${w.offered_pattern} but this term starts in ${w.academic_year_start}. No one will be scheduled into it.`
     case "prereq_not_met":
       return `${w.course_name} — student ${w.student_id.slice(0, 8)} is missing prereqs (${w.missing_prereq_course_ids.length} alternative(s)). Grant a per-student override if warranted.`
+    case "prereq_recommended_missing":
+      return `${w.course_name} — student ${w.student_id.slice(0, 8)} is missing a recommended prereq (${w.missing_prereq_course_ids.length} alternative(s)). Course is still scheduled; check with the family if this is a concern.`
     case "student_unavailable_all_periods":
       return `${w.course_name} — student ${w.student_id.slice(0, 8)}'s availability rules block every period the qualified teachers can teach. Either loosen the student's availability or expand teacher coverage.`
   }

@@ -59,6 +59,7 @@ type WorkloadInput = {
   profile_id: string
   min_periods_per_week: number | null
   max_periods_per_week: number | null
+  max_consecutive_periods: number | null
 }
 
 type CourseOfferedPattern =
@@ -164,6 +165,17 @@ export type SolverWarning =
       missing_prereq_course_ids: string[]
     }
   | {
+      // Student is missing a *recommended* prereq for this course. The
+      // request still proceeds — the warning is informational so admin
+      // can decide whether to talk to the family. (Example: APCSA after
+      // APCSP — recommended but not required.)
+      kind: "prereq_recommended_missing"
+      student_id: string
+      course_id: string
+      course_name: string
+      missing_prereq_course_ids: string[]
+    }
+  | {
       // Student's availability rules + the periods this course could
       // possibly run in have zero overlap. Surfaces when (for example)
       // Brynn is P1-P4-only and the only qualified teacher for AP CS A
@@ -260,7 +272,9 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
       .returns<StudentAvailabilityInput[]>(),
     supabase
       .from("teacher_workload_preferences")
-      .select("profile_id, min_periods_per_week, max_periods_per_week")
+      .select(
+        "profile_id, min_periods_per_week, max_periods_per_week, max_consecutive_periods"
+      )
       .returns<WorkloadInput[]>(),
     supabase
       .from("courses")
@@ -276,7 +290,6 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     supabase
       .from("course_prerequisites")
       .select("course_id, prerequisite_course_id, kind, group_key")
-      .eq("kind", "hard")
       .returns<CoursePrereqInput[]>(),
     supabase
       .from("student_prereq_overrides")
@@ -355,9 +368,13 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
 
   // Workload caps. null = no cap. Default cap = 8 periods/week.
   const maxPeriodsByTeacher = new Map<string, number>()
+  const maxConsecutiveByTeacher = new Map<string, number>()
   for (const w of workloads) {
     if (typeof w.max_periods_per_week === "number") {
       maxPeriodsByTeacher.set(w.profile_id, w.max_periods_per_week)
+    }
+    if (typeof w.max_consecutive_periods === "number") {
+      maxConsecutiveByTeacher.set(w.profile_id, w.max_consecutive_periods)
     }
   }
 
@@ -365,16 +382,20 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
   // can evaluate OR-chains: "Calc AB requires Precalc OR Honors Precalc
   // OR AP Precalc" = three rows sharing 'calcab_entry'). A bucket is
   // cleared if ANY of its prerequisite_course_ids appears in the
-  // student's completed set.
-  const prereqsByCourse = new Map<string, Map<string, string[]>>()
+  // student's completed set. Hard and recommended are bucketed
+  // separately so the pre-filter can drop on hard but warn on
+  // recommended.
+  const hardPrereqsByCourse = new Map<string, Map<string, string[]>>()
+  const recommendedPrereqsByCourse = new Map<string, Map<string, string[]>>()
   for (const p of prereqs) {
-    const groups =
-      prereqsByCourse.get(p.course_id) ?? new Map<string, string[]>()
+    const target =
+      p.kind === "hard" ? hardPrereqsByCourse : recommendedPrereqsByCourse
+    const groups = target.get(p.course_id) ?? new Map<string, string[]>()
     const key = p.group_key ?? `_solo_${p.prerequisite_course_id}`
     const arr = groups.get(key) ?? []
     arr.push(p.prerequisite_course_id)
     groups.set(key, arr)
-    prereqsByCourse.set(p.course_id, groups)
+    target.set(p.course_id, groups)
   }
 
   // Per-student override set — if course_id is in here, prereqs for that
@@ -440,14 +461,15 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     }
     const course = courseById.get(req.course_id)
     if (!course) continue
-    const missing = missingHardPrereqs({
+
+    const missingHard = missingGroupedPrereqs({
       studentId: req.student_id,
       courseId: req.course_id,
-      prereqsByCourse,
+      groupsByCourse: hardPrereqsByCourse,
       completedByStudent,
       overridesByStudent,
     })
-    if (missing.length > 0) {
+    if (missingHard.length > 0) {
       droppedRequestIds.add(req.id)
       warnings.push({
         kind: "prereq_not_met",
@@ -455,8 +477,32 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
         course_id: req.course_id,
         course_name: course.name,
         request_kind: req.kind,
-        missing_prereq_course_ids: missing,
+        missing_prereq_course_ids: missingHard,
       })
+      continue
+    }
+
+    // Recommended prereqs are informational — admin can talk to the
+    // family or override silently. Skip when an admin already granted
+    // the override for this (student, course) since they've already
+    // signed off.
+    if (!overridesByStudent.get(req.student_id)?.has(req.course_id)) {
+      const missingRecommended = missingGroupedPrereqs({
+        studentId: req.student_id,
+        courseId: req.course_id,
+        groupsByCourse: recommendedPrereqsByCourse,
+        completedByStudent,
+        overridesByStudent: new Map(), // we want the raw recommendation, not override-suppressed
+      })
+      if (missingRecommended.length > 0) {
+        warnings.push({
+          kind: "prereq_recommended_missing",
+          student_id: req.student_id,
+          course_id: req.course_id,
+          course_name: course.name,
+          missing_prereq_course_ids: missingRecommended,
+        })
+      }
     }
   }
 
@@ -532,6 +578,7 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
       const unavailable = unavailableByTeacher.get(teacher.id) ?? new Set<SectionPeriod>()
       const taken = teacherPeriodTaken.get(teacher.id) ?? new Set<SectionPeriod>()
       const maxLoad = maxPeriodsByTeacher.get(teacher.id) ?? sectionPeriodSchema.options.length
+      const maxConsecutive = maxConsecutiveByTeacher.get(teacher.id) ?? null
 
       // Cap how many sections this teacher can pick up given workload.
       const canTakeMore = () => taken.size < maxLoad
@@ -541,6 +588,12 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
         if (!canTakeMore()) break
         if (unavailable.has(period)) continue
         if (taken.has(period)) continue
+        if (
+          maxConsecutive !== null &&
+          wouldBreakConsecutiveCap(taken, period, maxConsecutive)
+        ) {
+          continue
+        }
 
         // Of the remaining demand, who is free this period AND has capacity?
         // Three filters per student:
@@ -653,6 +706,46 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     }
   }
 
+  // ----- Local search (Pass 2) ---------------------------------------------
+  //
+  // The greedy first pass leaves cracks: students sometimes go unfulfilled
+  // because an earlier course already booked their period, or a section
+  // could have held one more body but the greedy didn't loop back. This
+  // pass plays "fill the cracks" twice over:
+  //
+  //   Move A: For each unfulfilled request, try adding the student to an
+  //           already-built section of the same course. Free win when
+  //           the section has room and the period works.
+  //
+  //   Move B: For each course still showing >= min_section_size cluster
+  //           of unfulfilled students, spawn an additional section in any
+  //           (qualified teacher, free period) combination that fits the
+  //           cluster. Honors workload + consecutive caps.
+  //
+  // Each accepted move increments fulfilled count, removes the matching
+  // unfulfilled_request warning, and updates the period-tracking maps so
+  // subsequent moves see the new state. Both moves only improve the
+  // score, so we can run them to fixpoint without risking regression.
+
+  runLocalSearchPass({
+    proposed,
+    warnings,
+    requests,
+    demandByCourse,
+    studentPeriodTaken,
+    teacherPeriodTaken,
+    unavailableByTeacher,
+    unavailableByStudent,
+    maxPeriodsByTeacher,
+    maxConsecutiveByTeacher,
+    qualifiedTeachersByCourse,
+    facultyById,
+    courseById,
+    courseSectionLetters,
+    minSectionSize,
+    defaultMaxSection,
+  })
+
   // ----- Scoring -----------------------------------------------------------
 
   const fulfilledCount = proposed.reduce((sum, s) => sum + s.student_ids.length, 0)
@@ -702,23 +795,302 @@ function isOfferedInStartYear(
   return true
 }
 
-// Pure: which hard-prereq alternatives for `courseId` is `studentId`
-// still missing? An OR-group (rows sharing a non-null group_key) is
-// cleared if ANY member is in completed. Standalone prereqs (group_key
-// null) must each be cleared individually. Returns the flat list of
-// course IDs the trajectory / admin needs to know about — UI groups
-// them by the original group_key for display.
-function missingHardPrereqs(input: {
+// Pure: "consecutive" applies to the regular daily periods 1-6. Friday
+// electives + async aren't part of the back-to-back chain (different
+// days / no fixed time), so they're excluded from the count.
+const consecutiveSequence: SectionPeriod[] = [
+  "period_1",
+  "period_2",
+  "period_3",
+  "period_4",
+  "period_5",
+  "period_6",
+]
+
+// Pure: would adding `candidate` to `currentTaken` create a contiguous
+// run of period_1..period_6 exceeding `max`? Returns true if the cap
+// would be broken.
+function wouldBreakConsecutiveCap(
+  currentTaken: Set<SectionPeriod>,
+  candidate: SectionPeriod,
+  max: number
+): boolean {
+  if (!consecutiveSequence.includes(candidate)) return false
+  const proposed = new Set(currentTaken)
+  proposed.add(candidate)
+  let run = 0
+  let longest = 0
+  for (const p of consecutiveSequence) {
+    if (proposed.has(p)) {
+      run += 1
+      longest = Math.max(longest, run)
+    } else {
+      run = 0
+    }
+  }
+  return longest > max
+}
+
+// Mutates the supplied solver state to improve the greedy result.
+// Repeatedly applies two cheap, monotonic moves until neither yields
+// any more progress:
+//
+//   - Move A (fill-cracks): For each unfulfilled request, try to add
+//     the student to an existing section of the same course where
+//     they fit.
+//
+//   - Move B (spawn-extra): For each cluster of >= min_section_size
+//     unfulfilled students for the same course, spawn an extra
+//     section in any (qualified teacher × free period) combo that
+//     satisfies workload + consecutive + student-availability checks.
+//
+// Both moves only ADD fulfillment (no swaps that could regress). Safe
+// to run to fixpoint.
+function runLocalSearchPass(state: {
+  proposed: ProposedSection[]
+  warnings: SolverWarning[]
+  requests: RequestInput[]
+  demandByCourse: Map<string, RequestInput[]>
+  studentPeriodTaken: Map<string, Set<SectionPeriod>>
+  teacherPeriodTaken: Map<string, Set<SectionPeriod>>
+  unavailableByTeacher: Map<string, Set<SectionPeriod>>
+  unavailableByStudent: Map<string, Set<SectionPeriod>>
+  maxPeriodsByTeacher: Map<string, number>
+  maxConsecutiveByTeacher: Map<string, number>
+  qualifiedTeachersByCourse: Map<string, QualificationInput[]>
+  facultyById: Map<string, FacultyInput>
+  courseById: Map<string, CourseInput>
+  courseSectionLetters: Map<string, number>
+  minSectionSize: number
+  defaultMaxSection: number
+}): void {
+  const MAX_ITERATIONS = 100
+  for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
+    const a = moveAFillCracks(state)
+    const b = moveBSpawnExtra(state)
+    if (!a && !b) break
+  }
+}
+
+// Returns the indices in `warnings` of pending unfulfilled_request rows
+// for which a still-pending request exists. (Once we accept a move
+// that fulfills a request, we splice the warning out so it won't be
+// considered again.)
+function findUnfulfilledIndices(
+  warnings: SolverWarning[]
+): Array<{ index: number; warning: Extract<SolverWarning, { kind: "unfulfilled_request" }> }> {
+  const out: ReturnType<typeof findUnfulfilledIndices> = []
+  for (let i = 0; i < warnings.length; i++) {
+    const w = warnings[i]
+    if (w.kind === "unfulfilled_request") {
+      out.push({ index: i, warning: w })
+    }
+  }
+  return out
+}
+
+function moveAFillCracks(state: Parameters<typeof runLocalSearchPass>[0]): boolean {
+  const {
+    proposed,
+    warnings,
+    requests,
+    studentPeriodTaken,
+    unavailableByStudent,
+    defaultMaxSection,
+  } = state
+
+  const requestByKey = new Map(
+    requests.map((r) => [`${r.student_id}|${r.course_id}`, r])
+  )
+
+  let didAnything = false
+
+  // Walk unfulfilled in reverse so splicing doesn't shift the indices
+  // we still need to read.
+  const unfulfilled = findUnfulfilledIndices(warnings)
+  for (let i = unfulfilled.length - 1; i >= 0; i--) {
+    const { index, warning } = unfulfilled[i]
+    const req = requestByKey.get(`${warning.student_id}|${warning.course_id}`)
+    if (!req) continue
+
+    for (const section of proposed) {
+      if (section.course_id !== warning.course_id) continue
+      if (section.period === null) continue
+      if (section.student_ids.length >= defaultMaxSection) continue
+      if (section.student_ids.includes(warning.student_id)) continue
+
+      const period = section.period
+      const studentTaken =
+        studentPeriodTaken.get(warning.student_id) ?? new Set<SectionPeriod>()
+      if (studentTaken.has(period)) continue
+      const studentBlocked = unavailableByStudent.get(warning.student_id)
+      if (studentBlocked?.has(period)) continue
+
+      // Commit the addition.
+      section.student_ids.push(warning.student_id)
+      section.fulfilled_request_by_student[warning.student_id] = req.id
+      studentTaken.add(period)
+      studentPeriodTaken.set(warning.student_id, studentTaken)
+      warnings.splice(index, 1)
+      didAnything = true
+      break
+    }
+  }
+
+  return didAnything
+}
+
+function moveBSpawnExtra(state: Parameters<typeof runLocalSearchPass>[0]): boolean {
+  const {
+    proposed,
+    warnings,
+    requests,
+    studentPeriodTaken,
+    teacherPeriodTaken,
+    unavailableByTeacher,
+    unavailableByStudent,
+    maxPeriodsByTeacher,
+    maxConsecutiveByTeacher,
+    qualifiedTeachersByCourse,
+    facultyById,
+    courseById,
+    courseSectionLetters,
+    minSectionSize,
+    defaultMaxSection,
+  } = state
+
+  // Bucket unfulfilled requests by course_id so we can look for clusters.
+  const requestByKey = new Map(
+    requests.map((r) => [`${r.student_id}|${r.course_id}`, r])
+  )
+  const clustersByCourse = new Map<string, RequestInput[]>()
+  for (const w of warnings) {
+    if (w.kind !== "unfulfilled_request") continue
+    const req = requestByKey.get(`${w.student_id}|${w.course_id}`)
+    if (!req) continue
+    const arr = clustersByCourse.get(w.course_id) ?? []
+    arr.push(req)
+    clustersByCourse.set(w.course_id, arr)
+  }
+
+  let didAnything = false
+
+  for (const [courseId, cluster] of clustersByCourse.entries()) {
+    if (cluster.length < minSectionSize) continue
+    const course = courseById.get(courseId)
+    if (!course) continue
+    const teachers = qualifiedTeachersByCourse.get(courseId) ?? []
+
+    for (const tq of teachers) {
+      const teacher = facultyById.get(tq.profile_id)
+      if (!teacher) continue
+      const taken = teacherPeriodTaken.get(teacher.id) ?? new Set<SectionPeriod>()
+      const unavail = unavailableByTeacher.get(teacher.id) ?? new Set<SectionPeriod>()
+      const maxLoad = maxPeriodsByTeacher.get(teacher.id) ?? sectionPeriodSchema.options.length
+      const maxConsec = maxConsecutiveByTeacher.get(teacher.id) ?? null
+
+      if (taken.size >= maxLoad) continue
+
+      for (const period of sectionPeriodSchema.options) {
+        if (taken.has(period)) continue
+        if (unavail.has(period)) continue
+        if (maxConsec !== null && wouldBreakConsecutiveCap(taken, period, maxConsec)) continue
+
+        const eligible: RequestInput[] = []
+        for (const req of cluster) {
+          if (eligible.length >= defaultMaxSection) break
+          const studentTaken =
+            studentPeriodTaken.get(req.student_id) ?? new Set<SectionPeriod>()
+          if (studentTaken.has(period)) continue
+          const studentBlocked = unavailableByStudent.get(req.student_id)
+          if (studentBlocked?.has(period)) continue
+          eligible.push(req)
+        }
+
+        if (eligible.length < minSectionSize) continue
+
+        // Commit a new section.
+        const letterIdx = courseSectionLetters.get(courseId) ?? 0
+        const sectionCode =
+          letterIdx === 0 ? null : String.fromCharCode(65 + letterIdx)
+        courseSectionLetters.set(courseId, letterIdx + 1)
+
+        const fulfilled: Record<string, string> = {}
+        const studentIds: string[] = []
+        const eligibleStudentIdSet = new Set<string>()
+        for (const req of eligible) {
+          const studentTaken =
+            studentPeriodTaken.get(req.student_id) ?? new Set<SectionPeriod>()
+          studentTaken.add(period)
+          studentPeriodTaken.set(req.student_id, studentTaken)
+          fulfilled[req.student_id] = req.id
+          studentIds.push(req.student_id)
+          eligibleStudentIdSet.add(req.student_id)
+        }
+        taken.add(period)
+        teacherPeriodTaken.set(teacher.id, taken)
+
+        proposed.push({
+          course_id: courseId,
+          course_code: course.code,
+          course_name: course.name,
+          teacher_profile_id: teacher.id,
+          teacher_label: teacher.display_name || teacher.email,
+          period,
+          section_code: sectionCode,
+          student_ids: studentIds,
+          fulfilled_request_by_student: fulfilled,
+        })
+
+        // Remove the now-fulfilled unfulfilled_request warnings.
+        for (let i = warnings.length - 1; i >= 0; i--) {
+          const w = warnings[i]
+          if (
+            w.kind === "unfulfilled_request" &&
+            w.course_id === courseId &&
+            eligibleStudentIdSet.has(w.student_id)
+          ) {
+            warnings.splice(i, 1)
+          }
+        }
+
+        // Strip placed students from the cluster so the next period
+        // iteration doesn't double-count them.
+        const remaining = cluster.filter(
+          (r) => !eligibleStudentIdSet.has(r.student_id)
+        )
+        clustersByCourse.set(courseId, remaining)
+        didAnything = true
+
+        if (remaining.length < minSectionSize) break
+      }
+
+      const remainingAfterTeacher = clustersByCourse.get(courseId) ?? []
+      if (remainingAfterTeacher.length < minSectionSize) break
+    }
+  }
+
+  return didAnything
+}
+
+// Pure: which prereq alternatives for `courseId` (from the supplied
+// grouped map — either hard or recommended) is `studentId` still
+// missing? An OR-group (rows sharing a non-null group_key) is cleared
+// if ANY member is in completed. Standalone prereqs (group_key null)
+// must each be cleared individually. Returns the flat list of course
+// IDs the trajectory / admin needs to know about — UI groups them by
+// the original group_key for display.
+function missingGroupedPrereqs(input: {
   studentId: string
   courseId: string
-  prereqsByCourse: Map<string, Map<string, string[]>>
+  groupsByCourse: Map<string, Map<string, string[]>>
   completedByStudent: Map<string, Set<string>>
   overridesByStudent: Map<string, Set<string>>
 }): string[] {
   if (input.overridesByStudent.get(input.studentId)?.has(input.courseId)) {
     return []
   }
-  const groups = input.prereqsByCourse.get(input.courseId)
+  const groups = input.groupsByCourse.get(input.courseId)
   if (!groups || groups.size === 0) return []
   const completed = input.completedByStudent.get(input.studentId) ?? new Set<string>()
   const missing: string[] = []
