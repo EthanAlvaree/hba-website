@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 type AcademicsTab =
+  | "setup"
   | "terms"
   | "courses"
   | "sections"
@@ -10,6 +11,7 @@ type AcademicsTab =
   | "conferences"
 
 const tabs: Array<{ id: AcademicsTab; label: string; href: string }> = [
+  { id: "setup", label: "New term setup", href: "/admin/academics/setup" },
   { id: "terms", label: "Terms", href: "/admin/academics/terms" },
   { id: "calendar", label: "Calendar", href: "/admin/academics/calendar" },
   { id: "courses", label: "Courses", href: "/admin/academics/courses" },
