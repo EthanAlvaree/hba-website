@@ -32,6 +32,14 @@ export type ScheduleEntry = {
     initials: string
     alt: string
   }
+  /** Optional roster peek — stack of student avatars below the cell.
+   *  Used on the faculty schedule so teachers see who they're about to
+   *  walk into class with. `avatars` is a sample (we show at most 5);
+   *  `count` is the full enrollment count. */
+  rosterPreview?: {
+    count: number
+    avatars: Array<{ photoUrl: string | null; initials: string; alt: string }>
+  }
 }
 
 type Cell = {
@@ -185,6 +193,27 @@ function CellCard({ cell }: { cell: Cell }) {
       </p>
       {entry.room && (
         <p className="text-xs text-slate-500">Room {entry.room}</p>
+      )}
+      {entry.rosterPreview && entry.rosterPreview.count > 0 && (
+        <div className="mt-2 flex items-center gap-1 print:hidden">
+          <div className="flex -space-x-1.5">
+            {entry.rosterPreview.avatars.slice(0, 5).map((a, i) => (
+              <Avatar
+                key={`${a.alt}-${i}`}
+                photoUrl={a.photoUrl}
+                initials={a.initials}
+                alt={a.alt}
+                size="xs"
+                className="ring-2 ring-brand-navy/5"
+              />
+            ))}
+          </div>
+          {entry.rosterPreview.count > entry.rosterPreview.avatars.length && (
+            <span className="text-[10px] text-slate-500">
+              +{entry.rosterPreview.count - entry.rosterPreview.avatars.length}
+            </span>
+          )}
+        </div>
       )}
     </div>
   )

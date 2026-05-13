@@ -67,6 +67,12 @@ function actionLabel(code: string): string {
       return "Manual DB snapshot"
     case "profile_photo.bulk_upload":
       return "Bulk profile photo upload"
+    case "profile_photo.upload":
+      return "Upload profile photo"
+    case "profile_photo.clear":
+      return "Remove profile photo"
+    case "profile_photo.m365_resync":
+      return "Resync photo from M365"
     default:
       return code
   }

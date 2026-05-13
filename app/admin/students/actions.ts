@@ -14,6 +14,7 @@ import {
   updateStudentDemographics,
 } from "@/lib/sis"
 import { z } from "zod"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 import {
   clearProfilePhoto,
   resyncProfilePhotoFromM365,
@@ -247,6 +248,20 @@ export async function uploadProfilePhotoAction(
   )
   if (!result.ok) return result
 
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.profile_photo_upload,
+    target_kind: "profile",
+    target_id: parsed.data.profile_id,
+    details: {
+      student_id: parsed.data.student_id,
+      email: profile?.email ?? null,
+      bytes: buffer.byteLength,
+      mime: file.type,
+      m365_sync: result.m365Push?.status ?? "not_attempted",
+      m365_message: result.m365Push?.message ?? null,
+    },
+  })
+
   revalidateStudent(parsed.data.student_id)
   return {
     ok: true,
@@ -272,6 +287,14 @@ export async function resyncM365PhotoAction(
     return { ok: false, error: "Missing profile or student id." }
   }
   const result = await resyncProfilePhotoFromM365(parsed.data.profile_id)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.profile_photo_m365_resync,
+    target_kind: "profile",
+    target_id: parsed.data.profile_id,
+    details: result.ok
+      ? { outcome: result.outcome }
+      : { ok: false, error: result.error },
+  })
   if (result.ok) {
     revalidateStudent(parsed.data.student_id)
   }
@@ -288,6 +311,12 @@ export async function clearProfilePhotoAction(formData: FormData) {
     throw new Error("Missing profile or student id.")
   }
   await clearProfilePhoto(parsed.data.profile_id)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.profile_photo_clear,
+    target_kind: "profile",
+    target_id: parsed.data.profile_id,
+    details: { student_id: parsed.data.student_id },
+  })
   revalidateStudent(parsed.data.student_id)
   redirect(`/admin/students/${parsed.data.student_id}`)
 }

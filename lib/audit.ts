@@ -57,6 +57,9 @@ export const ADMIN_AUDIT_ACTIONS = {
   health_record_upsert: "health_record.upsert",
   // Profile photos.
   profile_photo_bulk_upload: "profile_photo.bulk_upload",
+  profile_photo_upload: "profile_photo.upload",
+  profile_photo_clear: "profile_photo.clear",
+  profile_photo_m365_resync: "profile_photo.m365_resync",
 } as const
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[keyof typeof ADMIN_AUDIT_ACTIONS]
 
