@@ -8,8 +8,9 @@ import { categories, CategoryKey } from "@/lib/categories"
 import { siteConfig } from "@/lib/site"
 import PrintToolbar from "./PrintToolbar"
 
-export const dynamic = "force-static"
-export const revalidate = 3600
+// `force-dynamic` so admin edits to the DB calendar surface here without
+// waiting for the next 1-hour revalidate window.
+export const dynamic = "force-dynamic"
 
 const SUPPORTED_START_YEARS = ["2025", "2026"] as const
 
@@ -121,7 +122,7 @@ export default async function PrintCalendarPage({ params }: Props) {
 
   const startYear = parseInt(yearStr, 10)
   const endYear = startYear + 1
-  const events = getAllEvents()
+  const events = await getAllEvents()
   const months = buildAcademicYearMonths(startYear)
 
   const otherYear = startYear === 2025 ? "2026" : "2025"

@@ -1,18 +1,19 @@
 // lib/events-server.ts
-// Server-only event loader. Reads content/events.json from disk.
+// Server-only event loader. Reads the DB-backed `calendar_events` table.
+//
+// As of migration 0012 the calendar lives in Postgres so non-technical
+// admins can edit it from /admin/academics/calendar. The public /calendar
+// page and the .ics feed both call getAllEvents() here; the DB row shape
+// is translated into the same SchoolEvent type the client code already
+// expects, so callers didn't have to change.
 
 import "server-only"
-import fs from "fs"
-import path from "path"
 import { SchoolEvent } from "./events"
+import { listCalendarEvents, rowToSchoolEvent } from "./calendar-events"
 
-interface EventStore {
-  events: SchoolEvent[]
-}
-
-export function getAllEvents(): SchoolEvent[] {
-  const jsonPath = path.join(process.cwd(), "content", "events.json")
-  const raw = fs.readFileSync(jsonPath, "utf8")
-  const parsed: EventStore = JSON.parse(raw)
-  return [...parsed.events].sort((a, b) => a.start.localeCompare(b.start))
+export async function getAllEvents(): Promise<SchoolEvent[]> {
+  const rows = await listCalendarEvents()
+  return rows
+    .map(rowToSchoolEvent)
+    .sort((a, b) => a.start.localeCompare(b.start))
 }

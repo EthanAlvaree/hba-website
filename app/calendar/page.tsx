@@ -10,10 +10,12 @@ import UpcomingEvents from "./UpcomingEvents"
 import InteractiveCalendar from "./InteractiveCalendar"
 import SubscribeButtons from "./SubscribeButtons"
 
-export const revalidate = 3600
+// `force-dynamic` so admin edits in /admin/academics/calendar surface on
+// the public page immediately.
+export const dynamic = "force-dynamic"
 
-export default function CalendarPage() {
-  const events = getAllEvents()
+export default async function CalendarPage() {
+  const events = await getAllEvents()
   const upcoming = getUpcomingEvents(events, new Date(), 5)
 
   return (
