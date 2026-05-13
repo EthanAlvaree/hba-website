@@ -144,29 +144,30 @@ const hba: SiteConfig = {
   },
 }
 
-// Placeholder PCI config. Replace the TODO fields when the actual PCI
-// data is ready. Brand colors are kept identical to HBA's for now so
-// the placeholder deploy doesn't look wildly different until the
-// design pass lands.
+// Placeholder PCI config. Replace the TODO_* fields when the actual
+// PCI data is ready. Brand colors are intentionally NOT cloned from
+// HBA — they're a distinctive coastal teal so any accidental PCI
+// deploy is immediately visually obvious, not silently wearing HBA's
+// look. Update to PCI's real palette once design is finalized.
 const pci: SiteConfig = {
-  name: "Pacific Coast International", // TODO confirm official name
+  name: "Pacific Coast International", // TODO_PCI confirm official name
   shortName: "PCI",
-  tagline: "TODO: one-line tagline for PCI",
-  domain: "TODO-pci-domain.com", // TODO: set actual domain
-  url: "https://TODO-pci-domain.com", // overridden by NEXT_PUBLIC_SITE_URL
+  tagline: "TODO_PCI: one-line tagline",
+  domain: "TODO_PCI.com",
+  url: "https://TODO_PCI.com", // overridden by NEXT_PUBLIC_SITE_URL
 
   contact: {
-    phone: "TODO", // TODO: PCI main phone
+    phone: "TODO_PCI",
     phoneTel: "+1000000000",
-    admissionsEmail: "admissions@TODO-pci-domain.com",
-    infoEmail: "info@TODO-pci-domain.com",
-    emailDomain: "TODO-pci-domain.com",
+    admissionsEmail: "admissions@TODO_PCI.com",
+    infoEmail: "info@TODO_PCI.com",
+    emailDomain: "TODO_PCI.com",
   },
 
   address: {
-    streetLine1: "TODO street",
-    locality: "TODO city",
-    region: "TODO region",
+    streetLine1: "TODO_PCI street",
+    locality: "TODO_PCI city",
+    region: "TODO_PCI region",
     regionCode: "CA",
     postalCode: "TODO",
   },
@@ -174,7 +175,7 @@ const pci: SiteConfig = {
   // ceebCode intentionally omitted — fill in when known.
 
   social: {
-    // TODO: add PCI social URLs as they exist
+    // TODO_PCI: add social URLs as they exist
   },
 
   external: {
@@ -182,10 +183,12 @@ const pci: SiteConfig = {
   },
 
   brand: {
-    // TODO: replace with PCI's actual brand colors when design is ready.
-    navy: "#1f3f66",
-    navyDeep: "#0f1f36",
-    orange: "#f37021",
+    // Coastal teal placeholder palette. Replaces the HBA-cloned values
+    // so an accidental PCI deploy is visually unmistakable. Swap to
+    // PCI's actual brand colors once the design pass lands.
+    navy: "#1f5f6b",
+    navyDeep: "#0e3a44",
+    orange: "#e08a3c",
   },
 }
 
@@ -212,6 +215,20 @@ export const siteConfig: SiteConfig = configs[schoolKey]
   const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim()
   if (fromEnv) {
     siteConfig.url = fromEnv.replace(/\/$/, "")
+  }
+}
+
+// Loud warning at module load if PCI is the active school but the
+// placeholder TODO_* markers are still in place. The site will still
+// boot — these aren't crashes — but the operator should know
+// something is incomplete before users hit it.
+{
+  const flat = JSON.stringify(siteConfig)
+  if (schoolKey === "pci" && flat.includes("TODO_PCI")) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[lib/site] WARNING: SCHOOL_KEY=pci but PCI config still has TODO_PCI placeholders. Fill in lib/site.ts before promoting to production."
+    )
   }
 }
 
