@@ -3,8 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
-import { emailFromM365User, listM365Users } from "@/lib/graph"
-import { isHbaEmail } from "@/lib/admin"
+import { runM365Sync } from "@/lib/m365-sync"
 import {
   deleteProfile,
   getProfileById,
@@ -12,11 +11,9 @@ import {
   profileContactUpdateSchema,
   profileRoleSchema,
   profileRolesUpdateSchema,
-  syncProfilesFromM365,
   updateProfileActive,
   updateProfileContact,
   updateProfileRoles,
-  type M365SyncRow,
 } from "@/lib/sis"
 import { z } from "zod"
 import { seedTeacherQualificationsFromBios } from "@/lib/scheduler"
@@ -120,45 +117,10 @@ export async function updateProfileContactAction(formData: FormData) {
 export async function syncM365Action() {
   await assertAdmin()
 
-  let users
-  try {
-    users = await listM365Users()
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "M365 fetch failed"
-    redirect(`/admin/profiles?sync_error=${encodeURIComponent(message)}`)
-  }
+  const result = await runM365Sync()
 
-  // Only sync HBA-domain mailboxes. External guests in the tenant get
-  // filtered out — we don't want random graph users showing up as faculty.
-  const rows: M365SyncRow[] = []
-  let nonHba = 0
-  let missingEmail = 0
-  for (const user of users) {
-    const email = emailFromM365User(user)
-    if (!email) {
-      missingEmail += 1
-      continue
-    }
-    if (!isHbaEmail(email)) {
-      nonHba += 1
-      continue
-    }
-    rows.push({
-      email,
-      entra_oid: user.id,
-      display_name: user.displayName,
-      first_name: user.givenName,
-      last_name: user.surname,
-      active: user.accountEnabled,
-    })
-  }
-
-  let result
-  try {
-    result = await syncProfilesFromM365(rows)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "M365 sync failed"
-    redirect(`/admin/profiles?sync_error=${encodeURIComponent(message)}`)
+  if (!result.ok) {
+    redirect(`/admin/profiles?sync_error=${encodeURIComponent(result.message)}`)
   }
 
   revalidateProfiles()
@@ -168,7 +130,7 @@ export async function syncM365Action() {
     created: String(result.created),
     updated: String(result.updated),
     skipped: String(result.skipped),
-    filtered: String(nonHba + missingEmail),
+    filtered: String(result.filtered),
   })
   redirect(`/admin/profiles?${params.toString()}`)
 }
