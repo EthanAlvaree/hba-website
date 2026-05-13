@@ -110,11 +110,40 @@ quarter:
 If any of these are wrong, the cron is failing silently. Check Vercel
 function logs for `/api/cron/db-backup`.
 
-## TODO (not yet built)
+## Restoring from a JSON snapshot
 
-- An importer script (`scripts/restore-from-snapshot.ts`) that reads
-  a snapshot JSON and inserts rows in the right FK order. Right now
-  this is a manual job; for full disaster recovery it should be one
-  command.
-- An admin "Download a snapshot now" button so paranoid pre-launch
-  runs don't need to wait for Sunday morning's cron.
+`scripts/restore-from-snapshot.ts` does the heavy lifting. Walks the
+snapshot in foreign-key-safe order, upserts every row by id, reports
+per-table counts.
+
+```sh
+# Dry run first (no writes; just counts what would happen)
+npx tsx scripts/restore-from-snapshot.ts ./snapshot-2026-05-13.json
+
+# When the dry run looks right, commit:
+HBA_SUPABASE_URL="https://<new-project>.supabase.co" \
+HBA_SUPABASE_SERVICE_ROLE_KEY="<key>" \
+  npx tsx scripts/restore-from-snapshot.ts \
+    ./snapshot-2026-05-13.json --apply
+
+# Restore a specific table only (e.g. the gradebook got corrupted):
+npx tsx scripts/restore-from-snapshot.ts \
+  ./snapshot-2026-05-13.json --apply \
+  --only=assignments,scores,assignment_categories
+```
+
+The upsert is keyed on `id`, so re-running the script with the same
+snapshot is safe — already-restored rows are overwritten in place
+rather than duplicated. Safe to abort mid-restore and resume.
+
+For point-in-time recovery (everything between the last snapshot and
+the failure was lost), restore the snapshot first, then either:
+- Replay any application/contact form submissions from the admin
+  notification emails (search admissions@ inbox for the lost time
+  window), or
+- Accept the data loss and notify affected families.
+
+## What's still TODO
+
+- An admin "Download a snapshot now" button — _shipped_ as
+  `/admin/audit-log` "Snapshot now" button.
