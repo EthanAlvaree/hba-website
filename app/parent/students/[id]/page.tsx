@@ -188,12 +188,22 @@ export default async function ParentStudentOverviewPage({
           >
             ← Back to family portal
           </Link>
-          <Link
-            href={`/parent/students/${studentId}/complete-file`}
-            className="inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-          >
-            Complete file →
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            {link.can_view_grades && (
+              <Link
+                href={`/parent/students/${studentId}/transcript`}
+                className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+              >
+                View transcript →
+              </Link>
+            )}
+            <Link
+              href={`/parent/students/${studentId}/complete-file`}
+              className="inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+            >
+              Complete file →
+            </Link>
+          </div>
         </div>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
@@ -269,22 +279,32 @@ export default async function ParentStudentOverviewPage({
                     </p>
                   </div>
 
-                  {grade && (
-                    <div className="text-right">
-                      {grade.overall_percentage === null ? (
-                        <p className="text-2xl font-bold text-slate-500">—</p>
-                      ) : (
-                        <>
-                          <p className="text-2xl font-extrabold text-emerald-900">
-                            {grade.overall_percentage.toFixed(1)}%
-                          </p>
-                          <p className="text-sm font-semibold text-emerald-700">
-                            {grade.letter}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex flex-col items-end gap-2">
+                    {grade && (
+                      <div className="text-right">
+                        {grade.overall_percentage === null ? (
+                          <p className="text-2xl font-bold text-slate-500">—</p>
+                        ) : (
+                          <>
+                            <p className="text-2xl font-extrabold text-emerald-900">
+                              {grade.overall_percentage.toFixed(1)}%
+                            </p>
+                            <p className="text-sm font-semibold text-emerald-700">
+                              {grade.letter}
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    )}
+                    {link.can_view_grades && (
+                      <Link
+                        href={`/parent/students/${studentId}/sections/${enrollment.id}`}
+                        className="inline-flex items-center rounded-full border border-brand-navy/30 bg-white px-3 py-1 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                      >
+                        View details →
+                      </Link>
+                    )}
+                  </div>
                 </div>
 
                 {grade && grade.categories.length > 0 && (
