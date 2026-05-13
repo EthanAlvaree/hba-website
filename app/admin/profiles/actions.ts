@@ -167,7 +167,7 @@ export async function syncM365Action(formData: FormData) {
       target_kind: "m365_sync",
       details: { ok: false, step: result.step, message: result.message },
     })
-    redirect(`/admin/profiles?sync_error=${encodeURIComponent(result.message)}`)
+    redirect(`/admin/tools?sync_error=${encodeURIComponent(result.message)}`)
   }
 
   await logAdminAuditEvent({
@@ -197,7 +197,7 @@ export async function syncM365Action(formData: FormData) {
     photos_failed: String(result.photos_failed),
   })
   if (force) params.set("forced", "1")
-  redirect(`/admin/profiles?${params.toString()}`)
+  redirect(`/admin/tools?${params.toString()}`)
 }
 
 export async function seedQualificationsFromBiosAction() {
@@ -208,7 +208,7 @@ export async function seedQualificationsFromBiosAction() {
     result = await seedTeacherQualificationsFromBios()
   } catch (error) {
     const message = error instanceof Error ? error.message : "Bio seed failed"
-    redirect(`/admin/profiles?bio_seed_error=${encodeURIComponent(message)}`)
+    redirect(`/admin/tools?bio_seed_error=${encodeURIComponent(message)}`)
   }
 
   revalidateProfiles()
@@ -225,7 +225,7 @@ export async function seedQualificationsFromBiosAction() {
     no_profile: result.bios_no_profile.slice(0, 8).join(", "),
     no_course: result.courses_no_match.slice(0, 12).join(" | "),
   })
-  redirect(`/admin/profiles?${params.toString()}`)
+  redirect(`/admin/tools?${params.toString()}`)
 }
 
 const deleteProfileSchema = z.object({ id: z.uuid() })

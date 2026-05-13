@@ -90,7 +90,7 @@ export async function bulkSeedFacultyBiosAction() {
     faculty_bio_seed_skipped: String(result.skipped_already_seeded),
     faculty_bio_seed_no_profile: String(result.skipped_no_profile.length),
   })
-  redirect(`/admin/profiles?${params.toString()}`)
+  redirect(`/admin/tools?${params.toString()}`)
 }
 
 // Bulk-seed every faculty member's portrait from the code-side
@@ -121,5 +121,5 @@ export async function bulkSeedFacultyPortraitsAction() {
     faculty_portrait_seed_no_image: String(result.skipped_no_image.length),
     faculty_portrait_seed_failed: String(result.failed.length),
   })
-  redirect(`/admin/profiles?${params.toString()}`)
+  redirect(`/admin/tools?${params.toString()}`)
 }

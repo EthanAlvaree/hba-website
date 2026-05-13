@@ -29,6 +29,7 @@ const adminNav: PortalNavItem[] = [
   },
   { id: "messaging", label: "Messaging", href: "/admin/messaging" },
   { id: "reports", label: "Reports", href: "/admin/reports" },
+  { id: "tools", label: "Tools", href: "/admin/tools" },
   { id: "orphans", label: "Orphans", href: "/admin/orphans" },
   { id: "audit-log", label: "Audit log", href: "/admin/audit-log" },
 ]
