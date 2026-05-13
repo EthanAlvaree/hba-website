@@ -517,6 +517,109 @@ export async function updateDraftSection(input: {
   }
 }
 
+// Moves a student assignment from one draft section to another within the
+// same draft. Used by the drag-drop board on /admin/academics/scheduler.
+//
+// Rules:
+//   - Source and target sections must belong to the same draft.
+//   - Source and target sections must reference the same course. Cross-course
+//     moves break the fulfilled_request_id linkage — for now we refuse and
+//     leave them to a regenerate. (Common case: move a kid from Pre-Algebra
+//     section A to Pre-Algebra section B because periods don't work.)
+//   - Refuses to move into a section that's already at max_enrollment.
+//
+// Does NOT touch fulfilled_request_id — the request stays "fulfilled" for the
+// same course, which is still accurate after the move.
+export async function moveDraftAssignment(input: {
+  assignment_id: string
+  target_section_id: string
+}): Promise<void> {
+  const supabase = getSupabase()
+
+  const { data: assignment, error: assignmentError } = await supabase
+    .from("schedule_draft_assignments")
+    .select(
+      `id, draft_section_id,
+       draft_section:schedule_draft_sections!inner(id, draft_id, course_id, max_enrollment)`
+    )
+    .eq("id", input.assignment_id)
+    .maybeSingle<{
+      id: string
+      draft_section_id: string
+      draft_section: {
+        id: string
+        draft_id: string
+        course_id: string
+        max_enrollment: number | null
+      } | null
+    }>()
+
+  if (assignmentError) {
+    throw new Error(`Failed to load assignment: ${assignmentError.message}`)
+  }
+  if (!assignment || !assignment.draft_section) {
+    throw new Error("Assignment not found.")
+  }
+
+  // No-op if dropping onto the same section.
+  if (assignment.draft_section.id === input.target_section_id) {
+    return
+  }
+
+  const { data: target, error: targetError } = await supabase
+    .from("schedule_draft_sections")
+    .select("id, draft_id, course_id, max_enrollment")
+    .eq("id", input.target_section_id)
+    .maybeSingle<{
+      id: string
+      draft_id: string
+      course_id: string
+      max_enrollment: number | null
+    }>()
+
+  if (targetError) {
+    throw new Error(`Failed to load target section: ${targetError.message}`)
+  }
+  if (!target) {
+    throw new Error("Target section not found.")
+  }
+
+  if (target.draft_id !== assignment.draft_section.draft_id) {
+    throw new Error("Cannot move an assignment between different drafts.")
+  }
+
+  if (target.course_id !== assignment.draft_section.course_id) {
+    throw new Error(
+      "Cannot move a student into a section for a different course. Regenerate the draft if the underlying course request should change."
+    )
+  }
+
+  // Capacity check.
+  if (target.max_enrollment !== null) {
+    const { count, error: countError } = await supabase
+      .from("schedule_draft_assignments")
+      .select("id", { count: "exact", head: true })
+      .eq("draft_section_id", target.id)
+    if (countError) {
+      throw new Error(`Failed to check target capacity: ${countError.message}`)
+    }
+    if ((count ?? 0) >= target.max_enrollment) {
+      throw new Error(
+        `Target section is already at its max enrollment of ${target.max_enrollment}.`
+      )
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from("schedule_draft_assignments")
+    .update({ draft_section_id: target.id })
+    .eq("id", input.assignment_id)
+
+  if (updateError) {
+    throw new Error(`Failed to move assignment: ${updateError.message}`)
+  }
+}
+
 // ============================================================================
 // Commit draft → course_sections + enrollments
 // ============================================================================

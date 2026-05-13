@@ -6,6 +6,7 @@ import { z } from "zod"
 import { auth, signOut } from "@/auth"
 import {
   commitDraftToSis,
+  moveDraftAssignment,
   persistDraft,
   solveScheduleForTerm,
   updateDraftSection,
@@ -211,6 +212,44 @@ export async function updateDraftSectionAction(formData: FormData) {
   redirect(
     `/admin/academics/scheduler?draft_id=${parsed.data.draft_id}&section_saved=1`
   )
+}
+
+// ============================================================================
+// Move a student assignment between draft sections (drag/drop on the board)
+// ============================================================================
+
+const moveAssignmentSchema = z.object({
+  draft_id: z.uuid(),
+  assignment_id: z.uuid(),
+  target_section_id: z.uuid(),
+})
+
+// Returns a structured result instead of redirecting so the client component
+// can show inline feedback (toast) without a full navigation. Errors come
+// back as { ok: false, error: "..." } — no exceptions thrown to the client.
+export async function moveDraftAssignmentAction(input: {
+  draft_id: string
+  assignment_id: string
+  target_section_id: string
+}): Promise<{ ok: true } | { ok: false; error: string }> {
+  await assertAdmin()
+
+  const parsed = moveAssignmentSchema.safeParse(input)
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid request." }
+  }
+
+  try {
+    await moveDraftAssignment({
+      assignment_id: parsed.data.assignment_id,
+      target_section_id: parsed.data.target_section_id,
+    })
+  } catch (error) {
+    return { ok: false, error: error instanceof Error ? error.message : "Move failed." }
+  }
+
+  revalidateScheduler()
+  return { ok: true }
 }
 
 export async function signOutSchedulerAdminAction() {

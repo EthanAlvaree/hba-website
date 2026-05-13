@@ -19,6 +19,7 @@ import {
   setDraftStatusAction,
   updateDraftSectionAction,
 } from "./actions"
+import { DraftAssignmentsBoard, type BoardData } from "./DraftAssignmentsBoard"
 
 export const dynamic = "force-dynamic"
 
@@ -55,6 +56,7 @@ type DraftSectionRow = {
   teacher_profile_id: string | null
   period: string | null
   section_code: string | null
+  max_enrollment: number | null
   course: { id: string; code: string; name: string } | null
   teacher: { id: string; display_name: string | null; first_name: string | null; last_name: string | null; email: string } | null
 }
@@ -150,7 +152,7 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
         supabase
           .from("schedule_draft_sections")
           .select(
-            `id, course_id, teacher_profile_id, period, section_code,
+            `id, course_id, teacher_profile_id, period, section_code, max_enrollment,
              course:courses(id, code, name),
              teacher:profiles(id, display_name, first_name, last_name, email)`
           )
@@ -449,6 +451,13 @@ function DraftDetail({
         <Stat label="Requests unfulfilled" value={summary.unfulfilled_requests ?? 0} />
       </div>
 
+      {/* Drag/drop assignment board */}
+      {sections.length > 0 && (
+        <DraftAssignmentsBoard
+          data={buildBoardData(draft, sections, assignmentsBySection)}
+        />
+      )}
+
       {/* Sections by period */}
       {sections.length === 0 ? (
         <p className="text-sm text-slate-600">
@@ -688,6 +697,49 @@ function DraftSectionEditForm({
       </button>
     </form>
   )
+}
+
+function buildBoardData(
+  draft: DraftRow,
+  sections: DraftSectionRow[],
+  assignmentsBySection: Map<string, AssignmentRow[]>
+): BoardData {
+  // Same period ordering used by the read-only listing below.
+  const orderedPeriods: Array<{ key: string; label: string }> = [
+    { key: "period_1", label: periodDisplayLabel.period_1 },
+    { key: "period_2", label: periodDisplayLabel.period_2 },
+    { key: "period_3", label: periodDisplayLabel.period_3 },
+    { key: "period_4", label: periodDisplayLabel.period_4 },
+    { key: "period_5", label: periodDisplayLabel.period_5 },
+    { key: "period_6", label: periodDisplayLabel.period_6 },
+    { key: "elective_1", label: periodDisplayLabel.elective_1 },
+    { key: "elective_2", label: periodDisplayLabel.elective_2 },
+    { key: "async", label: periodDisplayLabel.async },
+    { key: "__unscheduled__", label: "Unscheduled" },
+  ]
+
+  return {
+    draft_id: draft.id,
+    draft_status: draft.status,
+    periods: orderedPeriods,
+    sections: sections.map((section) => ({
+      id: section.id,
+      course_id: section.course_id,
+      course_name: section.course?.name ?? "(deleted course)",
+      course_code: section.course?.code ?? null,
+      section_code: section.section_code,
+      period: section.period,
+      period_label: section.period
+        ? periodDisplayLabel[section.period as keyof typeof periodDisplayLabel] ?? section.period
+        : "Unscheduled",
+      teacher_label: teacherShortName(section.teacher),
+      max_enrollment: section.max_enrollment,
+      assignments: (assignmentsBySection.get(section.id) ?? []).map((a) => ({
+        id: a.id,
+        student: a.student,
+      })),
+    })),
+  }
 }
 
 function Stat({ label, value }: { label: string; value: number }) {
