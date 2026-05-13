@@ -8,6 +8,7 @@ import { getProfileByEmail } from "@/lib/sis"
 import {
   deleteTeacherQualification,
   saveTeacherAvailability,
+  setTeacherQualificationOrder,
   teacherAvailabilityBatchSchema,
   teacherQualificationUpsertSchema,
   teacherWorkloadUpsertSchema,
@@ -72,6 +73,27 @@ export async function saveQualificationAction(formData: FormData) {
   }
 
   await upsertTeacherQualification(parsed.data)
+  revalidateTeaching(targetProfileId)
+  redirect("/faculty-portal/teaching?saved=qualification")
+}
+
+// Bulk-update preference_rank for a teacher's qualifications. The form
+// posts an `ordered_course_ids` repeated field, in the desired new order
+// (index 0 = rank 1, etc). Used by the drag-to-rearrange UI.
+export async function saveQualificationOrderAction(formData: FormData) {
+  const targetProfileId = formData.get("profile_id")
+  if (typeof targetProfileId !== "string") throw new Error("Missing profile_id.")
+  await assertCanEditTeachingProfile(targetProfileId)
+
+  const orderedCourseIds = formData
+    .getAll("ordered_course_ids")
+    .map((v) => (typeof v === "string" ? v : ""))
+    .filter((v) => v.length > 0)
+
+  await setTeacherQualificationOrder({
+    profile_id: targetProfileId,
+    ordered_course_ids: orderedCourseIds,
+  })
   revalidateTeaching(targetProfileId)
   redirect("/faculty-portal/teaching?saved=qualification")
 }

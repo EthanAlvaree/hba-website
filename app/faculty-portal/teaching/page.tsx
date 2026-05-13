@@ -13,11 +13,11 @@ import {
   type TeacherWorkloadRecord,
 } from "@/lib/scheduler"
 import {
-  deleteQualificationAction,
   saveAvailabilityAction,
   saveQualificationAction,
   saveWorkloadAction,
 } from "./actions"
+import { QualificationsDragList } from "./QualificationsDragList"
 
 export const dynamic = "force-dynamic"
 
@@ -124,82 +124,26 @@ function QualificationsCard({
           Courses I can teach
         </h2>
         <p className="mt-1 text-sm text-slate-600">
-          Add every course you&rsquo;re qualified to teach. Rank them in
-          order of preference (1 = most preferred). The scheduler tries to
-          give you your top-ranked courses first.
+          Add every course you&rsquo;re qualified to teach, then drag to
+          rank them by preference (top = most preferred). The scheduler
+          tries to give you your top-ranked courses first. New courses
+          are added at the bottom of the list.
         </p>
       </div>
 
-      {qualifications.length === 0 ? (
-        <p className="text-sm text-slate-600">
-          No qualifications listed yet. Add your first course below.
-        </p>
-      ) : (
-        <ul className="space-y-2">
-          {qualifications.map((q) => (
-            <li
-              key={q.id}
-              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3"
-            >
-              <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,120px)_auto] sm:items-center">
-                <div>
-                  <p className="text-sm font-semibold text-slate-900">
-                    {q.course?.name ?? "(deleted course)"}
-                    {q.course?.code && (
-                      <code className="ml-2 rounded-full border border-slate-200 bg-white px-2 py-0.5 text-xs font-semibold text-slate-700">
-                        {q.course.code}
-                      </code>
-                    )}
-                  </p>
-                  {q.notes && (
-                    <p className="text-xs text-slate-500">{q.notes}</p>
-                  )}
-                </div>
-
-                <form
-                  action={saveQualificationAction}
-                  className="flex items-center gap-2"
-                >
-                  <input type="hidden" name="profile_id" value={profileId} />
-                  <input type="hidden" name="course_id" value={q.course_id} />
-                  <input
-                    type="hidden"
-                    name="notes"
-                    value={q.notes ?? ""}
-                  />
-                  <label className="text-xs text-slate-700">
-                    Rank
-                    <input
-                      name="preference_rank"
-                      type="number"
-                      min="1"
-                      defaultValue={q.preference_rank}
-                      className="ml-2 w-16 rounded-xl border border-slate-200 px-2 py-1 text-sm text-slate-900"
-                    />
-                  </label>
-                  <button
-                    type="submit"
-                    className="rounded-full border border-brand-navy/30 bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
-                  >
-                    Update
-                  </button>
-                </form>
-
-                <form action={deleteQualificationAction}>
-                  <input type="hidden" name="profile_id" value={profileId} />
-                  <input type="hidden" name="course_id" value={q.course_id} />
-                  <button
-                    type="submit"
-                    className="rounded-full border border-rose-200 bg-white px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
-                  >
-                    Remove
-                  </button>
-                </form>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      <QualificationsDragList
+        profileId={profileId}
+        initial={qualifications
+          .slice()
+          .sort((a, b) => a.preference_rank - b.preference_rank)
+          .map((q) => ({
+            id: q.id,
+            course_id: q.course_id,
+            course_name: q.course?.name ?? "(deleted course)",
+            course_code: q.course?.code ?? null,
+            notes: q.notes,
+          }))}
+      />
 
       <form
         action={saveQualificationAction}
@@ -207,36 +151,30 @@ function QualificationsCard({
       >
         <p className="text-sm font-semibold text-brand-navy">Add a course</p>
         <input type="hidden" name="profile_id" value={profileId} />
+        {/* New qualifications are appended to the end of the list. The drag
+            UI handles re-ranking after add. */}
+        <input
+          type="hidden"
+          name="preference_rank"
+          value={qualifications.length + 1}
+        />
 
-        <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,100px)]">
-          <label className="space-y-1 text-xs font-medium text-slate-700">
-            <span className="block">Course</span>
-            <select
-              name="course_id"
-              required
-              defaultValue=""
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-            >
-              <option value="">Pick a course…</option>
-              {availableCourses.map((course) => (
-                <option key={course.id} value={course.id}>
-                  {course.code} — {course.name}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="space-y-1 text-xs font-medium text-slate-700">
-            <span className="block">Preference rank</span>
-            <input
-              name="preference_rank"
-              type="number"
-              min="1"
-              defaultValue="1"
-              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
-            />
-          </label>
-        </div>
+        <label className="space-y-1 text-xs font-medium text-slate-700">
+          <span className="block">Course</span>
+          <select
+            name="course_id"
+            required
+            defaultValue=""
+            className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          >
+            <option value="">Pick a course…</option>
+            {availableCourses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.code} — {course.name}
+              </option>
+            ))}
+          </select>
+        </label>
 
         <label className="space-y-1 text-xs font-medium text-slate-700">
           <span className="block">Notes (optional)</span>

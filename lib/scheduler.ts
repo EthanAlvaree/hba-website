@@ -101,6 +101,32 @@ export async function upsertTeacherQualification(
   return data
 }
 
+// Bulk-rewrites preference_rank for every (profile_id, course_id) in the
+// given order: index 0 -> rank 1, index 1 -> rank 2, etc. Used by the
+// drag-to-rearrange UI on /faculty-portal/teaching. Silently no-ops if
+// a course_id in the input doesn't have an existing qualification (the
+// drag UI never produces these, but defensive).
+export async function setTeacherQualificationOrder(input: {
+  profile_id: string
+  ordered_course_ids: string[]
+}): Promise<void> {
+  const supabase = getSupabase()
+  for (let i = 0; i < input.ordered_course_ids.length; i += 1) {
+    const courseId = input.ordered_course_ids[i]
+    const rank = i + 1
+    const { error } = await supabase
+      .from("teacher_qualifications")
+      .update({ preference_rank: rank })
+      .eq("profile_id", input.profile_id)
+      .eq("course_id", courseId)
+    if (error) {
+      throw new Error(
+        `Failed to update rank for course ${courseId}: ${error.message}`
+      )
+    }
+  }
+}
+
 export async function deleteTeacherQualification(input: {
   profile_id: string
   course_id: string
