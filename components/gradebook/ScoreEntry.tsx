@@ -206,7 +206,8 @@ export function ScoreEntry({
                     <select
                       name="kind"
                       defaultValue={existing?.kind ?? "numeric"}
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+                      disabled={termLocked}
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                     >
                       {scoreKindSchema.options.map((kind) => (
                         <option key={kind} value={kind}>
@@ -230,7 +231,9 @@ export function ScoreEntry({
                           : ""
                       }
                       placeholder={`/ ${Number(assignment.points_possible).toFixed(0)}`}
-                      className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                      disabled={termLocked}
+                      readOnly={termLocked}
+                      className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                     />
 
                     <label className="block lg:hidden text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -241,7 +244,9 @@ export function ScoreEntry({
                       defaultValue={existing?.feedback ?? ""}
                       placeholder="Optional note for this student"
                       maxLength={4000}
-                      className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                      disabled={termLocked}
+                      readOnly={termLocked}
+                      className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
                     />
                   </div>
                 </li>

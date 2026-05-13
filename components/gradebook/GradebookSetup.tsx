@@ -298,7 +298,7 @@ function CategoryRow({
           <input type="hidden" name="id" value={category.id} />
           <input type="hidden" name="section_id" value={sectionId} />
           <input type="hidden" name="surface" value={surface} />
-          <CategoryFormFields defaults={category} />
+          <CategoryFormFields defaults={category} disabled={termLocked} />
           <button
             type="submit"
             disabled={termLocked}
@@ -332,9 +332,15 @@ function CategoryRow({
 
 function CategoryFormFields({
   defaults,
+  disabled = false,
 }: {
   defaults?: AssignmentCategoryRecord
+  /** When true, all inputs render read-only + visually muted. The save
+   *  button is already disabled by the parent; this prevents the
+   *  illusion of in-progress edits when the term is locked. */
+  disabled?: boolean
 } = {}) {
+  const inputCls = `w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500`
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       <label className="space-y-1 text-sm font-medium text-slate-700">
@@ -345,7 +351,9 @@ function CategoryFormFields({
           defaultValue={defaults?.name ?? ""}
           placeholder="Homework"
           maxLength={80}
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
       <label className="space-y-1 text-sm font-medium text-slate-700">
@@ -357,7 +365,9 @@ function CategoryFormFields({
           min="0"
           max="100"
           defaultValue={defaults?.weight ?? 0}
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
       <label className="space-y-1 text-sm font-medium text-slate-700">
@@ -368,7 +378,9 @@ function CategoryFormFields({
           min="0"
           defaultValue={defaults?.drop_lowest_count ?? ""}
           placeholder="e.g. 1"
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
       <label className="space-y-1 text-sm font-medium text-slate-700">
@@ -378,7 +390,9 @@ function CategoryFormFields({
           type="number"
           min="0"
           defaultValue={defaults?.sort_order ?? 0}
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
     </div>
@@ -458,7 +472,11 @@ function AssignmentRow({
           <input type="hidden" name="id" value={assignment.id} />
           <input type="hidden" name="section_id" value={sectionId} />
           <input type="hidden" name="surface" value={surface} />
-          <AssignmentFormFields categories={categories} defaults={assignment} />
+          <AssignmentFormFields
+            categories={categories}
+            defaults={assignment}
+            disabled={termLocked}
+          />
           <button
             type="submit"
             disabled={termLocked}
@@ -492,10 +510,13 @@ function AssignmentRow({
 function AssignmentFormFields({
   categories,
   defaults,
+  disabled = false,
 }: {
   categories: AssignmentCategoryRecord[]
   defaults?: AssignmentWithCategory
+  disabled?: boolean
 }) {
+  const inputCls = `w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500`
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       <label className="space-y-1 text-sm font-medium text-slate-700 sm:col-span-2 lg:col-span-2">
@@ -506,7 +527,9 @@ function AssignmentFormFields({
           defaultValue={defaults?.title ?? ""}
           maxLength={200}
           placeholder="Chapter 4 reading response"
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
 
@@ -515,7 +538,8 @@ function AssignmentFormFields({
         <select
           name="category_id"
           defaultValue={defaults?.category_id ?? ""}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          className={`w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500`}
         >
           <option value="">(uncategorized)</option>
           {categories.map((category) => (
@@ -532,7 +556,9 @@ function AssignmentFormFields({
           name="assigned_date"
           type="date"
           defaultValue={defaults?.assigned_date ?? ""}
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
 
@@ -542,7 +568,9 @@ function AssignmentFormFields({
           name="due_date"
           type="date"
           defaultValue={defaults?.due_date ?? ""}
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
 
@@ -554,7 +582,9 @@ function AssignmentFormFields({
           step="0.25"
           min="0"
           defaultValue={defaults?.points_possible ?? 0}
-          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={inputCls}
         />
       </label>
 
@@ -566,7 +596,9 @@ function AssignmentFormFields({
           defaultValue={defaults?.description ?? ""}
           maxLength={4000}
           placeholder="Instructions or notes for the assignment."
-          className="w-full rounded-3xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          disabled={disabled}
+          readOnly={disabled}
+          className={`w-full rounded-3xl border border-slate-200 px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500`}
         />
       </label>
 
@@ -576,7 +608,8 @@ function AssignmentFormFields({
             type="checkbox"
             name="is_published"
             defaultChecked={defaults?.is_published ?? false}
-            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            disabled={disabled}
+            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange disabled:cursor-not-allowed disabled:opacity-50"
           />
           <span>Published (visible to students &amp; parents)</span>
         </label>
@@ -585,7 +618,8 @@ function AssignmentFormFields({
             type="checkbox"
             name="is_extra_credit"
             defaultChecked={defaults?.is_extra_credit ?? false}
-            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            disabled={disabled}
+            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange disabled:cursor-not-allowed disabled:opacity-50"
           />
           <span>Extra credit</span>
         </label>
