@@ -85,12 +85,31 @@ export async function setProfilePhotoFromBuffer(
   try {
     normalized = await normalizeToWebp(buffer)
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Unknown image processing error."
     console.error("profile-photos: sharp failed", err)
+    const rawMessage = err instanceof Error ? err.message : ""
+    const lowered = rawMessage.toLowerCase()
+    const looksLikeHeic =
+      mimeType.toLowerCase() === "image/heic" ||
+      mimeType.toLowerCase() === "image/heif"
+    const sharpDoesntKnowFormat =
+      lowered.includes("unsupported image format") ||
+      lowered.includes("heif") ||
+      lowered.includes("heic")
+
+    // Most common cause on Vercel: the runtime's sharp binary didn't ship
+    // with libheif. Give an actionable next step rather than dumping the
+    // raw sharp error.
+    if (looksLikeHeic || sharpDoesntKnowFormat) {
+      return {
+        ok: false,
+        error:
+          "We couldn't process this HEIC photo. On iPhone, open Files → Photos → Share → Save to Files as JPEG, then upload that — or take a fresh photo with the camera set to Most Compatible (Settings → Camera → Formats).",
+      }
+    }
     return {
       ok: false,
-      error: `Couldn't process the image (${message}). Try a different file.`,
+      error:
+        "Couldn't read that as an image. Make sure the file isn't corrupted, then try again.",
     }
   }
 

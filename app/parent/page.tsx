@@ -2,6 +2,8 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { getProfileByEmail, listStudentsForParent } from "@/lib/sis"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
+import Avatar from "@/components/ui/Avatar"
 
 export const dynamic = "force-dynamic"
 
@@ -96,7 +98,7 @@ export default async function ParentPortalPage() {
               attendance.
             </p>
 
-            {children.map(({ link_id, student, parent_link }) => {
+            {children.map(({ link_id, student, student_profile, parent_link }) => {
               const displayName = student.preferred_name?.trim()
                 ? `${student.preferred_name} (${student.legal_first_name} ${student.legal_last_name})`
                 : `${student.legal_first_name} ${student.legal_last_name}`
@@ -107,7 +109,18 @@ export default async function ParentPortalPage() {
                   href={`/parent/students/${student.id}`}
                   className="block rounded-[1.75rem] border border-slate-200 bg-white px-5 py-4 shadow-sm transition hover:border-brand-navy/30 hover:shadow-md sm:px-6"
                 >
-                  <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_auto] sm:items-center">
+                  <div className="grid gap-3 sm:grid-cols-[auto_minmax(0,2fr)_minmax(0,1.4fr)_auto] sm:items-center">
+                    <Avatar
+                      photoUrl={profilePhotoUrl(student_profile?.photo_path)}
+                      initials={initialsFor({
+                        first_name: student.legal_first_name,
+                        last_name: student.legal_last_name,
+                        display_name: student_profile?.display_name,
+                        email: student_profile?.email,
+                      })}
+                      alt={displayName}
+                      size="md"
+                    />
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <p className="text-lg font-extrabold text-brand-navy">

@@ -833,7 +833,14 @@ export type CourseSectionRecord = {
   course: { id: string; code: string; name: string }
   term: { id: string; name: string; slug: string; academic_year: string }
   teacher:
-    | { id: string; display_name: string | null; first_name: string | null; last_name: string | null; email: string }
+    | {
+        id: string
+        display_name: string | null
+        first_name: string | null
+        last_name: string | null
+        email: string
+        photo_path: string | null
+      }
     | null
 }
 
@@ -842,7 +849,7 @@ const courseSectionSelect = `
   section_code, period, room, max_enrollment, modality, notes,
   course:courses(id, code, name),
   term:terms(id, name, slug, academic_year),
-  teacher:profiles(id, display_name, first_name, last_name, email)
+  teacher:profiles(id, display_name, first_name, last_name, email, photo_path)
 `
 
 const sectionFields = {
@@ -1213,7 +1220,14 @@ export type StudentDetailEnrollment = {
     course: { id: string; code: string; name: string } | null
     term: { id: string; name: string; slug: string; academic_year: string; start_date: string } | null
     teacher:
-      | { id: string; display_name: string | null; first_name: string | null; last_name: string | null; email: string }
+      | {
+          id: string
+          display_name: string | null
+          first_name: string | null
+          last_name: string | null
+          email: string
+          photo_path: string | null
+        }
       | null
   } | null
 }
@@ -1264,7 +1278,7 @@ export async function getStudentDetail(
            id, section_code, period, room, modality,
            course:courses(id, code, name),
            term:terms(id, name, slug, academic_year, start_date),
-           teacher:profiles(id, display_name, first_name, last_name, email)
+           teacher:profiles(id, display_name, first_name, last_name, email, photo_path)
          )`
       )
       .eq("student_id", id)
@@ -1952,6 +1966,14 @@ export async function updateParentLink(input: ParentLinkUpdateInput) {
 export type ParentStudentLink = {
   link_id: string
   student: StudentRecord
+  /** Thin slice of the student's profile for avatar rendering on the
+   *  parent picker. Full profile lives on /parent/students/[id] pages. */
+  student_profile: {
+    id: string
+    display_name: string | null
+    email: string
+    photo_path: string | null
+  } | null
   parent_link: {
     relationship: string | null
     is_primary: boolean
@@ -1972,7 +1994,10 @@ export async function listStudentsForParent(
     .select(
       `id, relationship, is_primary, is_homestay, can_view_grades,
        can_view_attendance, can_receive_communications,
-       student:students(${studentColumns})`
+       student:students(
+         ${studentColumns},
+         profile:profiles(id, display_name, email, photo_path)
+       )`
     )
     .eq("parent_profile_id", parentProfileId)
     .returns<
@@ -1984,7 +2009,16 @@ export async function listStudentsForParent(
         can_view_grades: boolean
         can_view_attendance: boolean
         can_receive_communications: boolean
-        student: StudentRecord | null
+        student:
+          | (StudentRecord & {
+              profile: {
+                id: string
+                display_name: string | null
+                email: string
+                photo_path: string | null
+              } | null
+            })
+          | null
       }>
     >()
 
@@ -1994,19 +2028,26 @@ export async function listStudentsForParent(
 
   // Filter out broken links where the student row was removed.
   return (data ?? [])
-    .filter((row): row is typeof row & { student: StudentRecord } => row.student !== null)
-    .map((row) => ({
-      link_id: row.id,
-      student: row.student,
-      parent_link: {
-        relationship: row.relationship,
-        is_primary: row.is_primary,
-        is_homestay: row.is_homestay,
-        can_view_grades: row.can_view_grades,
-        can_view_attendance: row.can_view_attendance,
-        can_receive_communications: row.can_receive_communications,
-      },
-    }))
+    .filter(
+      (row): row is typeof row & { student: NonNullable<typeof row.student> } =>
+        row.student !== null
+    )
+    .map((row) => {
+      const { profile, ...studentCore } = row.student
+      return {
+        link_id: row.id,
+        student: studentCore as StudentRecord,
+        student_profile: profile,
+        parent_link: {
+          relationship: row.relationship,
+          is_primary: row.is_primary,
+          is_homestay: row.is_homestay,
+          can_view_grades: row.can_view_grades,
+          can_view_attendance: row.can_view_attendance,
+          can_receive_communications: row.can_receive_communications,
+        },
+      }
+    })
 }
 
 // Verifies a parent profile is linked to a specific student. Used by parent

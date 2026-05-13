@@ -26,6 +26,8 @@ type PageProps = {
     actor?: string
     target_kind?: string
     target_id?: string
+    date_from?: string
+    date_to?: string
   }>
 }
 
@@ -103,12 +105,24 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
       actor_email: raw.actor,
       target_kind: raw.target_kind,
       target_id: raw.target_id,
+      date_from: raw.date_from,
+      date_to: raw.date_to,
       limit: 250,
     }),
     listAuditActionCodes(),
   ])
 
-  const anyFilter = Boolean(raw.action || raw.actor || raw.target_kind || raw.target_id)
+  const anyFilter = Boolean(
+    raw.action || raw.actor || raw.target_kind || raw.target_id || raw.date_from || raw.date_to
+  )
+
+  // CSV export carries the same filters as the page so "what you see is
+  // what you download." Built from raw so the URL stays small.
+  const csvParams = new URLSearchParams()
+  for (const [k, v] of Object.entries(raw)) {
+    if (v && v.length > 0) csvParams.set(k, v)
+  }
+  const csvHref = `/api/admin/reports/audit-log.csv${csvParams.toString() ? `?${csvParams.toString()}` : ""}`
 
   return (
     <div className="space-y-6">
@@ -125,7 +139,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
       </header>
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
-        <form className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] sm:items-end">
+        <form className="grid gap-3 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,160px)_minmax(0,160px)_auto] lg:items-end">
           <label className="space-y-1 text-xs font-medium text-slate-700">
             <span className="block">Action</span>
             <select
@@ -150,6 +164,24 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
               className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
             />
           </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">From</span>
+            <input
+              name="date_from"
+              type="date"
+              defaultValue={raw.date_from ?? ""}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">To</span>
+            <input
+              name="date_to"
+              type="date"
+              defaultValue={raw.date_to ?? ""}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
           <div className="flex flex-wrap gap-2">
             <button
               type="submit"
@@ -167,6 +199,18 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
             )}
           </div>
         </form>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3 text-xs text-slate-600">
+          <p>
+            Dates are Pacific-time calendar days. Times in results are{" "}
+            {pacific.replace("America/", "")}.
+          </p>
+          <Link
+            href={csvHref}
+            className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 px-4 py-1.5 font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+          >
+            Download CSV (current filters)
+          </Link>
+        </div>
       </section>
 
       <section className="space-y-2">

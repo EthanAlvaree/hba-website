@@ -136,7 +136,27 @@ export type AdminAuditFilters = {
   actor_email?: string
   target_kind?: string
   target_id?: string
+  /** ISO date (YYYY-MM-DD) — events with created_at >= this date (00:00 Pacific). */
+  date_from?: string
+  /** ISO date (YYYY-MM-DD) — events with created_at < this date + 1 day. */
+  date_to?: string
   limit?: number
+}
+
+// Pacific midnight expressed as UTC. April-Nov is UTC-7 (PDT); Nov-Mar
+// is UTC-8 (PST). Approximated to -08:00 since the filter is a coarse
+// "events from this day" bound; a one-hour drift around DST boundaries
+// is acceptable for audit-log search.
+function pacificDayBoundToUtc(date: string, kind: "start" | "endExclusive"): string {
+  // Build a UTC timestamp anchored at midnight Pacific on that calendar day.
+  const offsetHours = 8 // treat as PST (winter); summer events get a 1h drift
+  const [y, m, d] = date.split("-").map((s) => parseInt(s, 10))
+  if (!y || !m || !d) return date
+  const dt = new Date(Date.UTC(y, m - 1, d, offsetHours, 0, 0))
+  if (kind === "endExclusive") {
+    dt.setUTCDate(dt.getUTCDate() + 1)
+  }
+  return dt.toISOString()
 }
 
 export async function listAdminAuditEvents(
@@ -161,6 +181,12 @@ export async function listAdminAuditEvents(
   }
   if (filters.target_id) {
     query = query.eq("target_id", filters.target_id)
+  }
+  if (filters.date_from) {
+    query = query.gte("created_at", pacificDayBoundToUtc(filters.date_from, "start"))
+  }
+  if (filters.date_to) {
+    query = query.lt("created_at", pacificDayBoundToUtc(filters.date_to, "endExclusive"))
   }
 
   const { data, error } = await query.returns<AdminAuditRecord[]>()

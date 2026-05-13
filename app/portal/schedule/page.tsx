@@ -8,6 +8,7 @@ import {
 } from "@/lib/sis"
 import { WeekSchedule, type ScheduleEntry } from "@/components/schedule/WeekSchedule"
 import PrintButton from "@/components/transcripts/PrintButton"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 
 export const dynamic = "force-dynamic"
 
@@ -50,16 +51,36 @@ export default async function StudentScheduleWeekPage({ searchParams }: PageProp
 
   const entries: ScheduleEntry[] = enrollments
     .filter((e) => e.section && e.section.period !== null)
-    .map((e) => ({
-      period: e.section!.period!,
-      course_name: e.section!.course?.name ?? "(deleted course)",
-      course_code: e.section!.course?.code ?? null,
-      section_code: e.section!.section_code,
-      room: e.section!.room,
-      href: previewing
-        ? `/portal/sections/${e.id}?as=${targetStudentId}`
-        : `/portal/sections/${e.id}`,
-    }))
+    .map((e) => {
+      const teacher = e.section!.teacher
+      const teacherName = teacher
+        ? [teacher.first_name, teacher.last_name].filter(Boolean).join(" ").trim() ||
+          teacher.display_name ||
+          teacher.email
+        : null
+      return {
+        period: e.section!.period!,
+        course_name: e.section!.course?.name ?? "(deleted course)",
+        course_code: e.section!.course?.code ?? null,
+        section_code: e.section!.section_code,
+        room: e.section!.room,
+        href: previewing
+          ? `/portal/sections/${e.id}?as=${targetStudentId}`
+          : `/portal/sections/${e.id}`,
+        avatar: teacher && teacherName
+          ? {
+              photoUrl: profilePhotoUrl(teacher.photo_path),
+              initials: initialsFor({
+                first_name: teacher.first_name,
+                last_name: teacher.last_name,
+                display_name: teacher.display_name,
+                email: teacher.email,
+              }),
+              alt: teacherName,
+            }
+          : undefined,
+      }
+    })
 
   const displayName = student.preferred_name?.trim() || student.legal_first_name
 

@@ -12,6 +12,7 @@ import {
   type Weekday,
 } from "@/lib/scheduler"
 import type { SectionPeriod } from "@/lib/sis"
+import Avatar from "@/components/ui/Avatar"
 
 export type ScheduleEntry = {
   /** The period this meeting belongs to; null sections are excluded
@@ -23,6 +24,14 @@ export type ScheduleEntry = {
   room: string | null
   /** Where to link when the cell is clicked. Optional. */
   href?: string
+  /** Optional avatar shown in the corner of the cell. On the student
+   *  portal this is the teacher; on the faculty portal we pass null
+   *  (the user already knows it's their class). */
+  avatar?: {
+    photoUrl: string | null
+    initials: string
+    alt: string
+  }
 }
 
 type Cell = {
@@ -153,9 +162,20 @@ function CellCard({ cell }: { cell: Cell }) {
   const { entry } = cell
   const body = (
     <div className="rounded-2xl border border-brand-navy/15 bg-brand-navy/5 px-3 py-2">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange">
-        {formatTimeHHMM(cell.start)} – {formatTimeHHMM(cell.end)}
-      </p>
+      <div className="flex items-start justify-between gap-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange">
+          {formatTimeHHMM(cell.start)} – {formatTimeHHMM(cell.end)}
+        </p>
+        {entry.avatar && (
+          <Avatar
+            photoUrl={entry.avatar.photoUrl}
+            initials={entry.avatar.initials}
+            alt={entry.avatar.alt}
+            size="xs"
+            className="print:hidden"
+          />
+        )}
+      </div>
       <p className="mt-1 text-sm font-semibold text-brand-navy leading-tight">
         {entry.course_name}
       </p>
