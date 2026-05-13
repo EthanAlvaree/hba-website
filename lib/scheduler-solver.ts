@@ -14,8 +14,10 @@
 //     preferences (just the weekly cap). The bell-schedule periods don't
 //     all share days anyway, so "consecutive" needs careful definition.
 //   - It DOES respect: course → qualified teacher, teacher availability,
-//     teacher weekly workload cap, per-student per-period uniqueness,
-//     per-section max enrollment, and minimum class size (configurable).
+//     teacher weekly workload cap, student period availability, per-student
+//     per-period uniqueness, per-section max enrollment, minimum class
+//     size, course offering pattern (alternating-year courses), and hard
+//     course prerequisites (with admin-granted per-student overrides).
 //
 // Inputs are read directly from the database. Output is persisted as a
 // schedule_draft row + child rows.
@@ -47,23 +49,66 @@ type AvailabilityInput = {
   available: boolean
 }
 
+type StudentAvailabilityInput = {
+  student_id: string
+  period: SectionPeriod
+  available: boolean
+}
+
 type WorkloadInput = {
   profile_id: string
   min_periods_per_week: number | null
   max_periods_per_week: number | null
 }
 
+type CourseOfferedPattern =
+  | "always"
+  | "odd_start_year"
+  | "even_start_year"
+  | "manual"
+
 type CourseInput = {
   id: string
   code: string
   name: string
   is_elective: boolean
+  offered_pattern: CourseOfferedPattern
 }
 
 type FacultyInput = {
   id: string
   display_name: string | null
   email: string
+}
+
+type CoursePrereqInput = {
+  course_id: string
+  prerequisite_course_id: string
+  kind: "hard" | "recommended"
+  group_key: string | null
+}
+
+type StudentPrereqOverrideInput = {
+  student_id: string
+  course_id: string
+}
+
+// Enrollments that count as "course is done" for prereq-checking
+// purposes. We pull every enrollment for every student in this
+// term's requests, then bucket into "this student has completed
+// these courses." Status 'completed' always counts. Status
+// 'enrolled' counts when the section's term has already ended
+// (the kid finished it; the registrar just hasn't flipped the
+// status). We include current-term in-progress courses too so a
+// junior taking Precalc this spring is eligible for Calc AB next
+// fall.
+type CompletedEnrollmentInput = {
+  student_id: string
+  status: string
+  section: {
+    course_id: string
+    term: { end_date: string; is_current: boolean } | null
+  } | null
 }
 
 // ============================================================================
@@ -95,6 +140,40 @@ export type SolverWarning =
       request_kind: "core" | "elective" | "alternate"
     }
   | { kind: "section_at_capacity"; course_id: string; course_name: string; period: SectionPeriod }
+  | {
+      // Course's offered_pattern doesn't match the term's academic year
+      // (e.g. AP Lang requested for an even-start year). The request is
+      // dropped before section construction; admin can either grant an
+      // override on the course or wait for the next year.
+      kind: "course_not_offered_this_year"
+      course_id: string
+      course_name: string
+      offered_pattern: CourseOfferedPattern
+      academic_year_start: number
+    }
+  | {
+      // Student doesn't satisfy a hard prereq for this course, and no
+      // admin override exists. The trajectory page surfaces exactly which
+      // prereq groups are missing; the solver only needs to drop the
+      // request and warn.
+      kind: "prereq_not_met"
+      student_id: string
+      course_id: string
+      course_name: string
+      request_kind: "core" | "elective" | "alternate"
+      missing_prereq_course_ids: string[]
+    }
+  | {
+      // Student's availability rules + the periods this course could
+      // possibly run in have zero overlap. Surfaces when (for example)
+      // Brynn is P1-P4-only and the only qualified teacher for AP CS A
+      // is free P5/P6.
+      kind: "student_unavailable_all_periods"
+      student_id: string
+      course_id: string
+      course_name: string
+      request_kind: "core" | "elective" | "alternate"
+    }
 
 export type SolverResult = {
   sections: ProposedSection[]
@@ -137,14 +216,30 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
 
   const supabase = getSupabase()
 
+  // We need to know what calendar year this term anchors to so we can
+  // honor `offered_pattern` for alternating-year courses. Pull once,
+  // up front; everything else fetches in parallel.
+  const { data: term, error: termError } = await supabase
+    .from("terms")
+    .select("id, academic_year")
+    .eq("id", options.term_id)
+    .maybeSingle<{ id: string; academic_year: string }>()
+  if (termError) throw new Error(termError.message)
+  if (!term) throw new Error("Term not found.")
+  const termStartYear = parseStartYear(term.academic_year)
+
   // Pull every input the solver needs in parallel.
   const [
     requestsRes,
     qualificationsRes,
     availabilityRes,
+    studentAvailabilityRes,
     workloadRes,
     coursesRes,
     profilesRes,
+    prereqsRes,
+    overridesRes,
+    completedRes,
   ] = await Promise.all([
     supabase
       .from("student_course_requests")
@@ -160,12 +255,16 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
       .select("profile_id, period, available")
       .returns<AvailabilityInput[]>(),
     supabase
+      .from("student_availability")
+      .select("student_id, period, available")
+      .returns<StudentAvailabilityInput[]>(),
+    supabase
       .from("teacher_workload_preferences")
       .select("profile_id, min_periods_per_week, max_periods_per_week")
       .returns<WorkloadInput[]>(),
     supabase
       .from("courses")
-      .select("id, code, name, is_elective")
+      .select("id, code, name, is_elective, offered_pattern")
       .eq("active", true)
       .returns<CourseInput[]>(),
     supabase
@@ -174,21 +273,48 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
       .eq("active", true)
       .or("roles.cs.{faculty},roles.cs.{admin}")
       .returns<FacultyInput[]>(),
+    supabase
+      .from("course_prerequisites")
+      .select("course_id, prerequisite_course_id, kind, group_key")
+      .eq("kind", "hard")
+      .returns<CoursePrereqInput[]>(),
+    supabase
+      .from("student_prereq_overrides")
+      .select("student_id, course_id")
+      .returns<StudentPrereqOverrideInput[]>(),
+    supabase
+      .from("enrollments")
+      .select(
+        `student_id, status,
+         section:course_sections(
+           course_id,
+           term:terms(end_date, is_current)
+         )`
+      )
+      .returns<CompletedEnrollmentInput[]>(),
   ])
 
   if (requestsRes.error) throw new Error(requestsRes.error.message)
   if (qualificationsRes.error) throw new Error(qualificationsRes.error.message)
   if (availabilityRes.error) throw new Error(availabilityRes.error.message)
+  if (studentAvailabilityRes.error) throw new Error(studentAvailabilityRes.error.message)
   if (workloadRes.error) throw new Error(workloadRes.error.message)
   if (coursesRes.error) throw new Error(coursesRes.error.message)
   if (profilesRes.error) throw new Error(profilesRes.error.message)
+  if (prereqsRes.error) throw new Error(prereqsRes.error.message)
+  if (overridesRes.error) throw new Error(overridesRes.error.message)
+  if (completedRes.error) throw new Error(completedRes.error.message)
 
   const requests = requestsRes.data ?? []
   const qualifications = qualificationsRes.data ?? []
   const availability = availabilityRes.data ?? []
+  const studentAvailability = studentAvailabilityRes.data ?? []
   const workloads = workloadRes.data ?? []
   const courses = coursesRes.data ?? []
   const faculty = profilesRes.data ?? []
+  const prereqs = prereqsRes.data ?? []
+  const overrides = overridesRes.data ?? []
+  const completedEnrollments = completedRes.data ?? []
 
   // Quick lookups
   const courseById = new Map(courses.map((c) => [c.id, c]))
@@ -216,6 +342,17 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     }
   }
 
+  // Same shape for students. Default availability = "anything"; only
+  // explicit unavailable rows constrain the solver.
+  const unavailableByStudent = new Map<string, Set<SectionPeriod>>()
+  for (const a of studentAvailability) {
+    if (!a.available) {
+      const set = unavailableByStudent.get(a.student_id) ?? new Set<SectionPeriod>()
+      set.add(a.period)
+      unavailableByStudent.set(a.student_id, set)
+    }
+  }
+
   // Workload caps. null = no cap. Default cap = 8 periods/week.
   const maxPeriodsByTeacher = new Map<string, number>()
   for (const w of workloads) {
@@ -224,12 +361,114 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     }
   }
 
+  // Bucket prereqs by course (and by group_key within each course so we
+  // can evaluate OR-chains: "Calc AB requires Precalc OR Honors Precalc
+  // OR AP Precalc" = three rows sharing 'calcab_entry'). A bucket is
+  // cleared if ANY of its prerequisite_course_ids appears in the
+  // student's completed set.
+  const prereqsByCourse = new Map<string, Map<string, string[]>>()
+  for (const p of prereqs) {
+    const groups =
+      prereqsByCourse.get(p.course_id) ?? new Map<string, string[]>()
+    const key = p.group_key ?? `_solo_${p.prerequisite_course_id}`
+    const arr = groups.get(key) ?? []
+    arr.push(p.prerequisite_course_id)
+    groups.set(key, arr)
+    prereqsByCourse.set(p.course_id, groups)
+  }
+
+  // Per-student override set — if course_id is in here, prereqs for that
+  // course are waived for that student.
+  const overridesByStudent = new Map<string, Set<string>>()
+  for (const o of overrides) {
+    const set = overridesByStudent.get(o.student_id) ?? new Set<string>()
+    set.add(o.course_id)
+    overridesByStudent.set(o.student_id, set)
+  }
+
+  // Per-student completed course set. Mirrors the trajectory page's
+  // logic — past terms in 'completed' or 'enrolled' status, plus
+  // current-term in-progress so the kid taking Precalc this spring
+  // is treated as having it for next year's Calc AB.
+  const todayIso = new Date().toISOString().slice(0, 10)
+  const completedByStudent = new Map<string, Set<string>>()
+  for (const e of completedEnrollments) {
+    const courseId = e.section?.course_id
+    if (!courseId) continue
+    const t = e.section?.term ?? null
+    const isPast = t ? t.end_date < todayIso : false
+    const isInProgress = (e.status === "enrolled" || e.status === "audit") && t?.is_current
+    if (e.status === "completed" || (isPast && e.status === "enrolled") || isInProgress) {
+      const set = completedByStudent.get(e.student_id) ?? new Set<string>()
+      set.add(courseId)
+      completedByStudent.set(e.student_id, set)
+    }
+  }
+
+  // Solver state ------------------------------------------------------------
+
+  const warnings: SolverWarning[] = []
+  const proposed: ProposedSection[] = []
+
+  // --- Pre-filter: drop requests that can never be fulfilled --------------
+  //
+  // Course offered_pattern + hard prereqs are hard "no, never" gates: no
+  // matter how the greedy pass slices periods, these requests don't
+  // belong in section construction at all. Filtering up front keeps the
+  // main loop focused and surfaces the exact reason to the admin.
+
+  const droppedCourseIds = new Set<string>()
+  const droppedRequestIds = new Set<string>()
+
+  for (const course of courses) {
+    if (!isOfferedInStartYear(course.offered_pattern, termStartYear)) {
+      droppedCourseIds.add(course.id)
+      warnings.push({
+        kind: "course_not_offered_this_year",
+        course_id: course.id,
+        course_name: course.name,
+        offered_pattern: course.offered_pattern,
+        academic_year_start: termStartYear ?? 0,
+      })
+    }
+  }
+
+  for (const req of requests) {
+    if (droppedCourseIds.has(req.course_id)) {
+      droppedRequestIds.add(req.id)
+      continue
+    }
+    const course = courseById.get(req.course_id)
+    if (!course) continue
+    const missing = missingHardPrereqs({
+      studentId: req.student_id,
+      courseId: req.course_id,
+      prereqsByCourse,
+      completedByStudent,
+      overridesByStudent,
+    })
+    if (missing.length > 0) {
+      droppedRequestIds.add(req.id)
+      warnings.push({
+        kind: "prereq_not_met",
+        student_id: req.student_id,
+        course_id: req.course_id,
+        course_name: course.name,
+        request_kind: req.kind,
+        missing_prereq_course_ids: missing,
+      })
+    }
+  }
+
+  const eligibleRequests = requests.filter((r) => !droppedRequestIds.has(r.id))
+
   // Demand: students grouped by course (with their request rows so we know
   // kind + rank). Sorted by (kind preference: core > elective > alternate),
   // then preference_rank ascending, so the greedy pass favors high-priority
-  // requests first.
+  // requests first. Dropped requests are excluded so they never compete
+  // for section slots.
   const demandByCourse = new Map<string, RequestInput[]>()
-  for (const req of requests) {
+  for (const req of eligibleRequests) {
     const list = demandByCourse.get(req.course_id) ?? []
     list.push(req)
     demandByCourse.set(req.course_id, list)
@@ -246,11 +485,6 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
       return a.preference_rank - b.preference_rank
     })
   }
-
-  // Solver state ------------------------------------------------------------
-
-  const warnings: SolverWarning[] = []
-  const proposed: ProposedSection[] = []
 
   // Tracks (student_id, period) → already assigned, so a student can't be
   // in two places at once.
@@ -309,12 +543,18 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
         if (taken.has(period)) continue
 
         // Of the remaining demand, who is free this period AND has capacity?
+        // Three filters per student:
+        //   1. Period not already taken by another section (existing).
+        //   2. Period not blocked by student's availability rules (new).
+        //   3. Cap at the section's max size.
         const maxSize = defaultMaxSection
         const studentsForSection: RequestInput[] = []
         for (const req of remainingDemand) {
           if (studentsForSection.length >= maxSize) break
           const studentTaken = studentPeriodTaken.get(req.student_id) ?? new Set<SectionPeriod>()
           if (studentTaken.has(period)) continue
+          const studentBlocked = unavailableByStudent.get(req.student_id)
+          if (studentBlocked?.has(period)) continue
           studentsForSection.push(req)
         }
 
@@ -372,8 +612,37 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
       }
     }
 
-    // Anyone left over → unfulfilled.
+    // Anyone left over → unfulfilled. Split into two cases for clarity:
+    //   - The set of periods the qualified teachers could collectively
+    //     cover already excludes everything this student is available
+    //     for → it's a student-availability problem, not a "we just
+    //     didn't get to it" problem.
+    //   - Otherwise, generic unfulfilled (no capacity / no period overlap
+    //     with classmates / etc).
+    const teachableUnion = new Set<SectionPeriod>()
+    for (const tq of teachers) {
+      const t = facultyById.get(tq.profile_id)
+      if (!t) continue
+      const tUnavail = unavailableByTeacher.get(t.id) ?? new Set<SectionPeriod>()
+      for (const period of sectionPeriodSchema.options) {
+        if (!tUnavail.has(period)) teachableUnion.add(period)
+      }
+    }
+
     for (const req of remainingDemand) {
+      const studentBlocked =
+        unavailableByStudent.get(req.student_id) ?? new Set<SectionPeriod>()
+      const overlap = [...teachableUnion].some((p) => !studentBlocked.has(p))
+      if (!overlap) {
+        warnings.push({
+          kind: "student_unavailable_all_periods",
+          student_id: req.student_id,
+          course_id: courseId,
+          course_name: course.name,
+          request_kind: req.kind,
+        })
+        continue
+      }
       warnings.push({
         kind: "unfulfilled_request",
         student_id: req.student_id,
@@ -404,6 +673,63 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     unfulfilled_requests: unfulfilledCount,
     score: Math.round(score * 100) / 100,
   }
+}
+
+// ============================================================================
+// Pure helpers
+// ============================================================================
+
+// "2025-2026" → 2025. Used to decide whether an alternating-year
+// course is offered in this term's school year. Returns null when the
+// term's academic_year isn't shaped like a year-pair string.
+function parseStartYear(academicYear: string | null | undefined): number | null {
+  if (!academicYear) return null
+  const m = academicYear.match(/^(\d{4})/)
+  return m ? parseInt(m[1], 10) : null
+}
+
+// Pure: is this course offered in the given start year?
+// 'always' / 'manual' always yes. 'odd_start_year' = years 2025, 2027, …
+// 'even_start_year' = years 2026, 2028, …
+function isOfferedInStartYear(
+  pattern: CourseOfferedPattern,
+  year: number | null
+): boolean {
+  if (pattern === "always" || pattern === "manual") return true
+  if (year === null) return true // can't tell; assume yes rather than blocking
+  if (pattern === "odd_start_year") return year % 2 === 1
+  if (pattern === "even_start_year") return year % 2 === 0
+  return true
+}
+
+// Pure: which hard-prereq alternatives for `courseId` is `studentId`
+// still missing? An OR-group (rows sharing a non-null group_key) is
+// cleared if ANY member is in completed. Standalone prereqs (group_key
+// null) must each be cleared individually. Returns the flat list of
+// course IDs the trajectory / admin needs to know about — UI groups
+// them by the original group_key for display.
+function missingHardPrereqs(input: {
+  studentId: string
+  courseId: string
+  prereqsByCourse: Map<string, Map<string, string[]>>
+  completedByStudent: Map<string, Set<string>>
+  overridesByStudent: Map<string, Set<string>>
+}): string[] {
+  if (input.overridesByStudent.get(input.studentId)?.has(input.courseId)) {
+    return []
+  }
+  const groups = input.prereqsByCourse.get(input.courseId)
+  if (!groups || groups.size === 0) return []
+  const completed = input.completedByStudent.get(input.studentId) ?? new Set<string>()
+  const missing: string[] = []
+  for (const alternatives of groups.values()) {
+    const anySatisfied = alternatives.some((c) => completed.has(c))
+    if (anySatisfied) continue
+    for (const c of alternatives) {
+      if (!missing.includes(c)) missing.push(c)
+    }
+  }
+  return missing
 }
 
 // Pure scoring pass — separated so the greedy loop above stays focused on
@@ -443,8 +769,18 @@ function computeScore(input: {
   }
 
   // Penalty for each unfulfilled request, weighted by request kind.
+  // unfulfilled_request covers the "we ran out of room / periods didn't
+  // line up" cases; prereq_not_met and student_unavailable_all_periods
+  // also represent un-scheduled requests and deserve the same penalty
+  // so the score reflects actual fulfillment.
   for (const warning of input.warnings) {
-    if (warning.kind !== "unfulfilled_request") continue
+    if (
+      warning.kind !== "unfulfilled_request" &&
+      warning.kind !== "prereq_not_met" &&
+      warning.kind !== "student_unavailable_all_periods"
+    ) {
+      continue
+    }
     if (warning.request_kind === "core") {
       score += SCORE_PENALTY_UNFULFILLED_CORE
     } else if (warning.request_kind === "elective") {
