@@ -40,18 +40,18 @@ const apCategories: { label: string; courses: string[] }[] = [
       "AP Environmental Science",
       "AP Physics 1 & 2",
       "AP Physics C: Mechanics",
-      "AP Physics C: Electricity & Magnetism",
+      "AP Physics C: Electricity and Magnetism",
     ],
   },
   {
     label: "AP English & History",
     courses: [
-      "AP English Language",
-      "AP English Literature",
+      "AP English Language and Composition",
+      "AP English Literature and Composition",
       "AP Seminar",
       "AP Research",
-      "AP U.S. History",
-      "AP World History",
+      "AP United States History",
+      "AP World History: Modern",
       "AP European History",
       "AP African American Studies",
     ],
@@ -59,12 +59,12 @@ const apCategories: { label: string; courses: string[] }[] = [
   {
     label: "AP Social Sciences, Languages & Arts",
     courses: [
-      "AP U.S. & Comparative Government",
+      "AP U.S. & Comparative Government and Politics",
       "AP Macroeconomics & Microeconomics",
       "AP Psychology",
       "AP Human Geography",
-      "AP Business Principles & Personal Finance",
-      "AP Spanish, French & Chinese Language",
+      "AP Business with Personal Finance",
+      "AP Spanish, French & Chinese Language and Culture",
       "AP Art History",
       "AP Music Theory",
     ],
@@ -105,7 +105,7 @@ const pathways: Pathway[] = [
     courses: [
       "AP Physics 1",
       "AP Physics C: Mechanics",
-      "AP Physics C: Electricity & Magnetism",
+      "AP Physics C: Electricity and Magnetism",
       "AP Calculus BC",
       "Intro to Robotic Engineering",
       "AP Computer Science A",
@@ -119,7 +119,7 @@ const pathways: Pathway[] = [
     tagline:
       "Foundations deeper than the standard three sciences for future physicians, biologists, and researchers.",
     courses: [
-      "Honors Chemistry",
+      "Honors Chemistry: In the Earth System",
       "AP Biology",
       "AP Chemistry",
       "AP Environmental Science",
@@ -163,11 +163,11 @@ const pathways: Pathway[] = [
     tagline:
       "Four years of language alongside the world's most consequential history and politics.",
     courses: [
-      "AP World History",
-      "AP Comparative Government & Politics",
+      "AP World History: Modern",
+      "AP Comparative Government and Politics",
       "AP Human Geography",
       "Four years of Spanish, French, or Chinese — through AP",
-      "Model UN seminar",
+      "Model UN",
     ],
     capstone: "Independent research paper on a contemporary global issue",
     icon: GlobeAltIcon,

@@ -59,10 +59,13 @@
       "Read(//c/Users/ethan/.claude/projects/c--dev-hba-website/memory/**)",
       "Bash(xargs grep -l -i \"ellen\")",
       "Bash(rm app/admin/_components/AdminShell.tsx app/admin/_components/sign-out-action.ts)",
-      "Bash(rmdir app/admin/_components)"
+      "Bash(rmdir app/admin/_components)",
+      "Bash(cat > *)",
+      "Bash(npx tsx *)"
     ],
     "additionalDirectories": [
-      "C:\\dev\\hba-website"
+      "C:\\dev\\hba-website",
+      "\\tmp"
     ]
   }
 }

@@ -34,7 +34,7 @@ export const summerCategories: SummerCategory[] = [
       "AP and college-prep science with hands-on lab work. AP Physics, Chemistry, and Biology students earn a guaranteed seat at HBA's College Board AP testing site.",
     courses: [
       {
-        name: "Chemistry in the Earth System",
+        name: "Chemistry: In the Earth System",
         dates: "June 8 – July 24",
         time: "11:30am – 2:30pm",
         price: "$2,800",
@@ -48,7 +48,7 @@ export const summerCategories: SummerCategory[] = [
         sixWeek: true,
       },
       {
-        name: "Honors Chemistry in the Earth System",
+        name: "Honors Chemistry: In the Earth System",
         dates: "June 8 – July 24",
         time: "8:00 – 11:00am",
         price: "$3,000",
@@ -67,7 +67,7 @@ export const summerCategories: SummerCategory[] = [
         status: "Call for availability",
       },
       {
-        name: "Physics",
+        name: "Physics of the Universe",
         dates: "June 8 – July 24",
         time: "TBD",
         price: "On-demand only",
@@ -97,7 +97,7 @@ export const summerCategories: SummerCategory[] = [
         status: "Call for availability",
       },
       {
-        name: "Integrated Math 1 Honors",
+        name: "Honors Integrated Math 1",
         dates: "June 8 – July 24",
         time: "8:00 – 10:30am",
         price: "$2,900",
@@ -110,7 +110,7 @@ export const summerCategories: SummerCategory[] = [
         status: "Call for availability",
       },
       {
-        name: "Integrated Math 2 Honors",
+        name: "Honors Integrated Math 2",
         dates: "June 8 – July 24",
         time: "10:30am – 1:00pm",
         price: "$2,900",
@@ -123,7 +123,7 @@ export const summerCategories: SummerCategory[] = [
         sixWeek: true,
       },
       {
-        name: "Integrated Math 3 Honors",
+        name: "Honors Integrated Math 3",
         dates: "June 8 – July 24",
         time: "8:00 – 10:30am",
         price: "$2,900",
@@ -174,13 +174,13 @@ export const summerCategories: SummerCategory[] = [
       "AP and college-prep English, history, government, and economics — including AP Capstone (Seminar / Research) and the popular four-week AP Government and AP Macroeconomics intensives.",
     courses: [
       {
-        name: "AP US History",
+        name: "AP United States History",
         dates: "June 8 – July 31",
         time: "8:00 – 10:00am",
         price: "$3,000",
       },
       {
-        name: "AP World History",
+        name: "AP World History: Modern",
         dates: "June 8 – July 31",
         time: "10:00am – 12:00pm",
         price: "$3,000",
@@ -192,7 +192,7 @@ export const summerCategories: SummerCategory[] = [
         price: "$3,500",
       },
       {
-        name: "AP Government & Politics",
+        name: "AP United States Government and Politics",
         dates: "June 8 – July 3",
         time: "12:30 – 2:30pm",
         price: "$1,800",
@@ -204,14 +204,14 @@ export const summerCategories: SummerCategory[] = [
         price: "$1,800",
       },
       {
-        name: "AP English Language",
+        name: "AP English Language and Composition",
         dates: "Private or self-paced online only",
         time: "TBD",
         price: "Call for availability",
         status: "Call for availability",
       },
       {
-        name: "AP English Literature",
+        name: "AP English Literature and Composition",
         dates: "Private or self-paced online only",
         time: "TBD",
         price: "Call for availability",
