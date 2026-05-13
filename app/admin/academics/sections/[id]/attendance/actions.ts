@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 import { assertCanEditSection } from "@/lib/section-auth"
 import {
   attendanceStatusSchema,
@@ -99,6 +100,18 @@ export async function saveAttendanceWeekAction(formData: FormData) {
     await saveAttendanceForSection(parsed.data)
   }
 
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.attendance_save_week,
+    target_kind: "section",
+    target_id: sectionId,
+    details: {
+      week_of: typeof weekOf === "string" ? weekOf : null,
+      day_count: byDate.size,
+      row_count: enrollmentIds.length,
+      surface,
+    },
+  })
+
   const base = sectionBasePath(surface, sectionId)
   revalidatePath(base)
   revalidatePath(`${base}/attendance/week`)
@@ -151,6 +164,17 @@ export async function saveAttendanceAction(formData: FormData) {
   }
 
   await saveAttendanceForSection(parsed.data)
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.attendance_save_day,
+    target_kind: "section",
+    target_id: parsed.data.section_id,
+    details: {
+      date: parsed.data.date,
+      row_count: parsed.data.rows.length,
+      surface,
+    },
+  })
 
   const base = sectionBasePath(surface, parsed.data.section_id)
   revalidatePath(base)

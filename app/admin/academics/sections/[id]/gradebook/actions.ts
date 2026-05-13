@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 import { assertCanEditSection } from "@/lib/section-auth"
 import {
   assignmentCategoryCreateSchema,
@@ -78,6 +79,12 @@ export async function createAssignmentCategoryAction(formData: FormData) {
   await assertCanEditSection(parsed.data.section_id)
 
   await createAssignmentCategory(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_category_create,
+    target_kind: "section",
+    target_id: parsed.data.section_id,
+    details: { name: parsed.data.name, weight: parsed.data.weight, surface },
+  })
   revalidateGradebook(surface, parsed.data.section_id)
   backToGradebook(surface, parsed.data.section_id)
 }
@@ -95,6 +102,12 @@ export async function updateAssignmentCategoryAction(formData: FormData) {
   await assertCanEditSection(parsed.data.section_id)
 
   await updateAssignmentCategory(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_category_update,
+    target_kind: "assignment_category",
+    target_id: parsed.data.id,
+    details: { section_id: parsed.data.section_id, name: parsed.data.name, weight: parsed.data.weight, surface },
+  })
   revalidateGradebook(surface, parsed.data.section_id)
   backToGradebook(surface, parsed.data.section_id)
 }
@@ -112,6 +125,12 @@ export async function deleteAssignmentCategoryAction(formData: FormData) {
   await assertCanEditSection(parsed.data.section_id)
 
   await deleteAssignmentCategory(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_category_delete,
+    target_kind: "assignment_category",
+    target_id: parsed.data.id,
+    details: { section_id: parsed.data.section_id, surface },
+  })
   revalidateGradebook(surface, parsed.data.section_id)
   backToGradebook(surface, parsed.data.section_id)
 }
@@ -142,6 +161,12 @@ export async function seedDefaultCategoriesAction(formData: FormData) {
       sort_order: template.sort_order,
     })
   }
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_categories_seed_defaults,
+    target_kind: "section",
+    target_id: sectionId,
+    details: { surface },
+  })
 
   revalidateGradebook(surface, sectionId)
   backToGradebook(surface, sectionId)
@@ -183,6 +208,17 @@ export async function createAssignmentAction(formData: FormData) {
   await assertCanEditSection(parsed.data.section_id)
 
   await createAssignment(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_assignment_create,
+    target_kind: "section",
+    target_id: parsed.data.section_id,
+    details: {
+      title: parsed.data.title,
+      points_possible: parsed.data.points_possible,
+      is_published: parsed.data.is_published,
+      surface,
+    },
+  })
   revalidateGradebook(surface, parsed.data.section_id)
   backToGradebook(surface, parsed.data.section_id)
 }
@@ -200,6 +236,18 @@ export async function updateAssignmentAction(formData: FormData) {
   await assertCanEditSection(parsed.data.section_id)
 
   await updateAssignment(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_assignment_update,
+    target_kind: "assignment",
+    target_id: parsed.data.id,
+    details: {
+      section_id: parsed.data.section_id,
+      title: parsed.data.title,
+      points_possible: parsed.data.points_possible,
+      is_published: parsed.data.is_published,
+      surface,
+    },
+  })
   revalidateGradebook(surface, parsed.data.section_id)
   backToGradebook(surface, parsed.data.section_id)
 }
@@ -217,6 +265,12 @@ export async function deleteAssignmentAction(formData: FormData) {
   await assertCanEditSection(parsed.data.section_id)
 
   await deleteAssignment(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_assignment_delete,
+    target_kind: "assignment",
+    target_id: parsed.data.id,
+    details: { section_id: parsed.data.section_id, surface },
+  })
   revalidateGradebook(surface, parsed.data.section_id)
   backToGradebook(surface, parsed.data.section_id)
 }
@@ -265,6 +319,16 @@ export async function saveScoresAction(formData: FormData) {
   await assertCanEditSection(parsed.data.section_id)
 
   await saveScoresForAssignment(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.gradebook_scores_save,
+    target_kind: "assignment",
+    target_id: parsed.data.assignment_id,
+    details: {
+      section_id: parsed.data.section_id,
+      row_count: parsed.data.rows.length,
+      surface,
+    },
+  })
   revalidateGradebook(surface, parsed.data.section_id)
   redirect(
     `${sectionBasePath(surface, parsed.data.section_id)}/gradebook/grade/${parsed.data.assignment_id}`

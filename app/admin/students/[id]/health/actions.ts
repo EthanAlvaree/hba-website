@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 import {
   healthRecordUpsertSchema,
   upsertHealthRecord,
@@ -32,6 +33,20 @@ export async function saveHealthRecordAction(formData: FormData) {
   }
 
   await upsertHealthRecord(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.health_record_upsert,
+    target_kind: "student",
+    target_id: parsed.data.student_id,
+    // Deliberately log only the fact-of-change and which sections were
+    // present, not the medical content itself — the audit log doesn't need
+    // a PHI copy, just "who changed what, when."
+    details: {
+      immunizations_on_file: parsed.data.immunizations_on_file ?? null,
+      has_allergies: Boolean(parsed.data.allergies),
+      has_conditions: Boolean(parsed.data.conditions),
+      has_medications: Boolean(parsed.data.medications),
+    },
+  })
   revalidatePath(`/admin/students/${parsed.data.student_id}/health`)
   revalidatePath(`/admin/students/${parsed.data.student_id}`)
   redirect(`/admin/students/${parsed.data.student_id}/health?saved=1`)

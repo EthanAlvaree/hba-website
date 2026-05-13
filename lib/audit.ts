@@ -40,6 +40,21 @@ export const ADMIN_AUDIT_ACTIONS = {
   calendar_event_create: "calendar_event.create",
   calendar_event_update: "calendar_event.update",
   calendar_event_delete: "calendar_event.delete",
+  // Gradebook (teachers + admins). Sensitive enough to audit even on the
+  // happy path — these mutate the academic record.
+  gradebook_category_create: "gradebook.category_create",
+  gradebook_category_update: "gradebook.category_update",
+  gradebook_category_delete: "gradebook.category_delete",
+  gradebook_categories_seed_defaults: "gradebook.categories_seed_defaults",
+  gradebook_assignment_create: "gradebook.assignment_create",
+  gradebook_assignment_update: "gradebook.assignment_update",
+  gradebook_assignment_delete: "gradebook.assignment_delete",
+  gradebook_scores_save: "gradebook.scores_save",
+  // Attendance (teachers + admins).
+  attendance_save_day: "attendance.save_day",
+  attendance_save_week: "attendance.save_week",
+  // Health (admin-only). Medical records — strong audit posture required.
+  health_record_upsert: "health_record.upsert",
 } as const
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[keyof typeof ADMIN_AUDIT_ACTIONS]
 
