@@ -419,17 +419,46 @@ export function isFamilyNotifiableStatus(s: string): s is FamilyNotifiableStatus
   return (familyNotifiableStatuses as ReadonlyArray<string>).includes(s)
 }
 
+// Friendly labels for the document codes the admin form collects.
+// Kept here next to the email template so labels stay consistent with
+// the prose families read.
+const DOCUMENT_LABELS: Record<string, string> = {
+  transcripts: "Recent transcripts from the past two years",
+  test_scores: "Standardized test scores (PSAT, SAT, or ACT)",
+  recommendation_letters: "One or more letters of recommendation",
+  writing_sample: "A personal essay or recent writing sample",
+  disciplinary_record: "Your current school's disciplinary record",
+  iep_504_docs: "Any IEP / 504 plan or accommodation documentation",
+  english_proficiency:
+    "An English-language proficiency test result (for international applicants)",
+  passport_visa:
+    "A copy of the student's passport plus F-1 visa documents (for international applicants)",
+}
+
 function buildFamilyStatusHtml(
   parentName: string,
   studentName: string,
   status: FamilyNotifiableStatus,
-  internalNote?: string | null
+  internalNote?: string | null,
+  requestedDocuments?: string[]
 ): { subject: string; html: string } {
   const greeting = `<p>Hi ${escapeHtml(parentName)},</p>`
   const signature = `<p>Warmly,<br />The ${escapeHtml(siteConfig.name)} admissions team</p>`
   const noteBlock = internalNote
     ? `<p style="margin-top:16px;padding:12px 16px;border-left:4px solid ${brand.orange};background:#fff7ed;color:#7a3e0c;"><strong>Note from the office:</strong><br />${escapeHtml(internalNote).replace(/\n/g, "<br />")}</p>`
     : ""
+
+  // Render the requested-documents checklist as a bulleted list,
+  // dropping any codes the admin sent that we don't recognize.
+  const docLabels = (requestedDocuments ?? [])
+    .map((code) => DOCUMENT_LABELS[code])
+    .filter(Boolean)
+  const docsBlock =
+    docLabels.length > 0
+      ? `<p style="margin-top:16px;color:#1f2937;"><strong>Could you please send us the following?</strong></p>` +
+        `<ul style="margin-top:6px;color:#444;line-height:1.6;">${docLabels.map((l) => `<li>${escapeHtml(l)}</li>`).join("")}</ul>` +
+        `<p style="margin-top:6px;color:#666;font-size:13px;">PDFs or scans attached to your reply are fine. If anything is hard to track down, just let us know — we'll work around it.</p>`
+      : ""
 
   const replyHint = `<p style="color:#666;font-size:14px;">Reply to this email if you have any questions. We typically respond within one business day.</p>`
 
@@ -440,6 +469,7 @@ function buildFamilyStatusHtml(
         html: [
           greeting,
           `<p>Thank you for submitting an application for <strong>${escapeHtml(studentName)}</strong>. We&rsquo;ve started our review and need a bit more information before we can move forward.</p>`,
+          docsBlock,
           noteBlock,
           replyHint,
           signature,
@@ -585,8 +615,12 @@ export async function sendApplicationStatusUpdateToFamily(options: {
   /** Optional internal note that should be surfaced to the family. Usually
    *  this is empty — admin office decides per case. */
   noteToFamily?: string | null
+  /** Document codes the admin ticked when transitioning the application
+   *  to info_requested. Empty array (or omitted) for other transitions.
+   *  See DOCUMENT_LABELS in this file for the canonical list. */
+  requestedDocuments?: string[]
 }) {
-  const { application, newStatus, noteToFamily } = options
+  const { application, newStatus, noteToFamily, requestedDocuments } = options
 
   const guardianEmails: string[] = []
   if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
@@ -601,7 +635,13 @@ export async function sendApplicationStatusUpdateToFamily(options: {
       .join(" ") || "your student"
   const parentName = application.guardian1_name?.trim() || "there"
 
-  const { subject, html } = buildFamilyStatusHtml(parentName, studentName, newStatus, noteToFamily)
+  const { subject, html } = buildFamilyStatusHtml(
+    parentName,
+    studentName,
+    newStatus,
+    noteToFamily,
+    requestedDocuments
+  )
 
   const { applicationRecipients } = getGraphConfig()
   await sendMail({

@@ -108,6 +108,13 @@ export async function updateApplicationAction(formData: FormData) {
       ? noteToFamily.trim()
       : null
 
+  // For the info_requested transition the admin form also collects a
+  // document checklist. Pass codes through; the email template renders
+  // them as a bulleted list above the custom note.
+  const requestedDocCodes = formData
+    .getAll("requested_documents")
+    .map((v) => String(v))
+
   if (
     !suppressEmail &&
     before &&
@@ -119,6 +126,8 @@ export async function updateApplicationAction(formData: FormData) {
         application: updated,
         newStatus: updated.status,
         noteToFamily: noteToFamilyText,
+        requestedDocuments:
+          updated.status === "info_requested" ? requestedDocCodes : [],
       })
     } catch (error) {
       // Log only — never fail the status change because the email server hiccuped.

@@ -850,6 +850,47 @@ export default function ApplicationsDashboard({
                           />
                         </label>
 
+                        {/* Document checklist — only meaningful when moving
+                            an application into "info_requested". Submitted
+                            as multiple `requested_documents` values; the
+                            email template renders them as a bulleted list. */}
+                        <fieldset className="space-y-2 text-sm text-slate-700 sm:col-span-2">
+                          <legend className="block text-sm font-medium text-slate-700">
+                            Documents to request (only sent if status becomes{" "}
+                            <em>info requested</em>)
+                          </legend>
+                          <p className="text-xs text-slate-500">
+                            Tick anything you&rsquo;d like the family to send.
+                            We&rsquo;ll list these in the email above your
+                            custom note.
+                          </p>
+                          <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+                            {[
+                              ["transcripts", "Recent transcripts (past 2 years)"],
+                              ["test_scores", "Standardized test scores (PSAT/SAT/ACT)"],
+                              ["recommendation_letters", "One or more recommendation letters"],
+                              ["writing_sample", "Personal essay or recent writing sample"],
+                              ["disciplinary_record", "Disciplinary record from current school"],
+                              ["iep_504_docs", "IEP / 504 plan or accommodation documentation"],
+                              ["english_proficiency", "English-language proficiency test (international)"],
+                              ["passport_visa", "Passport + F-1 visa documents (international)"],
+                            ].map(([value, label]) => (
+                              <label
+                                key={value}
+                                className="flex items-start gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs"
+                              >
+                                <input
+                                  type="checkbox"
+                                  name="requested_documents"
+                                  value={value}
+                                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+                                />
+                                <span>{label}</span>
+                              </label>
+                            ))}
+                          </div>
+                        </fieldset>
+
                         <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
                           <input
                             type="checkbox"
