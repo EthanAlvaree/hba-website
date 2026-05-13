@@ -1,6 +1,7 @@
 // app/admissions/page.tsx
 
 import Image from "next/image"
+import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { siteConfig } from "@/lib/site"
@@ -71,19 +72,18 @@ export default function AdmissionsPage() {
             </div>
 
             <div className="mt-10 flex flex-wrap gap-4">
-              <a
+              <Link
                 href={siteConfig.external.enrollment}
-                target="_blank"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
                 Start online application
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
               >
                 Schedule a campus tour
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -243,19 +243,18 @@ export default function AdmissionsPage() {
               <p><strong>Location:</strong> {siteConfig.address.locality}, {siteConfig.address.region}</p>
             </div>
             <div className="flex flex-wrap gap-4 pt-4">
-              <a
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
                 Schedule a tour
-              </a>
-              <a
+              </Link>
+              <Link
                 href={siteConfig.external.enrollment}
-                target="_blank"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
               >
                 Start application
-              </a>
+              </Link>
             </div>
           </div>
 

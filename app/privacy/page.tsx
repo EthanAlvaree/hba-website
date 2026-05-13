@@ -61,10 +61,10 @@ export default function PrivacyPage() {
                     </li>
                     <li>
                       <strong>Information from third-party services.</strong> Tools like
-                      our enrollment platform (Gradelink), spam-prevention tools,
-                      cloud-hosted storage, and Microsoft 365 may process the
-                      information you submit through the site. Their handling of your
-                      data is governed by their own privacy policies and service terms.
+                      spam-prevention services, cloud-hosted storage providers, and
+                      Microsoft 365 may process the information you submit through the
+                      site. Their handling of your data is governed by their own
+                      privacy policies and service terms.
                     </li>
                   </ul>
                 </>

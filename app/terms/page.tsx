@@ -89,8 +89,8 @@ export default function TermsPage() {
               heading: "Third-party links and services",
               body: (
                 <p>
-                  This site links to and embeds third-party services such as Gradelink
-                  (enrollment), Google Maps, Microsoft services, and social platforms.
+                  This site links to and embeds third-party services such as Google
+                  Maps, Microsoft services, Cloudflare Turnstile, and social platforms.
                   We don’t control those services and aren’t responsible for their content or practices.
                   Their terms and privacy policies govern your use of them.
                 </p>
