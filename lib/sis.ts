@@ -2027,6 +2027,129 @@ export async function getParentLinkForStudent(
   }
 }
 
+// ============================================================================
+// Bulk parent-link import
+// ============================================================================
+
+export const bulkParentLinkRowSchema = z.object({
+  student_email: z.string().trim().toLowerCase().email("Invalid student_email"),
+  parent_email: z.string().trim().toLowerCase().email("Invalid parent_email"),
+  // Free-text. Common values: Mother, Father, Guardian, Homestay host.
+  relationship: z.string().trim().max(80).optional().nullable().transform(
+    (v) => (v && v.length > 0 ? v : null)
+  ),
+  is_primary: z.boolean().optional().default(false),
+  is_homestay: z.boolean().optional().default(false),
+  is_emergency_contact: z.boolean().optional().default(false),
+  can_view_grades: z.boolean().optional().default(true),
+  can_view_attendance: z.boolean().optional().default(true),
+  can_receive_communications: z.boolean().optional().default(true),
+})
+export type BulkParentLinkRow = z.infer<typeof bulkParentLinkRowSchema>
+
+export type BulkParentLinkOutcome = {
+  total_rows: number
+  links_created: number
+  links_existing: number
+  profiles_created: number
+  rows_failed: number
+  /** Human-readable per-row issues. Aligned to source CSV line numbers. */
+  errors: Array<{ row_number: number; message: string }>
+}
+
+// Bulk creates parent_link rows for many (student, parent) pairs. Idempotent
+// on (student_id, parent_profile_id): re-running a CSV won't duplicate links.
+// Parent profiles are auto-created (role: parent) if the email doesn't have
+// one yet.
+export async function bulkCreateParentLinks(
+  rows: BulkParentLinkRow[]
+): Promise<BulkParentLinkOutcome> {
+  const outcome: BulkParentLinkOutcome = {
+    total_rows: rows.length,
+    links_created: 0,
+    links_existing: 0,
+    profiles_created: 0,
+    rows_failed: 0,
+    errors: [],
+  }
+
+  // Pre-resolve every distinct student_email → student.id in one batch.
+  const studentEmails = Array.from(new Set(rows.map((r) => r.student_email)))
+  const studentByEmail = new Map<string, string>()
+  if (studentEmails.length > 0) {
+    const { data, error } = await getSupabase()
+      .from("students")
+      .select("id, profile:profiles!inner(email)")
+      .in("profile.email", studentEmails)
+      .returns<Array<{ id: string; profile: { email: string } | null }>>()
+    if (error) {
+      throw new Error(`Failed to look up students: ${error.message}`)
+    }
+    for (const row of data ?? []) {
+      if (row.profile?.email) studentByEmail.set(row.profile.email, row.id)
+    }
+  }
+
+  for (let i = 0; i < rows.length; i += 1) {
+    const row = rows[i]
+    const rowNumber = i + 1
+    try {
+      const studentId = studentByEmail.get(row.student_email)
+      if (!studentId) {
+        outcome.rows_failed += 1
+        outcome.errors.push({
+          row_number: rowNumber,
+          message: `No student found with email ${row.student_email}.`,
+        })
+        continue
+      }
+
+      const { profile, created } = await findOrCreateProfile({
+        email: row.parent_email,
+        role: "parent",
+      })
+      if (created) outcome.profiles_created += 1
+
+      const existing = await getParentLink(studentId, profile.id)
+      if (existing) {
+        outcome.links_existing += 1
+        continue
+      }
+
+      const { error } = await getSupabase().from("parent_links").insert({
+        student_id: studentId,
+        parent_profile_id: profile.id,
+        relationship: row.relationship,
+        is_primary: row.is_primary,
+        is_homestay: row.is_homestay,
+        is_emergency_contact: row.is_emergency_contact,
+        can_view_grades: row.can_view_grades,
+        can_view_attendance: row.can_view_attendance,
+        can_receive_communications: row.can_receive_communications,
+      })
+
+      if (error) {
+        outcome.rows_failed += 1
+        outcome.errors.push({
+          row_number: rowNumber,
+          message: error.message,
+        })
+        continue
+      }
+
+      outcome.links_created += 1
+    } catch (error) {
+      outcome.rows_failed += 1
+      outcome.errors.push({
+        row_number: rowNumber,
+        message: error instanceof Error ? error.message : "Unknown error",
+      })
+    }
+  }
+
+  return outcome
+}
+
 // Checks whether an HBA-domain email matches a faculty bio's slug. Used by
 // the sign-in bootstrap to decide whether a first-time HBA sign-in is
 // faculty. Match heuristic: extract the local-part of the email, compare
