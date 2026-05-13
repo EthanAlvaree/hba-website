@@ -26,6 +26,7 @@ const adminNav: PortalNavItem[] = [
     label: "Contact submissions",
     href: "/admin/contact-submissions",
   },
+  { id: "audit-log", label: "Audit log", href: "/admin/audit-log" },
 ]
 
 const adminCrossPortal: CrossPortalLink[] = [

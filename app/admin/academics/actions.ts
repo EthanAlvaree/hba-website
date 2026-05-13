@@ -28,6 +28,7 @@ import {
   unlockSectionFinalGrades,
   unlockTermFinalGrades,
 } from "@/lib/gradebook"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
 async function assertAdmin() {
   const session = await auth()
@@ -269,7 +270,13 @@ export async function lockSectionGradesAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Lock failed.")
   }
 
-  await lockSectionFinalGrades(parsed.data.section_id)
+  const result = await lockSectionFinalGrades(parsed.data.section_id)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.section_grades_lock,
+    target_kind: "section",
+    target_id: parsed.data.section_id,
+    details: { locked: result.locked, cleared: result.cleared },
+  })
   revalidateAcademicsViews()
   revalidatePath(`/admin/academics/sections/${parsed.data.section_id}`)
   redirectAfter(formData, `/admin/academics/sections/${parsed.data.section_id}`)
@@ -285,7 +292,13 @@ export async function unlockSectionGradesAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Unlock failed.")
   }
 
-  await unlockSectionFinalGrades(parsed.data.section_id)
+  const cleared = await unlockSectionFinalGrades(parsed.data.section_id)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.section_grades_unlock,
+    target_kind: "section",
+    target_id: parsed.data.section_id,
+    details: { enrollments_cleared: cleared },
+  })
   revalidateAcademicsViews()
   revalidatePath(`/admin/academics/sections/${parsed.data.section_id}`)
   redirectAfter(formData, `/admin/academics/sections/${parsed.data.section_id}`)
@@ -301,7 +314,17 @@ export async function lockTermGradesAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Term lock failed.")
   }
 
-  await lockTermFinalGrades(parsed.data.term_id)
+  const result = await lockTermFinalGrades(parsed.data.term_id)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.term_lock,
+    target_kind: "term",
+    target_id: parsed.data.term_id,
+    details: {
+      sections_locked: result.sections_locked,
+      enrollments_locked: result.enrollments_locked,
+      enrollments_cleared: result.enrollments_cleared,
+    },
+  })
   revalidateAcademicsViews()
   redirectAfter(formData, "/admin/academics/terms")
 }
@@ -314,7 +337,13 @@ export async function unlockTermGradesAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Term unlock failed.")
   }
 
-  await unlockTermFinalGrades(parsed.data.term_id)
+  const cleared = await unlockTermFinalGrades(parsed.data.term_id)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.term_unlock,
+    target_kind: "term",
+    target_id: parsed.data.term_id,
+    details: { enrollments_cleared: cleared },
+  })
   revalidateAcademicsViews()
   redirectAfter(formData, "/admin/academics/terms")
 }

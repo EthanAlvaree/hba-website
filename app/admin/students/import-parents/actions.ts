@@ -9,6 +9,7 @@ import {
   type BulkParentLinkOutcome,
   type BulkParentLinkRow,
 } from "@/lib/sis"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
 async function assertAdmin() {
   const session = await auth()
@@ -191,6 +192,19 @@ export async function importParentLinksAction(
   outcome.rows_failed += parsed.errors.length
   outcome.errors = [...parsed.errors, ...outcome.errors]
   outcome.total_rows += parsed.errors.length
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.parent_links_bulk_import,
+    target_kind: "parent_links_import",
+    target_id: null,
+    details: {
+      total_rows: outcome.total_rows,
+      links_created: outcome.links_created,
+      links_existing: outcome.links_existing,
+      profiles_created: outcome.profiles_created,
+      rows_failed: outcome.rows_failed,
+    },
+  })
 
   revalidatePath("/admin/students")
   return { ok: true, outcome }

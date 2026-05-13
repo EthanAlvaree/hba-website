@@ -17,6 +17,7 @@ import {
 } from "@/lib/sis"
 import { z } from "zod"
 import { seedTeacherQualificationsFromBios } from "@/lib/scheduler"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
 async function assertAdmin() {
   const session = await auth()
@@ -120,8 +121,25 @@ export async function syncM365Action() {
   const result = await runM365Sync()
 
   if (!result.ok) {
+    await logAdminAuditEvent({
+      action: ADMIN_AUDIT_ACTIONS.m365_sync_manual,
+      target_kind: "m365_sync",
+      details: { ok: false, step: result.step, message: result.message },
+    })
     redirect(`/admin/profiles?sync_error=${encodeURIComponent(result.message)}`)
   }
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.m365_sync_manual,
+    target_kind: "m365_sync",
+    details: {
+      ok: true,
+      created: result.created,
+      updated: result.updated,
+      skipped: result.skipped,
+      filtered: result.filtered,
+    },
+  })
 
   revalidateProfiles()
 
@@ -182,6 +200,18 @@ export async function deleteProfileAction(formData: FormData) {
     const message = error instanceof Error ? error.message : "Failed to delete profile."
     redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
   }
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.profile_delete,
+    target_kind: "profile",
+    target_id: parsed.data.id,
+    details: {
+      target_email: target?.email ?? null,
+      target_roles: target?.roles ?? [],
+      self: isSelf,
+    },
+  })
+
   revalidateProfiles()
 
   if (isSelf) {
@@ -235,10 +265,22 @@ export async function setAdminRoleAction(formData: FormData) {
     redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
   }
 
-  revalidateProfiles()
-
   const isSelf =
     !!session.user?.email && target.email.toLowerCase() === session.user.email.toLowerCase()
+
+  await logAdminAuditEvent({
+    action: makeAdmin
+      ? ADMIN_AUDIT_ACTIONS.admin_promote
+      : ADMIN_AUDIT_ACTIONS.admin_demote,
+    target_kind: "profile",
+    target_id: target.id,
+    details: {
+      target_email: target.email,
+      self: isSelf,
+    },
+  })
+
+  revalidateProfiles()
 
   if (!makeAdmin && isSelf) {
     // Self-demotion: sign out so the user doesn't keep stale session.isAdmin

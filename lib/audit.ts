@@ -1,0 +1,187 @@
+// Admin audit log.
+//
+// Centralized helper for "record what an admin just did." Used by every
+// sensitive admin server action (promote/demote, delete profile, lock term,
+// commit schedule draft, bulk parent-link import). The table is defined in
+// migration 0010-admin-audit-log.sql.
+//
+// Design notes:
+// - Logging is best-effort. We never throw if the audit insert fails —
+//   that would block legitimate admin actions when the audit table is in
+//   trouble, which is worse than a missing row. We do log to the server
+//   console so the failure isn't silent.
+// - Actor email is the canonical identity (resilient to profile deletion).
+//   actor_profile_id is a convenience FK.
+// - `action` is free-form text. Conventions: lowercase, dotted hierarchy
+//   ("admin.promote", "term.lock", "schedule_draft.commit"). See
+//   ADMIN_AUDIT_ACTIONS for the canonical list — extend as needed.
+
+import { createClient } from "@supabase/supabase-js"
+import { headers } from "next/headers"
+import { auth } from "@/auth"
+import { getProfileByEmail } from "@/lib/sis"
+
+function createServerSupabaseClient() {
+  const supabaseUrl = process.env.HBA_SUPABASE_URL
+  const supabaseServiceRoleKey = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    throw new Error("Supabase server environment variables are missing.")
+  }
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  })
+}
+
+let cachedSupabase: ReturnType<typeof createServerSupabaseClient> | undefined
+function getSupabase() {
+  if (!cachedSupabase) cachedSupabase = createServerSupabaseClient()
+  return cachedSupabase
+}
+
+export const ADMIN_AUDIT_ACTIONS = {
+  admin_promote: "admin.promote",
+  admin_demote: "admin.demote",
+  profile_delete: "profile.delete",
+  profile_roles_update: "profile.roles_update",
+  profile_active_update: "profile.active_update",
+  term_lock: "term.lock",
+  term_unlock: "term.unlock",
+  section_grades_lock: "section.grades_lock",
+  section_grades_unlock: "section.grades_unlock",
+  schedule_draft_commit: "schedule_draft.commit",
+  schedule_draft_discard: "schedule_draft.discard",
+  parent_links_bulk_import: "parent_links.bulk_import",
+  m365_sync_manual: "m365_sync.manual",
+} as const
+export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[keyof typeof ADMIN_AUDIT_ACTIONS]
+
+export type AdminAuditEventInput = {
+  action: AdminAuditAction | string
+  target_kind?: string | null
+  target_id?: string | null
+  details?: Record<string, unknown> | null
+}
+
+export type AdminAuditRecord = {
+  id: string
+  created_at: string
+  actor_email: string
+  actor_profile_id: string | null
+  action: string
+  target_kind: string | null
+  target_id: string | null
+  details: Record<string, unknown> | null
+  ip: string | null
+  user_agent: string | null
+}
+
+// Records one admin audit event. Best-effort: failures are logged to the
+// server console but never thrown. Always call from inside a server action
+// (we read the current session + request headers).
+export async function logAdminAuditEvent(input: AdminAuditEventInput): Promise<void> {
+  try {
+    const session = await auth()
+    const actorEmail = session?.user?.email?.toLowerCase() ?? null
+    if (!actorEmail) return
+
+    let actorProfileId: string | null = null
+    try {
+      const profile = await getProfileByEmail(actorEmail)
+      actorProfileId = profile?.id ?? null
+    } catch {
+      // Profile lookup is best-effort.
+    }
+
+    let ip: string | null = null
+    let userAgent: string | null = null
+    try {
+      const h = await headers()
+      ip =
+        h.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+        h.get("x-real-ip") ??
+        null
+      userAgent = h.get("user-agent") ?? null
+    } catch {
+      // headers() is only available inside server actions / route handlers.
+    }
+
+    const { error } = await getSupabase().from("admin_audit_log").insert({
+      actor_email: actorEmail,
+      actor_profile_id: actorProfileId,
+      action: input.action,
+      target_kind: input.target_kind ?? null,
+      target_id: input.target_id ?? null,
+      details: input.details ?? null,
+      ip,
+      user_agent: userAgent,
+    })
+
+    if (error) {
+      console.error("Audit log insert failed:", error.message, { input })
+    }
+  } catch (error) {
+    console.error("Audit log helper threw:", error)
+  }
+}
+
+// ============================================================================
+// Reads (used by /admin/audit-log)
+// ============================================================================
+
+export type AdminAuditFilters = {
+  action?: string
+  actor_email?: string
+  target_kind?: string
+  target_id?: string
+  limit?: number
+}
+
+export async function listAdminAuditEvents(
+  filters: AdminAuditFilters = {}
+): Promise<AdminAuditRecord[]> {
+  let query = getSupabase()
+    .from("admin_audit_log")
+    .select(
+      "id, created_at, actor_email, actor_profile_id, action, target_kind, target_id, details, ip, user_agent"
+    )
+    .order("created_at", { ascending: false })
+    .limit(filters.limit ?? 200)
+
+  if (filters.action) {
+    query = query.eq("action", filters.action)
+  }
+  if (filters.actor_email) {
+    query = query.eq("actor_email", filters.actor_email.toLowerCase())
+  }
+  if (filters.target_kind) {
+    query = query.eq("target_kind", filters.target_kind)
+  }
+  if (filters.target_id) {
+    query = query.eq("target_id", filters.target_id)
+  }
+
+  const { data, error } = await query.returns<AdminAuditRecord[]>()
+  if (error) {
+    throw new Error(`Failed to list audit events: ${error.message}`)
+  }
+  return data
+}
+
+// Distinct list of action codes that have ever been recorded — used to
+// populate the filter dropdown in the viewer.
+export async function listAuditActionCodes(): Promise<string[]> {
+  // Supabase doesn't have a distinct() on raw query, so pull the most recent
+  // 1000 rows and de-dup in app code. The cardinality of action codes is
+  // tiny (well under 30), so this is fine.
+  const { data, error } = await getSupabase()
+    .from("admin_audit_log")
+    .select("action")
+    .order("created_at", { ascending: false })
+    .limit(1000)
+    .returns<Array<{ action: string }>>()
+
+  if (error) {
+    throw new Error(`Failed to list audit action codes: ${error.message}`)
+  }
+  return Array.from(new Set((data ?? []).map((r) => r.action))).sort()
+}

@@ -13,6 +13,7 @@ import {
 } from "@/lib/scheduler-solver"
 import { sectionPeriodSchema, sectionModalitySchema } from "@/lib/sis"
 import { createClient } from "@supabase/supabase-js"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
 async function assertAdmin() {
   const session = await auth()
@@ -115,6 +116,16 @@ export async function commitDraftAction(formData: FormData) {
 
   try {
     const result = await commitDraftToSis(parsed.data)
+    await logAdminAuditEvent({
+      action: ADMIN_AUDIT_ACTIONS.schedule_draft_commit,
+      target_kind: "schedule_draft",
+      target_id: parsed.data.draft_id,
+      details: {
+        sections_created: result.sections_created,
+        enrollments_created: result.enrollments_created,
+        warnings: result.warnings,
+      },
+    })
     revalidateScheduler()
     revalidatePath("/admin/academics/sections")
     redirect(
