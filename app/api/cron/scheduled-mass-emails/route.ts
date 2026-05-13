@@ -25,6 +25,7 @@ type Row = {
   cohort_audience: Audience
   cohort_grade: string | null
   cohort_section_id: string | null
+  cohort_tag: string | null
   subject: string
   body: string
   sender_email: string
@@ -88,7 +89,7 @@ export async function GET(request: Request) {
     .lte("scheduled_for", now)
     .eq("status", "pending")
     .select(
-      "id, cohort_audience, cohort_grade, cohort_section_id, subject, body, sender_email, sender_label, created_by_email, created_by_profile_id, scheduled_for"
+      "id, cohort_audience, cohort_grade, cohort_section_id, cohort_tag, subject, body, sender_email, sender_label, created_by_email, created_by_profile_id, scheduled_for"
     )
     .returns<Row[]>()
 
@@ -108,6 +109,7 @@ export async function GET(request: Request) {
       audience: row.cohort_audience,
       grade: row.cohort_grade,
       section_id: row.cohort_section_id,
+      tag: row.cohort_tag,
       subject: row.subject,
       html_body: htmlBody,
       sender_email: row.sender_email,

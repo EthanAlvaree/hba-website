@@ -15,10 +15,12 @@ type SectionOption = { id: string; label: string }
 
 export function MessagingClient({
   sectionOptions,
+  tagOptions,
   senderAddress,
   senderLabel,
 }: {
   sectionOptions: SectionOption[]
+  tagOptions: string[]
   senderAddress: string
   senderLabel: string
 }) {
@@ -28,6 +30,7 @@ export function MessagingClient({
   const [audience, setAudience] = useState<string>("parents")
   const [grade, setGrade] = useState<string>("")
   const [sectionId, setSectionId] = useState<string>("")
+  const [tag, setTag] = useState<string>("")
 
   const [cohortState, cohortPreviewAction, cohortPending] = useActionState<
     MassEmailResult | null,
@@ -69,7 +72,7 @@ export function MessagingClient({
     <div className="space-y-6">
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <h2 className="text-lg font-extrabold text-brand-navy">1. Pick a cohort</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Field label="Audience">
             <select
               value={audience}
@@ -113,12 +116,33 @@ export function MessagingClient({
               ))}
             </select>
           </Field>
+          <Field label="Student tag (optional)">
+            <select
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              disabled={audience === "faculty"}
+              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
+            >
+              <option value="">No tag filter</option>
+              {tagOptions.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </Field>
         </div>
+        <p className="mt-2 text-[11px] text-slate-500">
+          Tag filter intersects the cohort with students tagged that
+          way (e.g. just families of <code className="text-xs">scholarship</code> students).
+          Ignored for the faculty audience.
+        </p>
 
         <form action={cohortPreviewAction} className="mt-4 flex flex-wrap items-center gap-3">
           <input type="hidden" name="audience" value={audience} />
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
+          <input type="hidden" name="tag" value={tag} />
           <button
             type="submit"
             disabled={cohortPending}
@@ -155,6 +179,7 @@ export function MessagingClient({
           <input type="hidden" name="audience" value={audience} />
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
+          <input type="hidden" name="tag" value={tag} />
 
           <Field label="Subject">
             <input
@@ -215,6 +240,7 @@ export function MessagingClient({
             <input type="hidden" name="audience" value={audience} />
             <input type="hidden" name="grade" value={grade} />
             <input type="hidden" name="section_id" value={sectionId} />
+          <input type="hidden" name="tag" value={tag} />
             <input type="hidden" name="subject" value={subject} />
             <input type="hidden" name="body" value={body} />
             <Field label="Send at (Pacific time)">
@@ -271,6 +297,7 @@ export function MessagingClient({
           audience={audience}
           grade={grade}
           sectionId={sectionId}
+          tag={tag}
           subjectValue={subject}
           bodyValue={body}
           sending={sendPending}
@@ -292,6 +319,7 @@ function PreviewModal({
   audience,
   grade,
   sectionId,
+  tag,
   subjectValue,
   bodyValue,
   sending,
@@ -307,6 +335,7 @@ function PreviewModal({
   audience: string
   grade: string
   sectionId: string
+  tag: string
   subjectValue: string
   bodyValue: string
   sending: boolean
@@ -364,6 +393,7 @@ function PreviewModal({
           <input type="hidden" name="audience" value={audience} />
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
+          <input type="hidden" name="tag" value={tag} />
           <input type="hidden" name="subject" value={subjectValue} />
           <input type="hidden" name="body" value={bodyValue} />
 

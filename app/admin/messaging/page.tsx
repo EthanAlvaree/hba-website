@@ -5,6 +5,7 @@ import {
   cancelScheduledMassEmailAction,
   getMassEmailSenderDescriptor,
 } from "./actions"
+import { listAllStudentTags } from "@/lib/sis"
 import { getServiceSupabase } from "@/lib/supabase-server"
 
 export const dynamic = "force-dynamic"
@@ -18,7 +19,7 @@ export default async function MessagingPage() {
   const sender = await getMassEmailSenderDescriptor()
   const supabase = getServiceSupabase()
 
-  const [sections, history, scheduled] = await Promise.all([
+  const [sections, history, scheduled, allTags] = await Promise.all([
     supabase
       .from("course_sections")
       .select(
@@ -76,6 +77,7 @@ export default async function MessagingPage() {
           failure_reason: string | null
         }>
       >(),
+    listAllStudentTags(),
   ])
 
   const sectionOptions =
@@ -109,6 +111,7 @@ export default async function MessagingPage() {
 
       <MessagingClient
         sectionOptions={sectionOptions}
+        tagOptions={allTags}
         senderAddress={sender.address}
         senderLabel={sender.label}
       />

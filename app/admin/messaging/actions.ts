@@ -74,12 +74,14 @@ export async function previewCohortAction(
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
+  const tag = ((formData.get("tag") ?? "") as string).trim() || null
 
   try {
     const emails = await resolveCohortEmails({
       audience,
       grade,
       section_id: sectionId,
+      tag,
     })
     return { ok: true, recipients: emails.length }
   } catch (error) {
@@ -128,6 +130,7 @@ export async function previewMassEmailAction(
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
+  const tag = ((formData.get("tag") ?? "") as string).trim() || null
   const subject = String(formData.get("subject") ?? "").trim()
   const body = String(formData.get("body") ?? "").trim()
   if (subject.length === 0) return { ok: false, error: "Subject is required." }
@@ -135,7 +138,7 @@ export async function previewMassEmailAction(
 
   let emails: string[]
   try {
-    emails = await resolveCohortEmails({ audience, grade, section_id: sectionId })
+    emails = await resolveCohortEmails({ audience, grade, section_id: sectionId, tag })
   } catch (error) {
     return {
       ok: false,
@@ -172,6 +175,7 @@ export async function sendMassEmailAction(
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
+  const tag = ((formData.get("tag") ?? "") as string).trim() || null
   const subject = String(formData.get("subject") ?? "").trim()
   const body = String(formData.get("body") ?? "").trim()
   if (subject.length === 0) return { ok: false, error: "Subject is required." }
@@ -179,7 +183,7 @@ export async function sendMassEmailAction(
 
   let emails: string[]
   try {
-    emails = await resolveCohortEmails({ audience, grade, section_id: sectionId })
+    emails = await resolveCohortEmails({ audience, grade, section_id: sectionId, tag })
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Resolve failed." }
   }
@@ -194,6 +198,7 @@ export async function sendMassEmailAction(
     audience,
     grade,
     section_id: sectionId,
+    tag,
     subject,
     html_body: htmlBody,
     sender_email: sender.address,
@@ -213,6 +218,7 @@ export async function sendMassEmailAction(
       audience,
       grade,
       section_id: sectionId,
+      tag,
       subject,
       sender_email: sender.address,
       recipients_total: result.recipients_total,
@@ -255,6 +261,7 @@ export async function scheduleMassEmailAction(
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
+  const tag = ((formData.get("tag") ?? "") as string).trim() || null
   const subject = String(formData.get("subject") ?? "").trim()
   const body = String(formData.get("body") ?? "").trim()
   const scheduledFor = String(formData.get("scheduled_for") ?? "").trim()
@@ -281,7 +288,12 @@ export async function scheduleMassEmailAction(
   // run a week later.
   let recipientsEstimated = 0
   try {
-    const emails = await resolveCohortEmails({ audience, grade, section_id: sectionId })
+    const emails = await resolveCohortEmails({
+      audience,
+      grade,
+      section_id: sectionId,
+      tag,
+    })
     recipientsEstimated = emails.length
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : "Resolve failed." }
@@ -297,6 +309,7 @@ export async function scheduleMassEmailAction(
       cohort_audience: audience,
       cohort_grade: grade,
       cohort_section_id: sectionId,
+      cohort_tag: tag,
       subject,
       body,
       sender_email: sender.address,
@@ -323,6 +336,7 @@ export async function scheduleMassEmailAction(
       audience,
       grade,
       section_id: sectionId,
+      tag,
       subject,
       scheduled_for: scheduledForUtc.toISOString(),
       recipients_estimated: recipientsEstimated,

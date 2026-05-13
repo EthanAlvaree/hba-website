@@ -27,6 +27,12 @@ export type CohortFilters = {
   audience: Audience
   grade?: string | null
   section_id?: string | null
+  /** Optional student tag (see student_tags table). When set, the
+   *  cohort is intersected with the set of students tagged this way.
+   *  Applies to parents, students, active_families. Ignored for the
+   *  faculty + all_school audiences (those don't have student-level
+   *  membership). */
+  tag?: string | null
 }
 
 // Returns the deduplicated list of recipient emails for the given filters.
@@ -92,6 +98,20 @@ export async function resolveCohortEmails(
     const allowed = new Set((enrolledIds ?? []).map((e) => e.student_id))
     studentIds = studentIds.filter((id) => allowed.has(id))
   }
+  // Intersect with the tagged-student set when a tag filter is set.
+  // Stored tags are normalized lowercase (see lib/sis normalizeStudentTag),
+  // so we lowercase the input here too.
+  if (filters.tag && filters.tag.trim().length > 0) {
+    const tagNormalized = filters.tag.trim().toLowerCase()
+    const { data: tagged, error: tagErr } = await supabase
+      .from("student_tags")
+      .select("student_id")
+      .eq("tag", tagNormalized)
+      .returns<Array<{ student_id: string }>>()
+    if (tagErr) throw new Error(tagErr.message)
+    const allowed = new Set((tagged ?? []).map((t) => t.student_id))
+    studentIds = studentIds.filter((id) => allowed.has(id))
+  }
   if (studentIds.length === 0) return []
 
   if (
@@ -144,6 +164,7 @@ export type DispatchMassEmailInput = {
   audience: Audience
   grade: string | null
   section_id: string | null
+  tag: string | null
   subject: string
   /** Full rendered HTML, footer + body, ready to send. The caller is
    *  responsible for composition (so preview = send byte-for-byte). */
@@ -181,6 +202,7 @@ export async function dispatchMassEmail(
       audience: input.audience,
       grade: input.grade,
       section_id: input.section_id,
+      tag: input.tag,
     })
   } catch (error) {
     return {
