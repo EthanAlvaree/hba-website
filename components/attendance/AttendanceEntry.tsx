@@ -73,6 +73,12 @@ export function AttendanceEntry({
         >
           ← Back to section
         </Link>
+        <Link
+          href={`${sectionBasePath(surface, section.id)}/attendance/week`}
+          className="text-sm font-semibold text-brand-navy underline-offset-4 hover:underline"
+        >
+          Week view →
+        </Link>
       </div>
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">

@@ -255,3 +255,68 @@ export function todayInPacific(): string {
   })
   return formatter.format(new Date())
 }
+
+// Returns the Monday of the week containing the given YYYY-MM-DD date, in
+// the same format. Used by the weekly attendance grid. Treats the date as
+// local Pacific time (which is fine since YYYY-MM-DD has no time component).
+export function mondayOfWeekFor(date: string): string {
+  const [y, m, d] = date.split("-").map(Number)
+  // Construct as UTC noon to avoid DST edge cases pushing the day boundary.
+  const dt = new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
+  const dow = dt.getUTCDay() // 0=Sun, 1=Mon, ..., 6=Sat
+  const deltaToMonday = dow === 0 ? -6 : 1 - dow
+  dt.setUTCDate(dt.getUTCDate() + deltaToMonday)
+  const yyyy = dt.getUTCFullYear()
+  const mm = String(dt.getUTCMonth() + 1).padStart(2, "0")
+  const dd = String(dt.getUTCDate()).padStart(2, "0")
+  return `${yyyy}-${mm}-${dd}`
+}
+
+// Returns the 5 weekday dates (Mon-Fri) starting from the given Monday.
+export function weekdayDatesStartingMonday(monday: string): string[] {
+  const [y, m, d] = monday.split("-").map(Number)
+  const dt = new Date(Date.UTC(y, m - 1, d, 12, 0, 0))
+  const out: string[] = []
+  for (let i = 0; i < 5; i += 1) {
+    const yyyy = dt.getUTCFullYear()
+    const mm = String(dt.getUTCMonth() + 1).padStart(2, "0")
+    const dd = String(dt.getUTCDate()).padStart(2, "0")
+    out.push(`${yyyy}-${mm}-${dd}`)
+    dt.setUTCDate(dt.getUTCDate() + 1)
+  }
+  return out
+}
+
+// Pulls attendance for every enrollment in `sectionId` whose date falls in
+// the inclusive [startDate, endDate] range. Used by the weekly grid view.
+export async function listAttendanceForSectionAndDateRange(
+  sectionId: string,
+  startDate: string,
+  endDate: string
+): Promise<AttendanceRecord[]> {
+  const { data: enrollments, error: enrollmentsError } = await getSupabase()
+    .from("enrollments")
+    .select("id")
+    .eq("section_id", sectionId)
+    .returns<Array<{ id: string }>>()
+
+  if (enrollmentsError) {
+    throw new Error(`Failed to list enrollments: ${enrollmentsError.message}`)
+  }
+
+  const enrollmentIds = (enrollments ?? []).map((e) => e.id)
+  if (enrollmentIds.length === 0) return []
+
+  const { data, error } = await getSupabase()
+    .from("attendance_records")
+    .select(attendanceColumns)
+    .in("enrollment_id", enrollmentIds)
+    .gte("date", startDate)
+    .lte("date", endDate)
+    .returns<AttendanceRecord[]>()
+
+  if (error) {
+    throw new Error(`Failed to list attendance range: ${error.message}`)
+  }
+  return data
+}
