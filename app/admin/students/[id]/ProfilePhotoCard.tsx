@@ -83,7 +83,33 @@ export default function ProfilePhotoCard({
           <p className="text-xs text-rose-700">{state.error}</p>
         )}
         {state?.ok === true && (
-          <p className="text-xs text-emerald-700">Photo updated.</p>
+          <div className="space-y-1">
+            <p className="text-xs text-emerald-700">Photo updated.</p>
+            {state.m365_sync === "synced" && (
+              <p className="text-[11px] text-emerald-700">
+                Also synced to Microsoft 365 — Outlook, Teams, and email
+                signatures will reflect this photo automatically.
+              </p>
+            )}
+            {state.m365_sync === "skipped_permission" && (
+              <p className="text-[11px] text-amber-700">
+                Microsoft 365 sync needs the Azure app to be granted
+                User.ReadWrite.All. Photo is live in the SIS; ask IT to
+                enable two-way sync if you want it to appear in Outlook too.
+              </p>
+            )}
+            {state.m365_sync === "skipped_not_found" && (
+              <p className="text-[11px] text-slate-500">
+                This profile isn&rsquo;t in M365, so the two-way sync was
+                skipped. Photo is live in the SIS only.
+              </p>
+            )}
+            {state.m365_sync === "error" && (
+              <p className="text-[11px] text-amber-700">
+                Saved in the SIS, but the M365 sync hit an error: {state.m365_message}
+              </p>
+            )}
+          </div>
         )}
       </div>
     </div>

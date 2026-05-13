@@ -196,7 +196,15 @@ const profilePhotoFormSchema = z.object({
   student_id: z.uuid(),
 })
 
-export type ProfilePhotoResult = { ok: true } | { ok: false; error: string }
+export type ProfilePhotoResult =
+  | {
+      ok: true
+      /** Optional note about the M365 two-way sync attempt — surfaced
+       *  in the UI so the admin sees whether it propagated. */
+      m365_sync?: "synced" | "skipped_permission" | "skipped_not_found" | "error"
+      m365_message?: string
+    }
+  | { ok: false; error: string }
 
 export async function uploadProfilePhotoAction(
   _prev: ProfilePhotoResult | null,
@@ -217,16 +225,33 @@ export async function uploadProfilePhotoAction(
     return { ok: false, error: "Choose a photo to upload." }
   }
 
+  // Look up the profile's email so we can ask setProfilePhotoFromBuffer
+  // to also PUT the photo to M365. We use the same getServiceSupabase
+  // pattern as the rest of this file.
+  const { data: profile } = await getServiceSupabase()
+    .from("profiles")
+    .select("email")
+    .eq("id", parsed.data.profile_id)
+    .maybeSingle<{ email: string }>()
+
   const buffer = Buffer.from(await file.arrayBuffer())
   const result = await setProfilePhotoFromBuffer(
     parsed.data.profile_id,
     buffer,
-    file.type
+    file.type,
+    {
+      email: profile?.email,
+      pushToM365: true,
+    }
   )
   if (!result.ok) return result
 
   revalidateStudent(parsed.data.student_id)
-  return { ok: true }
+  return {
+    ok: true,
+    m365_sync: result.m365Push?.status,
+    m365_message: result.m365Push?.message,
+  }
 }
 
 export async function clearProfilePhotoAction(formData: FormData) {

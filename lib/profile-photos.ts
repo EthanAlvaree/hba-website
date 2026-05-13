@@ -23,6 +23,8 @@
 import "server-only"
 import { randomBytes } from "node:crypto"
 import sharp from "sharp"
+import { pushPhotoToM365 } from "@/lib/graph"
+import { isHbaEmail } from "@/lib/admin"
 import { getServiceSupabase } from "@/lib/supabase-server"
 
 const BUCKET = "profile-photos"
@@ -42,8 +44,32 @@ const ALLOWED_MIME = new Set([
 ])
 
 export type SetProfilePhotoResult =
-  | { ok: true; photoPath: string }
+  | {
+      ok: true
+      photoPath: string
+      /** Optional report from the M365 push step. Only present when
+       *  pushToM365 was requested. */
+      m365Push?: {
+        status: "synced" | "skipped_permission" | "skipped_not_found" | "error"
+        message?: string
+      }
+    }
   | { ok: false; error: string }
+
+export type SetProfilePhotoOptions = {
+  /** Email of the profile being updated. Required when pushToM365 is
+   *  true so we know which Graph user to PUT to. */
+  email?: string
+  /** When true, also PUT the photo to Microsoft Graph for this user's
+   *  M365 profile. Two-way sync. Failures degrade gracefully (logged,
+   *  not thrown) — the SIS-side upload still succeeds.
+   *
+   *  Set this when the source of the upload is a human (the admin
+   *  student page). Leave false when the source is the M365 → SIS
+   *  pull, or we'd round-trip the same photo back to Graph for no
+   *  reason. */
+  pushToM365?: boolean
+}
 
 /** Normalize any supported input buffer to a square-ish WebP under
  *  MAX_DIMENSION on the longest side. Strips EXIF. */
@@ -63,7 +89,8 @@ async function normalizeToWebp(input: Buffer): Promise<Buffer> {
 export async function setProfilePhotoFromBuffer(
   profileId: string,
   buffer: Buffer,
-  mimeType: string
+  mimeType: string,
+  options: SetProfilePhotoOptions = {}
 ): Promise<SetProfilePhotoResult> {
   if (!ALLOWED_MIME.has(mimeType.toLowerCase())) {
     return {
@@ -154,7 +181,37 @@ export async function setProfilePhotoFromBuffer(
     return { ok: false, error: `Profile update failed: ${profileError.message}` }
   }
 
-  return { ok: true, photoPath }
+  // Optional: two-way push to M365. Fire-and-handle so a Graph failure
+  // never blocks the SIS-side success. Only attempt for HBA-domain
+  // emails — pushing to a personal Outlook account would silently
+  // touch the wrong directory.
+  let m365Push:
+    | {
+        status: "synced" | "skipped_permission" | "skipped_not_found" | "error"
+        message?: string
+      }
+    | undefined
+  if (options.pushToM365 && options.email && isHbaEmail(options.email)) {
+    try {
+      const pushResult = await pushPhotoToM365(options.email, normalized, "image/webp")
+      m365Push = pushResult.ok
+        ? { status: "synced" }
+        : { status: pushResult.status, message: pushResult.message }
+      if (!pushResult.ok && pushResult.status !== "skipped_permission") {
+        console.warn(
+          `profile-photos: M365 push ${pushResult.status} for ${options.email}: ${pushResult.message}`
+        )
+      }
+    } catch (err) {
+      console.error("profile-photos: M365 push threw", err)
+      m365Push = {
+        status: "error",
+        message: err instanceof Error ? err.message : "Unknown M365 push failure.",
+      }
+    }
+  }
+
+  return { ok: true, photoPath, m365Push }
 }
 
 export async function clearProfilePhoto(profileId: string): Promise<void> {

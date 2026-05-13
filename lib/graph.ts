@@ -562,6 +562,78 @@ export function emailFromM365User(user: M365User): string | null {
   return lowered.length > 0 ? lowered : null
 }
 
+// Push a profile photo TO Microsoft Graph for the given user. PUT to
+// /users/{email}/photo/$value with the binary in the body.
+//
+// REQUIRES the Azure app to have `User.ReadWrite.All` granted with
+// admin consent. The default HBA Graph Mailer app only has
+// `User.Read.All`, which is enough for the M365 → SIS pull but not for
+// this push. If the scope hasn't been granted, Graph returns 403 and
+// we degrade gracefully (caller catches the thrown error).
+//
+// Use case: when an admin uploads a profile photo for a faculty
+// member in the SIS, push it back to M365 so it also appears in
+// Outlook + Teams + signatures.highbluffacademy.com (which reads
+// from M365). Two-way sync without ever needing the user to upload
+// twice.
+//
+// Returns a small status flag the caller can audit: "synced" |
+// "skipped_permission" (we saw a 403, no panic) | "skipped_not_found"
+// (the email doesn't exist in M365 — likely a non-HBA email, fine).
+export type M365PhotoPushResult =
+  | { ok: true; status: "synced" }
+  | { ok: false; status: "skipped_permission" | "skipped_not_found" | "error"; message: string }
+
+export async function pushPhotoToM365(
+  userEmail: string,
+  buffer: Buffer,
+  contentType: string
+): Promise<M365PhotoPushResult> {
+  // Graph only accepts a handful of image MIME types for /photo/$value.
+  // JPEG is universally accepted; for anything else we'd transcode
+  // upstream. This function trusts the caller to pass an acceptable
+  // type (the profile-photos pipeline always outputs WebP, which Graph
+  // accepts via image/webp on modern tenants but sometimes complains.
+  // If we see real-world rejections we can convert to JPEG just for
+  // the M365 push.)
+  const accessToken = await getGraphAccessToken()
+  const url = `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(userEmail)}/photo/$value`
+
+  const response = await fetch(url, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": contentType,
+    },
+    body: new Uint8Array(buffer),
+    cache: "no-store",
+  })
+
+  if (response.ok) return { ok: true, status: "synced" }
+
+  const text = await response.text().catch(() => "")
+
+  if (response.status === 403) {
+    return {
+      ok: false,
+      status: "skipped_permission",
+      message: "Graph push refused (403). The Azure app needs User.ReadWrite.All with admin consent for two-way photo sync.",
+    }
+  }
+  if (response.status === 404) {
+    return {
+      ok: false,
+      status: "skipped_not_found",
+      message: `User ${userEmail} not found in M365.`,
+    }
+  }
+  return {
+    ok: false,
+    status: "error",
+    message: `Graph push failed: ${response.status} ${text}`,
+  }
+}
+
 // Fetch a user's profile photo from Microsoft Graph. Returns the binary
 // (always JPEG per Graph spec) or null if the user has no photo set.
 // Requires User.Read.All app permission which we already have.
