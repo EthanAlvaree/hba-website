@@ -298,6 +298,13 @@ function buildMagicLinkHtml(parentName: string, resumeUrl: string) {
   ].join("")
 }
 
+// Generic send. Use sparingly — most callers should add a dedicated helper
+// in this file so the subject + body live in one place. Currently used by
+// the parent activity digest cron where the body is dynamically generated.
+export async function sendCustomEmail(options: SendMailOptions) {
+  await sendMail(options)
+}
+
 export async function sendApplicationDraftMagicLink(options: {
   toEmail: string
   parentName: string
@@ -307,6 +314,129 @@ export async function sendApplicationDraftMagicLink(options: {
     subject: "Continue your High Bluff Academy application",
     htmlBody: buildMagicLinkHtml(options.parentName, options.resumeUrl),
     toRecipients: [options.toEmail],
+  })
+}
+
+// ============================================================================
+// Application status updates (family-facing)
+// ============================================================================
+
+export type FamilyNotifiableStatus =
+  | "info_requested"
+  | "admit_offered"
+  | "accepted"
+  | "declined"
+
+const familyNotifiableStatuses: ReadonlyArray<FamilyNotifiableStatus> = [
+  "info_requested",
+  "admit_offered",
+  "accepted",
+  "declined",
+]
+
+export function isFamilyNotifiableStatus(s: string): s is FamilyNotifiableStatus {
+  return (familyNotifiableStatuses as ReadonlyArray<string>).includes(s)
+}
+
+function buildFamilyStatusHtml(
+  parentName: string,
+  studentName: string,
+  status: FamilyNotifiableStatus,
+  internalNote?: string | null
+): { subject: string; html: string } {
+  const greeting = `<p>Hi ${escapeHtml(parentName)},</p>`
+  const signature = `<p>Warmly,<br />The High Bluff Academy admissions team</p>`
+  const noteBlock = internalNote
+    ? `<p style="margin-top:16px;padding:12px 16px;border-left:4px solid #f37021;background:#fff7ed;color:#7a3e0c;"><strong>Note from the office:</strong><br />${escapeHtml(internalNote).replace(/\n/g, "<br />")}</p>`
+    : ""
+
+  const replyHint = `<p style="color:#666;font-size:14px;">Reply to this email if you have any questions. We typically respond within one business day.</p>`
+
+  switch (status) {
+    case "info_requested":
+      return {
+        subject: `Update on ${studentName}'s HBA application — we need a bit more information`,
+        html: [
+          greeting,
+          `<p>Thank you for submitting an application for <strong>${escapeHtml(studentName)}</strong>. We&rsquo;ve started our review and need a bit more information before we can move forward.</p>`,
+          noteBlock,
+          replyHint,
+          signature,
+        ].join(""),
+      }
+    case "admit_offered":
+      return {
+        subject: `Congratulations — ${studentName} has been offered admission to HBA`,
+        html: [
+          greeting,
+          `<p>We are delighted to offer <strong>${escapeHtml(studentName)}</strong> a place in the High Bluff Academy community.</p>`,
+          `<p>Our office will follow up with the next steps for accepting the offer and beginning the enrollment process. If you have questions in the meantime, please reach out to us directly.</p>`,
+          noteBlock,
+          replyHint,
+          signature,
+        ].join(""),
+      }
+    case "accepted":
+      return {
+        subject: `Welcome to High Bluff Academy, ${studentName}!`,
+        html: [
+          greeting,
+          `<p>Thank you for accepting our offer of admission. We&rsquo;re thrilled that <strong>${escapeHtml(studentName)}</strong> will be joining the High Bluff Academy community.</p>`,
+          `<p>You&rsquo;ll hear from our office shortly with onboarding details — schedule, orientation, and the practical bits of getting set up.</p>`,
+          noteBlock,
+          replyHint,
+          signature,
+        ].join(""),
+      }
+    case "declined":
+      return {
+        subject: `Update on ${studentName}'s HBA application`,
+        html: [
+          greeting,
+          `<p>Thank you for taking the time to apply to High Bluff Academy. After careful consideration, we are unable to offer <strong>${escapeHtml(studentName)}</strong> a place this year.</p>`,
+          `<p>This decision is never an easy one. We wish you and your family the very best, and we&rsquo;d be glad to talk more if you have questions about our reasoning or next steps.</p>`,
+          noteBlock,
+          replyHint,
+          signature,
+        ].join(""),
+      }
+  }
+}
+
+export async function sendApplicationStatusUpdateToFamily(options: {
+  application: ApplicationRecord
+  newStatus: FamilyNotifiableStatus
+  /** Optional internal note that should be surfaced to the family. Usually
+   *  this is empty — admin office decides per case. */
+  noteToFamily?: string | null
+}) {
+  const { application, newStatus, noteToFamily } = options
+
+  const guardianEmails: string[] = []
+  if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
+  if (application.guardian2_email) guardianEmails.push(application.guardian2_email)
+  if (guardianEmails.length === 0) {
+    throw new Error("No guardian email on file; cannot send family status update.")
+  }
+
+  const studentName =
+    [application.student_first_name, application.student_last_name]
+      .filter(Boolean)
+      .join(" ") || "your student"
+  const parentName = application.guardian1_name?.trim() || "there"
+
+  const { subject, html } = buildFamilyStatusHtml(parentName, studentName, newStatus, noteToFamily)
+
+  const { applicationRecipients } = getGraphConfig()
+  await sendMail({
+    subject,
+    htmlBody: html,
+    toRecipients: guardianEmails,
+    // The office address is on reply-to so families can respond directly to
+    // admissions instead of the no-reply sender.
+    replyTo: applicationRecipients[0]
+      ? { address: applicationRecipients[0] }
+      : undefined,
   })
 }
 

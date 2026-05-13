@@ -827,6 +827,32 @@ export default function ApplicationsDashboard({
                             className="w-full rounded-3xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
                           />
                         </label>
+
+                        <label className="space-y-2 text-sm font-medium text-slate-700 sm:col-span-2">
+                          <span className="block">
+                            Note to family (optional, included verbatim in the status email)
+                          </span>
+                          <textarea
+                            name="note_to_family"
+                            rows={3}
+                            placeholder="A short, friendly note we'll quote in the email — e.g., 'Could you send a copy of last semester's transcript?'"
+                            className="w-full rounded-3xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
+                          />
+                        </label>
+
+                        <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
+                          <input
+                            type="checkbox"
+                            name="suppress_family_email"
+                            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+                          />
+                          <span>
+                            Don&rsquo;t notify the family (internal change only). Emails are
+                            sent automatically when status changes to{" "}
+                            <em>info requested</em>, <em>admit offered</em>,{" "}
+                            <em>accepted</em>, or <em>declined</em>.
+                          </span>
+                        </label>
                       </div>
 
                       {application.admit_decision_at && (

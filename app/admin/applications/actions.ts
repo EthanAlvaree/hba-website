@@ -9,9 +9,14 @@ import {
   applicationEnrollmentTypeSchema,
   applicationStatusSchema,
   deleteApplication,
+  getApplicationById,
   updateApplicationData,
   updateApplicationStatus,
 } from "@/lib/applications"
+import {
+  isFamilyNotifiableStatus,
+  sendApplicationStatusUpdateToFamily,
+} from "@/lib/graph"
 import {
   adminDeleteApplicationDocument,
   adminUploadApplicationDocument,
@@ -80,13 +85,45 @@ export async function updateApplicationAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Application update failed.")
   }
 
-  await updateApplicationStatus({
+  // Read the pre-update record so we can detect status transitions for the
+  // family-notification email below.
+  const before = await getApplicationById(parsed.data.id)
+
+  const updated = await updateApplicationStatus({
     id: parsed.data.id,
     status: parsed.data.status,
     enrollment_type: parsed.data.enrollment_type,
     internal_notes: parsed.data.internal_notes,
     assigned_to: parsed.data.assigned_to,
   })
+
+  // Email the family on a real transition to a notifiable status. The admin
+  // form has a "Don't notify family" checkbox to opt out of the email when
+  // the change is internal (e.g., re-classifying without informing them yet).
+  const suppressEmail = formData.get("suppress_family_email") === "on"
+  const noteToFamily = formData.get("note_to_family")
+  const noteToFamilyText =
+    typeof noteToFamily === "string" && noteToFamily.trim().length > 0
+      ? noteToFamily.trim()
+      : null
+
+  if (
+    !suppressEmail &&
+    before &&
+    before.status !== updated.status &&
+    isFamilyNotifiableStatus(updated.status)
+  ) {
+    try {
+      await sendApplicationStatusUpdateToFamily({
+        application: updated,
+        newStatus: updated.status,
+        noteToFamily: noteToFamilyText,
+      })
+    } catch (error) {
+      // Log only — never fail the status change because the email server hiccuped.
+      console.error("Failed to send family status email:", error)
+    }
+  }
 
   revalidateApplicationViews()
   redirectBackToQueue(redirectTo)
