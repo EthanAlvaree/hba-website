@@ -8,6 +8,7 @@ import {
   createStudentFromExistingProfile,
   deleteProfile,
   getProfileById,
+  getStudentByProfileId,
   profileActiveUpdateSchema,
   profileContactUpdateSchema,
   profileRoleSchema,
@@ -59,7 +60,45 @@ export async function updateProfileRolesAction(formData: FormData) {
     const message = error instanceof Error ? error.message : "Failed to update roles."
     redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
   }
+
+  // Role-driven students row: if the profile now carries the student
+  // role, make sure a students row exists. Don't auto-delete on un-set
+  // — that's destructive (cascades to enrollments + parent links) and
+  // is handled by the dedicated Withdraw workflow instead.
+  let createdStudentId: string | null = null
+  if (dedup.includes("student")) {
+    const existing = await getStudentByProfileId(parsed.data.id)
+    if (!existing) {
+      try {
+        const student = await createStudentFromExistingProfile(parsed.data.id)
+        createdStudentId = student.id
+        await logAdminAuditEvent({
+          action: ADMIN_AUDIT_ACTIONS.student_record_create_manual,
+          target_kind: "student",
+          target_id: student.id,
+          details: {
+            profile_id: parsed.data.id,
+            trigger: "role_set",
+          },
+        })
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Roles saved but couldn't create student record."
+        redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
+      }
+    }
+  }
+
   revalidateProfiles()
+  revalidatePath("/admin/students")
+
+  if (createdStudentId) {
+    redirect(
+      `/admin/profiles?student_created=${encodeURIComponent(createdStudentId)}`
+    )
+  }
   redirect("/admin/profiles")
 }
 
@@ -187,41 +226,6 @@ export async function seedQualificationsFromBiosAction() {
     no_course: result.courses_no_match.slice(0, 12).join(" | "),
   })
   redirect(`/admin/profiles?${params.toString()}`)
-}
-
-const createStudentRecordSchema = z.object({ profile_id: z.uuid() })
-
-// Manual onboarding for an existing profile that doesn't have a
-// students row yet — typically a kid who signed in via M365 first
-// (so a profile exists) but never went through the apply flow.
-export async function createStudentRecordFromProfileAction(formData: FormData) {
-  await assertAdmin()
-  const parsed = createStudentRecordSchema.safeParse({
-    profile_id: formData.get("profile_id"),
-  })
-  if (!parsed.success) {
-    redirect(`/admin/profiles?error=${encodeURIComponent("Invalid request.")}`)
-  }
-
-  let student
-  try {
-    student = await createStudentFromExistingProfile(parsed.data.profile_id)
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Couldn't create student record."
-    redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
-  }
-
-  await logAdminAuditEvent({
-    action: ADMIN_AUDIT_ACTIONS.student_record_create_manual,
-    target_kind: "student",
-    target_id: student.id,
-    details: { profile_id: parsed.data.profile_id },
-  })
-
-  revalidateProfiles()
-  revalidatePath("/admin/students")
-  redirect(`/admin/students/${student.id}`)
 }
 
 const deleteProfileSchema = z.object({ id: z.uuid() })

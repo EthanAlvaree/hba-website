@@ -10,7 +10,6 @@ import {
   type ProfileRole,
 } from "@/lib/sis"
 import {
-  createStudentRecordFromProfileAction,
   deleteProfileAction,
   seedQualificationsFromBiosAction,
   setAdminRoleAction,
@@ -68,6 +67,7 @@ type ProfilesPageProps = {
     faculty_portrait_seed_no_image?: string
     faculty_portrait_seed_failed?: string
     deleted?: string
+    student_created?: string
     bio_seed_ok?: string
     bio_seed_error?: string
     bios_matched?: string
@@ -196,6 +196,21 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
           <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
             <p className="text-sm font-semibold text-emerald-900">
               Admin role updated.
+            </p>
+          </section>
+        )}
+
+        {raw.student_created && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">
+              Student record created — they now appear in{" "}
+              <Link
+                href={`/admin/students/${raw.student_created}`}
+                className="underline"
+              >
+                the student directory
+              </Link>
+              .
             </p>
           </section>
         )}
@@ -619,9 +634,14 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                       <div>
                         <p className="text-sm font-semibold text-slate-900">Other roles</p>
                         <p className="text-xs text-slate-500">
-                          A profile can hold multiple roles. Use these for
-                          faculty / parent / student assignments. Admin is
-                          managed by the Promote/Demote buttons above.
+                          A profile can hold multiple roles. Checking{" "}
+                          <strong>student</strong> also creates a row in the
+                          students table (so they show up in{" "}
+                          <code>/admin/students</code> and can be enrolled).
+                          Unchecking it leaves the existing student record
+                          alone — use the Withdraw flow to remove that.
+                          Admin is managed by the Promote/Demote buttons
+                          above.
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-4">
@@ -676,38 +696,6 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                         </div>
                       </div>
                     )}
-
-                    {profile.roles.includes("student") &&
-                      !profileIdsWithStudent.has(profile.id) && (
-                        <div className="space-y-2 border-t border-slate-200 pt-4">
-                          <p className="text-sm font-semibold text-slate-900">
-                            Create student record
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            This profile carries the <code>student</code> role
-                            but has no row in <code>students</code> yet — so
-                            they don&rsquo;t appear in{" "}
-                            <code>/admin/students</code> and can&rsquo;t be
-                            enrolled in sections. Use this when the kid signed
-                            in via M365 but never went through the apply
-                            flow. Demographics start blank — fill them in on
-                            the student detail page.
-                          </p>
-                          <form action={createStudentRecordFromProfileAction}>
-                            <input
-                              type="hidden"
-                              name="profile_id"
-                              value={profile.id}
-                            />
-                            <button
-                              type="submit"
-                              className="inline-flex items-center justify-center rounded-full bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:brightness-110"
-                            >
-                              Create student record
-                            </button>
-                          </form>
-                        </div>
-                      )}
 
                     {profile.roles.includes("student") &&
                       profileIdsWithStudent.has(profile.id) && (
