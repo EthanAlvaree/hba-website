@@ -236,14 +236,26 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                 here too.
               </p>
             </div>
-            <form action={syncM365Action}>
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-              >
-                Sync from M365
-              </button>
-            </form>
+            <div className="flex flex-col items-stretch gap-2 sm:items-end">
+              <form action={syncM365Action}>
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+                >
+                  Sync from M365
+                </button>
+              </form>
+              <form action={syncM365Action} className="text-right">
+                <input type="hidden" name="force_photo_resync" value="1" />
+                <button
+                  type="submit"
+                  className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2.5 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                  title="Same sync, but re-pulls every M365 profile photo even if the SIS already has one. Useful for the first round of bulk photo sync."
+                >
+                  Sync + force-resync all photos
+                </button>
+              </form>
+            </div>
           </div>
         </section>
 

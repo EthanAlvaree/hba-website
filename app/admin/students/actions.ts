@@ -16,6 +16,7 @@ import {
 import { z } from "zod"
 import {
   clearProfilePhoto,
+  resyncProfilePhotoFromM365,
   setProfilePhotoFromBuffer,
 } from "@/lib/profile-photos"
 import { getServiceSupabase } from "@/lib/supabase-server"
@@ -252,6 +253,29 @@ export async function uploadProfilePhotoAction(
     m365_sync: result.m365Push?.status,
     m365_message: result.m365Push?.message,
   }
+}
+
+export type ResyncM365PhotoResult =
+  | { ok: true; outcome: "synced" | "no_m365_photo" }
+  | { ok: false; error: string }
+
+export async function resyncM365PhotoAction(
+  _prev: ResyncM365PhotoResult | null,
+  formData: FormData
+): Promise<ResyncM365PhotoResult> {
+  await assertAdmin()
+  const parsed = profilePhotoFormSchema.safeParse({
+    profile_id: formData.get("profile_id"),
+    student_id: formData.get("student_id"),
+  })
+  if (!parsed.success) {
+    return { ok: false, error: "Missing profile or student id." }
+  }
+  const result = await resyncProfilePhotoFromM365(parsed.data.profile_id)
+  if (result.ok) {
+    revalidateStudent(parsed.data.student_id)
+  }
+  return result
 }
 
 export async function clearProfilePhotoAction(formData: FormData) {

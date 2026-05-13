@@ -214,6 +214,55 @@ export async function setProfilePhotoFromBuffer(
   return { ok: true, photoPath, m365Push }
 }
 
+/** Pulls the M365 photo for a single profile and stores it as their
+ *  SIS profile photo, overwriting any existing one. Returns a result
+ *  describing what happened. Used by the per-profile "Resync from
+ *  M365" button. */
+export async function resyncProfilePhotoFromM365(profileId: string): Promise<
+  | { ok: true; outcome: "synced" | "no_m365_photo" }
+  | { ok: false; error: string }
+> {
+  // Local imports to avoid pulling Graph code into client bundles that
+  // happen to transitively import this file.
+  const { fetchM365UserPhoto } = await import("@/lib/graph")
+  const supabase = getServiceSupabase()
+  const { data: profile, error } = await supabase
+    .from("profiles")
+    .select("email, photo_path")
+    .eq("id", profileId)
+    .maybeSingle<{ email: string; photo_path: string | null }>()
+  if (error || !profile) {
+    return { ok: false, error: error?.message ?? "Profile not found." }
+  }
+  if (!isHbaEmail(profile.email)) {
+    return {
+      ok: false,
+      error: `${profile.email} isn't an HBA-domain email; M365 lookup skipped.`,
+    }
+  }
+
+  let photo
+  try {
+    photo = await fetchM365UserPhoto(profile.email)
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : "M365 photo fetch failed.",
+    }
+  }
+  if (!photo) {
+    return { ok: true, outcome: "no_m365_photo" }
+  }
+
+  const setResult = await setProfilePhotoFromBuffer(
+    profileId,
+    photo.buffer,
+    photo.contentType
+  )
+  if (!setResult.ok) return { ok: false, error: setResult.error }
+  return { ok: true, outcome: "synced" }
+}
+
 export async function clearProfilePhoto(profileId: string): Promise<void> {
   const supabase = getServiceSupabase()
   try {

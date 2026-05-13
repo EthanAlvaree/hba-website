@@ -3,8 +3,10 @@
 import { useActionState, useRef, useState } from "react"
 import {
   clearProfilePhotoAction,
+  resyncM365PhotoAction,
   uploadProfilePhotoAction,
   type ProfilePhotoResult,
+  type ResyncM365PhotoResult,
 } from "../actions"
 
 export default function ProfilePhotoCard({
@@ -22,6 +24,10 @@ export default function ProfilePhotoCard({
     ProfilePhotoResult | null,
     FormData
   >(uploadProfilePhotoAction, null)
+  const [resyncState, resyncAction, resyncPending] = useActionState<
+    ResyncM365PhotoResult | null,
+    FormData
+  >(resyncM365PhotoAction, null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [previewName, setPreviewName] = useState<string | null>(null)
 
@@ -62,17 +68,44 @@ export default function ProfilePhotoCard({
             {pending ? "Uploading…" : "Upload photo"}
           </button>
         </form>
-        {photoUrl && (
-          <form action={clearProfilePhotoAction}>
+        <div className="flex flex-wrap items-center gap-3">
+          {photoUrl && (
+            <form action={clearProfilePhotoAction}>
+              <input type="hidden" name="profile_id" value={profileId} />
+              <input type="hidden" name="student_id" value={studentId} />
+              <button
+                type="submit"
+                className="text-xs font-semibold text-rose-700 underline-offset-4 hover:underline"
+              >
+                Remove current photo
+              </button>
+            </form>
+          )}
+          <form action={resyncAction}>
             <input type="hidden" name="profile_id" value={profileId} />
             <input type="hidden" name="student_id" value={studentId} />
             <button
               type="submit"
-              className="text-xs font-semibold text-rose-700 underline-offset-4 hover:underline"
+              disabled={resyncPending}
+              className="text-xs font-semibold text-brand-navy underline-offset-4 hover:underline disabled:opacity-50"
             >
-              Remove current photo
+              {resyncPending ? "Pulling…" : "Resync from M365"}
             </button>
           </form>
+        </div>
+        {resyncState?.ok === true && resyncState.outcome === "synced" && (
+          <p className="text-[11px] text-emerald-700">
+            Pulled fresh photo from M365.
+          </p>
+        )}
+        {resyncState?.ok === true && resyncState.outcome === "no_m365_photo" && (
+          <p className="text-[11px] text-amber-700">
+            This user has no profile photo set in M365. Upload one
+            manually or have them set one in Outlook/Teams first.
+          </p>
+        )}
+        {resyncState?.ok === false && (
+          <p className="text-[11px] text-rose-700">{resyncState.error}</p>
         )}
         <p className="text-[11px] text-slate-500">
           JPEG, PNG, WebP, or HEIC (iPhone). Up to 10 MB — we&rsquo;ll

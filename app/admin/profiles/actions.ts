@@ -115,10 +115,11 @@ export async function updateProfileContactAction(formData: FormData) {
   redirect("/admin/profiles")
 }
 
-export async function syncM365Action() {
+export async function syncM365Action(formData: FormData) {
   await assertAdmin()
+  const force = formData.get("force_photo_resync") === "1"
 
-  const result = await runM365Sync()
+  const result = await runM365Sync({ forcePhotoResync: force })
 
   if (!result.ok) {
     await logAdminAuditEvent({
@@ -134,6 +135,7 @@ export async function syncM365Action() {
     target_kind: "m365_sync",
     details: {
       ok: true,
+      forced_photo_resync: force,
       created: result.created,
       updated: result.updated,
       skipped: result.skipped,
@@ -154,6 +156,7 @@ export async function syncM365Action() {
     photos_pulled: String(result.photos_pulled),
     photos_failed: String(result.photos_failed),
   })
+  if (force) params.set("forced", "1")
   redirect(`/admin/profiles?${params.toString()}`)
 }
 

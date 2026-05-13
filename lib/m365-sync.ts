@@ -12,6 +12,13 @@ import {
   type M365SyncRow,
 } from "@/lib/sis"
 
+export type M365SyncOptions = {
+  /** When true, pull photos for every profile, overwriting any
+   *  existing photo_path. Default: only pull when photo_path is
+   *  NULL so manual uploads aren't clobbered. */
+  forcePhotoResync?: boolean
+}
+
 export type M365SyncOutcome = {
   ok: true
   // Totals from syncProfilesFromM365
@@ -31,7 +38,9 @@ export type M365SyncFailure = {
   message: string
 }
 
-export async function runM365Sync(): Promise<M365SyncOutcome | M365SyncFailure> {
+export async function runM365Sync(
+  options: M365SyncOptions = {}
+): Promise<M365SyncOutcome | M365SyncFailure> {
   let users
   try {
     users = await listM365Users()
@@ -93,11 +102,24 @@ export async function runM365Sync(): Promise<M365SyncOutcome | M365SyncFailure> 
     try {
       const profile = await getProfileByEmail(row.email)
       if (!profile) continue
-      if (profile.photo_path) continue // never overwrite a manual upload
+
+      // Default: don't overwrite manual uploads. With forcePhotoResync,
+      // clear the existing photo first so the new pull lands cleanly.
+      if (profile.photo_path && !options.forcePhotoResync) continue
 
       const photo = await fetchM365UserPhoto(row.email)
-      if (!photo) continue
+      if (!photo) {
+        // No photo in M365 for this user. If we're force-resyncing and
+        // they DO have a SIS photo currently, we leave it in place
+        // (force here means "prefer M365 if present", not "wipe").
+        continue
+      }
 
+      // In force mode, we'd otherwise hit the upload helper's "this
+      // profile already has a photo" path which the helper handles
+      // internally (it removes old files under the profile's folder
+      // before uploading). No explicit clear call needed — the helper
+      // does it.
       const setResult = await setProfilePhotoFromBuffer(
         profile.id,
         photo.buffer,
