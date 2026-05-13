@@ -55,6 +55,8 @@ export const ADMIN_AUDIT_ACTIONS = {
   attendance_save_week: "attendance.save_week",
   // Health (admin-only). Medical records — strong audit posture required.
   health_record_upsert: "health_record.upsert",
+  // Profile photos.
+  profile_photo_bulk_upload: "profile_photo.bulk_upload",
 } as const
 export type AdminAuditAction = (typeof ADMIN_AUDIT_ACTIONS)[keyof typeof ADMIN_AUDIT_ACTIONS]
 

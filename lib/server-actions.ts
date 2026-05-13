@@ -116,20 +116,35 @@ function applyRevalidate(spec: RevalidateSpec): void {
  *     },
  *   })
  */
+/**
+ * State actions return a discriminated union where success has
+ * `ok: true` (plus whatever extra fields the caller defines) and
+ * failure has `ok: false; error`. The handler may return either;
+ * the helper additionally produces `{ ok: false, error }` for the
+ * schema-validation case.
+ */
+export type StateResult =
+  | { ok: true }
+  | { ok: false; error: string }
+
+// Result is unconstrained to preserve the user-defined union shape
+// (TypeScript loses narrowing when constrained against
+// `{ ok: true } & Record<string, unknown>`). The user is expected to
+// pass a discriminated `{ ok: true; ... } | { ok: false; error }`.
 export function withAdminStateAction<
   Schema extends z.ZodType,
-  Success extends { ok: true },
+  Result extends StateResult,
 >(
-  config: CommonConfig<Schema, z.infer<Schema>, Success> & {
+  config: CommonConfig<Schema, z.infer<Schema>, Result> & {
     handler: (
       input: z.infer<Schema>,
       ctx: AdminActionContext
-    ) => Promise<Success>
+    ) => Promise<Result>
   }
 ): (
-  prev: Success | { ok: false; error: string } | null,
+  prev: Result | { ok: false; error: string } | null,
   formData: FormData
-) => Promise<Success | { ok: false; error: string }> {
+) => Promise<Result | { ok: false; error: string }> {
   return async function action(_prev, formData) {
     const ctx = await adminContext(formData)
 
@@ -141,7 +156,7 @@ export function withAdminStateAction<
       }
     }
 
-    let result: Success
+    let result: Result
     try {
       result = await config.handler(parsed.data, ctx)
     } catch (error) {
@@ -149,7 +164,8 @@ export function withAdminStateAction<
       return { ok: false as const, error: message }
     }
 
-    if (config.audit) {
+    // Only audit + revalidate on a successful handler return.
+    if (result.ok && config.audit) {
       const spec = config.audit(parsed.data, result, ctx)
       if (spec) {
         await logAdminAuditEvent({
@@ -160,8 +176,9 @@ export function withAdminStateAction<
         })
       }
     }
-
-    applyRevalidate(config.revalidate?.(parsed.data, result))
+    if (result.ok) {
+      applyRevalidate(config.revalidate?.(parsed.data, result))
+    }
 
     return result
   }

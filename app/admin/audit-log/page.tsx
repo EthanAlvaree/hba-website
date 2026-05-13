@@ -65,6 +65,8 @@ function actionLabel(code: string): string {
       return "Cron DB snapshot"
     case "db_backup.manual":
       return "Manual DB snapshot"
+    case "profile_photo.bulk_upload":
+      return "Bulk profile photo upload"
     default:
       return code
   }

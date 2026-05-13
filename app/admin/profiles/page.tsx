@@ -251,6 +251,28 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="text-lg font-extrabold text-brand-navy">
+                Bulk profile photos
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Drop a zip of headshots named by username (e.g.{" "}
+                <span className="font-mono text-xs">jane.doe.27.jpg</span>)
+                and they&rsquo;ll be matched and uploaded automatically.
+                Optionally push to M365 in the same step.
+              </p>
+            </div>
+            <Link
+              href="/admin/profiles/bulk-photo-upload"
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-6 py-3 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              Open bulk upload →
+            </Link>
+          </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-extrabold text-brand-navy">
                 Seed teacher qualifications from bios
               </h2>
               <p className="mt-1 text-sm text-slate-600">
