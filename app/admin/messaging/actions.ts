@@ -1,13 +1,13 @@
 "use server"
 
 import { redirect } from "next/navigation"
-import { createClient } from "@supabase/supabase-js"
 import { auth } from "@/auth"
 import { resolveCohortEmails, type Audience } from "@/lib/mass-email"
 import { sendCustomEmail } from "@/lib/graph"
 import { logAdminAuditEvent } from "@/lib/audit"
 import { getProfileByEmail } from "@/lib/sis"
 import { siteConfig } from "@/lib/site"
+import { getServiceSupabase } from "@/lib/supabase-server"
 
 async function assertAdmin() {
   const session = await auth()
@@ -20,6 +20,18 @@ export type MassEmailResult = {
   recipients?: number
   error?: string
 }
+
+export type MassEmailPreviewResult =
+  | {
+      ok: true
+      recipients: number
+      sample_recipients: string[]
+      html: string
+      subject: string
+      sender_email: string
+      sender_label: string
+    }
+  | { ok: false; error: string }
 
 const audienceValues: Audience[] = [
   "parents",
@@ -90,6 +102,58 @@ function buildFooterHtml(senderLabel: string): string {
   ].join("")
 }
 
+// Build the full rendered email body the way the send action will. Shared
+// so the preview shows the exact bytes the recipient will see.
+function buildMassEmailHtml(userBody: string, senderLabel: string): string {
+  const userBodyHtml = `<p style="margin:0 0 12px;line-height:1.5;color:#1f2937;">${escapeHtml(userBody).replace(/\n/g, "<br />")}</p>`
+  return `${userBodyHtml}${buildFooterHtml(senderLabel)}`
+}
+
+// Renders the email exactly as it will be sent, alongside the cohort
+// recipient count and a small sample of addresses — last chance for the
+// admin to catch typos before firing.
+export async function previewMassEmailAction(
+  _prev: MassEmailPreviewResult | null,
+  formData: FormData
+): Promise<MassEmailPreviewResult> {
+  await assertAdmin()
+
+  const audience = (formData.get("audience") ?? "parents") as Audience
+  if (!audienceValues.includes(audience)) {
+    return { ok: false, error: "Unknown audience." }
+  }
+  const grade = ((formData.get("grade") ?? "") as string).trim() || null
+  const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
+  const subject = String(formData.get("subject") ?? "").trim()
+  const body = String(formData.get("body") ?? "").trim()
+  if (subject.length === 0) return { ok: false, error: "Subject is required." }
+  if (body.length === 0) return { ok: false, error: "Body is required." }
+
+  let emails: string[]
+  try {
+    emails = await resolveCohortEmails({ audience, grade, section_id: sectionId })
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Resolve failed.",
+    }
+  }
+  if (emails.length === 0) {
+    return { ok: false, error: "Cohort filter produced zero recipients." }
+  }
+
+  const sender = getMassEmailSender()
+  return {
+    ok: true,
+    recipients: emails.length,
+    sample_recipients: emails.slice(0, 5),
+    html: buildMassEmailHtml(body, sender.label),
+    subject,
+    sender_email: sender.address,
+    sender_label: sender.label,
+  }
+}
+
 export async function sendMassEmailAction(
   _prev: MassEmailResult | null,
   formData: FormData
@@ -120,9 +184,7 @@ export async function sendMassEmailAction(
   }
 
   const sender = getMassEmailSender()
-
-  const userBodyHtml = `<p style="margin:0 0 12px;line-height:1.5;color:#1f2937;">${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
-  const htmlBody = `${userBodyHtml}${buildFooterHtml(sender.label)}`
+  const htmlBody = buildMassEmailHtml(body, sender.label)
 
   // Send one Graph call per recipient so we don't leak the recipient list
   // to other parents. The Graph mailer is fast enough for hundreds of sends.
@@ -150,12 +212,7 @@ export async function sendMassEmailAction(
   // Record the send for audit + future "history" viewer. Use a write-once
   // pattern — never edit these rows from the UI.
   try {
-    const supabase = createClient(
-      process.env.HBA_SUPABASE_URL!,
-      process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
-      { auth: { autoRefreshToken: false, persistSession: false } }
-    )
-    await supabase.from("sent_mass_emails").insert({
+    await getServiceSupabase().from("sent_mass_emails").insert({
       sender_email: sender.address,
       sender_label: sender.label,
       cohort_audience: audience,
