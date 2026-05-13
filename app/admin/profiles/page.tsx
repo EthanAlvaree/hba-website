@@ -3,12 +3,14 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
   listProfiles,
+  listProfileIdsWithStudentRecord,
   profileListFilterSchema,
   profileRoleSchema,
   type ProfileRecord,
   type ProfileRole,
 } from "@/lib/sis"
 import {
+  createStudentRecordFromProfileAction,
   deleteProfileAction,
   seedQualificationsFromBiosAction,
   setAdminRoleAction,
@@ -114,6 +116,15 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
   })
 
   const profiles = await listProfiles(parsed)
+
+  // Which student-role profiles already have a students row? Drives
+  // whether to surface the "Create student record" button.
+  const studentRoleProfileIds = profiles
+    .filter((p) => p.roles.includes("student"))
+    .map((p) => p.id)
+  const profileIdsWithStudent = await listProfileIdsWithStudentRecord(
+    studentRoleProfileIds
+  )
 
   const roleTabs: Array<{ label: string; value: ProfileRole | "all" }> = [
     { label: "All", value: "all" },
@@ -657,6 +668,53 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                         </Link>
                       </div>
                     )}
+
+                    {profile.roles.includes("student") &&
+                      !profileIdsWithStudent.has(profile.id) && (
+                        <div className="space-y-2 border-t border-slate-200 pt-4">
+                          <p className="text-sm font-semibold text-slate-900">
+                            Create student record
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            This profile carries the <code>student</code> role
+                            but has no row in <code>students</code> yet — so
+                            they don&rsquo;t appear in{" "}
+                            <code>/admin/students</code> and can&rsquo;t be
+                            enrolled in sections. Use this when the kid signed
+                            in via M365 but never went through the apply
+                            flow. Demographics start blank — fill them in on
+                            the student detail page.
+                          </p>
+                          <form action={createStudentRecordFromProfileAction}>
+                            <input
+                              type="hidden"
+                              name="profile_id"
+                              value={profile.id}
+                            />
+                            <button
+                              type="submit"
+                              className="inline-flex items-center justify-center rounded-full bg-emerald-700 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:brightness-110"
+                            >
+                              Create student record
+                            </button>
+                          </form>
+                        </div>
+                      )}
+
+                    {profile.roles.includes("student") &&
+                      profileIdsWithStudent.has(profile.id) && (
+                        <div className="border-t border-slate-200 pt-4">
+                          <p className="text-sm font-semibold text-slate-900">
+                            Student record
+                          </p>
+                          <Link
+                            href={`/admin/students?search=${encodeURIComponent(profile.email)}`}
+                            className="mt-2 inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                          >
+                            Open in student directory →
+                          </Link>
+                        </div>
+                      )}
 
                     <form action={updateProfileActiveAction} className="space-y-3">
                       <input type="hidden" name="id" value={profile.id} />

@@ -62,6 +62,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   profile_photo_m365_resync: "profile_photo.m365_resync",
   // Student lifecycle.
   student_withdraw: "student.withdraw",
+  student_record_create_manual: "student.record_create_manual",
   // Faculty bios.
   faculty_bio_seed: "faculty_bio.seed",
   faculty_bio_bulk_seed: "faculty_bio.bulk_seed",

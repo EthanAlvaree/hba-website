@@ -277,6 +277,97 @@ export async function getStudentByProfileId(profileId: string) {
   return data
 }
 
+/** Bulk variant: which of the supplied profile IDs already have an
+ *  associated students row? Used by /admin/profiles so we only show
+ *  the "Create student record" button for profiles that don't have one
+ *  yet. Returns an empty Set when given an empty input. */
+export async function listProfileIdsWithStudentRecord(
+  profileIds: string[]
+): Promise<Set<string>> {
+  if (profileIds.length === 0) return new Set()
+  const { data, error } = await getSupabase()
+    .from("students")
+    .select("profile_id")
+    .in("profile_id", profileIds)
+    .returns<Array<{ profile_id: string }>>()
+  if (error) {
+    throw new Error(`Failed to look up student records: ${error.message}`)
+  }
+  return new Set((data ?? []).map((r) => r.profile_id))
+}
+
+/** Manual onboarding path for the case where a person already exists
+ *  as a profile (typically because they signed in via M365 first) but
+ *  never went through the apply flow. Inserts a minimal students row
+ *  using the profile's name as the legal name fallback; admin can
+ *  fill demographics in afterwards. Refuses to run if a students row
+ *  already exists for this profile. */
+export async function createStudentFromExistingProfile(
+  profileId: string
+): Promise<StudentRecord> {
+  const existing = await getStudentByProfileId(profileId)
+  if (existing) {
+    throw new Error("This profile already has a student record.")
+  }
+
+  const { data: profile, error: profileError } = await getSupabase()
+    .from("profiles")
+    .select(profileColumns)
+    .eq("id", profileId)
+    .maybeSingle<ProfileRecord>()
+  if (profileError) {
+    throw new Error(`Failed to look up profile: ${profileError.message}`)
+  }
+  if (!profile) {
+    throw new Error("Profile not found.")
+  }
+
+  // Best-effort legal-name fallback: prefer first_name/last_name, fall
+  // back to splitting display_name, then to the email local-part.
+  let firstName = profile.first_name?.trim() || null
+  let lastName = profile.last_name?.trim() || null
+  if (!firstName && !lastName && profile.display_name) {
+    const parts = profile.display_name.trim().split(/\s+/)
+    firstName = parts[0] ?? null
+    lastName = parts.slice(1).join(" ") || null
+  }
+  if (!firstName) {
+    firstName = profile.email.split("@")[0] ?? "Unknown"
+  }
+  if (!lastName) {
+    lastName = "Unknown"
+  }
+
+  const { data, error } = await getSupabase()
+    .from("students")
+    .insert({
+      profile_id: profileId,
+      application_id: null,
+      legal_first_name: firstName,
+      legal_last_name: lastName,
+      status: "active",
+      registered_at_hba: new Date().toISOString().slice(0, 10),
+    })
+    .select(studentColumns)
+    .single<StudentRecord>()
+
+  if (error) {
+    throw new Error(`Failed to create student record: ${error.message}`)
+  }
+
+  // Make sure the profile carries the student role too — otherwise the
+  // student portal won't let them sign in even though the SIS row exists.
+  if (!profile.roles.includes("student")) {
+    const nextRoles = Array.from(new Set([...profile.roles, "student"]))
+    await getSupabase()
+      .from("profiles")
+      .update({ roles: nextRoles })
+      .eq("id", profileId)
+  }
+
+  return data
+}
+
 // ============================================================================
 // Enroll an accepted application
 // ============================================================================

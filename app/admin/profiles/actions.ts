@@ -5,6 +5,7 @@ import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
 import { runM365Sync } from "@/lib/m365-sync"
 import {
+  createStudentFromExistingProfile,
   deleteProfile,
   getProfileById,
   profileActiveUpdateSchema,
@@ -186,6 +187,41 @@ export async function seedQualificationsFromBiosAction() {
     no_course: result.courses_no_match.slice(0, 12).join(" | "),
   })
   redirect(`/admin/profiles?${params.toString()}`)
+}
+
+const createStudentRecordSchema = z.object({ profile_id: z.uuid() })
+
+// Manual onboarding for an existing profile that doesn't have a
+// students row yet — typically a kid who signed in via M365 first
+// (so a profile exists) but never went through the apply flow.
+export async function createStudentRecordFromProfileAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = createStudentRecordSchema.safeParse({
+    profile_id: formData.get("profile_id"),
+  })
+  if (!parsed.success) {
+    redirect(`/admin/profiles?error=${encodeURIComponent("Invalid request.")}`)
+  }
+
+  let student
+  try {
+    student = await createStudentFromExistingProfile(parsed.data.profile_id)
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Couldn't create student record."
+    redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
+  }
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.student_record_create_manual,
+    target_kind: "student",
+    target_id: student.id,
+    details: { profile_id: parsed.data.profile_id },
+  })
+
+  revalidateProfiles()
+  revalidatePath("/admin/students")
+  redirect(`/admin/students/${student.id}`)
 }
 
 const deleteProfileSchema = z.object({ id: z.uuid() })
