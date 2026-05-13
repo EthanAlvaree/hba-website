@@ -144,11 +144,7 @@ export default async function FacultyHomePage() {
                 {bucket.sections.map((section) => (
                   <li key={section.id}>
                     <Link
-                      href={
-                        profile.roles.includes("admin")
-                          ? `/admin/academics/sections/${section.id}`
-                          : `/faculty-portal`
-                      }
+                      href={`/faculty-portal/sections/${section.id}`}
                       className="block rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 transition hover:border-brand-navy/30 hover:shadow-md"
                     >
                       <div className="flex flex-wrap items-center gap-2">
@@ -180,11 +176,10 @@ export default async function FacultyHomePage() {
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <p className="text-sm text-slate-600">
-            Gradebook entry, attendance taking, and per-section student
-            rosters live in the admin dashboard for now. If you&rsquo;re also
-            an admin you can reach them from the button up top. A faculty-only
-            view that scopes those tools to just your sections is on the
-            roadmap.
+            Click any section above to see the roster, set up the gradebook
+            (categories + assignments), and enter scores. Attendance entry
+            still lives in the admin dashboard for now &mdash; a teacher-scoped
+            version is on the roadmap.
           </p>
         </section>
     </div>

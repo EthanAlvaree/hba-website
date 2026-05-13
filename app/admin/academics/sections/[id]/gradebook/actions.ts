@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
+import { assertCanEditSection } from "@/lib/section-auth"
 import {
   assignmentCategoryCreateSchema,
   assignmentCategoryDeleteSchema,
@@ -23,21 +24,30 @@ import {
   updateAssignmentCategory,
 } from "@/lib/gradebook"
 
-async function assertAdmin() {
-  const session = await auth()
-  if (!session?.isAdmin) {
-    redirect("/admin/sign-in")
-  }
-  return session
+// `surface` selects which path tree we revalidate + redirect into. Same UI
+// works under /admin/* (admin viewing any section) and /faculty-portal/*
+// (a teacher viewing one of their own sections).
+type Surface = "admin" | "faculty"
+
+function surfaceFromFormData(formData: FormData): Surface {
+  const raw = formData.get("surface")
+  return raw === "faculty" ? "faculty" : "admin"
 }
 
-function revalidateGradebook(sectionId: string) {
-  revalidatePath(`/admin/academics/sections/${sectionId}`)
-  revalidatePath(`/admin/academics/sections/${sectionId}/gradebook`)
+function sectionBasePath(surface: Surface, sectionId: string): string {
+  return surface === "faculty"
+    ? `/faculty-portal/sections/${sectionId}`
+    : `/admin/academics/sections/${sectionId}`
 }
 
-function backToGradebook(sectionId: string) {
-  redirect(`/admin/academics/sections/${sectionId}/gradebook`)
+function revalidateGradebook(surface: Surface, sectionId: string) {
+  const base = sectionBasePath(surface, sectionId)
+  revalidatePath(base)
+  revalidatePath(`${base}/gradebook`)
+}
+
+function backToGradebook(surface: Surface, sectionId: string) {
+  redirect(`${sectionBasePath(surface, sectionId)}/gradebook`)
 }
 
 // ============================================================================
@@ -59,21 +69,21 @@ function parseCategoryFormData(formData: FormData) {
 }
 
 export async function createAssignmentCategoryAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const parsed = assignmentCategoryCreateSchema.safeParse(parseCategoryFormData(formData))
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Category create failed.")
   }
 
+  await assertCanEditSection(parsed.data.section_id)
+
   await createAssignmentCategory(parsed.data)
-  revalidateGradebook(parsed.data.section_id)
-  backToGradebook(parsed.data.section_id)
+  revalidateGradebook(surface, parsed.data.section_id)
+  backToGradebook(surface, parsed.data.section_id)
 }
 
 export async function updateAssignmentCategoryAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const parsed = assignmentCategoryUpdateSchema.safeParse({
     id: formData.get("id"),
     ...parseCategoryFormData(formData),
@@ -82,14 +92,15 @@ export async function updateAssignmentCategoryAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Category update failed.")
   }
 
+  await assertCanEditSection(parsed.data.section_id)
+
   await updateAssignmentCategory(parsed.data)
-  revalidateGradebook(parsed.data.section_id)
-  backToGradebook(parsed.data.section_id)
+  revalidateGradebook(surface, parsed.data.section_id)
+  backToGradebook(surface, parsed.data.section_id)
 }
 
 export async function deleteAssignmentCategoryAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const parsed = assignmentCategoryDeleteSchema.safeParse({
     id: formData.get("id"),
     section_id: formData.get("section_id"),
@@ -98,24 +109,27 @@ export async function deleteAssignmentCategoryAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Category delete failed.")
   }
 
+  await assertCanEditSection(parsed.data.section_id)
+
   await deleteAssignmentCategory(parsed.data)
-  revalidateGradebook(parsed.data.section_id)
-  backToGradebook(parsed.data.section_id)
+  revalidateGradebook(surface, parsed.data.section_id)
+  backToGradebook(surface, parsed.data.section_id)
 }
 
 // Idempotent: if the section already has any categories, this is a no-op.
 // Use only on a freshly created section to bootstrap a default scheme.
 export async function seedDefaultCategoriesAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const sectionId = formData.get("section_id")
   if (typeof sectionId !== "string" || sectionId.length === 0) {
     throw new Error("Missing section_id.")
   }
 
+  await assertCanEditSection(sectionId)
+
   const existing = await listAssignmentCategories(sectionId)
   if (existing.length > 0) {
-    backToGradebook(sectionId)
+    backToGradebook(surface, sectionId)
     return
   }
 
@@ -129,8 +143,8 @@ export async function seedDefaultCategoriesAction(formData: FormData) {
     })
   }
 
-  revalidateGradebook(sectionId)
-  backToGradebook(sectionId)
+  revalidateGradebook(surface, sectionId)
+  backToGradebook(surface, sectionId)
 }
 
 // ============================================================================
@@ -160,21 +174,21 @@ function parseAssignmentFormData(formData: FormData) {
 }
 
 export async function createAssignmentAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const parsed = assignmentCreateSchema.safeParse(parseAssignmentFormData(formData))
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Assignment create failed.")
   }
 
+  await assertCanEditSection(parsed.data.section_id)
+
   await createAssignment(parsed.data)
-  revalidateGradebook(parsed.data.section_id)
-  backToGradebook(parsed.data.section_id)
+  revalidateGradebook(surface, parsed.data.section_id)
+  backToGradebook(surface, parsed.data.section_id)
 }
 
 export async function updateAssignmentAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const parsed = assignmentUpdateSchema.safeParse({
     id: formData.get("id"),
     ...parseAssignmentFormData(formData),
@@ -183,14 +197,15 @@ export async function updateAssignmentAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Assignment update failed.")
   }
 
+  await assertCanEditSection(parsed.data.section_id)
+
   await updateAssignment(parsed.data)
-  revalidateGradebook(parsed.data.section_id)
-  backToGradebook(parsed.data.section_id)
+  revalidateGradebook(surface, parsed.data.section_id)
+  backToGradebook(surface, parsed.data.section_id)
 }
 
 export async function deleteAssignmentAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const parsed = assignmentDeleteSchema.safeParse({
     id: formData.get("id"),
     section_id: formData.get("section_id"),
@@ -199,9 +214,11 @@ export async function deleteAssignmentAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Assignment delete failed.")
   }
 
+  await assertCanEditSection(parsed.data.section_id)
+
   await deleteAssignment(parsed.data)
-  revalidateGradebook(parsed.data.section_id)
-  backToGradebook(parsed.data.section_id)
+  revalidateGradebook(surface, parsed.data.section_id)
+  backToGradebook(surface, parsed.data.section_id)
 }
 
 // ============================================================================
@@ -209,8 +226,7 @@ export async function deleteAssignmentAction(formData: FormData) {
 // ============================================================================
 
 export async function saveScoresAction(formData: FormData) {
-  await assertAdmin()
-
+  const surface = surfaceFromFormData(formData)
   const sectionId = formData.get("section_id")
   const assignmentId = formData.get("assignment_id")
 
@@ -246,14 +262,17 @@ export async function saveScoresAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Score save failed.")
   }
 
+  await assertCanEditSection(parsed.data.section_id)
+
   await saveScoresForAssignment(parsed.data)
-  revalidateGradebook(parsed.data.section_id)
+  revalidateGradebook(surface, parsed.data.section_id)
   redirect(
-    `/admin/academics/sections/${parsed.data.section_id}/gradebook/grade/${parsed.data.assignment_id}`
+    `${sectionBasePath(surface, parsed.data.section_id)}/gradebook/grade/${parsed.data.assignment_id}`
   )
 }
 
 export async function signOutGradebookAdminAction() {
-  await assertAdmin()
+  const session = await auth()
+  if (!session?.user?.email) redirect("/admin/sign-in")
   await signOut({ redirectTo: "/admin/sign-in" })
 }
