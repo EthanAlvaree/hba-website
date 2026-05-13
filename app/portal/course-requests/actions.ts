@@ -53,6 +53,16 @@ export async function addCourseRequestAction(formData: FormData) {
 
   await upsertStudentCourseRequest(parsed.data)
   revalidateCourseRequests(parsed.data.term_id)
+
+  // Trajectory page also calls this action so the per-course "Add"
+  // forms can stay where the student picked them. Honor a non-leaking
+  // redirect hint so we don't ping-pong them back to the requests list.
+  const redirectTo = formData.get("redirect_to")
+  if (redirectTo === "trajectory") {
+    revalidatePath("/portal/trajectory")
+    redirect("/portal/trajectory?saved=1")
+  }
+
   redirect(`/portal/course-requests?term_id=${parsed.data.term_id}&saved=1`)
 }
 

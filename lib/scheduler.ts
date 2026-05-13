@@ -462,6 +462,527 @@ export async function setCourseSubjectArea(input: {
 }
 
 // ============================================================================
+// Course prerequisites
+// ============================================================================
+
+export const coursePrereqKindSchema = z.enum(["hard", "recommended"])
+export type CoursePrereqKind = z.infer<typeof coursePrereqKindSchema>
+
+export type CoursePrerequisiteRecord = {
+  id: string
+  course_id: string
+  prerequisite_course_id: string
+  kind: CoursePrereqKind
+  group_key: string | null
+  notes: string | null
+}
+
+const coursePrerequisiteColumns =
+  "id, course_id, prerequisite_course_id, kind, group_key, notes"
+
+export async function listCoursePrerequisites(): Promise<CoursePrerequisiteRecord[]> {
+  const { data, error } = await getSupabase()
+    .from("course_prerequisites")
+    .select(coursePrerequisiteColumns)
+    .returns<CoursePrerequisiteRecord[]>()
+  if (error) throw new Error(`Failed to list prerequisites: ${error.message}`)
+  return data
+}
+
+// ============================================================================
+// Student prereq overrides (admin-granted exceptions)
+// ============================================================================
+
+export type StudentPrereqOverrideRecord = {
+  id: string
+  created_at: string
+  student_id: string
+  course_id: string
+  granted_by_email: string
+  notes: string | null
+}
+
+const studentPrereqOverrideColumns =
+  "id, created_at, student_id, course_id, granted_by_email, notes"
+
+export async function listStudentPrereqOverrides(
+  studentId: string
+): Promise<StudentPrereqOverrideRecord[]> {
+  const { data, error } = await getSupabase()
+    .from("student_prereq_overrides")
+    .select(studentPrereqOverrideColumns)
+    .eq("student_id", studentId)
+    .order("created_at", { ascending: false })
+    .returns<StudentPrereqOverrideRecord[]>()
+  if (error) throw new Error(`Failed to list overrides: ${error.message}`)
+  return data
+}
+
+export async function grantStudentPrereqOverride(input: {
+  student_id: string
+  course_id: string
+  granted_by_email: string
+  notes?: string | null
+}): Promise<StudentPrereqOverrideRecord> {
+  const { data, error } = await getSupabase()
+    .from("student_prereq_overrides")
+    .upsert(
+      {
+        student_id: input.student_id,
+        course_id: input.course_id,
+        granted_by_email: input.granted_by_email,
+        notes: input.notes ?? null,
+      },
+      { onConflict: "student_id,course_id" }
+    )
+    .select(studentPrereqOverrideColumns)
+    .single<StudentPrereqOverrideRecord>()
+  if (error) throw new Error(`Failed to grant override: ${error.message}`)
+  return data
+}
+
+export async function revokeStudentPrereqOverride(input: {
+  student_id: string
+  course_id: string
+}): Promise<void> {
+  const { error } = await getSupabase()
+    .from("student_prereq_overrides")
+    .delete()
+    .eq("student_id", input.student_id)
+    .eq("course_id", input.course_id)
+  if (error) throw new Error(`Failed to revoke override: ${error.message}`)
+}
+
+// ============================================================================
+// Student trajectory: completed / in-progress / eligible / blocked per course
+// ============================================================================
+
+export type CourseOfferedPattern =
+  | "always"
+  | "odd_start_year"
+  | "even_start_year"
+  | "manual"
+
+export type TrajectoryStatus =
+  | "completed"      // Took the course in a prior term + earned credit
+  | "in_progress"    // Currently enrolled in the course
+  | "eligible"       // Prereqs met, course is offered next year, grade band matches
+  | "needs_prereq"   // Course exists at the student's grade but prereqs aren't met
+  | "wrong_year"     // Course is offered but on the alternating year that doesn't match
+  | "grade_locked"   // Course is gated to a later grade level
+
+export type TrajectoryMissingPrereq = {
+  course_id: string
+  code: string
+  name: string
+  group_key: string | null
+}
+
+export type TrajectoryEntry = {
+  course_id: string
+  code: string
+  name: string
+  is_ap: boolean
+  is_honors: boolean
+  is_elective: boolean
+  grade_levels: string[]
+  offered_pattern: CourseOfferedPattern
+  subject_area: SubjectArea | null
+  credit_hours: number
+  status: TrajectoryStatus
+  completed_term_name?: string | null
+  completed_grade_letter?: string | null
+  in_progress_term_name?: string | null
+  missing_prereqs?: TrajectoryMissingPrereq[]
+  override_granted?: boolean
+}
+
+export type TrajectorySubjectSummary = {
+  subject_area: SubjectArea
+  required_credits_basic: number | null
+  required_credits_college_bound: number | null
+  credits_completed: number
+  credits_in_progress: number
+  entries: TrajectoryEntry[]
+}
+
+export type TrajectoryResult = {
+  next_academic_year_start: number | null
+  subjects: TrajectorySubjectSummary[]
+  unmapped_courses: TrajectoryEntry[]
+}
+
+type CourseRow = {
+  id: string
+  code: string
+  name: string
+  is_ap: boolean
+  is_honors: boolean
+  is_elective: boolean
+  grade_levels: string[]
+  offered_pattern: CourseOfferedPattern
+  credit_hours: number
+  active: boolean
+}
+
+type EnrollmentRow = {
+  id: string
+  status: string
+  final_grade_letter: string | null
+  section: {
+    course_id: string
+    term: {
+      name: string
+      academic_year: string
+      end_date: string
+      is_current: boolean
+    } | null
+  } | null
+}
+
+// Pure: does a 'graduation_requirements' row for this subject + track
+// exist? Returns the credits required or null if no rule applies.
+function pickCredits(
+  rows: GraduationRequirementRecord[],
+  area: SubjectArea,
+  track: "basic" | "college_bound"
+): number | null {
+  const exact = rows.find((r) => r.subject_area === area && r.track === track)
+  if (exact) return Number(exact.required_credits)
+  const all = rows.find((r) => r.subject_area === area && r.track === "all")
+  return all ? Number(all.required_credits) : null
+}
+
+// Pure: extract the calendar year a "2026-2027" academic_year starts in.
+function startYear(academicYear: string | null | undefined): number | null {
+  if (!academicYear) return null
+  const m = academicYear.match(/^(\d{4})/)
+  return m ? parseInt(m[1], 10) : null
+}
+
+// Pure: is this course offered in the given start year?
+function isOfferedInStartYear(
+  pattern: CourseOfferedPattern,
+  year: number | null
+): boolean {
+  if (pattern === "always") return true
+  if (pattern === "manual") return true // admin will sort it out
+  if (year === null) return true // can't tell; assume yes
+  if (pattern === "odd_start_year") return year % 2 === 1
+  if (pattern === "even_start_year") return year % 2 === 0
+  return true
+}
+
+// Pure: evaluate prereqs for `course`. Returns the list of missing
+// prereqs grouped by group_key (so OR-groups collapse into a single
+// blocker if ANY of them is satisfied).
+function evaluateMissingPrereqs(
+  courseId: string,
+  prereqs: CoursePrerequisiteRecord[],
+  completedCourseIds: Set<string>,
+  coursesById: Map<string, CourseRow>
+): TrajectoryMissingPrereq[] {
+  // Group prereqs by group_key; null key = standalone AND.
+  const buckets = new Map<string, CoursePrerequisiteRecord[]>()
+  for (const p of prereqs) {
+    if (p.course_id !== courseId) continue
+    if (p.kind !== "hard") continue
+    const key = p.group_key ?? `_solo_${p.id}`
+    const arr = buckets.get(key) ?? []
+    arr.push(p)
+    buckets.set(key, arr)
+  }
+
+  const missing: TrajectoryMissingPrereq[] = []
+  for (const bucket of buckets.values()) {
+    // ANY satisfied in the bucket = bucket cleared.
+    const anySatisfied = bucket.some((p) =>
+      completedCourseIds.has(p.prerequisite_course_id)
+    )
+    if (anySatisfied) continue
+    // None satisfied — push every alternative so the UI can show "Calc AB
+    // requires Precalc OR Honors Precalc OR AP Precalc".
+    for (const p of bucket) {
+      const course = coursesById.get(p.prerequisite_course_id)
+      if (!course) continue
+      missing.push({
+        course_id: course.id,
+        code: course.code,
+        name: course.name,
+        group_key: p.group_key,
+      })
+    }
+  }
+  return missing
+}
+
+export type ComputeTrajectoryOptions = {
+  /** Drives which `graduation_requirements` row counts. */
+  track?: "basic" | "college_bound"
+  /** Override the calendar year used for offering-pattern + grade
+   *  eligibility checks. Defaults to "next academic year's start year"
+   *  computed from the upcoming term. */
+  forStartYear?: number
+}
+
+export async function computeStudentTrajectory(
+  studentId: string,
+  options: ComputeTrajectoryOptions = {}
+): Promise<TrajectoryResult> {
+  const supabase = getSupabase()
+
+  const [
+    { data: student, error: studentError },
+    coursesResult,
+    assignmentsResult,
+    prereqsResult,
+    requirementsResult,
+    overridesResult,
+    enrollmentsResult,
+    termsResult,
+  ] = await Promise.all([
+    supabase
+      .from("students")
+      .select("id, current_grade")
+      .eq("id", studentId)
+      .maybeSingle<{ id: string; current_grade: string | null }>(),
+    supabase
+      .from("courses")
+      .select(
+        "id, code, name, is_ap, is_honors, is_elective, grade_levels, offered_pattern, credit_hours, active"
+      )
+      .returns<CourseRow[]>(),
+    supabase
+      .from("course_subject_assignments")
+      .select("course_id, subject_area")
+      .returns<Array<{ course_id: string; subject_area: string }>>(),
+    listCoursePrerequisites(),
+    listGraduationRequirements(),
+    listStudentPrereqOverrides(studentId),
+    supabase
+      .from("enrollments")
+      .select(
+        `id, status, final_grade_letter,
+         section:course_sections(
+           course_id,
+           term:terms(name, academic_year, end_date, is_current)
+         )`
+      )
+      .eq("student_id", studentId)
+      .returns<EnrollmentRow[]>(),
+    supabase
+      .from("terms")
+      .select("start_date, academic_year")
+      .order("start_date", { ascending: true })
+      .returns<Array<{ start_date: string; academic_year: string }>>(),
+  ])
+
+  if (studentError) throw new Error(`Student lookup failed: ${studentError.message}`)
+  if (!student) throw new Error("Student not found.")
+  if (coursesResult.error) throw new Error(coursesResult.error.message)
+  if (assignmentsResult.error) throw new Error(assignmentsResult.error.message)
+  if (enrollmentsResult.error) throw new Error(enrollmentsResult.error.message)
+  if (termsResult.error) throw new Error(termsResult.error.message)
+
+  // Determine next academic year start (calendar year). Fall back to
+  // the current academic year if there's no future term on file.
+  const todayIso = new Date().toISOString().slice(0, 10)
+  const upcomingTerm = (termsResult.data ?? []).find(
+    (t) => t.start_date > todayIso
+  )
+  const fallbackTerm = (termsResult.data ?? []).find(
+    (t) => t.start_date <= todayIso
+  )
+  const nextStartYear =
+    options.forStartYear ??
+    startYear(upcomingTerm?.academic_year ?? null) ??
+    startYear(fallbackTerm?.academic_year ?? null)
+
+  const subjectByCourse = new Map<string, SubjectArea>()
+  for (const a of assignmentsResult.data ?? []) {
+    if ((subjectAreas as readonly string[]).includes(a.subject_area)) {
+      subjectByCourse.set(a.course_id, a.subject_area as SubjectArea)
+    }
+  }
+
+  const coursesById = new Map((coursesResult.data ?? []).map((c) => [c.id, c]))
+  const overrideCourseIds = new Set(overridesResult.map((o) => o.course_id))
+
+  // Bucket enrollments. "completed" = ended-term enrollment in 'enrolled'
+  // or 'completed' status. "in progress" = enrollment in 'enrolled' or
+  // 'audit' status whose term is current.
+  const completedCourseIds = new Set<string>()
+  const inProgressCourseIds = new Set<string>()
+  const completedMeta = new Map<
+    string,
+    { term_name: string; grade_letter: string | null }
+  >()
+  const inProgressMeta = new Map<string, { term_name: string }>()
+
+  for (const e of enrollmentsResult.data ?? []) {
+    if (!e.section?.course_id || !e.section.term) continue
+    const term = e.section.term
+    const isPast = term.end_date < todayIso
+    if (e.status === "completed" || (isPast && e.status === "enrolled")) {
+      completedCourseIds.add(e.section.course_id)
+      completedMeta.set(e.section.course_id, {
+        term_name: term.name,
+        grade_letter: e.final_grade_letter,
+      })
+    } else if (
+      (e.status === "enrolled" || e.status === "audit") &&
+      term.is_current
+    ) {
+      inProgressCourseIds.add(e.section.course_id)
+      inProgressMeta.set(e.section.course_id, { term_name: term.name })
+    }
+  }
+
+  // For prereq-checking we treat in-progress as "completed by next year"
+  // since by the time the next term starts they'll have it.
+  const completedForPrereq = new Set<string>([
+    ...completedCourseIds,
+    ...inProgressCourseIds,
+  ])
+
+  // Determine the student's grade for the next year. We add 1 to their
+  // current grade unless it's a final grade like "12" (which graduates).
+  const currentGradeNum = parseInt(student.current_grade ?? "", 10)
+  const nextGrade = Number.isFinite(currentGradeNum)
+    ? String(currentGradeNum + 1)
+    : null
+
+  // Build a per-course trajectory entry.
+  const entries: TrajectoryEntry[] = []
+  for (const c of coursesResult.data ?? []) {
+    if (!c.active) continue
+    const subjectArea = subjectByCourse.get(c.id) ?? null
+    const hasOverride = overrideCourseIds.has(c.id)
+
+    const base: TrajectoryEntry = {
+      course_id: c.id,
+      code: c.code,
+      name: c.name,
+      is_ap: c.is_ap,
+      is_honors: c.is_honors,
+      is_elective: c.is_elective,
+      grade_levels: c.grade_levels,
+      offered_pattern: c.offered_pattern,
+      subject_area: subjectArea,
+      credit_hours: Number(c.credit_hours),
+      status: "eligible",
+    }
+
+    if (completedCourseIds.has(c.id)) {
+      const meta = completedMeta.get(c.id)
+      entries.push({
+        ...base,
+        status: "completed",
+        completed_term_name: meta?.term_name ?? null,
+        completed_grade_letter: meta?.grade_letter ?? null,
+      })
+      continue
+    }
+    if (inProgressCourseIds.has(c.id)) {
+      const meta = inProgressMeta.get(c.id)
+      entries.push({
+        ...base,
+        status: "in_progress",
+        in_progress_term_name: meta?.term_name ?? null,
+      })
+      continue
+    }
+
+    // Alternating-year filter for next year.
+    if (!isOfferedInStartYear(c.offered_pattern, nextStartYear)) {
+      entries.push({ ...base, status: "wrong_year" })
+      continue
+    }
+
+    // Grade-level filter. We're lenient — if the course lists no grades
+    // it's available to anyone; otherwise the student's next-year grade
+    // must be in the list. Students above the listed range still get the
+    // course (we don't lock down "look at lower-grade courses you missed").
+    // Students below are blocked.
+    if (nextGrade && c.grade_levels.length > 0) {
+      const lowest = c.grade_levels
+        .map((g) => parseInt(g, 10))
+        .filter((n) => Number.isFinite(n))
+        .reduce<number | null>(
+          (acc, v) => (acc === null || v < acc ? v : acc),
+          null
+        )
+      if (lowest !== null) {
+        const nextNum = parseInt(nextGrade, 10)
+        if (Number.isFinite(nextNum) && nextNum < lowest) {
+          entries.push({ ...base, status: "grade_locked" })
+          continue
+        }
+      }
+    }
+
+    // Prereqs (skipped entirely if admin granted an override).
+    if (!hasOverride) {
+      const missing = evaluateMissingPrereqs(
+        c.id,
+        prereqsResult,
+        completedForPrereq,
+        coursesById
+      )
+      if (missing.length > 0) {
+        entries.push({
+          ...base,
+          status: "needs_prereq",
+          missing_prereqs: missing,
+        })
+        continue
+      }
+    }
+
+    entries.push({
+      ...base,
+      status: "eligible",
+      override_granted: hasOverride,
+    })
+  }
+
+  // Group entries by subject area + roll up credits earned / in progress.
+  const subjects: TrajectorySubjectSummary[] = subjectAreas.map((area) => {
+    const areaEntries = entries.filter((e) => e.subject_area === area)
+    const credits_completed = areaEntries
+      .filter((e) => e.status === "completed")
+      .reduce((sum, e) => sum + e.credit_hours, 0)
+    const credits_in_progress = areaEntries
+      .filter((e) => e.status === "in_progress")
+      .reduce((sum, e) => sum + e.credit_hours, 0)
+    return {
+      subject_area: area,
+      required_credits_basic: pickCredits(
+        requirementsResult,
+        area,
+        "basic"
+      ),
+      required_credits_college_bound: pickCredits(
+        requirementsResult,
+        area,
+        "college_bound"
+      ),
+      credits_completed,
+      credits_in_progress,
+      entries: areaEntries,
+    }
+  })
+
+  const unmappedCourses = entries.filter((e) => e.subject_area === null)
+
+  return {
+    next_academic_year_start: nextStartYear,
+    subjects,
+    unmapped_courses: unmappedCourses,
+  }
+}
+
+// ============================================================================
 // Student course requests
 // ============================================================================
 

@@ -52,7 +52,10 @@ export default async function StudentPortalLayout({
     { id: "home", label: "My classes", href: "/portal" },
     { id: "schedule", label: "Weekly schedule", href: "/portal/schedule" },
     ...(isFullTime
-      ? [{ id: "requests", label: "Course requests", href: "/portal/course-requests" }]
+      ? [
+          { id: "trajectory", label: "Graduation trajectory", href: "/portal/trajectory" },
+          { id: "requests", label: "Course requests", href: "/portal/course-requests" },
+        ]
       : []),
     { id: "transcript", label: "Transcript", href: "/portal/transcript" },
   ]

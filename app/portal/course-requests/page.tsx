@@ -135,14 +135,24 @@ export default async function CourseRequestsPage({ searchParams }: PageProps) {
   return (
     <CourseRequestsLayout title="Course requests">
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-        <h2 className="text-2xl font-extrabold text-brand-navy">Course requests</h2>
-        <p className="mt-2 text-sm text-slate-600">
-          Tell us what you&rsquo;d like to take next term. Pick 6 core courses
-          and 2 electives, plus a few alternates the scheduler can fall back
-          to. You&rsquo;ll get your top-ranked picks when the schedule
-          works out; alternates fill in when a section is full or
-          can&rsquo;t be scheduled.
-        </p>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-2xl font-extrabold text-brand-navy">Course requests</h2>
+            <p className="mt-2 text-sm text-slate-600">
+              Tell us what you&rsquo;d like to take next term. Pick 6 core
+              courses and 2 electives, plus a few alternates the scheduler
+              can fall back to. You&rsquo;ll get your top-ranked picks when
+              the schedule works out; alternates fill in when a section is
+              full or can&rsquo;t be scheduled.
+            </p>
+          </div>
+          <Link
+            href="/portal/trajectory"
+            className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+          >
+            View graduation trajectory →
+          </Link>
+        </div>
       </section>
 
       {raw.saved === "1" && <Banner>Saved.</Banner>}
