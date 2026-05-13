@@ -210,6 +210,91 @@ export async function saveTeacherAvailability(
 }
 
 // ============================================================================
+// Student availability (mirrors teacher_availability)
+// ============================================================================
+
+export type StudentAvailabilityRecord = {
+  id: string
+  created_at: string
+  updated_at: string
+  student_id: string
+  period: SectionPeriod
+  available: boolean
+  notes: string | null
+}
+
+const studentAvailabilityColumns =
+  "id, created_at, updated_at, student_id, period, available, notes"
+
+export async function listStudentAvailability(
+  studentId: string
+): Promise<StudentAvailabilityRecord[]> {
+  const { data, error } = await getSupabase()
+    .from("student_availability")
+    .select(studentAvailabilityColumns)
+    .eq("student_id", studentId)
+    .returns<StudentAvailabilityRecord[]>()
+
+  if (error) {
+    throw new Error(`Failed to list student availability: ${error.message}`)
+  }
+  return data
+}
+
+export function buildStudentAvailabilityMap(
+  records: StudentAvailabilityRecord[]
+): Map<SectionPeriod, boolean> {
+  const map = new Map<SectionPeriod, boolean>()
+  for (const period of sectionPeriodSchema.options) {
+    map.set(period, true) // default = available
+  }
+  for (const record of records) {
+    map.set(record.period, record.available)
+  }
+  return map
+}
+
+export const studentAvailabilityBatchSchema = z.object({
+  student_id: z.uuid(),
+  entries: z.array(
+    z.object({
+      period: sectionPeriodSchema,
+      available: z.coerce.boolean(),
+    })
+  ),
+  notes: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+})
+export type StudentAvailabilityBatchInput = z.infer<
+  typeof studentAvailabilityBatchSchema
+>
+
+export async function saveStudentAvailability(
+  input: StudentAvailabilityBatchInput
+): Promise<void> {
+  const supabase = getSupabase()
+  const rows = input.entries.map((entry) => ({
+    student_id: input.student_id,
+    period: entry.period,
+    available: entry.available,
+    notes: input.notes,
+  }))
+
+  const { error } = await supabase
+    .from("student_availability")
+    .upsert(rows, { onConflict: "student_id,period" })
+
+  if (error) {
+    throw new Error(`Failed to save student availability: ${error.message}`)
+  }
+}
+
+// ============================================================================
 // Teacher workload preferences
 // ============================================================================
 

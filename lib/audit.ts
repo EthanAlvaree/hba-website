@@ -65,6 +65,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   student_record_create_manual: "student.record_create_manual",
   student_prereq_override_grant: "student.prereq_override_grant",
   student_prereq_override_revoke: "student.prereq_override_revoke",
+  student_availability_admin_edit: "student.availability_admin_edit",
   // Faculty bios.
   faculty_bio_seed: "faculty_bio.seed",
   faculty_bio_bulk_seed: "faculty_bio.bulk_seed",

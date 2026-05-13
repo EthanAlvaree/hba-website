@@ -23,6 +23,7 @@ import {
 } from "@/lib/sis"
 import {
   computeStudentTrajectory,
+  listStudentAvailability,
   listStudentCourseRequests,
   studentCourseRequestKindSchema,
   subjectAreaLabel,
@@ -31,6 +32,7 @@ import {
   type TrajectoryResult,
   type TrajectorySubjectSummary,
 } from "@/lib/scheduler"
+import StudentAvailabilityCard from "@/components/portal/StudentAvailabilityCard"
 import { addCourseRequestAction } from "../course-requests/actions"
 
 export const dynamic = "force-dynamic"
@@ -39,7 +41,7 @@ type PageProps = {
   searchParams: Promise<{
     as?: string
     track?: string
-    saved?: string
+    saved?: string // "1" = course request added; "availability" = availability saved
   }>
 }
 
@@ -90,7 +92,10 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
   const track: "basic" | "college_bound" =
     raw.track === "basic" ? "basic" : "college_bound"
 
-  const trajectory = await computeStudentTrajectory(targetStudentId, { track })
+  const [trajectory, availability] = await Promise.all([
+    computeStudentTrajectory(targetStudentId, { track }),
+    listStudentAvailability(targetStudentId),
+  ])
 
   // Pull all terms so we can offer the next upcoming term to the
   // "Add to requests" forms. The course-request action requires a
@@ -179,6 +184,19 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
           Added to your course requests for{" "}
           {nextTerm?.name ?? "the upcoming term"}.
         </div>
+      )}
+
+      {raw.saved === "availability" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-900">
+          Availability saved.
+        </div>
+      )}
+
+      {!previewing && (
+        <StudentAvailabilityCard
+          studentId={targetStudentId}
+          availability={availability}
+        />
       )}
 
       {trajectory.next_academic_year_start !== null && (

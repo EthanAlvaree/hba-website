@@ -20,9 +20,11 @@ import {
   studentDocumentKindLabels,
 } from "@/lib/post-enrollment"
 import {
+  listStudentAvailability,
   listStudentPrereqOverrides,
   type StudentPrereqOverrideRecord,
 } from "@/lib/scheduler"
+import StudentAvailabilityCard from "@/components/portal/StudentAvailabilityCard"
 import StudentsHeader from "../StudentsHeader"
 import {
   addStudentTagAction,
@@ -192,8 +194,10 @@ function DetailRow({ label, value }: { label: string; value: React.ReactNode }) 
 
 export default async function StudentDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ saved?: string }>
 }) {
   const session = await auth()
   if (!session?.isAdmin) {
@@ -201,6 +205,7 @@ export default async function StudentDetailPage({
   }
 
   const { id } = await params
+  const rawSearch = await searchParams
 
   const student = await getStudentDetail(id)
   if (!student) {
@@ -213,12 +218,14 @@ export default async function StudentDetailPage({
     tags,
     prereqOverrides,
     allCourses,
+    studentAvailability,
   ] = await Promise.all([
     getPostEnrollmentData(id),
     listStudentDocuments(id),
     listStudentTags(id),
     listStudentPrereqOverrides(id),
     listCourses(),
+    listStudentAvailability(id),
   ])
 
   const displayName = student.preferred_name?.trim()
@@ -1005,6 +1012,18 @@ export default async function StudentDetailPage({
             </div>
           </form>
         </section>
+
+        {rawSearch.saved === "availability" && (
+          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-900">
+            Availability saved.
+          </div>
+        )}
+
+        <StudentAvailabilityCard
+          studentId={student.id}
+          availability={studentAvailability}
+          asAdmin
+        />
 
         <PrereqOverridesCard
           studentId={student.id}
