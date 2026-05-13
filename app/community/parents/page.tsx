@@ -48,6 +48,25 @@ export default function ParentsPage() {
 
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <a
+              href="/admin/sign-in"
+              className="group bg-brand-navy text-white rounded-3xl p-8 shadow-md border border-brand-navy hover:shadow-2xl transition-shadow flex flex-col"
+            >
+              <div className="text-xs font-bold tracking-widest uppercase text-brand-orange mb-3">
+                Family portal
+              </div>
+              <h3 className="text-xl font-extrabold mb-3">
+                Sign in to the parent portal
+              </h3>
+              <p className="text-sm text-white/85 leading-relaxed mb-6">
+                Live grades, attendance, teacher announcements, and
+                conference scheduling for your enrolled student.
+              </p>
+              <span className="mt-auto text-sm font-semibold text-brand-orange">
+                Sign in →
+              </span>
+            </a>
+
+            <a
               href="/calendar"
               className="group bg-white rounded-3xl p-8 shadow-sm border border-gray-100 hover:shadow-2xl transition-shadow flex flex-col"
             >

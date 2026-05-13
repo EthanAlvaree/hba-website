@@ -11,8 +11,12 @@ type SectionOption = { id: string; label: string }
 
 export function MessagingClient({
   sectionOptions,
+  senderAddress,
+  senderLabel,
 }: {
   sectionOptions: SectionOption[]
+  senderAddress: string
+  senderLabel: string
 }) {
   // Single source of truth for cohort filters lives in component state. Both
   // the preview and send actions read these via hidden inputs in their
@@ -46,6 +50,7 @@ export function MessagingClient({
               <option value="students">Students</option>
               <option value="active_families">Active families (parents + students)</option>
               <option value="faculty">Faculty + admins</option>
+              <option value="all_school">All school (parents + students + faculty + admins)</option>
             </select>
           </Field>
           <Field label="Grade (optional)">
@@ -106,9 +111,11 @@ export function MessagingClient({
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <h2 className="text-lg font-extrabold text-brand-navy">2. Compose + send</h2>
         <p className="mt-1 text-sm text-slate-600">
-          Each recipient gets a single message addressed only to them (no CC,
-          no BCC) — parents don&rsquo;t see each other&rsquo;s addresses. Plain
-          text only; line breaks are preserved.
+          From <strong>{senderLabel} &lt;{senderAddress}&gt;</strong>. Each
+          recipient gets a single message addressed only to them (no CC, no
+          BCC) — parents don&rsquo;t see each other&rsquo;s addresses. Plain
+          text body; line breaks are preserved; a school-branded footer is
+          appended automatically.
         </p>
         <form
           action={sendActionFn}

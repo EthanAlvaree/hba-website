@@ -147,14 +147,20 @@ type SendMailOptions = {
   htmlBody: string
   toRecipients: string[]
   replyTo?: { address: string; name?: string }
+  /** Override the mailbox we send AS. Defaults to GRAPH_MAIL_SENDER
+   *  (typically a no-reply address). Use this for mass-email sends where
+   *  you want replies routed to a real shared mailbox like
+   *  info@highbluffacademy.com. */
+  fromMailbox?: string
 }
 
 async function sendMail(options: SendMailOptions) {
   const { graphMailSender } = getGraphConfig()
+  const sender = options.fromMailbox?.trim() || graphMailSender
   const accessToken = await getGraphAccessToken()
 
   const response = await fetch(
-    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(graphMailSender)}/sendMail`,
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(sender)}/sendMail`,
     {
       method: "POST",
       headers: {

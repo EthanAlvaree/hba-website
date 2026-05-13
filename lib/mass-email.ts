@@ -31,7 +31,12 @@ function getSupabase() {
   return cached
 }
 
-export type Audience = "parents" | "students" | "faculty" | "active_families"
+export type Audience =
+  | "parents"
+  | "students"
+  | "faculty"
+  | "active_families"
+  | "all_school"
 
 export type CohortFilters = {
   audience: Audience
@@ -57,6 +62,24 @@ export async function resolveCohortEmails(
       if (p.roles.includes("faculty") || p.roles.includes("admin")) emails.add(p.email)
     }
     return [...emails]
+  }
+
+  if (filters.audience === "all_school") {
+    // Everyone: faculty + admins + every active student + every parent_link
+    // with comms enabled. Grade / section filters DO still apply to the
+    // student + parent sides for things like "all-school but only the
+    // upper school" — though typically all_school is used unscoped.
+    const { data: profileRows, error: profileErr } = await supabase
+      .from("profiles")
+      .select("email, roles, active")
+      .eq("active", true)
+      .returns<Array<{ email: string; roles: string[]; active: boolean }>>()
+    if (profileErr) throw new Error(profileErr.message)
+    for (const p of profileRows ?? []) {
+      if (p.roles.includes("faculty") || p.roles.includes("admin")) emails.add(p.email)
+    }
+    // Fall through to the student + parent collection logic below so the
+    // grade / section filters still get applied if set.
   }
 
   // Parents / students / active_families: walk parent_links + students with
@@ -86,7 +109,11 @@ export async function resolveCohortEmails(
   }
   if (studentIds.length === 0) return []
 
-  if (filters.audience === "students" || filters.audience === "active_families") {
+  if (
+    filters.audience === "students" ||
+    filters.audience === "active_families" ||
+    filters.audience === "all_school"
+  ) {
     const { data: studentProfiles } = await supabase
       .from("students")
       .select("profile:profiles(email, active)")
@@ -97,7 +124,11 @@ export async function resolveCohortEmails(
     }
   }
 
-  if (filters.audience === "parents" || filters.audience === "active_families") {
+  if (
+    filters.audience === "parents" ||
+    filters.audience === "active_families" ||
+    filters.audience === "all_school"
+  ) {
     const { data: links } = await supabase
       .from("parent_links")
       .select(

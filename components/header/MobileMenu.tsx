@@ -137,6 +137,14 @@ export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
                       </ul>
 
                       <Link
+                        href="/admin/sign-in"
+                        className="w-full block text-center border border-slate-300 text-slate-800 py-2 rounded-sm font-semibold text-sm"
+                        onClick={onClose}
+                      >
+                        Sign in
+                      </Link>
+
+                      <Link
                         href={siteConfig.external.enrollment}
                         className="w-full block text-center bg-brand-orange text-white py-2 rounded-sm font-semibold text-sm"
                         onClick={onClose}
