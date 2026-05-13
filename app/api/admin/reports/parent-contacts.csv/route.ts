@@ -1,7 +1,20 @@
+// Parent-contacts CSV export with filters.
+//
+// Query params (all optional):
+//   ?status=active|graduated|withdrawn|all   — student status filter
+//                                              (default: active)
+//   ?grade=K|1|2|...|12                     — filter to one grade
+//   ?primary_only=1                          — only is_primary=true rows
+//   ?comms_only=1                            — only can_receive_communications=true
+//
+// The "comms_only" preset is what the office wants in an emergency
+// (school closure, weather, etc.) — every parent who's opted in to
+// receive school communications, one row per parent-student link.
+
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { csvResponse, csvRows } from "@/lib/csv"
-import { createClient } from "@supabase/supabase-js"
+import { getServiceSupabase } from "@/lib/supabase-server"
 
 export const dynamic = "force-dynamic"
 
@@ -20,19 +33,21 @@ type Row = {
   student_legal_last_name: string
   student_preferred_name: string | null
   student_grade: string | null
+  student_status: string
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const session = await auth()
   if (!session?.isAdmin) return new NextResponse("Unauthorized", { status: 401 })
 
-  const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
+  const url = new URL(request.url)
+  const status = url.searchParams.get("status") ?? "active"
+  const grade = url.searchParams.get("grade")
+  const primaryOnly = url.searchParams.get("primary_only") === "1"
+  const commsOnly = url.searchParams.get("comms_only") === "1"
 
-  const { data, error } = await supabase
+  const supabase = getServiceSupabase()
+  let query = supabase
     .from("parent_links")
     .select(
       `is_primary, is_homestay, is_emergency_contact, can_view_grades,
@@ -40,31 +55,44 @@ export async function GET() {
        parent:profiles!parent_links_parent_profile_id_fkey(email, first_name, last_name, mobile_phone, active),
        student:students!inner(legal_first_name, legal_last_name, preferred_name, current_grade, status)`
     )
-    .eq("student.status", "active")
-    .returns<
-      Array<{
-        is_primary: boolean
-        is_homestay: boolean
-        is_emergency_contact: boolean
-        can_view_grades: boolean
-        can_view_attendance: boolean
-        can_receive_communications: boolean
-        parent: {
-          email: string
-          first_name: string | null
-          last_name: string | null
-          mobile_phone: string | null
-          active: boolean
-        } | null
-        student: {
-          legal_first_name: string
-          legal_last_name: string
-          preferred_name: string | null
-          current_grade: string | null
-          status: string
-        } | null
-      }>
-    >()
+
+  if (status !== "all") {
+    query = query.eq("student.status", status)
+  }
+  if (grade) {
+    query = query.eq("student.current_grade", grade)
+  }
+  if (primaryOnly) {
+    query = query.eq("is_primary", true)
+  }
+  if (commsOnly) {
+    query = query.eq("can_receive_communications", true)
+  }
+
+  const { data, error } = await query.returns<
+    Array<{
+      is_primary: boolean
+      is_homestay: boolean
+      is_emergency_contact: boolean
+      can_view_grades: boolean
+      can_view_attendance: boolean
+      can_receive_communications: boolean
+      parent: {
+        email: string
+        first_name: string | null
+        last_name: string | null
+        mobile_phone: string | null
+        active: boolean
+      } | null
+      student: {
+        legal_first_name: string
+        legal_last_name: string
+        preferred_name: string | null
+        current_grade: string | null
+        status: string
+      } | null
+    }>
+  >()
 
   if (error) return new NextResponse(error.message, { status: 500 })
 
@@ -85,6 +113,7 @@ export async function GET() {
       student_legal_last_name: r.student!.legal_last_name,
       student_preferred_name: r.student!.preferred_name,
       student_grade: r.student!.current_grade,
+      student_status: r.student!.status,
     }))
     .sort((a, b) =>
       a.student_legal_last_name.localeCompare(b.student_legal_last_name) ||
@@ -97,6 +126,7 @@ export async function GET() {
       "student_first",
       "student_preferred",
       "student_grade",
+      "student_status",
       "parent_email",
       "parent_first",
       "parent_last",
@@ -113,6 +143,7 @@ export async function GET() {
       r.student_legal_first_name,
       r.student_preferred_name,
       r.student_grade,
+      r.student_status,
       r.parent_email,
       r.parent_first_name,
       r.parent_last_name,
@@ -126,5 +157,17 @@ export async function GET() {
     ])
   )
 
-  return csvResponse(csv, "parent-contacts.csv")
+  // Filename hints at what was downloaded so a "comms only" export
+  // doesn't get mixed up with a full export in the user's Downloads.
+  const stamp = new Date().toISOString().slice(0, 10)
+  const filterSuffix = [
+    commsOnly ? "comms-only" : null,
+    primaryOnly ? "primary-only" : null,
+    grade ? `grade-${grade}` : null,
+    status !== "active" ? `status-${status}` : null,
+  ]
+    .filter(Boolean)
+    .join("-")
+  const filename = `parent-contacts${filterSuffix ? `-${filterSuffix}` : ""}-${stamp}.csv`
+  return csvResponse(csv, filename)
 }
