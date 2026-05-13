@@ -37,6 +37,55 @@ function getSupabase() {
 }
 
 // ============================================================================
+// Term-lock guard
+// ============================================================================
+//
+// When a term has is_grades_locked = true, the gradebook for every section in
+// that term is read-only. CRUD helpers below call assertSectionEditable
+// before they mutate. The UI also surfaces a banner so users see *why* they
+// can't edit, but this is the authoritative check.
+
+export async function isSectionTermLocked(sectionId: string): Promise<boolean> {
+  const { data, error } = await getSupabase()
+    .from("course_sections")
+    .select("term:terms(is_grades_locked)")
+    .eq("id", sectionId)
+    .maybeSingle<{ term: { is_grades_locked: boolean } | null }>()
+
+  if (error) {
+    throw new Error(`Failed to look up term lock state: ${error.message}`)
+  }
+  return data?.term?.is_grades_locked === true
+}
+
+export async function assertSectionEditable(sectionId: string): Promise<void> {
+  if (await isSectionTermLocked(sectionId)) {
+    throw new Error(
+      "This term is grade-locked. Unlock the term on the Terms tab before editing the gradebook."
+    )
+  }
+}
+
+// Variant for actions that operate on an assignment without knowing its
+// section_id upfront — saves an extra round trip in the score-save path.
+export async function assertAssignmentEditable(assignmentId: string): Promise<void> {
+  const { data, error } = await getSupabase()
+    .from("assignments")
+    .select("section:course_sections(term:terms(is_grades_locked))")
+    .eq("id", assignmentId)
+    .maybeSingle<{ section: { term: { is_grades_locked: boolean } | null } | null }>()
+
+  if (error) {
+    throw new Error(`Failed to look up term lock state: ${error.message}`)
+  }
+  if (data?.section?.term?.is_grades_locked) {
+    throw new Error(
+      "This term is grade-locked. Unlock the term on the Terms tab before editing the gradebook."
+    )
+  }
+}
+
+// ============================================================================
 // Assignment categories
 // ============================================================================
 
@@ -105,6 +154,7 @@ export async function listAssignmentCategories(
 export async function createAssignmentCategory(
   input: AssignmentCategoryCreateInput
 ): Promise<AssignmentCategoryRecord> {
+  await assertSectionEditable(input.section_id)
   const { data, error } = await getSupabase()
     .from("assignment_categories")
     .insert({
@@ -126,6 +176,7 @@ export async function createAssignmentCategory(
 export async function updateAssignmentCategory(
   input: AssignmentCategoryUpdateInput
 ): Promise<AssignmentCategoryRecord> {
+  await assertSectionEditable(input.section_id)
   const { data, error } = await getSupabase()
     .from("assignment_categories")
     .update({
@@ -147,6 +198,7 @@ export async function updateAssignmentCategory(
 export async function deleteAssignmentCategory(
   input: AssignmentCategoryDeleteInput
 ): Promise<void> {
+  await assertSectionEditable(input.section_id)
   // Assignments under this category have their category_id set to null by
   // the FK's on delete set null behavior; we don't lose any assignment data.
   const { error } = await getSupabase()
@@ -271,6 +323,7 @@ function assignmentRowFromInput(input: AssignmentCreateInput) {
 export async function createAssignment(
   input: AssignmentCreateInput
 ): Promise<AssignmentRecord> {
+  await assertSectionEditable(input.section_id)
   const { data, error } = await getSupabase()
     .from("assignments")
     .insert(assignmentRowFromInput(input))
@@ -286,6 +339,7 @@ export async function createAssignment(
 export async function updateAssignment(
   input: AssignmentUpdateInput
 ): Promise<AssignmentRecord> {
+  await assertSectionEditable(input.section_id)
   const { id, ...rest } = input
   const { data, error } = await getSupabase()
     .from("assignments")
@@ -303,6 +357,7 @@ export async function updateAssignment(
 export async function deleteAssignment(
   input: AssignmentDeleteInput
 ): Promise<void> {
+  await assertSectionEditable(input.section_id)
   // Cascade-deletes the (enrollment, assignment) score rows from the 0003 FK.
   const { error } = await getSupabase()
     .from("assignments")
@@ -416,6 +471,7 @@ export type SaveScoresInput = z.infer<typeof saveScoresInputSchema>
 export async function saveScoresForAssignment(
   input: SaveScoresInput
 ): Promise<{ saved: number; skipped: number }> {
+  await assertSectionEditable(input.section_id)
   const meaningfulRows = input.rows.filter((row) => {
     if (row.kind !== "numeric") return true
     if (row.points_earned !== null) return true

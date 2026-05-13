@@ -176,35 +176,73 @@ export function StudentSectionDetail({
         </div>
       </section>
 
+      {enrollment.grade_locked && (
+        <section className="rounded-[2rem] border border-brand-navy/30 bg-brand-navy text-white px-6 py-6 shadow-md">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange">
+                Final grade · official
+              </p>
+              <h3 className="mt-1 text-lg font-extrabold">
+                Term grade locked
+              </h3>
+              <p className="mt-1 text-sm text-white/80">
+                This grade is final. It&rsquo;s the version of record for the
+                transcript and report card.
+              </p>
+            </div>
+            <div className="text-right">
+              {enrollment.final_grade_percentage === null ? (
+                <p className="text-2xl font-extrabold">—</p>
+              ) : (
+                <>
+                  <p className="text-4xl font-extrabold">
+                    {Number(enrollment.final_grade_percentage).toFixed(1)}%
+                  </p>
+                  {enrollment.final_grade_letter && (
+                    <p className="mt-1 text-base font-semibold text-brand-orange">
+                      {enrollment.final_grade_letter}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
       {categories.length > 0 && (
         <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-6 shadow-sm">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h3 className="text-lg font-extrabold text-emerald-900">
-                Current grade
+                {enrollment.grade_locked ? "Grade breakdown" : "Current grade"}
               </h3>
               <p className="mt-1 text-sm text-emerald-800">
-                Weighted average of what&rsquo;s been graded so far. Updates as
-                new assignments are scored.
+                {enrollment.grade_locked
+                  ? "Per-category breakdown that produced the locked grade above."
+                  : "Weighted average of what's been graded so far. Updates as new assignments are scored."}
               </p>
             </div>
-            <div className="text-right">
-              {grade.overall_percentage === null ? (
-                <p className="text-2xl font-extrabold text-emerald-900">—</p>
-              ) : (
-                <>
-                  <p className="text-3xl font-extrabold text-emerald-900">
-                    {grade.overall_percentage.toFixed(1)}%
-                  </p>
-                  <p className="text-sm font-semibold text-emerald-800">
-                    {grade.letter}
-                  </p>
-                </>
-              )}
-            </div>
+            {!enrollment.grade_locked && (
+              <div className="text-right">
+                {grade.overall_percentage === null ? (
+                  <p className="text-2xl font-extrabold text-emerald-900">—</p>
+                ) : (
+                  <>
+                    <p className="text-3xl font-extrabold text-emerald-900">
+                      {grade.overall_percentage.toFixed(1)}%
+                    </p>
+                    <p className="text-sm font-semibold text-emerald-800">
+                      {grade.letter}
+                    </p>
+                  </>
+                )}
+              </div>
+            )}
           </div>
 
-          {grade.overall_percentage === null && (
+          {grade.overall_percentage === null && !enrollment.grade_locked && (
             <p className="mt-3 text-xs text-emerald-800">
               Nothing has been graded yet in this section. The grade will
               appear once the teacher posts scores.
@@ -379,13 +417,15 @@ export function StudentSectionDetail({
         </section>
       )}
 
-      <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-        <p className="text-sm text-slate-600">
-          This is a <strong>provisional</strong> current grade. The final grade
-          is locked in when the teacher closes the term. Late work and extra
-          credit posted between now and then can still change the number.
-        </p>
-      </section>
+      {!enrollment.grade_locked && (
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+          <p className="text-sm text-slate-600">
+            This is a <strong>provisional</strong> current grade. The final
+            grade is locked in when the term closes. Late work and extra
+            credit posted between now and then can still change the number.
+          </p>
+        </section>
+      )}
     </div>
   )
 }

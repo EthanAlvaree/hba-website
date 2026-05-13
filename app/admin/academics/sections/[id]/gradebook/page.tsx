@@ -1,6 +1,10 @@
 import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { listAssignmentCategories, listAssignments } from "@/lib/gradebook"
+import {
+  isSectionTermLocked,
+  listAssignmentCategories,
+  listAssignments,
+} from "@/lib/gradebook"
 import { getCourseSectionById } from "@/lib/sis"
 import AcademicsHeader from "../../../AcademicsHeader"
 import { GradebookSetup } from "@/components/gradebook/GradebookSetup"
@@ -24,9 +28,10 @@ export default async function GradebookSetupPage({
     notFound()
   }
 
-  const [categories, assignments] = await Promise.all([
+  const [categories, assignments, termLocked] = await Promise.all([
     listAssignmentCategories(section.id),
     listAssignments(section.id),
+    isSectionTermLocked(section.id),
   ])
 
   return (
@@ -37,6 +42,7 @@ export default async function GradebookSetupPage({
         categories={categories}
         assignments={assignments}
         surface="admin"
+        termLocked={termLocked}
       />
     </div>
   )

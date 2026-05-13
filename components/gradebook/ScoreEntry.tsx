@@ -62,9 +62,19 @@ type Props = {
   enrollments: EnrollmentRecord[]
   scores: ScoreRecord[]
   surface: ScoreEntrySurface
+  /** True when the section's term is grade-locked. Inputs render disabled and a
+   *  banner explains why. The save button is hidden. */
+  termLocked?: boolean
 }
 
-export function ScoreEntry({ section, assignment, enrollments, scores, surface }: Props) {
+export function ScoreEntry({
+  section,
+  assignment,
+  enrollments,
+  scores,
+  surface,
+  termLocked = false,
+}: Props) {
   const gradableEnrollments = enrollments.filter(
     (e) => e.status === "enrolled" || e.status === "audit"
   )
@@ -88,6 +98,19 @@ export function ScoreEntry({ section, assignment, enrollments, scores, surface }
           ← Back to gradebook setup
         </Link>
       </div>
+
+      {termLocked && (
+        <section className="rounded-[2rem] border border-amber-200 bg-amber-50 px-6 py-4 shadow-sm">
+          <p className="text-sm font-semibold text-amber-900">
+            Term is grade-locked. Read-only.
+          </p>
+          <p className="mt-1 text-sm text-amber-800">
+            {section.term.name} has been closed for grading. Scores are frozen.
+            An admin can unlock the term on the Terms tab if a correction is
+            needed.
+          </p>
+        </section>
+      )}
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
@@ -234,9 +257,10 @@ export function ScoreEntry({ section, assignment, enrollments, scores, surface }
             </p>
             <button
               type="submit"
-              className="inline-flex items-center justify-center rounded-full bg-brand-navy px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+              disabled={termLocked}
+              className="inline-flex items-center justify-center rounded-full bg-brand-navy px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Save scores
+              {termLocked ? "Term locked" : "Save scores"}
             </button>
           </div>
         </form>

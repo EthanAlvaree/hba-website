@@ -41,7 +41,11 @@ export default async function PortalTranscriptPage() {
           <PrintButton />
         </div>
 
-        <TranscriptDocument transcript={transcript} variant="student" />
+        <TranscriptDocument
+          transcript={transcript}
+          variant="student"
+          reportCardBasePath="/portal/report-card"
+        />
     </div>
   )
 }

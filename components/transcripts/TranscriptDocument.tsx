@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { siteConfig } from "@/lib/site"
 import type { Transcript, TranscriptCourse } from "@/lib/transcripts"
 
@@ -43,9 +44,13 @@ function courseTag(course: TranscriptCourse): string | null {
 export default function TranscriptDocument({
   transcript,
   variant,
+  reportCardBasePath,
 }: {
   transcript: Transcript
   variant: "official" | "student"
+  /** Optional. When provided, each term's header gets a "Report card →"
+   *  link to `${reportCardBasePath}/${term_slug}`. Suppressed in print. */
+  reportCardBasePath?: string
 }) {
   const student = transcript.student
   const hasGrades = transcript.terms.length > 0
@@ -128,6 +133,14 @@ export default function TranscriptDocument({
                   {term.academic_year} &middot; {formatDate(term.start_date)} —{" "}
                   {formatDate(term.end_date)}
                 </p>
+                {reportCardBasePath && (
+                  <Link
+                    href={`${reportCardBasePath}/${term.term_slug}`}
+                    className="mt-2 inline-flex items-center rounded-full border border-brand-navy/30 bg-white px-3 py-1 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white print:hidden"
+                  >
+                    Report card →
+                  </Link>
+                )}
               </div>
               <div className="text-right text-xs text-slate-500">
                 <p>

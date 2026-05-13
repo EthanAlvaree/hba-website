@@ -192,9 +192,17 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
                             {section?.room && <> &middot; Room {section.room}</>}
                           </p>
                         </div>
-                        <p className="text-sm text-slate-600">
-                          {section ? teacherShortName(section.teacher) : "—"}
-                        </p>
+                        <div className="text-sm text-slate-600">
+                          <p>{section ? teacherShortName(section.teacher) : "—"}</p>
+                          {enrollment.grade_locked && enrollment.final_grade_letter && (
+                            <p className="mt-1 text-xs font-semibold text-brand-navy">
+                              Final: {enrollment.final_grade_letter}
+                              {enrollment.final_grade_percentage !== null && (
+                                <> · {Number(enrollment.final_grade_percentage).toFixed(1)}%</>
+                              )}
+                            </p>
+                          )}
+                        </div>
                         <span className="inline-flex items-center rounded-full border border-brand-navy/20 px-3 py-1 text-xs font-semibold text-brand-navy">
                           Open →
                         </span>
@@ -210,9 +218,9 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <p className="text-sm text-slate-600">
-          Calculated grades (weighted average per category, GPA across the
-          year) are coming in the next release. For now, you can see each
-          published assignment&rsquo;s individual score on its section page.
+          Click any section above to see its assignments, current grade, and
+          attendance. The full transcript &mdash; including past terms &mdash;
+          is on the <Link href="/portal/transcript" className="underline-offset-4 hover:underline font-semibold text-brand-navy">Transcript</Link> page.
         </p>
       </section>
     </div>

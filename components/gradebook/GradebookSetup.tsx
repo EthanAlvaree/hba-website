@@ -47,6 +47,9 @@ type Props = {
   categories: AssignmentCategoryRecord[]
   assignments: AssignmentWithCategory[]
   surface: GradebookSurface
+  /** True when section.term.is_grades_locked. Forms still render but the
+   *  primary save buttons are disabled, and a banner explains why. */
+  termLocked?: boolean
 }
 
 function sectionBasePath(surface: GradebookSurface, sectionId: string): string {
@@ -55,7 +58,13 @@ function sectionBasePath(surface: GradebookSurface, sectionId: string): string {
     : `/admin/academics/sections/${sectionId}`
 }
 
-export function GradebookSetup({ section, categories, assignments, surface }: Props) {
+export function GradebookSetup({
+  section,
+  categories,
+  assignments,
+  surface,
+  termLocked = false,
+}: Props) {
   const totalWeight = totalCategoryWeight(categories)
   const weightOk = Math.abs(totalWeight - 100) < 0.01
   const basePath = sectionBasePath(surface, section.id)
@@ -70,6 +79,19 @@ export function GradebookSetup({ section, categories, assignments, surface }: Pr
           ← Back to section
         </Link>
       </div>
+
+      {termLocked && (
+        <section className="rounded-[2rem] border border-amber-200 bg-amber-50 px-6 py-4 shadow-sm">
+          <p className="text-sm font-semibold text-amber-900">
+            Term is grade-locked. Read-only.
+          </p>
+          <p className="mt-1 text-sm text-amber-800">
+            {section.term.name} has been closed for grading. Final grades are
+            frozen and the gradebook is read-only. An admin can unlock the
+            term on the Terms tab if a correction is needed.
+          </p>
+        </section>
+      )}
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <h2 className="text-2xl font-extrabold text-brand-navy">
@@ -122,7 +144,8 @@ export function GradebookSetup({ section, categories, assignments, surface }: Pr
               <input type="hidden" name="surface" value={surface} />
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+                disabled={termLocked}
+                className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Use default scheme
               </button>
@@ -136,30 +159,33 @@ export function GradebookSetup({ section, categories, assignments, surface }: Pr
                 category={category}
                 sectionId={section.id}
                 surface={surface}
+                termLocked={termLocked}
               />
             ))}
           </div>
         )}
 
-        <details className="mt-6 rounded-2xl border border-slate-200 bg-slate-50">
-          <summary className="cursor-pointer list-none px-5 py-3 text-sm font-semibold text-brand-navy">
-            + Add a category
-          </summary>
-          <form
-            action={createAssignmentCategoryAction}
-            className="space-y-3 border-t border-slate-200 px-5 py-4"
-          >
-            <input type="hidden" name="section_id" value={section.id} />
-            <input type="hidden" name="surface" value={surface} />
-            <CategoryFormFields />
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+        {!termLocked && (
+          <details className="mt-6 rounded-2xl border border-slate-200 bg-slate-50">
+            <summary className="cursor-pointer list-none px-5 py-3 text-sm font-semibold text-brand-navy">
+              + Add a category
+            </summary>
+            <form
+              action={createAssignmentCategoryAction}
+              className="space-y-3 border-t border-slate-200 px-5 py-4"
             >
-              Add category
-            </button>
-          </form>
-        </details>
+              <input type="hidden" name="section_id" value={section.id} />
+              <input type="hidden" name="surface" value={surface} />
+              <CategoryFormFields />
+              <button
+                type="submit"
+                className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+              >
+                Add category
+              </button>
+            </form>
+          </details>
+        )}
       </section>
 
       {/* Assignments ---------------------------------------------------- */}
@@ -192,6 +218,7 @@ export function GradebookSetup({ section, categories, assignments, surface }: Pr
                 sectionId={section.id}
                 categories={categories}
                 surface={surface}
+                termLocked={termLocked}
               />
             ))}
           </div>
@@ -203,7 +230,7 @@ export function GradebookSetup({ section, categories, assignments, surface }: Pr
             category controls how the assignment contributes to the final
             grade.
           </p>
-        ) : (
+        ) : !termLocked && (
           <details className="mt-6 rounded-2xl border border-slate-200 bg-slate-50">
             <summary className="cursor-pointer list-none px-5 py-3 text-sm font-semibold text-brand-navy">
               + Add an assignment
@@ -237,10 +264,12 @@ function CategoryRow({
   category,
   sectionId,
   surface,
+  termLocked,
 }: {
   category: AssignmentCategoryRecord
   sectionId: string
   surface: GradebookSurface
+  termLocked: boolean
 }) {
   return (
     <details className="rounded-2xl border border-slate-200 bg-white">
@@ -259,7 +288,7 @@ function CategoryRow({
             {Number(category.weight).toFixed(2)}%
           </p>
           <span className="inline-flex items-center rounded-full border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
-            Edit
+            {termLocked ? "View" : "Edit"}
           </span>
         </div>
       </summary>
@@ -272,27 +301,30 @@ function CategoryRow({
           <CategoryFormFields defaults={category} />
           <button
             type="submit"
-            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+            disabled={termLocked}
+            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Save category
           </button>
         </form>
 
-        <form action={deleteAssignmentCategoryAction}>
-          <input type="hidden" name="id" value={category.id} />
-          <input type="hidden" name="section_id" value={sectionId} />
-          <input type="hidden" name="surface" value={surface} />
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
-          >
-            Delete category
-          </button>
-          <p className="mt-2 text-xs text-slate-500">
-            Assignments under this category will keep their data but become
-            uncategorized.
-          </p>
-        </form>
+        {!termLocked && (
+          <form action={deleteAssignmentCategoryAction}>
+            <input type="hidden" name="id" value={category.id} />
+            <input type="hidden" name="section_id" value={sectionId} />
+            <input type="hidden" name="surface" value={surface} />
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+            >
+              Delete category
+            </button>
+            <p className="mt-2 text-xs text-slate-500">
+              Assignments under this category will keep their data but become
+              uncategorized.
+            </p>
+          </form>
+        )}
       </div>
     </details>
   )
@@ -362,11 +394,13 @@ function AssignmentRow({
   sectionId,
   categories,
   surface,
+  termLocked,
 }: {
   assignment: AssignmentWithCategory
   sectionId: string
   categories: AssignmentCategoryRecord[]
   surface: GradebookSurface
+  termLocked: boolean
 }) {
   const dueLine = assignment.due_date ? `Due ${formatDate(assignment.due_date)}` : "No due date"
   const categoryLabel = assignment.category?.name ?? "(uncategorized)"
@@ -417,7 +451,7 @@ function AssignmentRow({
           href={`${base}/gradebook/grade/${assignment.id}`}
           className="inline-flex items-center justify-center rounded-full bg-brand-orange px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
         >
-          Grade this assignment →
+          {termLocked ? "View scores →" : "Grade this assignment →"}
         </Link>
 
         <form action={updateAssignmentAction} className="space-y-3">
@@ -427,26 +461,29 @@ function AssignmentRow({
           <AssignmentFormFields categories={categories} defaults={assignment} />
           <button
             type="submit"
-            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+            disabled={termLocked}
+            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
           >
             Save assignment
           </button>
         </form>
 
-        <form action={deleteAssignmentAction}>
-          <input type="hidden" name="id" value={assignment.id} />
-          <input type="hidden" name="section_id" value={sectionId} />
-          <input type="hidden" name="surface" value={surface} />
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
-          >
-            Delete assignment
-          </button>
-          <p className="mt-2 text-xs text-slate-500">
-            Deleting an assignment also removes every score recorded for it.
-          </p>
-        </form>
+        {!termLocked && (
+          <form action={deleteAssignmentAction}>
+            <input type="hidden" name="id" value={assignment.id} />
+            <input type="hidden" name="section_id" value={sectionId} />
+            <input type="hidden" name="surface" value={surface} />
+            <button
+              type="submit"
+              className="inline-flex items-center justify-center rounded-full border border-rose-200 px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
+            >
+              Delete assignment
+            </button>
+            <p className="mt-2 text-xs text-slate-500">
+              Deleting an assignment also removes every score recorded for it.
+            </p>
+          </form>
+        )}
       </div>
     </details>
   )

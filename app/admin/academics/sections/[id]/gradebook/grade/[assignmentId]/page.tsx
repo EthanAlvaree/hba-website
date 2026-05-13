@@ -2,6 +2,7 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
   getAssignmentWithCategory,
+  isSectionTermLocked,
   listScoresForAssignment,
 } from "@/lib/gradebook"
 import { getCourseSectionById, listEnrollmentsForSection } from "@/lib/sis"
@@ -31,9 +32,10 @@ export default async function ScoreEntryPage({
     notFound()
   }
 
-  const [enrollments, scores] = await Promise.all([
+  const [enrollments, scores, termLocked] = await Promise.all([
     listEnrollmentsForSection(section.id),
     listScoresForAssignment(assignment.id),
+    isSectionTermLocked(section.id),
   ])
 
   return (
@@ -45,6 +47,7 @@ export default async function ScoreEntryPage({
         enrollments={enrollments}
         scores={scores}
         surface="admin"
+        termLocked={termLocked}
       />
     </div>
   )

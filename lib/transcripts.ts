@@ -60,6 +60,7 @@ export type TranscriptCourse = {
 
 export type TranscriptTerm = {
   term_id: string
+  term_slug: string
   term_name: string
   academic_year: string
   start_date: string
@@ -233,6 +234,7 @@ export async function buildTranscriptForStudent(
     } else {
       buckets.set(term.id, {
         term_id: term.id,
+        term_slug: term.slug,
         term_name: term.name,
         academic_year: term.academic_year,
         start_date: term.start_date,

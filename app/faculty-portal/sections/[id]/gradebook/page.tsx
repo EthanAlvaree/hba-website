@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation"
-import { listAssignmentCategories, listAssignments } from "@/lib/gradebook"
+import {
+  isSectionTermLocked,
+  listAssignmentCategories,
+  listAssignments,
+} from "@/lib/gradebook"
 import { assertCanEditSection } from "@/lib/section-auth"
 import { GradebookSetup } from "@/components/gradebook/GradebookSetup"
 
@@ -14,9 +18,10 @@ export default async function FacultyGradebookSetupPage({
   const { section } = await assertCanEditSection(id)
   if (!section) notFound()
 
-  const [categories, assignments] = await Promise.all([
+  const [categories, assignments, termLocked] = await Promise.all([
     listAssignmentCategories(section.id),
     listAssignments(section.id),
+    isSectionTermLocked(section.id),
   ])
 
   return (
@@ -25,6 +30,7 @@ export default async function FacultyGradebookSetupPage({
       categories={categories}
       assignments={assignments}
       surface="faculty"
+      termLocked={termLocked}
     />
   )
 }

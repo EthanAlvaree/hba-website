@@ -282,7 +282,27 @@ export default async function ParentStudentOverviewPage({
                   <div className="flex flex-col items-end gap-2">
                     {grade && (
                       <div className="text-right">
-                        {grade.overall_percentage === null ? (
+                        {enrollment.grade_locked ? (
+                          <>
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-brand-orange">
+                              Final · official
+                            </p>
+                            {enrollment.final_grade_percentage === null ? (
+                              <p className="text-2xl font-bold text-slate-500">—</p>
+                            ) : (
+                              <>
+                                <p className="text-2xl font-extrabold text-brand-navy">
+                                  {Number(enrollment.final_grade_percentage).toFixed(1)}%
+                                </p>
+                                {enrollment.final_grade_letter && (
+                                  <p className="text-sm font-semibold text-brand-navy">
+                                    {enrollment.final_grade_letter}
+                                  </p>
+                                )}
+                              </>
+                            )}
+                          </>
+                        ) : grade.overall_percentage === null ? (
                           <p className="text-2xl font-bold text-slate-500">—</p>
                         ) : (
                           <>

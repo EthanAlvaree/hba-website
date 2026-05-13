@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation"
-import { getAssignmentWithCategory, listScoresForAssignment } from "@/lib/gradebook"
+import {
+  getAssignmentWithCategory,
+  isSectionTermLocked,
+  listScoresForAssignment,
+} from "@/lib/gradebook"
 import { listEnrollmentsForSection } from "@/lib/sis"
 import { assertCanEditSection } from "@/lib/section-auth"
 import { ScoreEntry } from "@/components/gradebook/ScoreEntry"
@@ -20,9 +24,10 @@ export default async function FacultyScoreEntryPage({
     notFound()
   }
 
-  const [enrollments, scores] = await Promise.all([
+  const [enrollments, scores, termLocked] = await Promise.all([
     listEnrollmentsForSection(section.id),
     listScoresForAssignment(assignment.id),
+    isSectionTermLocked(section.id),
   ])
 
   return (
@@ -32,6 +37,7 @@ export default async function FacultyScoreEntryPage({
       enrollments={enrollments}
       scores={scores}
       surface="faculty"
+      termLocked={termLocked}
     />
   )
 }
