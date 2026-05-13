@@ -81,6 +81,7 @@ export const navigation: NavItem[] = [
           { label: "AP courses", href: "/programs#ap" },
           { label: "Areas of study", href: "/programs#areas" },
           { label: "Course catalogue", href: "/programs/courses" },
+          { label: "Graduation requirements", href: "/programs/graduation-requirements" },
         ],
       },
       {

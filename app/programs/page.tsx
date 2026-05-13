@@ -314,12 +314,18 @@ export default function ProgramsPage() {
             AP course availability may vary based on student enrollment and demand.
           </p>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/programs/courses"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-brand-navy font-semibold text-sm shadow-lg hover:bg-brand-orange hover:text-white transition"
             >
               See the full UC A–G course catalogue →
+            </Link>
+            <Link
+              href="/programs/graduation-requirements"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
+            >
+              Graduation requirements →
             </Link>
           </div>
         </div>

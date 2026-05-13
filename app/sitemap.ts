@@ -21,6 +21,7 @@ const STATIC_ROUTES: { path: string; priority: number }[] = [
   { path: "/about/leadership", priority: 0.7 },
   { path: "/admissions/international", priority: 0.7 },
   { path: "/programs/courses", priority: 0.7 },
+  { path: "/programs/graduation-requirements", priority: 0.7 },
   { path: "/programs/online", priority: 0.7 },
   { path: "/student-life", priority: 0.7 },
   { path: "/student-life/athletics", priority: 0.6 },
