@@ -1,14 +1,14 @@
--- HBA Phase B/C — seed bootstrap admin profiles
+-- HBA Phase B/C — seed founding admin profiles
 --
 -- How to apply: paste into the Supabase SQL editor and run. Idempotent via
 -- ON CONFLICT — re-running is a no-op.
 --
--- Why: the four founder admin emails are guaranteed admin access at the auth
--- layer (isAllowedAdminEmail in lib/admin.ts) even if no DB profile exists.
--- But /admin/profiles lists the profiles table, so without explicit rows the
--- founders are invisible there. This seed gives them visible profile rows
--- with role 'admin' so they show up in the directory immediately and can be
--- assigned name/contact fields by the office.
+-- Why: admin authorization lives 100% in the profiles table (no hardcoded
+-- allowlist). This seed guarantees the founding admin emails exist with
+-- role 'admin' so the system always boots with at least one admin. Once
+-- this has run, admins can promote/demote/delete each other through
+-- /admin/profiles like any other role. Migration 0009 adds a DB trigger
+-- that prevents the last active admin from being removed.
 --
 -- Note: this does NOT set entra_oid. That's populated on first sign-in via
 -- bootstrapProfileForSignIn in lib/sis.ts.
@@ -37,5 +37,19 @@ on conflict (email) do update
       else array_append(profiles.roles, 'admin')
     end,
     active = true;
+
+-- Sanity check: bail if zero active admins exist after this migration.
+-- (Would only happen on a brand-new DB if all five inserts failed silently.)
+do $$
+declare
+  admin_count int;
+begin
+  select count(*) into admin_count
+  from profiles
+  where active = true and 'admin' = any(roles);
+  if admin_count < 1 then
+    raise exception 'Seed completed but no active admin exists. Aborting.';
+  end if;
+end $$;
 
 commit;

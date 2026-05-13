@@ -1,13 +1,12 @@
 import { redirect } from "next/navigation"
 import { auth, signIn, signOut } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import { getProfileByEmail } from "@/lib/sis"
 
 export default async function AdminSignInPage() {
   const session = await auth()
   const signedInEmail = session?.user?.email ?? null
 
-  if (isAllowedAdminEmail(signedInEmail)) {
+  if (session?.isAdmin) {
     redirect("/admin/contact-submissions")
   }
 
@@ -27,7 +26,7 @@ export default async function AdminSignInPage() {
     }
   }
 
-  const isFacultySignedIn = Boolean(signedInEmail) && !isAllowedAdminEmail(signedInEmail)
+  const isFacultySignedIn = Boolean(signedInEmail) && !session?.isAdmin
 
   return (
     <main className="min-h-[70vh] bg-gray-50 px-6 py-24">

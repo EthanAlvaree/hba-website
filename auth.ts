@@ -1,6 +1,6 @@
 import NextAuth from "next-auth"
 import MicrosoftEntraID from "next-auth/providers/microsoft-entra-id"
-import { isAdmin, isAllowedAdminEmail, isHbaEmail } from "@/lib/admin"
+import { isAdmin, isHbaEmail } from "@/lib/admin"
 import { bootstrapProfileForSignIn, getProfileByEmail } from "@/lib/sis"
 
 function readClaim(profile: unknown, key: string): string | null {
@@ -64,18 +64,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
       token.email = email
 
-      // Compute the expensive profile-aware admin check only at sign-in time
-      // (when `user` is present). Subsequent requests read the cached flag
-      // off the JWT. Bootstrap-list admins are recomputed on every refresh
-      // since that's a cheap sync check — guarantees they never get locked
-      // out of an old session even if their token was stale.
-      if (user) {
-        token.isAdmin = await isAdmin(email)
-      } else if (isAllowedAdminEmail(email)) {
-        token.isAdmin = true
-      } else if (typeof token.isAdmin !== "boolean") {
-        token.isAdmin = false
-      }
+      // Re-check admin status on every JWT refresh, not just at sign-in.
+      // Otherwise a demoted admin keeps `session.isAdmin = true` until they
+      // explicitly sign out. The check is a single Supabase query — cheap
+      // enough given how rarely JWTs refresh, and admin pages re-verify
+      // anyway in their layout via `auth()`.
+      token.isAdmin = await isAdmin(email)
 
       return token
     },

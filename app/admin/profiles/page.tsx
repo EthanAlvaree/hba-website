@@ -1,7 +1,6 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   listProfiles,
   profileListFilterSchema,
@@ -12,10 +11,16 @@ import {
 import {
   deleteProfileAction,
   seedQualificationsFromBiosAction,
+  setAdminRoleAction,
   syncM365Action,
   updateProfileActiveAction,
   updateProfileRolesAction,
 } from "./actions"
+import { ConfirmAction } from "./ConfirmAction"
+
+// The "Save roles" checkbox form sets faculty / student / parent. Admin is
+// promoted / demoted by the dedicated buttons (with confirmation) instead.
+const nonAdminRoleOptions = profileRoleSchema.options.filter((r) => r !== "admin")
 
 export const dynamic = "force-dynamic"
 
@@ -55,6 +60,8 @@ type ProfilesPageProps = {
     no_course_count?: string
     no_profile?: string
     no_course?: string
+    error?: string
+    role_ok?: string
   }>
 }
 
@@ -82,6 +89,7 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
     redirect("/admin/sign-in")
   }
 
+  const currentAdminEmail = (session.user?.email ?? "").toLowerCase()
   const raw = await searchParams
   const parsed = profileListFilterSchema.parse({
     role: raw.role ?? "all",
@@ -106,13 +114,9 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
         <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
           Identity records for every person in the SIS. Roles control what
           each account sees: admin → admin dashboard, faculty → faculty
-          portal, student → /portal, parent → /parent. The four bootstrap
-          admin emails (
-          <code className="font-mono text-xs">molly@</code>,{" "}
-          <code className="font-mono text-xs">kristin@</code>,{" "}
-          <code className="font-mono text-xs">ethan@</code>,{" "}
-          <code className="font-mono text-xs">kun@</code>) always have admin
-          access regardless of what&rsquo;s set here.
+          portal, student → /portal, parent → /parent. Any admin can promote
+          or demote other admins; the system always keeps at least one active
+          admin (the database refuses the operation that would leave zero).
         </p>
       </header>
 
@@ -144,6 +148,25 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
           <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
             <p className="text-sm font-semibold text-emerald-900">
               Profile deleted.
+            </p>
+          </section>
+        )}
+
+        {raw.role_ok === "1" && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">
+              Admin role updated.
+            </p>
+          </section>
+        )}
+
+        {raw.error && (
+          <section className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-rose-900">
+              Couldn&rsquo;t complete that action.
+            </p>
+            <p className="mt-1 text-sm text-rose-800 whitespace-pre-wrap">
+              {raw.error}
             </p>
           </section>
         )}
@@ -295,7 +318,8 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
             </div>
           ) : (
             profiles.map((profile) => {
-              const isBootstrapAdmin = isAllowedAdminEmail(profile.email)
+              const isSelf = profile.email.toLowerCase() === currentAdminEmail
+              const isAdminRole = profile.roles.includes("admin")
               return (
                 <details
                   key={profile.id}
@@ -316,9 +340,9 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                               {roleLabels[role]}
                             </span>
                           ))}
-                          {isBootstrapAdmin && (
+                          {isSelf && (
                             <span className="rounded-full border border-slate-300 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
-                              Bootstrap admin
+                              You
                             </span>
                           )}
                           {!profile.active && (
@@ -350,18 +374,89 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                   </summary>
 
                   <div className="space-y-5 border-t border-slate-200 px-5 py-5 sm:px-6">
+                    <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-slate-900">Admin access</p>
+                        <p className="text-xs text-slate-500">
+                          Admins can see and edit everything in /admin. The
+                          system always keeps at least one active admin —
+                          removing the last one is refused at the database
+                          level.
+                        </p>
+                      </div>
+                      {isAdminRole ? (
+                        <ConfirmAction
+                          action={setAdminRoleAction}
+                          fields={{ id: profile.id, make_admin: "no" }}
+                          triggerLabel="Demote from admin"
+                          title={isSelf ? "Demote yourself from admin?" : "Demote this admin?"}
+                          confirmLabel={isSelf ? "Demote and sign out" : "Demote"}
+                          variant="warning"
+                          description={
+                            isSelf ? (
+                              <>
+                                <p>
+                                  This removes admin from <strong>{profile.email}</strong>.
+                                </p>
+                                <p className="mt-2">
+                                  Because that&rsquo;s your own account,
+                                  you&rsquo;ll be signed out immediately and
+                                  lose access to <code>/admin</code>. You can
+                                  still sign back in as your other roles
+                                  (faculty / parent / student) if you have any.
+                                </p>
+                              </>
+                            ) : (
+                              <p>
+                                This removes admin access from{" "}
+                                <strong>{profile.email}</strong>. Their other
+                                roles (faculty / parent / student) stay
+                                intact. They&rsquo;ll be redirected to their
+                                role-specific portal next time they sign in
+                                or refresh.
+                              </p>
+                            )
+                          }
+                        />
+                      ) : (
+                        <ConfirmAction
+                          action={setAdminRoleAction}
+                          fields={{ id: profile.id, make_admin: "yes" }}
+                          triggerLabel="Promote to admin"
+                          title="Promote to admin?"
+                          confirmLabel="Promote"
+                          variant="primary"
+                          description={
+                            <p>
+                              This grants <strong>{profile.email}</strong>{" "}
+                              full admin access — they can manage applications,
+                              students, course sections, the schedule, and
+                              other admins (including demoting or deleting
+                              you).
+                            </p>
+                          }
+                        />
+                      )}
+                    </div>
+
                     <form action={updateProfileRolesAction} className="space-y-3">
                       <input type="hidden" name="id" value={profile.id} />
+                      {/* Preserve the admin role across non-admin role edits. The
+                          admin toggle has its own dedicated buttons above with
+                          confirmation, so we shouldn't touch it here. */}
+                      {isAdminRole && (
+                        <input type="hidden" name="roles" value="admin" />
+                      )}
                       <div>
-                        <p className="text-sm font-semibold text-slate-900">Roles</p>
+                        <p className="text-sm font-semibold text-slate-900">Other roles</p>
                         <p className="text-xs text-slate-500">
-                          A profile can hold multiple roles. Faculty who are also
-                          admins check both. The bootstrap admin list overrides
-                          this for the four founder emails.
+                          A profile can hold multiple roles. Use these for
+                          faculty / parent / student assignments. Admin is
+                          managed by the Promote/Demote buttons above.
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-4">
-                        {profileRoleSchema.options.map((role) => (
+                        {nonAdminRoleOptions.map((role) => (
                           <label
                             key={role}
                             className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
@@ -412,26 +507,50 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                       </button>
                     </form>
 
-                    {!profile.active && !isBootstrapAdmin && (
-                      <form action={deleteProfileAction} className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50/50 px-4 py-3">
-                        <input type="hidden" name="id" value={profile.id} />
+                    {!profile.active && (
+                      <div className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50/50 px-4 py-3">
                         <div>
                           <p className="text-sm font-semibold text-rose-900">Hard delete</p>
                           <p className="text-xs text-rose-800">
                             Permanently removes this profile row. Refused if
-                            the profile has a student record or parent_links
-                            (those carry SIS data we shouldn&rsquo;t lose).
-                            Course sections taught by this profile have the
-                            teacher cleared automatically.
+                            the profile has a student record, parent_links,
+                            or is the only active admin. Course sections
+                            taught by this profile have the teacher cleared
+                            automatically.
                           </p>
                         </div>
-                        <button
-                          type="submit"
-                          className="inline-flex items-center justify-center rounded-full border border-rose-300 bg-white px-4 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50"
-                        >
-                          Delete forever
-                        </button>
-                      </form>
+                        <ConfirmAction
+                          action={deleteProfileAction}
+                          fields={{ id: profile.id }}
+                          triggerLabel="Delete forever"
+                          title={isSelf ? "Delete your own profile?" : "Delete this profile?"}
+                          confirmLabel={isSelf ? "Delete and sign out" : "Delete forever"}
+                          variant="danger"
+                          description={
+                            isSelf ? (
+                              <>
+                                <p>
+                                  This permanently removes{" "}
+                                  <strong>{profile.email}</strong> from the
+                                  profiles table.
+                                </p>
+                                <p className="mt-2">
+                                  Because that&rsquo;s your own profile,
+                                  you&rsquo;ll be signed out immediately and
+                                  won&rsquo;t be able to sign back in unless
+                                  the M365 mailbox seeds a fresh profile.
+                                </p>
+                              </>
+                            ) : (
+                              <p>
+                                This permanently removes{" "}
+                                <strong>{profile.email}</strong> from the
+                                profiles table. This action cannot be undone.
+                              </p>
+                            )
+                          }
+                        />
+                      </div>
                     )}
                   </div>
                 </details>

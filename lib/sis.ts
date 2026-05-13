@@ -12,7 +12,7 @@ import {
   type ApplicationEnrollmentType,
   type ApplicationRecord,
 } from "@/lib/applications"
-import { isAllowedAdminEmail, isHbaEmail } from "@/lib/admin"
+import { isHbaEmail } from "@/lib/admin"
 
 // ============================================================================
 // Enums + shared types
@@ -172,6 +172,20 @@ export async function getProfileByEmail(email: string) {
 
   if (error) {
     throw new Error(`Failed to look up profile by email: ${error.message}`)
+  }
+
+  return data
+}
+
+export async function getProfileById(id: string) {
+  const { data, error } = await getSupabase()
+    .from("profiles")
+    .select(profileColumns)
+    .eq("id", id)
+    .maybeSingle<ProfileRecord>()
+
+  if (error) {
+    throw new Error(`Failed to look up profile by id: ${error.message}`)
   }
 
   return data
@@ -1525,7 +1539,8 @@ async function upsertProfileFromM365(row: M365SyncRow): Promise<"created" | "upd
   const existing = await getProfileByEmail(row.email)
 
   if (!existing) {
-    const defaultRoles: ProfileRole[] = isAllowedAdminEmail(row.email) ? ["admin"] : []
+    // New M365 profiles start with no roles. Admins promote from /admin/profiles.
+    const defaultRoles: ProfileRole[] = []
     const { error } = await supabase.from("profiles").insert({
       email: row.email,
       entra_oid: row.entra_oid,
@@ -2065,7 +2080,6 @@ export async function bootstrapProfileForSignIn(
 
   // Default role(s) for a *new* profile created at sign-in time. Pre-existing
   // profiles win — see the existing-profile branch below. Rules:
-  //   - admin bootstrap allowlist → 'admin'
   //   - HBA email matching a faculty bio (by first-name prefix on the slug)
   //     → 'faculty'. The bios in lib/faculty.ts are admin-curated, so they
   //     accurately reflect who's actually faculty. Avoids the bug where any
@@ -2079,9 +2093,7 @@ export async function bootstrapProfileForSignIn(
   //     parent profile already exists, so we're not creating one fresh
   //     here; this branch is a safety default if we ever do.
   let defaultRoles: ProfileRole[] = []
-  if (isAllowedAdminEmail(email)) {
-    defaultRoles = ["admin"]
-  } else if (isHbaEmail(email)) {
+  if (isHbaEmail(email)) {
     const matchesBio = await emailMatchesFacultyBio(email)
     if (matchesBio) {
       defaultRoles = ["faculty"]
