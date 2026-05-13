@@ -376,6 +376,50 @@ function buildDraftReminderHtml(options: {
   ].join("")
 }
 
+// Pings the office when a student finishes their course-request list
+// and submits for scheduling. Reuses the application recipient pool
+// since they're the same office team that runs the scheduler.
+export async function sendCourseRequestsSubmittedNotification(options: {
+  studentName: string
+  studentEmail: string | null
+  termName: string
+  coreCount: number
+  electiveCount: number
+  alternateCount: number
+  dashboardUrl: string
+}) {
+  const {
+    studentName,
+    studentEmail,
+    termName,
+    coreCount,
+    electiveCount,
+    alternateCount,
+    dashboardUrl,
+  } = options
+  const html = [
+    `<p>${escapeHtml(studentName)} submitted course requests for <strong>${escapeHtml(termName)}</strong>.</p>`,
+    `<ul>`,
+    `<li>Core: ${coreCount}</li>`,
+    `<li>Elective: ${electiveCount}</li>`,
+    `<li>Alternate: ${alternateCount}</li>`,
+    `</ul>`,
+    studentEmail
+      ? `<p>Student email: ${escapeHtml(studentEmail)}</p>`
+      : "",
+    `<p><a href="${escapeHtml(dashboardUrl)}">Open in admin dashboard</a></p>`,
+    `<p>— ${escapeHtml(siteConfig.name)}</p>`,
+  ].join("")
+
+  const { applicationRecipients } = getGraphConfig()
+  if (applicationRecipients.length === 0) return
+  await sendMail({
+    subject: `${siteConfig.shortName} course requests — ${studentName} (${termName})`,
+    htmlBody: html,
+    toRecipients: applicationRecipients,
+  })
+}
+
 export async function sendApplicationDraftReminder(options: {
   toEmail: string
   parentName: string

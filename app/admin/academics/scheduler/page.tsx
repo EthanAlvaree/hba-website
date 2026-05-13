@@ -193,15 +193,25 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
         )}
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-          <h2 className="text-2xl font-extrabold text-brand-navy">Scheduler</h2>
-          <p className="mt-2 text-sm text-slate-600">
-            Generate a proposed schedule from current data — student course
-            requests, faculty qualifications/availability/workload, course
-            catalog, terms. The solver is greedy v1: it produces a
-            <em> reasonable starting point</em>, not a guaranteed-optimal
-            schedule. Review the draft below, edit if needed (Turn D — manual
-            override + commit lands next), then approve.
-          </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 className="text-2xl font-extrabold text-brand-navy">Scheduler</h2>
+              <p className="mt-2 text-sm text-slate-600">
+                Generate a proposed schedule from current data — student course
+                requests, faculty qualifications/availability/workload, course
+                catalog, terms. The solver is greedy v1: it produces a
+                <em> reasonable starting point</em>, not a guaranteed-optimal
+                schedule. Review the draft below, edit if needed (Turn D — manual
+                override + commit lands next), then approve.
+              </p>
+            </div>
+            <Link
+              href="/admin/academics/scheduler/course-requests"
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              View course requests →
+            </Link>
+          </div>
         </section>
 
         {/* Generate form */}

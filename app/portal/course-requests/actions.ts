@@ -7,10 +7,14 @@ import { auth } from "@/auth"
 import { getProfileByEmail, getStudentByProfileId } from "@/lib/sis"
 import {
   deleteStudentCourseRequest,
+  listStudentCourseRequests,
   markCourseRequestsSubmitted,
   studentCourseRequestUpsertSchema,
   upsertStudentCourseRequest,
 } from "@/lib/scheduler"
+import { sendCourseRequestsSubmittedNotification } from "@/lib/graph"
+import { siteConfig } from "@/lib/site"
+import { getServiceSupabase } from "@/lib/supabase-server"
 
 // Authorizes the signed-in user as a student and ensures the request they're
 // editing belongs to them. Returns the student row.
@@ -83,9 +87,45 @@ export async function submitCourseRequestsAction(formData: FormData) {
     term_id: formData.get("term_id"),
   })
   if (!parsed.success) throw new Error("Invalid request.")
-  await assertSelfStudent(parsed.data.student_id)
+  const student = await assertSelfStudent(parsed.data.student_id)
 
   await markCourseRequestsSubmitted(parsed.data)
   revalidateCourseRequests(parsed.data.term_id)
+  revalidatePath("/admin/academics/scheduler/course-requests")
+
+  // Ping the office so they don't have to remember to check the
+  // dashboard. Best-effort: a Graph failure shouldn't roll back the
+  // submit — the student's done their part and the data is saved.
+  try {
+    const session = await auth()
+    const supabase = getServiceSupabase()
+    const [{ data: term }, requests] = await Promise.all([
+      supabase
+        .from("terms")
+        .select("name")
+        .eq("id", parsed.data.term_id)
+        .maybeSingle<{ name: string }>(),
+      listStudentCourseRequests({
+        student_id: parsed.data.student_id,
+        term_id: parsed.data.term_id,
+      }),
+    ])
+    const studentName =
+      student.preferred_name?.trim() ||
+      `${student.legal_first_name} ${student.legal_last_name}`
+    const dashboardUrl = `${siteConfig.url}/admin/academics/scheduler/course-requests?term_id=${parsed.data.term_id}`
+    await sendCourseRequestsSubmittedNotification({
+      studentName,
+      studentEmail: session?.user?.email ?? null,
+      termName: term?.name ?? "the upcoming term",
+      coreCount: requests.filter((r) => r.kind === "core").length,
+      electiveCount: requests.filter((r) => r.kind === "elective").length,
+      alternateCount: requests.filter((r) => r.kind === "alternate").length,
+      dashboardUrl,
+    })
+  } catch (err) {
+    console.error("Course requests submit notification failed:", err)
+  }
+
   redirect(`/portal/course-requests?term_id=${parsed.data.term_id}&submitted=1`)
 }
