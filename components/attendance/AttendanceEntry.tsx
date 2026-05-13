@@ -17,6 +17,8 @@ import {
   tardyMessage,
   type ParentContact,
 } from "@/lib/parent-contact"
+import { categories } from "@/lib/categories"
+import type { CalendarEventRow } from "@/lib/calendar-events"
 
 const pacific = "America/Los_Angeles"
 
@@ -55,6 +57,10 @@ type Props = {
   parentContactsByStudent?: Map<string, ParentContact[]>
   /** Used in the email signature when parent-contact links are rendered. */
   teacherDisplayName?: string
+  /** If the date falls on a calendar holiday or in-service day, we surface
+   *  a banner and disable the save button to discourage accidental entries.
+   *  Caller passes the matching event so we can name it ("Winter recess"). */
+  nonSchoolEvent?: CalendarEventRow | null
 }
 
 export function AttendanceEntry({
@@ -65,7 +71,19 @@ export function AttendanceEntry({
   surface,
   parentContactsByStudent,
   teacherDisplayName,
+  nonSchoolEvent,
 }: Props) {
+  // Compute weekend status from the date directly so we don't need an event
+  // for "Saturday/Sunday." Holidays still flow through nonSchoolEvent.
+  const [yyyy, mm, dd] = date.split("-").map(Number)
+  const dayOfWeek = new Date(Date.UTC(yyyy, mm - 1, dd, 12)).getUTCDay()
+  const isWeekend = dayOfWeek === 0 || dayOfWeek === 6
+  const isNonSchool = isWeekend || Boolean(nonSchoolEvent)
+  const nonSchoolLabel = nonSchoolEvent
+    ? `${nonSchoolEvent.title} (${categories[nonSchoolEvent.category as keyof typeof categories]?.label ?? nonSchoolEvent.category})`
+    : isWeekend
+    ? "Weekend"
+    : null
   const gradableEnrollments = enrollments.filter(
     (e) => e.status === "enrolled" || e.status === "audit"
   )
@@ -93,6 +111,19 @@ export function AttendanceEntry({
           Week view →
         </Link>
       </div>
+
+      {isNonSchool && (
+        <section className="rounded-[2rem] border border-amber-200 bg-amber-50 px-6 py-4 shadow-sm">
+          <p className="text-sm font-semibold text-amber-900">
+            No school today — {nonSchoolLabel}.
+          </p>
+          <p className="mt-1 text-sm text-amber-800">
+            Attendance isn&rsquo;t expected. You can still pick a different
+            date below; saving on a non-school day is allowed but flagged so
+            it&rsquo;s easy to spot mistakes.
+          </p>
+        </section>
+      )}
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">

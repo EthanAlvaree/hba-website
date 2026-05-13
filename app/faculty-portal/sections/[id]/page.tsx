@@ -93,6 +93,8 @@ type PageProps = {
   searchParams: Promise<{
     incident_saved?: string
     incident_error?: string
+    email_link?: string
+    email_link_missing?: string
     announcement_saved?: string
     announcement_error?: string
   }>
@@ -220,9 +222,31 @@ export default async function FacultySectionDetailPage({
         </div>
       </section>
 
-      {raw.incident_saved === "1" && (
+      {raw.incident_saved === "1" && !raw.email_link && !raw.email_link_missing && (
         <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm text-emerald-900 shadow-sm">
           Incident saved.
+        </section>
+      )}
+      {raw.incident_saved === "1" && raw.email_link && (
+        <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 shadow-sm">
+          <p className="font-semibold">Incident saved.</p>
+          <p className="mt-1">
+            A pre-filled email is ready — click below to open your mail client
+            with subject + body already drafted. You can edit before sending.
+          </p>
+          <a
+            href={raw.email_link}
+            className="mt-3 inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          >
+            ✉ Open email to parents →
+          </a>
+        </section>
+      )}
+      {raw.incident_saved === "1" && raw.email_link_missing && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-900 shadow-sm">
+          Incident saved. No parents with communications enabled are on file
+          for this student, so we couldn&rsquo;t draft an email. Add a parent
+          link via the office and try again.
         </section>
       )}
       {raw.incident_error && (
@@ -567,10 +591,25 @@ function IncidentsCard({
           <label className="flex items-center gap-2 text-xs text-slate-700">
             <input
               type="checkbox"
+              name="send_email"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>
+              <strong className="font-semibold">Draft an email to parents</strong>
+              {" "}— after saving, I&rsquo;ll get a one-click link to open my
+              mail client with the message pre-filled.
+            </span>
+          </label>
+        </div>
+        <div className="flex flex-wrap items-center gap-6 sm:col-span-3">
+          <label className="flex items-center gap-2 text-xs text-slate-700">
+            <input
+              type="checkbox"
               name="parent_notified"
               className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
             />
-            <span>I already notified the parent (email, phone, in person)</span>
+            <span>I already notified the parent (phone, in person, etc.)</span>
           </label>
           <label className="flex items-center gap-2 text-xs text-slate-700">
             <input

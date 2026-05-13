@@ -10,6 +10,11 @@ import {
   listParentContactsForStudent,
   type ParentContact,
 } from "@/lib/parent-contact"
+import {
+  isNonSchoolDay,
+  listCalendarEvents,
+  type CalendarEventRow,
+} from "@/lib/calendar-events"
 
 export const dynamic = "force-dynamic"
 
@@ -29,10 +34,27 @@ export default async function FacultyAttendanceEntryPage({
   const isoDateMatcher = /^\d{4}-\d{2}-\d{2}$/
   const date = dateParam && isoDateMatcher.test(dateParam) ? dateParam : todayInPacific()
 
-  const [enrollments, attendance] = await Promise.all([
+  const [enrollments, attendance, calendarEvents] = await Promise.all([
     listEnrollmentsForSection(section.id),
     listAttendanceForSectionAndDate(section.id, date),
+    listCalendarEvents(),
   ])
+
+  // Find any non-school event that covers this date.
+  const nonSchoolEvent: CalendarEventRow | null = isNonSchoolDay(date, calendarEvents)
+    ? calendarEvents.find((ev) => {
+        if (ev.category !== "holiday" && ev.category !== "faculty") return false
+        const endExclusive =
+          ev.end_date ??
+          (() => {
+            const [y, m, d] = ev.start_date.split("-").map(Number)
+            const dt = new Date(Date.UTC(y, m - 1, d, 12))
+            dt.setUTCDate(dt.getUTCDate() + 1)
+            return `${dt.getUTCFullYear()}-${String(dt.getUTCMonth() + 1).padStart(2, "0")}-${String(dt.getUTCDate()).padStart(2, "0")}`
+          })()
+        return date >= ev.start_date && date < endExclusive
+      }) ?? null
+    : null
 
   // Pre-fetch parent contacts so each row gets a one-click mailto: with
   // the tardy template pre-filled. Skipped students with no parents on
@@ -63,6 +85,7 @@ export default async function FacultyAttendanceEntryPage({
       surface="faculty"
       parentContactsByStudent={parentContactsByStudent}
       teacherDisplayName={teacherDisplayName}
+      nonSchoolEvent={nonSchoolEvent}
     />
   )
 }

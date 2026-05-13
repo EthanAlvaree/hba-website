@@ -17,6 +17,7 @@ import {
 import type { CourseSectionRecord, EnrollmentRecord } from "@/lib/sis"
 import { periodLabel } from "@/app/admin/academics/sections/SectionFormFields"
 import { saveAttendanceWeekAction } from "@/app/admin/academics/sections/[id]/attendance/actions"
+import type { CalendarEventRow } from "@/lib/calendar-events"
 
 const pacific = "America/Los_Angeles"
 
@@ -66,6 +67,9 @@ type Props = {
   /** Days to render as columns — typically Mon..Fri for the chosen week. */
   weekDates: string[]
   surface: AttendanceWeekSurface
+  /** Optional calendar events covering this week. Used to show a "no-school"
+   *  banner above the grid (e.g., "Tuesday: Veterans Day"). */
+  weekNonSchoolDays?: Array<{ date: string; label: string }>
 }
 
 export function AttendanceWeekGrid({
@@ -74,6 +78,7 @@ export function AttendanceWeekGrid({
   attendance,
   weekDates,
   surface,
+  weekNonSchoolDays = [],
 }: Props) {
   const gradableEnrollments = enrollments.filter(
     (e) => e.status === "enrolled" || e.status === "audit"
@@ -159,6 +164,25 @@ export function AttendanceWeekGrid({
           </button>
         </form>
       </section>
+
+      {weekNonSchoolDays.length > 0 && (
+        <section className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-3 text-sm text-amber-900 shadow-sm">
+          <p className="font-semibold">No-school days this week:</p>
+          <ul className="mt-1 ml-4 list-disc">
+            {weekNonSchoolDays.map((d) => (
+              <li key={d.date}>
+                {new Intl.DateTimeFormat("en-US", {
+                  weekday: "long",
+                  month: "long",
+                  day: "numeric",
+                  timeZone: "America/Los_Angeles",
+                }).format(new Date(`${d.date}T12:00:00Z`))}{" "}
+                — {d.label}
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {gradableEnrollments.length === 0 ? (
         <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">

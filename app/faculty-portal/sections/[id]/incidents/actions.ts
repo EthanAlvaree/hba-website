@@ -4,15 +4,93 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { z } from "zod"
 import { auth } from "@/auth"
-import { getProfileByEmail } from "@/lib/sis"
+import { getProfileByEmail, getStudentDetail } from "@/lib/sis"
 import { assertCanEditSection } from "@/lib/section-auth"
 import {
   createIncident,
   createIncidentInputSchema,
   deleteIncident,
+  incidentKindLabels,
   incidentKindSchema,
+  type IncidentKind,
 } from "@/lib/incidents"
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
+import {
+  buildMailtoUrl,
+  generalMessage,
+  listParentContactsForStudent,
+  missingAssignmentMessage,
+  tardyMessage,
+} from "@/lib/parent-contact"
+import { getCourseSectionById } from "@/lib/sis"
+
+// Picks a parent-contact email template appropriate to the incident kind.
+async function buildIncidentMailto(input: {
+  student_id: string
+  section_id: string
+  kind: IncidentKind
+  summary: string
+  occurredAt: string
+}): Promise<string | null> {
+  const session = await auth()
+  const [contacts, student, section] = await Promise.all([
+    listParentContactsForStudent(input.student_id),
+    getStudentDetail(input.student_id),
+    getCourseSectionById(input.section_id),
+  ])
+  if (contacts.length === 0 || !student || !section) return null
+
+  const teacherDisplay =
+    section.teacher
+      ? `${section.teacher.first_name ?? ""} ${section.teacher.last_name ?? ""}`.trim() ||
+        section.teacher.display_name ||
+        section.teacher.email
+      : session?.user?.name || session?.user?.email || "Your teacher"
+
+  const studentLite = {
+    preferred_name: student.preferred_name,
+    legal_first_name: student.legal_first_name,
+    legal_last_name: student.legal_last_name,
+  }
+  const dateIso = input.occurredAt.slice(0, 10)
+
+  let mailto
+  if (input.kind === "tardy") {
+    mailto = tardyMessage({
+      contacts,
+      student: studentLite,
+      courseName: section.course.name,
+      date: dateIso,
+      teacherName: teacherDisplay,
+      note: input.summary,
+    })
+  } else if (input.kind === "missing_assignment" || input.kind === "late_assignment") {
+    mailto = missingAssignmentMessage({
+      contacts,
+      student: studentLite,
+      courseName: section.course.name,
+      assignmentTitle: input.summary,
+      teacherName: teacherDisplay,
+      dueDate: null,
+    })
+  } else {
+    // For everything else (classroom_disruption, kudos, etc.) use the generic
+    // template with the summary inserted into the body so the teacher only
+    // needs to fill in the specifics.
+    const generic = generalMessage({
+      contacts,
+      student: studentLite,
+      courseName: section.course.name,
+      teacherName: teacherDisplay,
+    })
+    mailto = {
+      ...generic,
+      subject: `${student.preferred_name?.trim() || student.legal_first_name} ${student.legal_last_name} — ${incidentKindLabels[input.kind]}: ${input.summary}`,
+    }
+  }
+
+  return buildMailtoUrl(mailto)
+}
 
 export async function createIncidentAction(formData: FormData) {
   const sectionId = formData.get("section_id")
@@ -67,7 +145,29 @@ export async function createIncidentAction(formData: FormData) {
   })
 
   revalidatePath(`/faculty-portal/sections/${sectionId}`)
-  redirect(`/faculty-portal/sections/${sectionId}?incident_saved=1`)
+
+  // If the teacher asked us to draft an email, build a mailto: URL and pass
+  // it back via the redirect's query string. The page renders a prominent
+  // "Open in mail client" link the teacher clicks once to launch their email
+  // app with the message pre-filled.
+  const sendEmail = formData.get("send_email") === "on"
+  let emailQuery = ""
+  if (sendEmail) {
+    const mailto = await buildIncidentMailto({
+      student_id: created.student_id,
+      section_id: sectionId,
+      kind: created.kind,
+      summary: created.summary,
+      occurredAt: created.occurred_at,
+    })
+    if (mailto) {
+      emailQuery = `&email_link=${encodeURIComponent(mailto)}`
+    } else {
+      emailQuery = `&email_link_missing=1`
+    }
+  }
+
+  redirect(`/faculty-portal/sections/${sectionId}?incident_saved=1${emailQuery}`)
 }
 
 const deleteSchema = z.object({
