@@ -430,6 +430,182 @@ not earlier. Until then the seed lives where it is.
 
 ---
 
+## 5. "What if I want two separate GitHub repos?"
+
+Asked specifically: "If we fork to PCI as a separate GitHub repo, how
+do we keep both SIS in feature parity when we ship an upgrade?"
+
+This is the hardest version of the multi-tenant question, and I want
+to be honest about it: **separate repos and feature parity are in
+direct tension. Every workable solution is "share code, just with
+extra steps."** The question is which extra steps you prefer.
+
+### 5.1 The five paths, ranked
+
+#### Path A — Same repo, two Vercel projects ⭐ recommended
+
+This is Section 4 above. One `main`, two deploys, branding driven by
+`SCHOOL_KEY`. A bug fix lands once and is live for both schools in 60
+seconds. **No drift is possible because there's only one source.**
+
+The objection: "I want to test more with HBA before forking." Two
+answers:
+- "Test before forking" is already what this gives you. PCI doesn't
+  exist yet; HBA is the only deploy. When PCI is ready, you add a
+  second Vercel project pointing at the same repo. Nothing about HBA
+  changes when you do that.
+- If "test in isolation" means "PCI shouldn't pick up HBA changes
+  automatically," use Vercel's deploy-protection or pin PCI's Vercel
+  project to a `pci-stable` branch that you fast-forward only when
+  you're ready. That gives you isolation without the repo split.
+
+I'd push hard on this path before going to any of the others.
+
+#### Path B — Two repos, shared SIS extracted to a third repo
+
+If you're set on two separate website repos, the cleanest answer is
+to put the SIS in a **third** repo and pull it into both websites as
+a git submodule:
+
+```
+   ┌──────────────────────────┐
+   │   school-sis  (3rd repo) │  ← lib/, db/migrations/, SIS
+   │                          │    components, audit log, etc.
+   │   main branch = source   │
+   │   of truth for SIS code  │
+   └──────────────────────────┘
+        │              │
+        │ git submodule│
+        ▼              ▼
+   ┌─────────┐    ┌─────────┐
+   │  hba-   │    │  pci-   │
+   │ website │    │ website │  ← marketing site, branding,
+   │         │    │         │    school-specific pages
+   └─────────┘    └─────────┘
+```
+
+What lives where:
+- `school-sis/` (shared): everything under `lib/*` that is SIS data
+  layer, `db/migrations/*`, server actions for portals, audit log,
+  Supabase factory, `app/admin/*`, `app/parent/*`, `app/portal/*`,
+  `app/faculty-portal/*`, shared portal components.
+- `hba-website/` and `pci-website/` (per-school): `app/page.tsx`,
+  `app/about/*`, `app/programs/*`, `app/admissions/*`, the school's
+  faculty bios, the school's images, `lib/site.ts` config, brand
+  colors. Plus a thin `app/admin/page.tsx` etc. that re-exports from
+  `sis/app/admin/page.tsx`.
+
+Feature parity upgrade flow:
+1. Open PR against `school-sis` → review → merge to `school-sis/main`.
+2. In each website repo: `git submodule update --remote && git commit`.
+3. Both websites' Vercel projects deploy on push.
+
+**Tradeoffs:**
+- ✅ Strong isolation: one school can pin to an older SIS version if
+  needed.
+- ✅ No conflicts: the SIS only changes one place.
+- ❌ Submodule UX is annoying. You'll forget to push the SIS commit
+  before pushing the website commit. The Vercel build will then fail
+  with "submodule commit not found." Common rake to step on.
+- ❌ Next.js does NOT love loading server components / server actions
+  from a submodule path. We'd need to either (a) symlink the
+  submodule directories into the app tree, or (b) re-export each
+  route from a thin wrapper page in the website repo. Workable but
+  not pretty.
+- ❌ Step (2) above — bumping the submodule pointer — is manual. Easy
+  to forget. Easy for the two schools to drift if one of them stops
+  bumping.
+
+#### Path C — Two repos, GitHub fork-and-sync
+
+`pci-website` is GitHub-forked from `hba-website`. Periodically:
+`git fetch upstream && git merge upstream/main` in PCI. PCI-specific
+changes live on top of HBA's commits.
+
+This is what Linux distros do for the kernel. It works. It will hurt.
+
+**Tradeoffs:**
+- ✅ Zero new infrastructure. Just two GitHub repos.
+- ✅ Each school's repo is fully self-contained — clone and run.
+- ❌ Merge conflicts grow. Within a year, "merge upstream" becomes a
+  half-day of work, not a five-minute task.
+- ❌ Easy to forget the sync. A bug fix landing in HBA stays unfixed
+  in PCI for weeks until someone remembers.
+- ❌ No mechanism to force parity. If HBA renames a column and PCI
+  doesn't merge, the same UI fails differently in each school.
+
+If you go this way, the discipline that makes it survive is: **one
+person owns the upstream-sync responsibility** and runs it on a
+weekly cadence with a calendar reminder.
+
+#### Path D — Two repos, shared SIS as a private npm package
+
+Extract SIS to `@hba/sis`, publish to GitHub Packages. Both websites:
+`"@hba/sis": "^1.2.0"`. Upgrade = `npm update`.
+
+**Tradeoffs:**
+- ✅ Cleanest dependency model. Semver gives you per-school version
+  control.
+- ❌ Server actions + Next.js App Router routes don't ship cleanly in
+  an npm package. You'd need shim files in each app that re-export
+  every page. More boilerplate than the submodule path.
+- ❌ Publishing overhead. Every SIS change needs a version bump and a
+  publish step. Annoying for a one-developer operation.
+- ❌ GitHub Packages auth setup in CI is fiddly.
+
+I don't recommend this for a one-person shop.
+
+#### Path E — Two repos, robot-driven sync
+
+`hba-website` is canonical. A weekly cron opens a PR against
+`pci-website` containing the upstream diff. PCI's PR review handles
+conflicts and PCI-specific code.
+
+**Tradeoffs:**
+- ✅ Forces the sync to happen on schedule.
+- ✅ Conflicts surface as PR review work, not as forgotten merges.
+- ❌ Same fundamental fragility as Path C — the conflicts still grow.
+- ❌ Requires a small bot. Manageable, but more infra than Path A.
+
+### 5.2 My honest recommendation
+
+**Don't go to two repos.** Go with Path A. You get:
+- Feature parity by construction, not by discipline.
+- Faster shipping (one PR, two deploys).
+- Less duplication, fewer conflicts, less infrastructure.
+- The "test with HBA first" workflow you want is unchanged: HBA is
+  the only deploy until you're ready to add PCI.
+
+If you read all five paths above and still want two separate repos,
+**Path B (shared SIS submodule)** is the next-best answer. Path C is
+acceptable for the first six months but degrades from there.
+
+### 5.3 What you can do TODAY that helps any path you eventually pick
+
+The refactoring work in Section 3 (especially 3.1 — already shipped
+in `6e9533b`) and Section 4 Bucket A makes every path above easier.
+Specifically:
+
+- `lib/supabase-server.ts` (shipped) — one file holds all env-var
+  references. If you split repos later, this is the file you bind to
+  per-tenant config. If you stay in one repo, this is where the
+  multi-tenant client factory lives.
+- `lib/site.ts` audit (Section 4 Bucket A) — pulls every school
+  identity string into one config object. Whether the two schools
+  end up in one repo (different configs) or two repos (different
+  `lib/site.ts` files), the structure is the same.
+- SIS data layer all lives under `lib/` (already true) — meaning the
+  "what's SIS, what's marketing site" boundary is already drawn at
+  the `lib/` vs `app/` split. If you ever extract a `school-sis`
+  submodule, `lib/` + `db/migrations/` + the four portal `app/*`
+  trees are the cut-line.
+
+In other words: **the refactor doesn't lock you into one path. It
+gives you optionality.** Do the refactor; decide on the deployment
+shape later.
+
+---
+
 ## What's already done (just so we don't re-plan it)
 
 - ✅ Native `/apply` form replacing GradeLink (`1d67fd5`)
@@ -437,8 +613,12 @@ not earlier. Until then the seed lives where it is.
 - ✅ Bulk parent-link CSV import (`8bd9da6`)
 - ✅ Cumulative GPA on portal home + capacity warnings (`372f6f7`)
 - ✅ Mass email overhaul: send from `info@`, school footer, sent
-  history, all-school cohort (this commit, `0efead3`)
-- ✅ Topbar + community-page portal sign-in entrypoints (this commit)
+  history, all-school cohort (`0efead3`)
+- ✅ Topbar + community-page portal sign-in entrypoints (`0efead3`)
+- ✅ `/welcome` wired into post-enrollment email + sign-in page
+  (`d1dedfc`)
+- ✅ Centralized `lib/supabase-server.ts` factory; 19 lib/* files
+  migrated, -250 lines (`6e9533b`)
 
 ## What's next (recommended sprint order)
 
@@ -447,6 +627,9 @@ not earlier. Until then the seed lives where it is.
 3. Rate limiting on `/apply` + `/contact` (1.2)
 4. Profile photos (1.7)
 5. Orphan visibility page (1.6)
-6. `lib/supabase-server.ts` refactor (3.1)
-7. Backup tooling + DR runbook (1.3)
-8. Bucket A of the multi-tenant work (4.3) — `lib/site.ts` audit
+6. Backup tooling + DR runbook (1.3)
+7. Bucket A of the multi-tenant work (4.3) — `lib/site.ts` audit:
+   move remaining inline `"High Bluff"` strings in `lib/graph.ts`
+   email templates, `lib/parent-digest.ts`, `lib/scheduler.ts`, and
+   the transcript components into `siteConfig.name`. This is the
+   "can one config flip rebrand the site?" test.
