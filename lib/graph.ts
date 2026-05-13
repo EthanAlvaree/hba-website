@@ -538,6 +538,47 @@ export async function sendEnrollmentWelcomeToFamily(options: {
   })
 }
 
+// Sent (optionally) when an admin withdraws a student. Confirms the
+// withdrawal date, the reason if the admin recorded one, and what
+// happens to records (transcripts available on request; data
+// retention per policy). Reply-to is the office for any follow-up
+// questions.
+export async function sendWithdrawalNotificationToFamily(options: {
+  studentName: string
+  withdrawnAt: string
+  reason: string | null
+  parentEmails: string[]
+}) {
+  if (options.parentEmails.length === 0) return
+
+  const subject = `Confirmation of ${options.studentName}'s withdrawal from ${siteConfig.shortName}`
+  const html = [
+    `<p>Hi,</p>`,
+    `<p>This message confirms that <strong>${escapeHtml(options.studentName)}</strong>'s withdrawal from ${escapeHtml(siteConfig.name)} has been recorded as of <strong>${escapeHtml(options.withdrawnAt)}</strong>.</p>`,
+    options.reason
+      ? `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;color:#1f2937;"><strong>Reason on file:</strong><br />${escapeHtml(options.reason).replace(/\n/g, "<br />")}</p>`
+      : "",
+    `<p>A few practical notes:</p>`,
+    `<ul style="line-height:1.6;color:#444;">`,
+    `<li><strong>Transcripts</strong> remain available on request — visit <a href="${siteConfig.url}/transcripts">${escapeHtml(siteConfig.domain)}/transcripts</a> to order one (sealed transcripts can ship directly to a receiving school).</li>`,
+    `<li><strong>Records retention</strong> follows our standard policy; please reach out if you need anything specific.</li>`,
+    `<li><strong>Account access</strong> to the family / student portal is disabled effective today.</li>`,
+    `</ul>`,
+    `<p style="color:#444;">If anything about this is unexpected, or if there's anything we can help with as your family transitions, please reply to this email — it routes back to the office.</p>`,
+    `<p>Warmly,<br />The ${escapeHtml(siteConfig.name)} admissions team</p>`,
+  ].join("")
+
+  const { applicationRecipients } = getGraphConfig()
+  await sendMail({
+    subject,
+    htmlBody: html,
+    toRecipients: options.parentEmails,
+    replyTo: applicationRecipients[0]
+      ? { address: applicationRecipients[0] }
+      : undefined,
+  })
+}
+
 export async function sendApplicationStatusUpdateToFamily(options: {
   application: ApplicationRecord
   newStatus: FamilyNotifiableStatus

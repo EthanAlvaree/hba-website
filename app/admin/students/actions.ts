@@ -199,8 +199,60 @@ export async function withdrawStudentAction(formData: FormData) {
     const msg = parsed.error.issues[0]?.message ?? "Invalid withdrawal."
     throw new Error(msg)
   }
+  const notifyFamily = formData.get("notify_family") === "on"
 
   const result = await withdrawStudent(parsed.data)
+
+  // Optional family notification email. Best-effort: if Graph fails
+  // the withdrawal is still recorded; admin can re-trigger from
+  // /admin/messaging or just contact the family directly.
+  let familyEmailSent = false
+  let familyEmailRecipients: string[] = []
+  if (notifyFamily) {
+    try {
+      const supabase = getServiceSupabase()
+      const { data: contacts } = await supabase
+        .from("parent_links")
+        .select(
+          `can_receive_communications,
+           parent:profiles!parent_links_parent_profile_id_fkey(email, active)`
+        )
+        .eq("student_id", parsed.data.id)
+        .eq("can_receive_communications", true)
+        .returns<
+          Array<{
+            can_receive_communications: boolean
+            parent: { email: string; active: boolean } | null
+          }>
+        >()
+      const parentEmails = Array.from(
+        new Set(
+          (contacts ?? [])
+            .filter((c) => c.parent && c.parent.active)
+            .map((c) => c.parent!.email)
+        )
+      )
+      if (parentEmails.length > 0) {
+        const { sendWithdrawalNotificationToFamily } = await import("@/lib/graph")
+        const studentName =
+          [result.student.preferred_name, result.student.legal_last_name]
+            .filter(Boolean)
+            .join(" ") ||
+          `${result.student.legal_first_name} ${result.student.legal_last_name}`
+        await sendWithdrawalNotificationToFamily({
+          studentName,
+          withdrawnAt: result.student.withdrawn_at ?? new Date().toISOString().slice(0, 10),
+          reason: parsed.data.reason,
+          parentEmails,
+        })
+        familyEmailSent = true
+        familyEmailRecipients = parentEmails
+      }
+    } catch (err) {
+      console.error("Withdrawal family-notify email failed:", err)
+    }
+  }
+
   await logAdminAuditEvent({
     action: ADMIN_AUDIT_ACTIONS.student_withdraw,
     target_kind: "student",
@@ -208,11 +260,15 @@ export async function withdrawStudentAction(formData: FormData) {
     details: {
       reason: parsed.data.reason,
       enrollments_withdrawn: result.enrollments_withdrawn,
+      family_notified: familyEmailSent,
+      family_email_recipients: familyEmailRecipients,
     },
   })
 
   revalidateStudent(parsed.data.id)
-  redirect(`/admin/students/${parsed.data.id}?withdrawn=1`)
+  redirect(
+    `/admin/students/${parsed.data.id}?withdrawn=1${familyEmailSent ? "&family_notified=1" : ""}`
+  )
 }
 
 export async function signOutStudentsAdminAction() {

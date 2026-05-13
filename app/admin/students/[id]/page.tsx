@@ -1028,10 +1028,22 @@ function WithdrawCard({ studentId }: { studentId: string }) {
             />
             <span>Also mark every active enrollment as withdrawn</span>
           </label>
+          <label className="flex items-center gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="notify_family"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-rose-700 focus:ring-rose-600"
+            />
+            <span>
+              Email the family a withdrawal confirmation (with transcript
+              and records info)
+            </span>
+          </label>
           <p className="text-[11px] text-slate-500">
             This is reversible from the admin field above (set status back
             to active), but enrollments dropped here would have to be
-            re-added manually.
+            re-added manually. The family notification cannot be unsent.
           </p>
           <button
             type="submit"
