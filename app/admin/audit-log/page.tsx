@@ -6,6 +6,7 @@ import {
   listAuditActionCodes,
   type AdminAuditRecord,
 } from "@/lib/audit"
+import BackupNowButton from "./BackupNowButton"
 
 export const dynamic = "force-dynamic"
 
@@ -58,6 +59,10 @@ function actionLabel(code: string): string {
       return "Bulk import parent links"
     case "m365_sync.manual":
       return "Manual M365 sync"
+    case "db_backup.cron":
+      return "Cron DB snapshot"
+    case "db_backup.manual":
+      return "Manual DB snapshot"
     default:
       return code
   }
@@ -107,13 +112,16 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
 
   return (
     <div className="space-y-6">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-extrabold text-brand-navy">Audit log</h1>
-        <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
-          Every sensitive admin action (promote, demote, delete profile, lock
-          a term, commit a schedule draft, bulk import) is recorded here.
-          Showing the {events.length} most recent matching events.
-        </p>
+      <header className="flex flex-wrap items-start justify-between gap-4">
+        <div className="space-y-2">
+          <h1 className="text-3xl font-extrabold text-brand-navy">Audit log</h1>
+          <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
+            Every sensitive admin action (promote, demote, delete profile, lock
+            a term, commit a schedule draft, bulk import) is recorded here.
+            Showing the {events.length} most recent matching events.
+          </p>
+        </div>
+        <BackupNowButton />
       </header>
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
