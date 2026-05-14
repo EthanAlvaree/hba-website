@@ -292,22 +292,22 @@ export async function getStudentById(
 }
 
 /** Bulk variant: which of the supplied profile IDs already have an
- *  associated students row? Used by /admin/profiles so we only show
- *  the "Create student record" button for profiles that don't have one
- *  yet. Returns an empty Set when given an empty input. */
+ *  associated students row, and what is that row's id? Used by
+ *  /admin/profiles to link a profile card straight to the student's
+ *  detail page. Returns an empty Map when given an empty input. */
 export async function listProfileIdsWithStudentRecord(
   profileIds: string[]
-): Promise<Set<string>> {
-  if (profileIds.length === 0) return new Set()
+): Promise<Map<string, string>> {
+  if (profileIds.length === 0) return new Map()
   const { data, error } = await getSupabase()
     .from("students")
-    .select("profile_id")
+    .select("id, profile_id")
     .in("profile_id", profileIds)
-    .returns<Array<{ profile_id: string }>>()
+    .returns<Array<{ id: string; profile_id: string }>>()
   if (error) {
     throw new Error(`Failed to look up student records: ${error.message}`)
   }
-  return new Set((data ?? []).map((r) => r.profile_id))
+  return new Map((data ?? []).map((r) => [r.profile_id, r.id]))
 }
 
 /** Manual onboarding path for the case where a person already exists

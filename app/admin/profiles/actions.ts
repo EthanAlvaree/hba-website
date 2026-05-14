@@ -33,8 +33,12 @@ function revalidateProfiles() {
   revalidatePath("/admin/profiles")
 }
 
-export async function updateProfileRolesAction(formData: FormData) {
-  await assertAdmin()
+// One save for the whole profile card: roles (incl. admin) + the active
+// flag, all in a single form. updateProfileRoles and updateProfileActive
+// each keep their own last-admin guards, so the DB still refuses to leave
+// zero active admins regardless of which field triggered it.
+export async function saveProfileAction(formData: FormData) {
+  const session = await assertAdmin()
 
   const rawRoles = formData.getAll("roles").map(String)
   const parsedRoles: string[] = []
@@ -42,7 +46,6 @@ export async function updateProfileRolesAction(formData: FormData) {
     const check = profileRoleSchema.safeParse(role)
     if (check.success) parsedRoles.push(check.data)
   }
-  // De-dup in case the hidden admin pin and the checkbox both produced 'admin'
   const dedup = Array.from(new Set(parsedRoles))
 
   const parsed = profileRolesUpdateSchema.safeParse({
@@ -50,15 +53,48 @@ export async function updateProfileRolesAction(formData: FormData) {
     roles: dedup,
   })
   if (!parsed.success) {
-    const message = parsed.error.issues[0]?.message ?? "Role update failed."
+    const message = parsed.error.issues[0]?.message ?? "Save failed."
     redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
   }
 
+  const activeParsed = profileActiveUpdateSchema.safeParse({
+    id: parsed.data.id,
+    active: formData.get("active") === "on",
+  })
+  if (!activeParsed.success) {
+    const message = activeParsed.error.issues[0]?.message ?? "Save failed."
+    redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
+  }
+
+  // Snapshot the admin-role transition before we write — drives the audit
+  // log entry and the self-demotion sign-out below.
+  const target = await getProfileById(parsed.data.id)
+  if (!target) {
+    redirect(`/admin/profiles?error=${encodeURIComponent("Profile not found.")}`)
+  }
+  const wasAdmin = target.roles.includes("admin")
+  const willBeAdmin = parsed.data.roles.includes("admin")
+  const isSelf =
+    !!session.user?.email &&
+    target.email.toLowerCase() === session.user.email.toLowerCase()
+
   try {
     await updateProfileRoles(parsed.data)
+    await updateProfileActive(activeParsed.data)
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update roles."
+    const message = error instanceof Error ? error.message : "Failed to save profile."
     redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
+  }
+
+  if (wasAdmin !== willBeAdmin) {
+    await logAdminAuditEvent({
+      action: willBeAdmin
+        ? ADMIN_AUDIT_ACTIONS.admin_promote
+        : ADMIN_AUDIT_ACTIONS.admin_demote,
+      target_kind: "profile",
+      target_id: target.id,
+      details: { target_email: target.email, self: isSelf },
+    })
   }
 
   // Role-driven students row: if the profile now carries the student
@@ -66,7 +102,7 @@ export async function updateProfileRolesAction(formData: FormData) {
   // — that's destructive (cascades to enrollments + parent links) and
   // is handled by the dedicated Withdraw workflow instead.
   let createdStudentId: string | null = null
-  if (dedup.includes("student")) {
+  if (parsed.data.roles.includes("student")) {
     const existing = await getStudentByProfileId(parsed.data.id)
     if (!existing) {
       try {
@@ -85,7 +121,7 @@ export async function updateProfileRolesAction(formData: FormData) {
         const message =
           error instanceof Error
             ? error.message
-            : "Roles saved but couldn't create student record."
+            : "Profile saved but couldn't create student record."
         redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
       }
     }
@@ -94,34 +130,18 @@ export async function updateProfileRolesAction(formData: FormData) {
   revalidateProfiles()
   revalidatePath("/admin/students")
 
+  if (wasAdmin && !willBeAdmin && isSelf) {
+    // Self-demotion: sign out so the user doesn't keep a stale
+    // session.isAdmin until their next JWT refresh.
+    await signOut({ redirectTo: "/" })
+  }
+
   if (createdStudentId) {
     redirect(
       `/admin/profiles?student_created=${encodeURIComponent(createdStudentId)}`
     )
   }
-  redirect("/admin/profiles")
-}
-
-export async function updateProfileActiveAction(formData: FormData) {
-  await assertAdmin()
-
-  const parsed = profileActiveUpdateSchema.safeParse({
-    id: formData.get("id"),
-    active: formData.get("active") === "on",
-  })
-  if (!parsed.success) {
-    const message = parsed.error.issues[0]?.message ?? "Active update failed."
-    redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
-  }
-
-  try {
-    await updateProfileActive(parsed.data)
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update active flag."
-    redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
-  }
-  revalidateProfiles()
-  redirect("/admin/profiles")
+  redirect("/admin/profiles?role_ok=1")
 }
 
 export async function updateProfileContactAction(formData: FormData) {
@@ -267,75 +287,6 @@ export async function deleteProfileAction(formData: FormData) {
     await signOut({ redirectTo: "/" })
   }
   redirect("/admin/profiles?deleted=1")
-}
-
-// Promote a profile to admin or demote it. The DB-level last-admin trigger
-// (migration 0009) is the final safety net; updateProfileRoles in lib/sis.ts
-// catches the same case earlier with a friendlier message.
-const setAdminRoleSchema = z.object({
-  id: z.uuid(),
-  make_admin: z.enum(["yes", "no"]),
-})
-
-export async function setAdminRoleAction(formData: FormData) {
-  const session = await assertAdmin()
-  const parsed = setAdminRoleSchema.safeParse({
-    id: formData.get("id"),
-    make_admin: formData.get("make_admin"),
-  })
-  if (!parsed.success) {
-    redirect(`/admin/profiles?error=${encodeURIComponent("Invalid request.")}`)
-  }
-
-  const target = await getProfileById(parsed.data.id)
-  if (!target) {
-    redirect(`/admin/profiles?error=${encodeURIComponent("Profile not found.")}`)
-  }
-
-  const makeAdmin = parsed.data.make_admin === "yes"
-  const hasAdmin = target.roles.includes("admin")
-
-  // No-op short-circuit.
-  if (makeAdmin === hasAdmin) {
-    revalidateProfiles()
-    redirect(`/admin/profiles?role_ok=1`)
-  }
-
-  const nextRoles = makeAdmin
-    ? [...target.roles, "admin" as const]
-    : target.roles.filter((r) => r !== "admin")
-
-  try {
-    await updateProfileRoles({ id: target.id, roles: nextRoles })
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to update admin role."
-    redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
-  }
-
-  const isSelf =
-    !!session.user?.email && target.email.toLowerCase() === session.user.email.toLowerCase()
-
-  await logAdminAuditEvent({
-    action: makeAdmin
-      ? ADMIN_AUDIT_ACTIONS.admin_promote
-      : ADMIN_AUDIT_ACTIONS.admin_demote,
-    target_kind: "profile",
-    target_id: target.id,
-    details: {
-      target_email: target.email,
-      self: isSelf,
-    },
-  })
-
-  revalidateProfiles()
-
-  if (!makeAdmin && isSelf) {
-    // Self-demotion: sign out so the user doesn't keep stale session.isAdmin
-    // until their next JWT refresh.
-    await signOut({ redirectTo: "/" })
-  }
-
-  redirect(`/admin/profiles?role_ok=1`)
 }
 
 export async function signOutProfilesAdminAction() {

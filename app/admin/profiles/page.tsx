@@ -5,21 +5,15 @@ import {
   listProfiles,
   listProfileIdsWithStudentRecord,
   profileListFilterSchema,
-  profileRoleSchema,
   type ProfileRecord,
   type ProfileRole,
 } from "@/lib/sis"
-import {
-  deleteProfileAction,
-  setAdminRoleAction,
-  updateProfileActiveAction,
-  updateProfileRolesAction,
-} from "./actions"
+import { deleteProfileAction, saveProfileAction } from "./actions"
 import { ConfirmAction } from "./ConfirmAction"
 
-// The "Save roles" checkbox form sets faculty / student / parent. Admin is
-// promoted / demoted by the dedicated buttons (with confirmation) instead.
-const nonAdminRoleOptions = profileRoleSchema.options.filter((r) => r !== "admin")
+// Order the role checkboxes the way the office thinks about them, not the
+// way the enum happens to be declared.
+const roleOrder: ProfileRole[] = ["student", "parent", "faculty", "admin"]
 
 export const dynamic = "force-dynamic"
 
@@ -83,8 +77,8 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
 
   const profiles = await listProfiles(parsed)
 
-  // Which student-role profiles already have a students row? Drives
-  // whether to surface the "Create student record" button.
+  // Map of student-role profile id → students row id, so a profile card
+  // can link straight to that student's detail page.
   const studentRoleProfileIds = profiles
     .filter((p) => p.roles.includes("student"))
     .map((p) => p.id)
@@ -222,7 +216,7 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
           ) : (
             profiles.map((profile) => {
               const isSelf = profile.email.toLowerCase() === currentAdminEmail
-              const isAdminRole = profile.roles.includes("admin")
+              const studentId = profileIdsWithStudent.get(profile.id)
               return (
                 <details
                   key={profile.id}
@@ -277,114 +271,70 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                   </summary>
 
                   <div className="space-y-5 border-t border-slate-200 px-5 py-5 sm:px-6">
-                    <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50/60 px-4 py-3">
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">Admin access</p>
-                        <p className="text-xs text-slate-500">
-                          Admins can see and edit everything in /admin. The
-                          system always keeps at least one active admin —
-                          removing the last one is refused at the database
-                          level.
-                        </p>
-                      </div>
-                      {isAdminRole ? (
-                        <ConfirmAction
-                          action={setAdminRoleAction}
-                          fields={{ id: profile.id, make_admin: "no" }}
-                          triggerLabel="Demote from admin"
-                          title={isSelf ? "Demote yourself from admin?" : "Demote this admin?"}
-                          confirmLabel={isSelf ? "Demote and sign out" : "Demote"}
-                          variant="warning"
-                          description={
-                            isSelf ? (
-                              <>
-                                <p>
-                                  This removes admin from <strong>{profile.email}</strong>.
-                                </p>
-                                <p className="mt-2">
-                                  Because that&rsquo;s your own account,
-                                  you&rsquo;ll be signed out immediately and
-                                  lose access to <code>/admin</code>. You can
-                                  still sign back in as your other roles
-                                  (faculty / parent / student) if you have any.
-                                </p>
-                              </>
-                            ) : (
-                              <p>
-                                This removes admin access from{" "}
-                                <strong>{profile.email}</strong>. Their other
-                                roles (faculty / parent / student) stay
-                                intact. They&rsquo;ll be redirected to their
-                                role-specific portal next time they sign in
-                                or refresh.
-                              </p>
-                            )
-                          }
-                        />
-                      ) : (
-                        <ConfirmAction
-                          action={setAdminRoleAction}
-                          fields={{ id: profile.id, make_admin: "yes" }}
-                          triggerLabel="Promote to admin"
-                          title="Promote to admin?"
-                          confirmLabel="Promote"
-                          variant="primary"
-                          description={
-                            <p>
-                              This grants <strong>{profile.email}</strong>{" "}
-                              full admin access — they can manage applications,
-                              students, course sections, the schedule, and
-                              other admins (including demoting or deleting
-                              you).
-                            </p>
-                          }
-                        />
-                      )}
-                    </div>
-
-                    <form action={updateProfileRolesAction} className="space-y-3">
+                    <form action={saveProfileAction} className="space-y-4">
                       <input type="hidden" name="id" value={profile.id} />
-                      {/* Preserve the admin role across non-admin role edits. The
-                          admin toggle has its own dedicated buttons above with
-                          confirmation, so we shouldn't touch it here. */}
-                      {isAdminRole && (
-                        <input type="hidden" name="roles" value="admin" />
-                      )}
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">Other roles</p>
+
+                      <div className="space-y-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">
+                            Roles
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            A profile can hold more than one role. Checking{" "}
+                            <strong>Student</strong> also creates a row in the
+                            students table (so they appear in{" "}
+                            <code>/admin/students</code> and can be enrolled);
+                            unchecking it leaves that record alone — use the
+                            Withdraw flow to remove it. Checking{" "}
+                            <strong>Admin</strong> grants full <code>/admin</code>{" "}
+                            access. The system always keeps at least one active
+                            admin — removing the last one is refused at the
+                            database level.
+                          </p>
+                        </div>
+                        <div className="flex flex-wrap gap-3">
+                          {roleOrder.map((role) => (
+                            <label
+                              key={role}
+                              className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
+                            >
+                              <input
+                                type="checkbox"
+                                name="roles"
+                                value={role}
+                                defaultChecked={profile.roles.includes(role)}
+                                className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+                              />
+                              <span>{roleLabels[role]}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 border-t border-slate-200 pt-3">
+                        <label className="flex items-center gap-2 text-sm text-slate-700">
+                          <input
+                            type="checkbox"
+                            name="active"
+                            defaultChecked={profile.active}
+                            className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+                          />
+                          <span className="font-semibold text-slate-900">
+                            Account is active
+                          </span>
+                        </label>
                         <p className="text-xs text-slate-500">
-                          A profile can hold multiple roles. Checking{" "}
-                          <strong>student</strong> also creates a row in the
-                          students table (so they show up in{" "}
-                          <code>/admin/students</code> and can be enrolled).
-                          Unchecking it leaves the existing student record
-                          alone — use the Withdraw flow to remove that.
-                          Admin is managed by the Promote/Demote buttons
-                          above.
+                          Inactive profiles can&rsquo;t sign in. Useful for
+                          alumni, departed staff, or accounts pending
+                          investigation.
                         </p>
                       </div>
-                      <div className="flex flex-wrap gap-4">
-                        {nonAdminRoleOptions.map((role) => (
-                          <label
-                            key={role}
-                            className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700"
-                          >
-                            <input
-                              type="checkbox"
-                              name="roles"
-                              value={role}
-                              defaultChecked={profile.roles.includes(role)}
-                              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
-                            />
-                            <span>{roleLabels[role]}</span>
-                          </label>
-                        ))}
-                      </div>
+
                       <button
                         type="submit"
                         className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
                       >
-                        Save roles
+                        Save
                       </button>
                     </form>
 
@@ -415,48 +365,6 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                         </div>
                       </div>
                     )}
-
-                    {profile.roles.includes("student") &&
-                      profileIdsWithStudent.has(profile.id) && (
-                        <div className="border-t border-slate-200 pt-4">
-                          <p className="text-sm font-semibold text-slate-900">
-                            Student record
-                          </p>
-                          <Link
-                            href={`/admin/students?search=${encodeURIComponent(profile.email)}`}
-                            className="mt-2 inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
-                          >
-                            Open in student directory →
-                          </Link>
-                        </div>
-                      )}
-
-                    <form action={updateProfileActiveAction} className="space-y-3">
-                      <input type="hidden" name="id" value={profile.id} />
-                      <div>
-                        <p className="text-sm font-semibold text-slate-900">Active</p>
-                        <p className="text-xs text-slate-500">
-                          Inactive profiles can&rsquo;t sign in. Useful for
-                          alumni, departed staff, or accounts pending
-                          investigation.
-                        </p>
-                      </div>
-                      <label className="flex items-center gap-2 text-sm text-slate-700">
-                        <input
-                          type="checkbox"
-                          name="active"
-                          defaultChecked={profile.active}
-                          className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
-                        />
-                        <span>Account is active</span>
-                      </label>
-                      <button
-                        type="submit"
-                        className="inline-flex items-center justify-center rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-400"
-                      >
-                        Save active flag
-                      </button>
-                    </form>
 
                     {!profile.active && (
                       <div className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50/50 px-4 py-3">
@@ -501,6 +409,17 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                             )
                           }
                         />
+                      </div>
+                    )}
+
+                    {studentId && (
+                      <div className="flex justify-end border-t border-slate-200 pt-4">
+                        <Link
+                          href={`/admin/students/${studentId}`}
+                          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+                        >
+                          Open student profile →
+                        </Link>
                       </div>
                     )}
                   </div>
