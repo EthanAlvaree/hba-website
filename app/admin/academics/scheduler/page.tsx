@@ -10,7 +10,7 @@ import {
   type FacultyOption,
 } from "@/lib/sis"
 import { periodDisplayLabel } from "@/lib/scheduler"
-import type { SolverWarning } from "@/lib/scheduler-solver"
+import type { SolverMetrics, SolverWarning } from "@/lib/scheduler-solver"
 import { createClient } from "@supabase/supabase-js"
 import AcademicsHeader from "../AcademicsHeader"
 import {
@@ -45,6 +45,7 @@ type DraftRow = {
     section_count?: number
     warning_count?: number
     warnings?: SolverWarning[]
+    metrics?: SolverMetrics
   } | null
   notes: string | null
   term: { id: string; name: string; slug: string } | null
@@ -461,6 +462,9 @@ function DraftDetail({
         <Stat label="Requests unfulfilled" value={summary.unfulfilled_requests ?? 0} />
       </div>
 
+      {/* Multi-objective breakdown */}
+      {summary.metrics && <MetricsCard metrics={summary.metrics} />}
+
       <CapacityRollup sections={sections} assignmentsBySection={assignmentsBySection} />
 
       {/* Drag/drop assignment board */}
@@ -769,6 +773,99 @@ function Stat({ label, value }: { label: string; value: number }) {
         {label}
       </p>
       <p className="text-2xl font-extrabold text-slate-900">{value}</p>
+    </div>
+  )
+}
+
+// The single "Score" number in the draft header summarizes how well a
+// schedule performed. MetricsCard breaks it open: how many cores got
+// fulfilled (the high-priority bucket), how often students got their
+// rank-1 pick, and a couple teacher-side stats so admin can decide
+// whether to commit-or-regenerate based on the dimensions they care
+// about most.
+function MetricsCard({ metrics }: { metrics: SolverMetrics }) {
+  const pct = (n: number) => `${Math.round(n * 100)}%`
+  return (
+    <div className="rounded-[2rem] border border-slate-200 bg-white px-6 py-4 shadow-sm">
+      <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-brand-orange">
+        Quality breakdown
+      </h4>
+      <p className="mt-1 text-xs text-slate-500">
+        How this draft performed on the dimensions the score weights together. Use
+        these to compare drafts when one has a higher number but
+        you&rsquo;re not sure which trade-offs it&rsquo;s making.
+      </p>
+
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <MetricRow
+          label="Cores fulfilled"
+          primary={`${metrics.cores.fulfilled} / ${metrics.cores.total}`}
+          secondary={pct(metrics.cores.rate)}
+          tone={metrics.cores.rate >= 0.9 ? "good" : metrics.cores.rate >= 0.7 ? "ok" : "bad"}
+        />
+        <MetricRow
+          label="Electives fulfilled"
+          primary={`${metrics.electives.fulfilled} / ${metrics.electives.total}`}
+          secondary={pct(metrics.electives.rate)}
+          tone={metrics.electives.rate >= 0.8 ? "good" : metrics.electives.rate >= 0.5 ? "ok" : "bad"}
+        />
+        <MetricRow
+          label="Rank-1 student match"
+          primary={pct(metrics.rank_1_match_rate)}
+          secondary={`${metrics.rank_1_matches} fulfilled at top pick`}
+          tone={metrics.rank_1_match_rate >= 0.7 ? "good" : metrics.rank_1_match_rate >= 0.5 ? "ok" : "bad"}
+        />
+        <MetricRow
+          label="Avg section size"
+          primary={metrics.avg_section_size.toFixed(1)}
+          secondary={`min: ${metrics.min_section_size_actual}${
+            metrics.below_min_sections > 0
+              ? ` · ${metrics.below_min_sections} below-min`
+              : ""
+          }`}
+          tone={metrics.below_min_sections === 0 ? "good" : "ok"}
+        />
+        <MetricRow
+          label="Teacher rank-1 match"
+          primary={pct(metrics.teacher_rank_1_match_rate)}
+          secondary={`${metrics.teacher_rank_1_matches} of ${metrics.section_count} sections`}
+          tone={metrics.teacher_rank_1_match_rate >= 0.7 ? "good" : metrics.teacher_rank_1_match_rate >= 0.5 ? "ok" : "bad"}
+        />
+        <MetricRow
+          label="Teacher load balance"
+          primary={`σ ${metrics.teacher_load_balance_stdev.toFixed(2)}`}
+          secondary="lower = more even"
+          tone={metrics.teacher_load_balance_stdev < 1.5 ? "good" : metrics.teacher_load_balance_stdev < 2.5 ? "ok" : "bad"}
+        />
+      </div>
+    </div>
+  )
+}
+
+function MetricRow({
+  label,
+  primary,
+  secondary,
+  tone,
+}: {
+  label: string
+  primary: string
+  secondary: string
+  tone: "good" | "ok" | "bad"
+}) {
+  const toneClass =
+    tone === "good"
+      ? "border-emerald-200 bg-emerald-50/50"
+      : tone === "ok"
+        ? "border-amber-200 bg-amber-50/40"
+        : "border-rose-200 bg-rose-50/40"
+  return (
+    <div className={`rounded-2xl border px-4 py-3 ${toneClass}`}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-600">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-extrabold text-slate-900">{primary}</p>
+      <p className="text-[11px] text-slate-600">{secondary}</p>
     </div>
   )
 }

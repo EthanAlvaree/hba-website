@@ -193,6 +193,36 @@ export type SolverResult = {
   fulfilled_requests: number
   unfulfilled_requests: number
   score: number
+  /** Multi-objective breakdown of how the schedule performed against
+   *  the dimensions admins actually compare across drafts. The single
+   *  `score` above is still the headline number used to rank drafts;
+   *  these metrics surface the trade-offs behind that number. */
+  metrics: SolverMetrics
+}
+
+export type SolverMetrics = {
+  // Fulfillment, split by request kind. "rate" is fulfilled / requested.
+  cores: { fulfilled: number; total: number; rate: number }
+  electives: { fulfilled: number; total: number; rate: number }
+  alternates: { fulfilled: number; total: number; rate: number }
+  // Of every fulfilled request, how many landed at preference_rank=1
+  // (the student's top pick)? Capture as both count and rate.
+  rank_1_matches: number
+  rank_1_match_rate: number
+  // Section size profile. The min check should normally be enforced
+  // upstream, but the actual minimum is useful when admin chose to
+  // accept below_min via warnings rather than fix the data.
+  section_count: number
+  avg_section_size: number
+  min_section_size_actual: number
+  below_min_sections: number
+  // Teacher-side metrics. teacher_rank_1_match_rate is "of every
+  // section, how often did the assigned teacher have preference_rank=1
+  // for that course." load_balance_stdev is the population standard
+  // deviation of per-teacher period counts — lower = more even spread.
+  teacher_rank_1_matches: number
+  teacher_rank_1_match_rate: number
+  teacher_load_balance_stdev: number
 }
 
 // ============================================================================
@@ -217,6 +247,30 @@ const SCORE_PENALTY_BELOW_MIN = -50      // strong penalty for tiny sections
 const SCORE_PENALTY_UNFULFILLED_CORE = -40
 const SCORE_PENALTY_UNFULFILLED_ELECTIVE = -10
 const SCORE_RANK_BONUS = 5   // bonus per request fulfilled at preference_rank=1, scales down
+
+const REQUEST_KIND_ORDER: Record<RequestInput["kind"], number> = {
+  core: 0,
+  elective: 1,
+  alternate: 2,
+}
+
+// Lower = higher priority. Used to sort unfulfilled candidates so the
+// local-search moves serve top-rank cores before bottom-rank
+// alternates, AND to decide whether a Move E priority-swap is a net
+// score win.
+function requestPriorityScore(req: { kind: RequestInput["kind"]; preference_rank: number }): number {
+  return REQUEST_KIND_ORDER[req.kind] * 100 + req.preference_rank
+}
+
+function compareRequestPriority(a: RequestInput, b: RequestInput): number {
+  return requestPriorityScore(a) - requestPriorityScore(b)
+}
+
+function fulfillmentValue(kind: RequestInput["kind"]): number {
+  if (kind === "core") return SCORE_FULFILL_CORE
+  if (kind === "elective") return SCORE_FULFILL_ELECTIVE
+  return SCORE_FULFILL_ALTERNATE
+}
 
 // ============================================================================
 // Main solver entry point
@@ -519,17 +573,8 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     list.push(req)
     demandByCourse.set(req.course_id, list)
   }
-  const kindOrder: Record<RequestInput["kind"], number> = {
-    core: 0,
-    elective: 1,
-    alternate: 2,
-  }
   for (const list of demandByCourse.values()) {
-    list.sort((a, b) => {
-      const k = kindOrder[a.kind] - kindOrder[b.kind]
-      if (k !== 0) return k
-      return a.preference_rank - b.preference_rank
-    })
+    list.sort(compareRequestPriority)
   }
 
   // Tracks (student_id, period) → already assigned, so a student can't be
@@ -759,12 +804,21 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     minSectionSize,
   })
 
+  const metrics = computeMetrics({
+    sections: proposed,
+    requests,
+    qualifications,
+    teacherPeriodTaken,
+    minSectionSize,
+  })
+
   return {
     sections: proposed,
     warnings,
     fulfilled_requests: fulfilledCount,
     unfulfilled_requests: unfulfilledCount,
     score: Math.round(score * 100) / 100,
+    metrics,
   }
 }
 
@@ -834,9 +888,10 @@ function wouldBreakConsecutiveCap(
 // Mutates the supplied solver state to improve the greedy result.
 // Two phases:
 //
-//   Phase 1 (deterministic, monotonic): repeatedly applies cheap
-//   moves until none improve the schedule. Each move only ADDS
-//   fulfillment or keeps things the same — safe to run to fixpoint.
+//   Phase 1 (deterministic): repeatedly applies cheap moves until
+//   none improve the schedule. Most moves are strictly monotonic
+//   (only add fulfillment); Move E is net-positive only when the
+//   swap is clearly worth it.
 //
 //     - Move A (fill-cracks): drop an unfulfilled student into an
 //       existing section of the same course where they fit.
@@ -848,6 +903,15 @@ function wouldBreakConsecutiveCap(
 //     - Move D (period rebalance): try shifting an existing section
 //       to a different period if all current students stay AND new
 //       unfulfilled students can join at the new period.
+//     - Move E (priority swap): drop a lower-priority fulfillment to
+//       free a period for a higher-priority unfulfilled request from
+//       the same student. The freed request is re-emitted as
+//       unfulfilled — a later iteration may re-place it via Move A
+//       or Move B for an even better score.
+//     - Move F (teacher rotation): when an alternative qualified
+//       teacher prefers this course more (lower preference_rank) and
+//       has the period free, swap them in. Honors the teacher's
+//       expressed preferences without changing student placements.
 //
 //   Phase 2 (iterated local search): "kick" the schedule by removing
 //   the lowest-value section, then re-run Phase 1. If the new score
@@ -894,7 +958,9 @@ function runDeterministicPhase(state: LocalSearchState): void {
     const b = moveBSpawnExtra(state)
     const c = moveCSwapToFreeSlot(state)
     const d = moveDRebalancePeriod(state)
-    if (!a && !b && !c && !d) break
+    const e = moveEPrioritySwap(state)
+    const f = moveFTeacherRotation(state)
+    if (!a && !b && !c && !d && !e && !f) break
   }
 }
 
@@ -931,14 +997,15 @@ function moveAFillCracks(state: Parameters<typeof runLocalSearchPass>[0]): boole
 
   let didAnything = false
 
-  // Walk unfulfilled in reverse so splicing doesn't shift the indices
-  // we still need to read.
-  const unfulfilled = findUnfulfilledIndices(warnings)
-  for (let i = unfulfilled.length - 1; i >= 0; i--) {
-    const { index, warning } = unfulfilled[i]
-    const req = requestByKey.get(`${warning.student_id}|${warning.course_id}`)
-    if (!req) continue
+  // Process unfulfilled requests in priority order — cores at rank 1
+  // before alternates at rank 4 — so a tight squeeze on the schedule
+  // goes to the most-important pick first.
+  const unfulfilledSorted = findUnfulfilledIndices(warnings)
+    .map((u) => ({ ...u, req: requestByKey.get(`${u.warning.student_id}|${u.warning.course_id}`) }))
+    .filter((u): u is typeof u & { req: RequestInput } => u.req !== undefined)
+    .sort((a, b) => compareRequestPriority(a.req, b.req))
 
+  for (const { warning, req } of unfulfilledSorted) {
     for (const section of proposed) {
       if (section.course_id !== warning.course_id) continue
       if (section.period === null) continue
@@ -957,7 +1024,16 @@ function moveAFillCracks(state: Parameters<typeof runLocalSearchPass>[0]): boole
       section.fulfilled_request_by_student[warning.student_id] = req.id
       studentTaken.add(period)
       studentPeriodTaken.set(warning.student_id, studentTaken)
-      warnings.splice(index, 1)
+      // Splice by content lookup — earlier accepted moves may have
+      // shifted indices since the original findUnfulfilledIndices
+      // snapshot was taken.
+      const currentIndex = warnings.findIndex(
+        (w) =>
+          w.kind === "unfulfilled_request" &&
+          w.student_id === warning.student_id &&
+          w.course_id === warning.course_id
+      )
+      if (currentIndex >= 0) warnings.splice(currentIndex, 1)
       didAnything = true
       break
     }
@@ -997,6 +1073,12 @@ function moveBSpawnExtra(state: Parameters<typeof runLocalSearchPass>[0]): boole
     const arr = clustersByCourse.get(w.course_id) ?? []
     arr.push(req)
     clustersByCourse.set(w.course_id, arr)
+  }
+  // Within each cluster, prioritize cores at rank 1 first, then
+  // cores at rank 2, etc. — so when a section can't hold everyone,
+  // the top-priority requests get the seats.
+  for (const arr of clustersByCourse.values()) {
+    arr.sort(compareRequestPriority)
   }
 
   let didAnything = false
@@ -1267,6 +1349,12 @@ function moveDRebalancePeriod(state: LocalSearchState): boolean {
     arr.push(req)
     unfulfilledByCourse.set(w.course_id, arr)
   }
+  // Sort joiners by priority — when a period rebalance unlocks room
+  // for some-but-not-all eligible students, give the seats to the
+  // top-priority unfulfilled requests first.
+  for (const arr of unfulfilledByCourse.values()) {
+    arr.sort(compareRequestPriority)
+  }
 
   let didAnything = false
 
@@ -1385,6 +1473,235 @@ function moveDRebalancePeriod(state: LocalSearchState): boolean {
 
       didAnything = true
       break // one rebalance per section per outer iteration
+    }
+  }
+
+  return didAnything
+}
+
+// Move E: when an unfulfilled request is for a strictly higher-
+// priority course than something the student is already enrolled in
+// at the same period, drop the lower-priority fulfillment to make
+// room. The dropped request goes back into the warnings queue as
+// unfulfilled; a follow-up Move A / Move B run will try to re-place
+// it elsewhere (and often succeeds in another period, netting two
+// fulfillments where we had one).
+//
+// Strictly improving: the swap only fires when the score delta is
+// guaranteed positive — i.e., the higher-priority request's
+// fulfillment value beats the lower-priority request's, and the
+// downgraded request's penalty (if it stays unfulfilled) is less
+// than the new request's reward. Cores displacing electives or
+// alternates always wins; same-kind swaps never fire.
+function moveEPrioritySwap(state: LocalSearchState): boolean {
+  const {
+    proposed,
+    warnings,
+    requests,
+    studentPeriodTaken,
+    unavailableByStudent,
+    defaultMaxSection,
+    courseById,
+  } = state
+
+  const requestByKey = new Map(
+    requests.map((r) => [`${r.student_id}|${r.course_id}`, r])
+  )
+
+  const sectionsByCourse = new Map<string, ProposedSection[]>()
+  for (const s of proposed) {
+    const arr = sectionsByCourse.get(s.course_id) ?? []
+    arr.push(s)
+    sectionsByCourse.set(s.course_id, arr)
+  }
+
+  let didAnything = false
+
+  // Walk unfulfilled in priority order — top picks try to displace first.
+  const unfulfilledSorted = findUnfulfilledIndices(warnings)
+    .map((u) => ({ ...u, req: requestByKey.get(`${u.warning.student_id}|${u.warning.course_id}`) }))
+    .filter((u): u is typeof u & { req: RequestInput } => u.req !== undefined)
+    .sort((a, b) => compareRequestPriority(a.req, b.req))
+
+  for (const { warning, req: highPriorityReq } of unfulfilledSorted) {
+    const sPrime = warning.student_id
+    const X = warning.course_id
+
+    const xSections = sectionsByCourse.get(X) ?? []
+    if (xSections.length === 0) continue
+
+    let accepted = false
+    for (const xSection of xSections) {
+      if (accepted) break
+      if (xSection.period === null) continue
+      if (xSection.student_ids.length >= defaultMaxSection) continue
+      if (xSection.student_ids.includes(sPrime)) continue
+      const P = xSection.period
+      if (unavailableByStudent.get(sPrime)?.has(P)) continue
+
+      const sPrimeTaken =
+        studentPeriodTaken.get(sPrime) ?? new Set<SectionPeriod>()
+      if (!sPrimeTaken.has(P)) continue // not a conflict — Move A's job
+
+      // Locate the section currently holding S' at P.
+      const conflictingSection = proposed.find(
+        (s) =>
+          s.period === P &&
+          s.course_id !== X &&
+          s.student_ids.includes(sPrime)
+      )
+      if (!conflictingSection) continue
+
+      // What was the priority of the request currently being fulfilled?
+      const conflictingReqId =
+        conflictingSection.fulfilled_request_by_student[sPrime]
+      const conflictingReq = conflictingReqId
+        ? requestByKey.get(`${sPrime}|${conflictingSection.course_id}`)
+        : null
+      if (!conflictingReq) continue
+
+      // Only swap when the new request is strictly higher-priority.
+      // Same-kind swaps don't fire — let Move C handle period-level
+      // moves within the same priority tier.
+      if (
+        REQUEST_KIND_ORDER[highPriorityReq.kind] >=
+        REQUEST_KIND_ORDER[conflictingReq.kind]
+      ) {
+        continue
+      }
+
+      // Net-score check: gain (fulfill new) vs loss (lose old +
+      // penalty if old stays unfulfilled). We assume the dropped
+      // request stays unfulfilled to be conservative; if Move A later
+      // re-places it, the actual gain is even larger.
+      const gain = fulfillmentValue(highPriorityReq.kind)
+      const loss = fulfillmentValue(conflictingReq.kind)
+      // Penalty avoided: the new request was already costing us its
+      // unfulfilled penalty; the dropped request will now incur its
+      // own (smaller, because it's lower-priority).
+      const penaltyAvoided =
+        highPriorityReq.kind === "core"
+          ? -SCORE_PENALTY_UNFULFILLED_CORE
+          : highPriorityReq.kind === "elective"
+            ? -SCORE_PENALTY_UNFULFILLED_ELECTIVE
+            : 0
+      const penaltyAdded =
+        conflictingReq.kind === "core"
+          ? -SCORE_PENALTY_UNFULFILLED_CORE
+          : conflictingReq.kind === "elective"
+            ? -SCORE_PENALTY_UNFULFILLED_ELECTIVE
+            : 0
+      const delta = gain - loss + penaltyAvoided - penaltyAdded
+      if (delta <= 0) continue
+
+      // Execute the swap.
+      const conflictingCourse = courseById.get(conflictingSection.course_id)
+      removeStudentFromSection(conflictingSection, sPrime)
+      addStudentToSection(xSection, sPrime, requestByKey)
+
+      // P stays in S''s period set (xSection now occupies it).
+      // No need to mutate sPrimeTaken — same period, different section.
+      studentPeriodTaken.set(sPrime, sPrimeTaken)
+
+      // Remove the original unfulfilled warning for X; emit a new one
+      // for the dropped course.
+      const xWarningIdx = warnings.findIndex(
+        (w) =>
+          w.kind === "unfulfilled_request" &&
+          w.student_id === sPrime &&
+          w.course_id === X
+      )
+      if (xWarningIdx >= 0) warnings.splice(xWarningIdx, 1)
+
+      warnings.push({
+        kind: "unfulfilled_request",
+        student_id: sPrime,
+        course_id: conflictingSection.course_id,
+        course_name: conflictingCourse?.name ?? "(unknown)",
+        request_kind: conflictingReq.kind,
+      })
+
+      didAnything = true
+      accepted = true
+    }
+  }
+
+  return didAnything
+}
+
+// Move F: when an alternative qualified teacher has a *better*
+// preference_rank for this course than the current teacher AND the
+// alternative is free at this period (after releasing their other
+// commitments) within workload + consecutive caps, swap them in.
+// Doesn't touch student placements — same period, same students,
+// just a teacher the schedule "fits better."
+function moveFTeacherRotation(state: LocalSearchState): boolean {
+  const {
+    proposed,
+    teacherPeriodTaken,
+    unavailableByTeacher,
+    maxPeriodsByTeacher,
+    maxConsecutiveByTeacher,
+    qualifiedTeachersByCourse,
+    facultyById,
+  } = state
+
+  let didAnything = false
+
+  for (const section of proposed) {
+    if (!section.teacher_profile_id) continue
+    if (section.period === null) continue
+
+    const currentTeacher = facultyById.get(section.teacher_profile_id)
+    if (!currentTeacher) continue
+
+    const quals = qualifiedTeachersByCourse.get(section.course_id) ?? []
+    const currentQual = quals.find((q) => q.profile_id === currentTeacher.id)
+    if (!currentQual) continue
+    const currentPref = currentQual.preference_rank
+
+    // Try every alternative qualified teacher with a strictly better
+    // (lower) preference_rank.
+    for (const altQual of quals) {
+      if (altQual.profile_id === currentTeacher.id) continue
+      if (altQual.preference_rank >= currentPref) continue
+
+      const altTeacher = facultyById.get(altQual.profile_id)
+      if (!altTeacher) continue
+
+      const altTaken =
+        teacherPeriodTaken.get(altTeacher.id) ?? new Set<SectionPeriod>()
+      if (altTaken.has(section.period)) continue
+      const altUnavail = unavailableByTeacher.get(altTeacher.id)
+      if (altUnavail?.has(section.period)) continue
+
+      const altMaxLoad =
+        maxPeriodsByTeacher.get(altTeacher.id) ?? sectionPeriodSchema.options.length
+      if (altTaken.size >= altMaxLoad) continue
+
+      const altMaxConsec = maxConsecutiveByTeacher.get(altTeacher.id) ?? null
+      if (
+        altMaxConsec !== null &&
+        wouldBreakConsecutiveCap(altTaken, section.period, altMaxConsec)
+      ) {
+        continue
+      }
+
+      // Execute the rotation: release current teacher's hold on this
+      // period, mark alt teacher as taking it.
+      const currentTakenSet =
+        teacherPeriodTaken.get(currentTeacher.id) ?? new Set<SectionPeriod>()
+      currentTakenSet.delete(section.period)
+      teacherPeriodTaken.set(currentTeacher.id, currentTakenSet)
+
+      altTaken.add(section.period)
+      teacherPeriodTaken.set(altTeacher.id, altTaken)
+
+      section.teacher_profile_id = altTeacher.id
+      section.teacher_label = altTeacher.display_name || altTeacher.email
+
+      didAnything = true
+      break // one rotation per section per outer iteration
     }
   }
 
@@ -1570,6 +1887,118 @@ function missingGroupedPrereqs(input: {
     }
   }
   return missing
+}
+
+// Multi-objective metrics. Computed from the same final state as the
+// single score, but exposes the individual dimensions admins compare
+// across drafts (core fulfillment %, teacher preference match, load
+// balance, etc.). Persisted in schedule_drafts.summary so the admin
+// UI can render them side-by-side.
+function computeMetrics(input: {
+  sections: ProposedSection[]
+  requests: RequestInput[]
+  qualifications: QualificationInput[]
+  teacherPeriodTaken: Map<string, Set<SectionPeriod>>
+  minSectionSize: number
+}): SolverMetrics {
+  const requestById = new Map(input.requests.map((r) => [r.id, r]))
+
+  // Bucket totals by kind.
+  let coreTotal = 0
+  let electiveTotal = 0
+  let alternateTotal = 0
+  for (const r of input.requests) {
+    if (r.kind === "core") coreTotal += 1
+    else if (r.kind === "elective") electiveTotal += 1
+    else alternateTotal += 1
+  }
+
+  // Bucket fulfilled by kind + count rank-1 matches.
+  let coreFulfilled = 0
+  let electiveFulfilled = 0
+  let alternateFulfilled = 0
+  let rank1Matches = 0
+  let totalFulfilled = 0
+
+  for (const section of input.sections) {
+    for (const studentId of section.student_ids) {
+      const requestId = section.fulfilled_request_by_student[studentId]
+      const req = requestId ? requestById.get(requestId) : null
+      if (!req) continue
+      totalFulfilled += 1
+      if (req.kind === "core") coreFulfilled += 1
+      else if (req.kind === "elective") electiveFulfilled += 1
+      else alternateFulfilled += 1
+      if (req.preference_rank === 1) rank1Matches += 1
+    }
+  }
+
+  // Section size profile.
+  const sectionCount = input.sections.length
+  const sizes = input.sections.map((s) => s.student_ids.length)
+  const avgSectionSize =
+    sectionCount > 0 ? sizes.reduce((a, b) => a + b, 0) / sectionCount : 0
+  const minSectionSizeActual = sectionCount > 0 ? Math.min(...sizes) : 0
+  const belowMinSections = sizes.filter(
+    (n) => n > 0 && n < input.minSectionSize
+  ).length
+
+  // Teacher-side metrics: count how often the assigned teacher had
+  // preference_rank=1 for the section's course, AND compute the
+  // population standard deviation of teacher loads (period counts).
+  const qualByPair = new Map<string, QualificationInput>()
+  for (const q of input.qualifications) {
+    qualByPair.set(`${q.profile_id}|${q.course_id}`, q)
+  }
+  let teacherRank1Matches = 0
+  for (const section of input.sections) {
+    if (!section.teacher_profile_id) continue
+    const q = qualByPair.get(`${section.teacher_profile_id}|${section.course_id}`)
+    if (q?.preference_rank === 1) teacherRank1Matches += 1
+  }
+
+  const loads = [...input.teacherPeriodTaken.values()].map((s) => s.size)
+  let teacherLoadBalanceStdev = 0
+  if (loads.length > 0) {
+    const mean = loads.reduce((a, b) => a + b, 0) / loads.length
+    const variance =
+      loads.reduce((sum, n) => sum + (n - mean) * (n - mean), 0) / loads.length
+    teacherLoadBalanceStdev = Math.sqrt(variance)
+  }
+
+  const safeRate = (numerator: number, denominator: number): number =>
+    denominator > 0 ? numerator / denominator : 0
+
+  return {
+    cores: {
+      fulfilled: coreFulfilled,
+      total: coreTotal,
+      rate: round2(safeRate(coreFulfilled, coreTotal)),
+    },
+    electives: {
+      fulfilled: electiveFulfilled,
+      total: electiveTotal,
+      rate: round2(safeRate(electiveFulfilled, electiveTotal)),
+    },
+    alternates: {
+      fulfilled: alternateFulfilled,
+      total: alternateTotal,
+      rate: round2(safeRate(alternateFulfilled, alternateTotal)),
+    },
+    rank_1_matches: rank1Matches,
+    rank_1_match_rate: round2(safeRate(rank1Matches, totalFulfilled)),
+    section_count: sectionCount,
+    avg_section_size: round2(avgSectionSize),
+    min_section_size_actual: minSectionSizeActual,
+    below_min_sections: belowMinSections,
+    teacher_rank_1_matches: teacherRank1Matches,
+    teacher_rank_1_match_rate: round2(safeRate(teacherRank1Matches, sectionCount)),
+    teacher_load_balance_stdev: round2(teacherLoadBalanceStdev),
+  }
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100
 }
 
 // Pure scoring pass — separated so the greedy loop above stays focused on
@@ -1941,6 +2370,7 @@ export async function persistDraft(input: {
     section_count: input.result.sections.length,
     warning_count: input.result.warnings.length,
     warnings: input.result.warnings,
+    metrics: input.result.metrics,
   }
 
   const { data: draft, error: draftError } = await supabase
