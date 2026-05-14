@@ -5,6 +5,8 @@ import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
 import {
   addStudentTag,
+  createParentLinkForStudent,
+  createParentLinkSchema,
   parentLinkUpdateSchema,
   profileContactUpdateSchema,
   removeStudentTag,
@@ -151,6 +153,61 @@ export async function updateParentLinkAction(formData: FormData) {
     redirect(`/admin/students/${studentId}`)
   }
   redirect("/admin/students")
+}
+
+// Manually attach a parent/guardian to an existing student. Used for
+// the bulk of HBA's roster — students who enrolled years ago with no
+// application on file, so the Enroll workflow never built their
+// parent_links. Find-or-creates the parent profile by email.
+export async function addParentLinkAction(formData: FormData) {
+  await assertAdmin()
+
+  const parsed = createParentLinkSchema.safeParse({
+    student_id: formData.get("student_id"),
+    parent_email: formData.get("parent_email"),
+    parent_first_name: formData.get("parent_first_name") ?? "",
+    parent_last_name: formData.get("parent_last_name") ?? "",
+    parent_mobile_phone: formData.get("parent_mobile_phone") ?? "",
+    relationship: formData.get("relationship") ?? "",
+    is_primary: formData.get("is_primary") === "on",
+    is_homestay: formData.get("is_homestay") === "on",
+    is_emergency_contact: formData.get("is_emergency_contact") === "on",
+    can_view_grades: formData.get("can_view_grades") === "on",
+    can_view_attendance: formData.get("can_view_attendance") === "on",
+    can_receive_communications:
+      formData.get("can_receive_communications") === "on",
+  })
+  if (!parsed.success) {
+    redirect(
+      `/admin/students/${formData.get("student_id") ?? ""}?parent_link_error=${encodeURIComponent(
+        parsed.error.issues[0]?.message ?? "Invalid request."
+      )}`
+    )
+  }
+
+  try {
+    const link = await createParentLinkForStudent(parsed.data)
+    await logAdminAuditEvent({
+      action: ADMIN_AUDIT_ACTIONS.parent_link_create_manual,
+      target_kind: "student",
+      target_id: parsed.data.student_id,
+      details: {
+        parent_link_id: link.id,
+        parent_email: parsed.data.parent_email,
+        relationship: parsed.data.relationship,
+      },
+    })
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Couldn't add the parent link."
+    redirect(
+      `/admin/students/${parsed.data.student_id}?parent_link_error=${encodeURIComponent(message)}`
+    )
+  }
+
+  revalidateStudent(parsed.data.student_id)
+  revalidatePath("/admin/students")
+  redirect(`/admin/students/${parsed.data.student_id}?parent_link_added=1`)
 }
 
 // Marks a student's post-enrollment file verified (or un-verified). Hits the

@@ -27,6 +27,7 @@ import {
 import StudentAvailabilityCard from "@/components/portal/StudentAvailabilityCard"
 import StudentsHeader from "../StudentsHeader"
 import {
+  addParentLinkAction,
   addStudentTagAction,
   grantStudentPrereqOverrideAction,
   removeStudentTagAction,
@@ -190,7 +191,11 @@ export default async function StudentDetailPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ saved?: string }>
+  searchParams: Promise<{
+    saved?: string
+    parent_link_added?: string
+    parent_link_error?: string
+  }>
 }) {
   const session = await auth()
   if (!session?.isAdmin) {
@@ -585,10 +590,23 @@ export default async function StudentDetailPage({
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <h3 className="text-lg font-extrabold text-brand-navy">Family</h3>
+
+          {rawSearch.parent_link_added === "1" && (
+            <div className="mt-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-900">
+              Parent/guardian linked.
+            </div>
+          )}
+          {rawSearch.parent_link_error && (
+            <div className="mt-3 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm text-rose-900">
+              {rawSearch.parent_link_error}
+            </div>
+          )}
+
           {student.parent_links.length === 0 ? (
             <p className="mt-4 text-sm text-slate-600">
-              No parent links yet. Parent profiles are created during the Enroll
-              workflow from the application&rsquo;s guardian fields.
+              No parent/guardian linked yet. Most HBA students enrolled
+              before the online application existed — use the form below
+              to add their family contacts.
             </p>
           ) : (
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -763,6 +781,8 @@ export default async function StudentDetailPage({
               ))}
             </div>
           )}
+
+          <AddParentLinkCard studentId={student.id} />
         </section>
 
         <PostEnrollmentFileCard
@@ -1106,6 +1126,141 @@ function PrereqOverridesCard({
         </button>
       </form>
     </section>
+  )
+}
+
+// Manually link a parent/guardian to a student. The Enroll workflow
+// builds parent_links from an application's guardian fields, but the
+// bulk of HBA's roster predates the online application — this is how
+// the office fills in family contacts for them.
+function AddParentLinkCard({ studentId }: { studentId: string }) {
+  return (
+    <details className="mt-5 rounded-2xl border border-slate-200 bg-slate-50">
+      <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-brand-navy">
+        + Add a parent / guardian
+      </summary>
+      <form
+        action={addParentLinkAction}
+        className="space-y-3 border-t border-slate-200 px-4 py-4"
+      >
+        <input type="hidden" name="student_id" value={studentId} />
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">Email (login identity)</span>
+            <input
+              name="parent_email"
+              type="email"
+              required
+              placeholder="parent@example.com"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">Relationship</span>
+            <input
+              name="relationship"
+              placeholder="Mother, Father, Guardian, etc."
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">First name</span>
+            <input
+              name="parent_first_name"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">Last name</span>
+            <input
+              name="parent_last_name"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+            <span className="block">Mobile phone</span>
+            <input
+              name="parent_mobile_phone"
+              type="tel"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+        </div>
+
+        <fieldset className="grid gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-700 sm:grid-cols-2">
+          <legend className="px-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Role &amp; permissions
+          </legend>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="is_primary"
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>Primary guardian</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="is_homestay"
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>Homestay</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="is_emergency_contact"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>Emergency contact</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="can_view_grades"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>Can view grades</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="can_view_attendance"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>Can view attendance</span>
+          </label>
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              name="can_receive_communications"
+              defaultChecked
+              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+            />
+            <span>Receives communications</span>
+          </label>
+        </fieldset>
+
+        <p className="text-[11px] text-slate-500">
+          If a profile with this email already exists, it&rsquo;s reused
+          and gets the <code>parent</code> role added. Otherwise a new
+          parent profile is created. They sign in with this email via
+          Microsoft 365.
+        </p>
+
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+        >
+          Link parent / guardian
+        </button>
+      </form>
+    </details>
   )
 }
 

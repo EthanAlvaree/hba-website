@@ -2221,6 +2221,98 @@ export async function updateParentLink(input: ParentLinkUpdateInput) {
   }
 }
 
+// Manually attach a parent/guardian to a student. The Enroll workflow
+// builds parent_links from an application's guardian fields, but most
+// HBA students enrolled years ago with no application on file — this
+// is how the office adds guardian info for them. Find-or-creates the
+// parent profile by email (adding the 'parent' role if missing), then
+// inserts the link. Refuses a duplicate (student, parent) pair.
+export const createParentLinkSchema = z.object({
+  student_id: z.uuid(),
+  parent_email: z.string().trim().email().toLowerCase(),
+  parent_first_name: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  parent_last_name: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  parent_mobile_phone: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  relationship: z
+    .string()
+    .trim()
+    .max(80)
+    .optional()
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v : null)),
+  is_primary: z.coerce.boolean().optional().default(false),
+  is_homestay: z.coerce.boolean().optional().default(false),
+  is_emergency_contact: z.coerce.boolean().optional().default(true),
+  can_view_grades: z.coerce.boolean().optional().default(true),
+  can_view_attendance: z.coerce.boolean().optional().default(true),
+  can_receive_communications: z.coerce.boolean().optional().default(true),
+})
+export type CreateParentLinkInput = z.infer<typeof createParentLinkSchema>
+
+export async function createParentLinkForStudent(
+  input: CreateParentLinkInput
+): Promise<ParentLinkRecord> {
+  const displayName = [input.parent_first_name, input.parent_last_name]
+    .filter(Boolean)
+    .join(" ")
+    .trim()
+
+  const { profile } = await findOrCreateProfile({
+    email: input.parent_email,
+    role: "parent",
+    first_name: input.parent_first_name,
+    last_name: input.parent_last_name,
+    display_name: displayName.length > 0 ? displayName : null,
+    mobile_phone: input.parent_mobile_phone,
+  })
+
+  const existing = await getParentLink(input.student_id, profile.id)
+  if (existing) {
+    throw new Error(
+      "That person is already linked to this student. Edit the existing link instead."
+    )
+  }
+
+  const { data, error } = await getSupabase()
+    .from("parent_links")
+    .insert({
+      student_id: input.student_id,
+      parent_profile_id: profile.id,
+      relationship: input.relationship,
+      is_primary: input.is_primary,
+      is_homestay: input.is_homestay,
+      is_emergency_contact: input.is_emergency_contact,
+      can_view_grades: input.can_view_grades,
+      can_view_attendance: input.can_view_attendance,
+      can_receive_communications: input.can_receive_communications,
+    })
+    .select(parentLinkColumns)
+    .single<ParentLinkRecord>()
+
+  if (error) {
+    throw new Error(`Failed to create parent link: ${error.message}`)
+  }
+  return data
+}
+
 // ============================================================================
 // Parent → students lookup (parent portal)
 // ============================================================================
