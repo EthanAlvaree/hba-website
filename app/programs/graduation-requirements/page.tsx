@@ -18,7 +18,11 @@ import {
 } from "@/lib/scheduler"
 import { listCourses, type CourseRecord } from "@/lib/sis"
 
-export const revalidate = 3600
+// Rendered per request rather than prerendered at build time — it
+// reads the live graduation_requirements + course_subject_assignments
+// tables, and prerendering would pin it to whatever schema/data
+// existed at build time. Low-traffic page; per-request is fine.
+export const dynamic = "force-dynamic"
 
 export const metadata = {
   title: "Graduation requirements — High Bluff Academy",
@@ -32,18 +36,6 @@ type RequirementGroup = {
   collegeBound: number | null
   notes: string[]
   courses: CourseRecord[]
-}
-
-function trackCredits(
-  rows: { subject_area: string; track: string; required_credits: number }[],
-  area: SubjectArea,
-  track: "basic" | "college_bound"
-): number | null {
-  const exact = rows.find((r) => r.subject_area === area && r.track === track)
-  if (exact) return Number(exact.required_credits)
-  // Fall back to an "all"-track row (used for subjects with no track split).
-  const all = rows.find((r) => r.subject_area === area && r.track === "all")
-  return all ? Number(all.required_credits) : null
 }
 
 export default async function GraduationRequirementsPage() {
@@ -73,13 +65,19 @@ export default async function GraduationRequirementsPage() {
     })
   }
 
+  // One requirement row per subject area now — both track credits are
+  // columns on it.
+  const requirementBySubject = new Map(
+    requirements.map((r) => [r.subject_area, r])
+  )
+
   const groups: RequirementGroup[] = subjectAreas.map((area) => {
-    const areaRequirements = requirements.filter((r) => r.subject_area === area)
+    const req = requirementBySubject.get(area)
     return {
       area,
-      basic: trackCredits(areaRequirements, area, "basic"),
-      collegeBound: trackCredits(areaRequirements, area, "college_bound"),
-      notes: areaRequirements.map((r) => r.notes).filter(Boolean) as string[],
+      basic: req ? Number(req.required_credits_basic) : null,
+      collegeBound: req ? Number(req.required_credits_college_bound) : null,
+      notes: req?.notes ? [req.notes] : [],
       courses: coursesByArea.get(area) ?? [],
     }
   })
@@ -160,7 +158,7 @@ export default async function GraduationRequirementsPage() {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {groups
-                  .filter((g) => g.basic !== null || g.collegeBound !== null)
+                  .filter((g) => (g.basic ?? 0) > 0 || (g.collegeBound ?? 0) > 0)
                   .map((g) => (
                     <tr key={g.area} className="align-top">
                       <td className="px-6 py-5">

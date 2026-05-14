@@ -5,9 +5,10 @@ import { redirect } from "next/navigation"
 import { z } from "zod"
 import { auth, signOut } from "@/auth"
 import {
-  deleteGraduationRequirement,
+  addCourseToSubjectArea,
   graduationRequirementUpsertSchema,
-  setCourseSubjectArea,
+  removeCourseFromSubjectArea,
+  subjectAreas,
   upsertGraduationRequirement,
 } from "@/lib/scheduler"
 
@@ -22,21 +23,27 @@ async function assertAdmin() {
 function revalidateAll() {
   revalidatePath("/admin/academics/requirements")
   revalidatePath("/admin/academics/courses")
+  // Course→subject membership drives the scheduler's Friday-only logic
+  // and the student trajectory, so refresh those too.
+  revalidatePath("/admin/academics/scheduler")
+  revalidatePath("/portal/trajectory")
+  revalidatePath("/programs/graduation-requirements")
 }
 
+// Save the credit requirements + notes for one subject area. The page
+// is a card per subject; this upserts that subject's single row
+// (keyed on subject_area).
 export async function saveRequirementAction(formData: FormData) {
   await assertAdmin()
 
-  const id = formData.get("id")
   const gradeLevels = formData.getAll("applies_to_grade_levels").map(String)
 
   const parsed = graduationRequirementUpsertSchema.safeParse({
-    id: typeof id === "string" && id.length > 0 ? id : undefined,
-    name: formData.get("name"),
     subject_area: formData.get("subject_area"),
-    required_credits: formData.get("required_credits") ?? 0,
+    required_credits_basic: formData.get("required_credits_basic") ?? 0,
+    required_credits_college_bound:
+      formData.get("required_credits_college_bound") ?? 0,
     applies_to_grade_levels: gradeLevels,
-    track: formData.get("track") ?? "all",
     notes: formData.get("notes") ?? "",
   })
   if (!parsed.success) {
@@ -45,42 +52,43 @@ export async function saveRequirementAction(formData: FormData) {
 
   await upsertGraduationRequirement(parsed.data)
   revalidateAll()
-  redirect("/admin/academics/requirements")
+  redirect("/admin/academics/requirements?saved=1")
 }
 
-const deleteRequirementSchema = z.object({ id: z.uuid() })
-
-export async function deleteRequirementAction(formData: FormData) {
-  await assertAdmin()
-  const parsed = deleteRequirementSchema.safeParse({ id: formData.get("id") })
-  if (!parsed.success) throw new Error("Invalid request.")
-
-  await deleteGraduationRequirement(parsed.data.id)
-  revalidateAll()
-  redirect("/admin/academics/requirements")
-}
-
+// Add a course to a subject area's course list (many-to-many).
 const courseSubjectSchema = z.object({
   course_id: z.uuid(),
-  subject_area: z
-    .string()
-    .trim()
-    .max(80)
-    .optional()
-    .transform((v) => (v && v.length > 0 ? v : null)),
+  subject_area: z.enum(subjectAreas),
 })
 
-export async function setCourseSubjectAction(formData: FormData) {
+export async function addCourseToSubjectAction(formData: FormData) {
   await assertAdmin()
   const parsed = courseSubjectSchema.safeParse({
     course_id: formData.get("course_id"),
-    subject_area: formData.get("subject_area") ?? "",
+    subject_area: formData.get("subject_area"),
   })
   if (!parsed.success) throw new Error("Invalid request.")
 
-  await setCourseSubjectArea(parsed.data)
+  await addCourseToSubjectArea(parsed.data)
   revalidateAll()
-  redirect("/admin/academics/requirements")
+  redirect(
+    `/admin/academics/requirements?saved=1#subject-${parsed.data.subject_area}`
+  )
+}
+
+export async function removeCourseFromSubjectAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = courseSubjectSchema.safeParse({
+    course_id: formData.get("course_id"),
+    subject_area: formData.get("subject_area"),
+  })
+  if (!parsed.success) throw new Error("Invalid request.")
+
+  await removeCourseFromSubjectArea(parsed.data)
+  revalidateAll()
+  redirect(
+    `/admin/academics/requirements?saved=1#subject-${parsed.data.subject_area}`
+  )
 }
 
 export async function signOutRequirementsAdminAction() {

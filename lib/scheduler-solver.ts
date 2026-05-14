@@ -322,6 +322,7 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     prereqsRes,
     overridesRes,
     completedRes,
+    subjectAssignmentsRes,
   ] = await Promise.all([
     supabase
       .from("student_course_requests")
@@ -375,6 +376,14 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
          )`
       )
       .returns<CompletedEnrollmentInput[]>(),
+    // course→subject memberships. We only need the 'elective' ones —
+    // a course in 'elective' is Friday-elective-only; everything else
+    // is weekday-only.
+    supabase
+      .from("course_subject_assignments")
+      .select("course_id, subject_area")
+      .eq("subject_area", "elective")
+      .returns<Array<{ course_id: string; subject_area: string }>>(),
   ])
 
   if (requestsRes.error) throw new Error(requestsRes.error.message)
@@ -387,6 +396,7 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
   if (prereqsRes.error) throw new Error(prereqsRes.error.message)
   if (overridesRes.error) throw new Error(overridesRes.error.message)
   if (completedRes.error) throw new Error(completedRes.error.message)
+  if (subjectAssignmentsRes.error) throw new Error(subjectAssignmentsRes.error.message)
 
   const requests = requestsRes.data ?? []
   const qualifications = qualificationsRes.data ?? []
@@ -402,6 +412,27 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
   // Quick lookups
   const courseById = new Map(courses.map((c) => [c.id, c]))
   const facultyById = new Map(faculty.map((f) => [f.id, f]))
+
+  // Friday-elective-only set: courses tagged with the 'elective'
+  // subject area run ONLY in elective_1 / elective_2 (Friday). Every
+  // other course runs ONLY in period_1..period_6 (Mon-Thu). This is
+  // the single rule that keeps the solver from putting Studio Art in
+  // a Tuesday slot, or AP Calc in a Friday elective block.
+  const electiveCourseIds = new Set(
+    (subjectAssignmentsRes.data ?? []).map((r) => r.course_id)
+  )
+  const WEEKDAY_PERIODS: SectionPeriod[] = [
+    "period_1",
+    "period_2",
+    "period_3",
+    "period_4",
+    "period_5",
+    "period_6",
+  ]
+  const ELECTIVE_PERIODS: SectionPeriod[] = ["elective_1", "elective_2"]
+  // The period slots a given course is allowed to occupy.
+  const periodsForCourse = (courseId: string): SectionPeriod[] =>
+    electiveCourseIds.has(courseId) ? ELECTIVE_PERIODS : WEEKDAY_PERIODS
 
   // Qualifications indexed by course → teacher (sorted by preference_rank).
   const qualifiedTeachersByCourse = new Map<string, QualificationInput[]>()
@@ -657,7 +688,9 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
       // Cap how many sections this teacher can pick up given workload.
       const canTakeMore = () => taken.size < maxLoad
 
-      for (const period of sectionPeriodSchema.options) {
+      // Friday-elective courses only get the elective periods; every
+      // other course only gets the weekday periods.
+      for (const period of periodsForCourse(courseId)) {
         if (remainingDemand.length === 0) break
         if (!canTakeMore()) break
         if (unavailable.has(period)) continue
@@ -746,12 +779,16 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     //     didn't get to it" problem.
     //   - Otherwise, generic unfulfilled (no capacity / no period overlap
     //     with classmates / etc).
+    // Only consider the period slots this course is actually allowed
+    // in — a Friday-elective course's "teachable union" is the
+    // elective periods, not the whole week.
+    const allowedPeriods = periodsForCourse(courseId)
     const teachableUnion = new Set<SectionPeriod>()
     for (const tq of teachers) {
       const t = facultyById.get(tq.profile_id)
       if (!t) continue
       const tUnavail = unavailableByTeacher.get(t.id) ?? new Set<SectionPeriod>()
-      for (const period of sectionPeriodSchema.options) {
+      for (const period of allowedPeriods) {
         if (!tUnavail.has(period)) teachableUnion.add(period)
       }
     }
@@ -818,6 +855,7 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     courseSectionLetters,
     minSectionSize,
     defaultMaxSection,
+    periodsForCourse,
   })
 
   // ----- Scoring -----------------------------------------------------------
@@ -978,6 +1016,11 @@ type LocalSearchState = {
   courseSectionLetters: Map<string, number>
   minSectionSize: number
   defaultMaxSection: number
+  /** Given a course id, the period slots it's allowed to occupy —
+   *  elective periods for Friday-elective courses, weekday periods
+   *  for everything else. Closes over the solver's electiveCourseIds
+   *  set. */
+  periodsForCourse: (courseId: string) => SectionPeriod[]
 }
 
 function runDeterministicPhase(state: LocalSearchState): void {
@@ -1088,6 +1131,7 @@ function moveBSpawnExtra(state: Parameters<typeof runLocalSearchPass>[0]): boole
     courseSectionLetters,
     minSectionSize,
     defaultMaxSection,
+    periodsForCourse,
   } = state
 
   // Bucket unfulfilled requests by course_id so we can look for clusters.
@@ -1128,7 +1172,8 @@ function moveBSpawnExtra(state: Parameters<typeof runLocalSearchPass>[0]): boole
 
       if (taken.size >= maxLoad) continue
 
-      for (const period of sectionPeriodSchema.options) {
+      // Friday-elective courses spawn only into elective periods.
+      for (const period of periodsForCourse(courseId)) {
         if (taken.has(period)) continue
         if (unavail.has(period)) continue
         if (maxConsec !== null && wouldBreakConsecutiveCap(taken, period, maxConsec)) continue
@@ -1362,6 +1407,7 @@ function moveDRebalancePeriod(state: LocalSearchState): boolean {
     maxConsecutiveByTeacher,
     facultyById,
     defaultMaxSection,
+    periodsForCourse,
   } = state
 
   const requestByKey = new Map(
@@ -1403,7 +1449,9 @@ function moveDRebalancePeriod(state: LocalSearchState): boolean {
       unavailableByTeacher.get(teacher.id) ?? new Set<SectionPeriod>()
     const maxConsec = maxConsecutiveByTeacher.get(teacher.id) ?? null
 
-    for (const candidate of sectionPeriodSchema.options) {
+    // A section can only rebalance into a period its course is
+    // allowed in — keeps a Friday elective from drifting onto Tuesday.
+    for (const candidate of periodsForCourse(section.course_id)) {
       if (candidate === currentPeriod) continue
       if (teacherUnavail.has(candidate)) continue
 

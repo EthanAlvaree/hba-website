@@ -384,11 +384,14 @@ export async function upsertTeacherWorkload(
 // Graduation requirements
 // ============================================================================
 
-// Standard subject-area list. Free-text in the DB so the office can add
-// niche ones, but the UI offers these as defaults.
 // Canonical subject-area identifiers. Stored in the DB as-is; the
 // trajectory UI + admin pages render them via subjectAreaLabel().
-// Keep this list in sync with migration 0029's seed.
+// Keep in sync with migration 0032's seed.
+//
+// A course can belong to several of these at once (many-to-many).
+// 'elective' is special: a course's membership in 'elective' is what
+// makes it Friday-elective-only in the scheduler. Removing it from
+// 'elective' makes it weekday-schedulable.
 export const subjectAreas = [
   "english",
   "math",
@@ -397,6 +400,7 @@ export const subjectAreas = [
   "world_languages",
   "visual_performing_arts",
   "physical_education",
+  "computer_science",
   "college_preparatory",
   "elective",
 ] as const
@@ -410,6 +414,7 @@ export const subjectAreaLabels: Record<SubjectArea, string> = {
   world_languages: "World languages",
   visual_performing_arts: "Visual & performing arts",
   physical_education: "Physical education",
+  computer_science: "Computer science",
   college_preparatory: "College-preparatory",
   elective: "Elective",
 }
@@ -418,35 +423,41 @@ export function subjectAreaLabel(value: string): string {
   return (subjectAreaLabels as Record<string, string>)[value] ?? value
 }
 
-export const graduationRequirementTrackSchema = z.enum([
-  "all",
-  "basic",
-  "college_bound",
-])
-export type GraduationRequirementTrack = z.infer<typeof graduationRequirementTrackSchema>
+// The subject area whose membership flags a course as Friday-elective-
+// only for the scheduler. Single source of truth so the page UI and
+// the solver agree.
+export const ELECTIVE_SUBJECT_AREA: SubjectArea = "elective"
 
+// One row per subject area. required_credits_basic / _college_bound
+// hold the two diploma tracks side by side — the admin page is a card
+// per subject with both fields.
 export type GraduationRequirementRecord = {
   id: string
   created_at: string
   updated_at: string
-  name: string
+  name: string | null
   subject_area: string
-  required_credits: number
+  required_credits_basic: number
+  required_credits_college_bound: number
   applies_to_grade_levels: string[]
-  track: GraduationRequirementTrack
   notes: string | null
 }
 
 const graduationRequirementColumns =
-  "id, created_at, updated_at, name, subject_area, required_credits, applies_to_grade_levels, track, notes"
+  "id, created_at, updated_at, name, subject_area, " +
+  "required_credits_basic, required_credits_college_bound, " +
+  "applies_to_grade_levels, notes"
 
+// Upsert keyed on subject_area — one requirement row per subject. The
+// page never creates duplicates; it edits the single card per area.
 export const graduationRequirementUpsertSchema = z.object({
-  id: z.uuid().optional(),
-  name: z.string().trim().min(1, "Name is required.").max(120),
   subject_area: z.string().trim().min(1, "Subject area is required.").max(80),
-  required_credits: z.coerce.number().min(0).default(0),
-  applies_to_grade_levels: z.array(z.string().trim().min(1).max(4)).max(10).default([]),
-  track: graduationRequirementTrackSchema.default("all"),
+  required_credits_basic: z.coerce.number().min(0).max(20).default(0),
+  required_credits_college_bound: z.coerce.number().min(0).max(20).default(0),
+  applies_to_grade_levels: z
+    .array(z.string().trim().min(1).max(4))
+    .max(10)
+    .default([]),
   notes: z
     .string()
     .trim()
@@ -455,14 +466,17 @@ export const graduationRequirementUpsertSchema = z.object({
     .nullable()
     .transform((value) => (value && value.length > 0 ? value : null)),
 })
-export type GraduationRequirementUpsertInput = z.infer<typeof graduationRequirementUpsertSchema>
+export type GraduationRequirementUpsertInput = z.infer<
+  typeof graduationRequirementUpsertSchema
+>
 
-export async function listGraduationRequirements(): Promise<GraduationRequirementRecord[]> {
+export async function listGraduationRequirements(): Promise<
+  GraduationRequirementRecord[]
+> {
   const { data, error } = await getSupabase()
     .from("graduation_requirements")
     .select(graduationRequirementColumns)
     .order("subject_area", { ascending: true })
-    .order("name", { ascending: true })
     .returns<GraduationRequirementRecord[]>()
 
   if (error) {
@@ -474,35 +488,23 @@ export async function listGraduationRequirements(): Promise<GraduationRequiremen
 export async function upsertGraduationRequirement(
   input: GraduationRequirementUpsertInput
 ): Promise<GraduationRequirementRecord> {
-  const supabase = getSupabase()
-
-  if (input.id) {
-    const { id, ...rest } = input
-    const { data, error } = await supabase
-      .from("graduation_requirements")
-      .update(rest)
-      .eq("id", id)
-      .select(graduationRequirementColumns)
-      .single<GraduationRequirementRecord>()
-    if (error) throw new Error(`Failed to update requirement: ${error.message}`)
-    return data
-  }
-
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("graduation_requirements")
-    .insert({ ...input, id: undefined })
+    .upsert(
+      {
+        subject_area: input.subject_area,
+        name: subjectAreaLabel(input.subject_area),
+        required_credits_basic: input.required_credits_basic,
+        required_credits_college_bound: input.required_credits_college_bound,
+        applies_to_grade_levels: input.applies_to_grade_levels,
+        notes: input.notes,
+      },
+      { onConflict: "subject_area" }
+    )
     .select(graduationRequirementColumns)
     .single<GraduationRequirementRecord>()
-  if (error) throw new Error(`Failed to create requirement: ${error.message}`)
+  if (error) throw new Error(`Failed to save requirement: ${error.message}`)
   return data
-}
-
-export async function deleteGraduationRequirement(id: string): Promise<void> {
-  const { error } = await getSupabase()
-    .from("graduation_requirements")
-    .delete()
-    .eq("id", id)
-  if (error) throw new Error(`Failed to delete requirement: ${error.message}`)
 }
 
 // ============================================================================
@@ -524,26 +526,52 @@ export async function listCourseSubjectAssignments(): Promise<CourseSubjectAssig
   return data
 }
 
-export async function setCourseSubjectArea(input: {
+// Many-to-many: a course can satisfy several subject areas. These two
+// helpers add / remove a single (course, subject) membership. The
+// admin Graduation Requirements page drives both.
+export async function addCourseToSubjectArea(input: {
   course_id: string
-  subject_area: string | null
+  subject_area: string
 }): Promise<void> {
-  const supabase = getSupabase()
-  if (!input.subject_area) {
-    const { error } = await supabase
-      .from("course_subject_assignments")
-      .delete()
-      .eq("course_id", input.course_id)
-    if (error) throw new Error(`Failed to clear subject area: ${error.message}`)
-    return
-  }
-  const { error } = await supabase
+  const { error } = await getSupabase()
     .from("course_subject_assignments")
     .upsert(
       { course_id: input.course_id, subject_area: input.subject_area },
-      { onConflict: "course_id" }
+      { onConflict: "course_id,subject_area" }
     )
-  if (error) throw new Error(`Failed to set subject area: ${error.message}`)
+  if (error) {
+    throw new Error(`Failed to add course to subject area: ${error.message}`)
+  }
+}
+
+export async function removeCourseFromSubjectArea(input: {
+  course_id: string
+  subject_area: string
+}): Promise<void> {
+  const { error } = await getSupabase()
+    .from("course_subject_assignments")
+    .delete()
+    .eq("course_id", input.course_id)
+    .eq("subject_area", input.subject_area)
+  if (error) {
+    throw new Error(`Failed to remove course from subject area: ${error.message}`)
+  }
+}
+
+// Course IDs in the 'elective' subject area — the scheduler's
+// Friday-elective-only set. A course here is schedulable only in the
+// elective_1 / elective_2 (Friday) periods; everything else is
+// weekday-only.
+export async function listElectiveCourseIds(): Promise<Set<string>> {
+  const { data, error } = await getSupabase()
+    .from("course_subject_assignments")
+    .select("course_id")
+    .eq("subject_area", ELECTIVE_SUBJECT_AREA)
+    .returns<Array<{ course_id: string }>>()
+  if (error) {
+    throw new Error(`Failed to list elective courses: ${error.message}`)
+  }
+  return new Set((data ?? []).map((r) => r.course_id))
 }
 
 // ============================================================================
@@ -672,7 +700,10 @@ export type TrajectoryEntry = {
   is_elective: boolean
   grade_levels: string[]
   offered_pattern: CourseOfferedPattern
-  subject_area: SubjectArea | null
+  /** Every subject area this course is tagged with. A course can
+   *  count toward more than one (Studio Art = VPA + Elective).
+   *  Empty when the course isn't mapped to any subject. */
+  subject_areas: SubjectArea[]
   credit_hours: number
   status: TrajectoryStatus
   completed_term_name?: string | null
@@ -738,17 +769,19 @@ type EnrollmentRow = {
   } | null
 }
 
-// Pure: does a 'graduation_requirements' row for this subject + track
-// exist? Returns the credits required or null if no rule applies.
+// Pure: required credits for a subject area on a given track. One row
+// per subject now, with both track columns — null when no rule row
+// exists for the subject at all.
 function pickCredits(
   rows: GraduationRequirementRecord[],
   area: SubjectArea,
   track: "basic" | "college_bound"
 ): number | null {
-  const exact = rows.find((r) => r.subject_area === area && r.track === track)
-  if (exact) return Number(exact.required_credits)
-  const all = rows.find((r) => r.subject_area === area && r.track === "all")
-  return all ? Number(all.required_credits) : null
+  const row = rows.find((r) => r.subject_area === area)
+  if (!row) return null
+  return track === "basic"
+    ? Number(row.required_credits_basic)
+    : Number(row.required_credits_college_bound)
 }
 
 // Pure: extract the calendar year a "2026-2027" academic_year starts in.
@@ -896,11 +929,13 @@ export async function computeStudentTrajectory(
     startYear(upcomingTerm?.academic_year ?? null) ??
     startYear(fallbackTerm?.academic_year ?? null)
 
-  const subjectByCourse = new Map<string, SubjectArea>()
+  // Many-to-many: a course can map to several subject areas.
+  const subjectAreasByCourse = new Map<string, SubjectArea[]>()
   for (const a of assignmentsResult.data ?? []) {
-    if ((subjectAreas as readonly string[]).includes(a.subject_area)) {
-      subjectByCourse.set(a.course_id, a.subject_area as SubjectArea)
-    }
+    if (!(subjectAreas as readonly string[]).includes(a.subject_area)) continue
+    const arr = subjectAreasByCourse.get(a.course_id) ?? []
+    arr.push(a.subject_area as SubjectArea)
+    subjectAreasByCourse.set(a.course_id, arr)
   }
 
   const coursesById = new Map((coursesResult.data ?? []).map((c) => [c.id, c]))
@@ -982,7 +1017,7 @@ export async function computeStudentTrajectory(
   const entries: TrajectoryEntry[] = []
   for (const c of coursesResult.data ?? []) {
     if (!c.active) continue
-    const subjectArea = subjectByCourse.get(c.id) ?? null
+    const courseSubjectAreas = subjectAreasByCourse.get(c.id) ?? []
     const hasOverride = overrideCourseIds.has(c.id)
 
     const base: TrajectoryEntry = {
@@ -994,7 +1029,7 @@ export async function computeStudentTrajectory(
       is_elective: c.is_elective,
       grade_levels: c.grade_levels,
       offered_pattern: c.offered_pattern,
-      subject_area: subjectArea,
+      subject_areas: courseSubjectAreas,
       credit_hours: Number(c.credit_hours),
       status: "eligible",
     }
@@ -1074,9 +1109,11 @@ export async function computeStudentTrajectory(
     })
   }
 
-  // Group entries by subject area + roll up credits earned / in progress.
+  // Group entries by subject area + roll up credits earned / in
+  // progress. A course tagged with several subject areas shows up
+  // under each — Studio Art counts toward both VPA and Elective.
   const subjects: TrajectorySubjectSummary[] = subjectAreas.map((area) => {
-    const areaEntries = entries.filter((e) => e.subject_area === area)
+    const areaEntries = entries.filter((e) => e.subject_areas.includes(area))
     const credits_completed = areaEntries
       .filter((e) => e.status === "completed")
       .reduce((sum, e) => sum + e.credit_hours, 0)
@@ -1101,7 +1138,7 @@ export async function computeStudentTrajectory(
     }
   })
 
-  const unmappedCourses = entries.filter((e) => e.subject_area === null)
+  const unmappedCourses = entries.filter((e) => e.subject_areas.length === 0)
 
   return {
     next_academic_year_start: nextStartYear,
