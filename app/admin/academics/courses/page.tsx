@@ -182,6 +182,24 @@ function CourseFormFields({ defaults }: { defaults?: CourseRecord } = {}) {
         />
       </label>
 
+      <label className="space-y-2 text-sm font-medium text-slate-700">
+        <span className="block">UC A–G category</span>
+        <select
+          name="uc_category"
+          defaultValue={defaults?.uc_category ?? ""}
+          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
+        >
+          <option value="">— Not A–G</option>
+          <option value="A">A — History / social science</option>
+          <option value="B">B — English</option>
+          <option value="C">C — Mathematics</option>
+          <option value="D">D — Laboratory science</option>
+          <option value="E">E — Language other than English</option>
+          <option value="F">F — Visual &amp; performing arts</option>
+          <option value="G">G — College-prep elective</option>
+        </select>
+      </label>
+
       <label className="space-y-2 text-sm font-medium text-slate-700 sm:col-span-2 lg:col-span-3">
         <span className="block">Description (optional)</span>
         <textarea

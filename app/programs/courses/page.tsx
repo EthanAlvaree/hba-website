@@ -1,14 +1,19 @@
 // app/programs/courses/page.tsx
+//
+// Public course catalogue. Renders straight from the SIS `courses`
+// table (the single source of truth) — grouped into the eight
+// presentational categories from lib/course-categories. Inactive /
+// retired courses are filtered out automatically.
 
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { siteConfig } from "@/lib/site"
+import { listCourses, type CourseRecord } from "@/lib/sis"
 import {
   courseCategories,
-  coursesByCategory,
-  type CanonicalCourse,
-} from "@/lib/course-catalog"
+  type CourseCategoryId,
+} from "@/lib/course-categories"
 
 export const metadata = {
   title: "Course catalogue — High Bluff Academy",
@@ -16,17 +21,33 @@ export const metadata = {
     "The full High Bluff Academy course catalogue. Mathematics, science, language arts, social science, world languages, and electives — including 30+ AP and honors courses, all UC A–G aligned.",
 }
 
-// Format a list of canonical courses for the marketing page. We prefer the
-// explicit-per-course rendering (one row per Spanish 1, Spanish 2, etc.)
-// because the catalogue is now the authoritative list of distinct courses
-// for scheduling — collapsing them in display is fine but the per-course
-// information stays in the canonical source.
-function formatCourse(course: CanonicalCourse): string {
-  return course.name
+// Rendered per request so the catalogue always matches the live SIS —
+// adding or retiring a course in /admin/academics/courses shows up here
+// immediately.
+export const dynamic = "force-dynamic"
+
+// Stable per-category ordering: AP first, then honors, then by name.
+function sortForDisplay(a: CourseRecord, b: CourseRecord): number {
+  if (a.is_ap !== b.is_ap) return a.is_ap ? -1 : 1
+  if (a.is_honors !== b.is_honors) return a.is_honors ? -1 : 1
+  return a.name.localeCompare(b.name)
 }
 
-export default function CourseCataloguePage() {
-  const byCategory = coursesByCategory()
+export default async function CourseCataloguePage() {
+  const courses = await listCourses()
+
+  // Group active courses by department — which is exactly the
+  // course-category id.
+  const byCategory = new Map<CourseCategoryId, CourseRecord[]>()
+  for (const course of courses) {
+    if (!course.active) continue
+    const dept = course.department as CourseCategoryId | null
+    if (!dept) continue
+    const arr = byCategory.get(dept) ?? []
+    arr.push(course)
+    byCategory.set(dept, arr)
+  }
+  for (const arr of byCategory.values()) arr.sort(sortForDisplay)
 
   return (
     <main className="bg-gray-50 overflow-hidden">
@@ -70,7 +91,7 @@ export default function CourseCataloguePage() {
       <section className="py-20 bg-gray-50">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
           {courseCategories.map((cat) => {
-            const courses = byCategory[cat.id]
+            const courses = byCategory.get(cat.id) ?? []
             if (courses.length === 0) return null
             return (
               <div key={cat.id} id={cat.id} className="scroll-mt-24">
@@ -97,7 +118,7 @@ export default function CourseCataloguePage() {
                           >
                             <span className="text-brand-orange">•</span>
                             <span>
-                              {formatCourse(c)}
+                              {c.name}
                               {(c.code === "ENG-APSEM" || c.code === "ENG-APRES") && (
                                 <span className="text-xs text-gray-500"> (live instructor only)</span>
                               )}

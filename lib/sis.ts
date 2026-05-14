@@ -799,11 +799,13 @@ export type CourseRecord = {
   is_elective: boolean
   credit_hours: number
   active: boolean
+  /** UC A-G subject area (A-G) for college reporting, or null. */
+  uc_category: string | null
 }
 
 const courseColumns =
   "id, created_at, updated_at, code, name, subject, department, description, " +
-  "grade_levels, is_ap, is_honors, is_elective, credit_hours, active"
+  "grade_levels, is_ap, is_honors, is_elective, credit_hours, active, uc_category"
 
 const courseCodeSchema = z
   .string()
@@ -833,6 +835,16 @@ const courseFields = {
     .max(20, "Credit hours seems too high; double-check.")
     .default(1.0),
   active: z.coerce.boolean().optional().default(true),
+  uc_category: z
+    .string()
+    .trim()
+    .optional()
+    .nullable()
+    .transform((v) => (v && v.length > 0 ? v.toUpperCase() : null))
+    .refine(
+      (v) => v === null || ["A", "B", "C", "D", "E", "F", "G"].includes(v),
+      "UC category must be a single letter A–G, or left blank."
+    ),
 }
 
 export const courseCreateSchema = z.object(courseFields)
@@ -868,6 +880,7 @@ function courseRowFromInput(input: CourseCreateInput) {
     is_elective: input.is_elective,
     credit_hours: input.credit_hours,
     active: input.active,
+    uc_category: input.uc_category ?? null,
   }
 }
 

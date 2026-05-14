@@ -119,6 +119,7 @@ function parseCourseFormData(formData: FormData) {
     is_elective: formData.get("is_elective") === "on",
     credit_hours: formData.get("credit_hours"),
     active: formData.get("active") === "on",
+    uc_category: formData.get("uc_category") ?? null,
   }
 }
 
