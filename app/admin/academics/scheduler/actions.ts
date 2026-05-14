@@ -104,6 +104,50 @@ export async function setDraftStatusAction(formData: FormData) {
 }
 
 // ============================================================================
+// Draft annotations — admin notes on "why we chose this draft"
+// ============================================================================
+
+const draftNotesSchema = z.object({
+  draft_id: z.uuid(),
+  notes: z
+    .string()
+    .trim()
+    .max(4000)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+})
+
+export async function updateDraftNotesAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = draftNotesSchema.safeParse({
+    draft_id: formData.get("draft_id"),
+    notes: formData.get("notes") ?? "",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid request.")
+  }
+
+  const supabase = createClient(
+    process.env.HBA_SUPABASE_URL!,
+    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  const { error } = await supabase
+    .from("schedule_drafts")
+    .update({ notes: parsed.data.notes })
+    .eq("id", parsed.data.draft_id)
+
+  if (error) throw new Error(`Failed to save draft notes: ${error.message}`)
+
+  revalidateScheduler()
+  redirect(
+    `/admin/academics/scheduler?draft_id=${parsed.data.draft_id}&notes_saved=1`
+  )
+}
+
+// ============================================================================
 // Commit draft → SIS
 // ============================================================================
 

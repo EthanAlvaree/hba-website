@@ -17,6 +17,7 @@ import {
   commitDraftAction,
   generateScheduleDraftAction,
   setDraftStatusAction,
+  updateDraftNotesAction,
   updateDraftSectionAction,
 } from "./actions"
 import { DraftAssignmentsBoard, type BoardData } from "./DraftAssignmentsBoard"
@@ -30,6 +31,7 @@ type PageProps = {
     commit_error?: string
     committed?: string  // "N_M" — sections_M_enrollments
     section_saved?: string
+    notes_saved?: string
   }>
 }
 
@@ -73,6 +75,24 @@ type AssignmentRow = {
     legal_last_name: string
     preferred_name: string | null
   } | null
+}
+
+// Every course request for the draft's term — the demand side. Joined
+// against the draft's assignments to build the per-student fulfillment
+// report (did each student get their cores? at what rank?).
+type StudentRequestRow = {
+  id: string
+  student_id: string
+  course_id: string
+  kind: "core" | "elective" | "alternate"
+  preference_rank: number
+  student: {
+    id: string
+    legal_first_name: string
+    legal_last_name: string
+    preferred_name: string | null
+  } | null
+  course: { id: string; code: string; name: string } | null
 }
 
 const pacific = "America/Los_Angeles"
@@ -131,6 +151,7 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
   let selectedDraft: DraftRow | null = null
   let selectedSections: DraftSectionRow[] = []
   let assignmentsBySection = new Map<string, AssignmentRow[]>()
+  let selectedDraftRequests: StudentRequestRow[] = []
 
   if (raw.draft_id) {
     selectedDraft = drafts.find((d) => d.id === raw.draft_id) ?? null
@@ -149,7 +170,8 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
     }
 
     if (selectedDraft) {
-      const [sectionsRes, assignmentsRes] = await Promise.all([
+      const draftTermId = selectedDraft.term?.id ?? null
+      const [sectionsRes, assignmentsRes, requestsRes] = await Promise.all([
         supabase
           .from("schedule_draft_sections")
           .select(
@@ -168,10 +190,23 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
           )
           .eq("draft_section.draft_id", selectedDraft.id)
           .returns<AssignmentRow[]>(),
+        draftTermId
+          ? supabase
+              .from("student_course_requests")
+              .select(
+                `id, student_id, course_id, kind, preference_rank,
+                 student:students(id, legal_first_name, legal_last_name, preferred_name),
+                 course:courses(id, code, name)`
+              )
+              .eq("term_id", draftTermId)
+              .returns<StudentRequestRow[]>()
+          : Promise.resolve({ data: [] as StudentRequestRow[], error: null }),
       ])
       if (sectionsRes.error) throw new Error(sectionsRes.error.message)
       if (assignmentsRes.error) throw new Error(assignmentsRes.error.message)
+      if (requestsRes.error) throw new Error(requestsRes.error.message)
       selectedSections = sectionsRes.data ?? []
+      selectedDraftRequests = requestsRes.data ?? []
       for (const a of assignmentsRes.data ?? []) {
         const list = assignmentsBySection.get(a.draft_section_id) ?? []
         list.push(a)
@@ -359,6 +394,11 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
             <p className="text-sm font-semibold text-emerald-900">Section saved.</p>
           </section>
         )}
+        {raw.notes_saved === "1" && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">Draft notes saved.</p>
+          </section>
+        )}
 
         {/* Selected draft details */}
         {selectedDraft && (
@@ -366,6 +406,7 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
             draft={selectedDraft}
             sections={selectedSections}
             assignmentsBySection={assignmentsBySection}
+            requests={selectedDraftRequests}
             faculty={faculty}
           />
         )}
@@ -377,11 +418,13 @@ function DraftDetail({
   draft,
   sections,
   assignmentsBySection,
+  requests,
   faculty,
 }: {
   draft: DraftRow
   sections: DraftSectionRow[]
   assignmentsBySection: Map<string, AssignmentRow[]>
+  requests: StudentRequestRow[]
   faculty: FacultyOption[]
 }) {
   const summary = draft.summary ?? {}
@@ -422,9 +465,6 @@ function DraftDetail({
             {draft.score?.toFixed(2) ?? "—"} · Status{" "}
             <code>{draft.status}</code>
           </p>
-          {draft.notes && (
-            <p className="text-sm text-slate-700 whitespace-pre-wrap">{draft.notes}</p>
-          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -464,6 +504,9 @@ function DraftDetail({
 
       {/* Multi-objective breakdown */}
       {summary.metrics && <MetricsCard metrics={summary.metrics} />}
+
+      {/* Admin annotations — "why we chose this draft" */}
+      <DraftNotesCard draftId={draft.id} notes={draft.notes} />
 
       <CapacityRollup sections={sections} assignmentsBySection={assignmentsBySection} />
 
@@ -554,6 +597,13 @@ function DraftDetail({
         </div>
       )}
 
+      {/* Per-student fulfillment report */}
+      <FulfillmentReport
+        requests={requests}
+        sections={sections}
+        assignmentsBySection={assignmentsBySection}
+      />
+
       {/* Warnings */}
       {warnings.length > 0 && (
         <details className="rounded-2xl border border-amber-200 bg-amber-50/60">
@@ -573,6 +623,167 @@ function DraftDetail({
       )}
     </section>
   )
+}
+
+// Per-student fulfillment breakdown: did each student get their cores,
+// their electives, at what rank, in which period? Collapsed by default
+// (it's long) but the summary line shows the headline — how many
+// students got every core they asked for.
+function FulfillmentReport({
+  requests,
+  sections,
+  assignmentsBySection,
+}: {
+  requests: StudentRequestRow[]
+  sections: DraftSectionRow[]
+  assignmentsBySection: Map<string, AssignmentRow[]>
+}) {
+  if (requests.length === 0) {
+    return (
+      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+        No course requests on file for this term — nothing to report.
+      </div>
+    )
+  }
+
+  // request_id → { section, period } for every fulfilled request.
+  const fulfilledByRequestId = new Map<
+    string,
+    { sectionCode: string | null; period: string | null; courseName: string }
+  >()
+  const sectionById = new Map(sections.map((s) => [s.id, s]))
+  for (const list of assignmentsBySection.values()) {
+    for (const a of list) {
+      if (!a.fulfilled_request_id) continue
+      const section = sectionById.get(a.draft_section_id)
+      if (!section) continue
+      fulfilledByRequestId.set(a.fulfilled_request_id, {
+        sectionCode: section.section_code,
+        period: section.period,
+        courseName: section.course?.name ?? "(course)",
+      })
+    }
+  }
+
+  // Bucket requests by student.
+  type StudentBucket = {
+    studentId: string
+    name: string
+    requests: StudentRequestRow[]
+  }
+  const byStudent = new Map<string, StudentBucket>()
+  for (const r of requests) {
+    const name = r.student
+      ? r.student.preferred_name?.trim() ||
+        `${r.student.legal_first_name} ${r.student.legal_last_name}`
+      : "(unknown student)"
+    const bucket = byStudent.get(r.student_id) ?? {
+      studentId: r.student_id,
+      name,
+      requests: [],
+    }
+    bucket.requests.push(r)
+    byStudent.set(r.student_id, bucket)
+  }
+  const students = [...byStudent.values()].sort((a, b) =>
+    a.name.localeCompare(b.name)
+  )
+
+  // Headline: how many students got every core they requested?
+  let allCoresMet = 0
+  let studentsWithCores = 0
+  for (const s of students) {
+    const cores = s.requests.filter((r) => r.kind === "core")
+    if (cores.length === 0) continue
+    studentsWithCores += 1
+    const allMet = cores.every((c) => fulfilledByRequestId.has(c.id))
+    if (allMet) allCoresMet += 1
+  }
+
+  return (
+    <details className="rounded-2xl border border-slate-200 bg-white">
+      <summary className="cursor-pointer list-none px-4 py-3 text-sm font-semibold text-brand-navy">
+        Per-student fulfillment —{" "}
+        <span className="font-normal text-slate-600">
+          {allCoresMet} of {studentsWithCores} students got every core they
+          requested (click to expand)
+        </span>
+      </summary>
+      <div className="space-y-2 border-t border-slate-200 px-4 py-3">
+        {students.map((s) => {
+          const sorted = [...s.requests].sort((a, b) => {
+            const kindOrder = { core: 0, elective: 1, alternate: 2 }
+            const k = kindOrder[a.kind] - kindOrder[b.kind]
+            if (k !== 0) return k
+            return a.preference_rank - b.preference_rank
+          })
+          const unmetCores = sorted.filter(
+            (r) => r.kind === "core" && !fulfilledByRequestId.has(r.id)
+          ).length
+          return (
+            <div
+              key={s.studentId}
+              className={`rounded-2xl border px-4 py-3 ${
+                unmetCores > 0
+                  ? "border-rose-200 bg-rose-50/40"
+                  : "border-slate-200 bg-slate-50"
+              }`}
+            >
+              <p className="text-sm font-semibold text-slate-900">
+                {s.name}
+                {unmetCores > 0 && (
+                  <span className="ml-2 rounded-full bg-rose-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-rose-700">
+                    {unmetCores} core{unmetCores === 1 ? "" : "s"} unmet
+                  </span>
+                )}
+              </p>
+              <ul className="mt-1 space-y-0.5 text-xs">
+                {sorted.map((r) => {
+                  const fulfilled = fulfilledByRequestId.get(r.id)
+                  return (
+                    <li key={r.id} className="flex flex-wrap items-center gap-1.5">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] ${
+                          r.kind === "core"
+                            ? "bg-brand-navy/10 text-brand-navy"
+                            : r.kind === "elective"
+                              ? "bg-sky-100 text-sky-700"
+                              : "bg-slate-200 text-slate-600"
+                        }`}
+                      >
+                        {r.kind} · rank {r.preference_rank}
+                      </span>
+                      <span className="text-slate-800">
+                        {r.course?.name ?? "(course)"}
+                      </span>
+                      {fulfilled ? (
+                        <span className="text-emerald-700">
+                          → {periodLabel(fulfilled.period)}
+                          {fulfilled.sectionCode
+                            ? ` · Sec ${fulfilled.sectionCode}`
+                            : ""}
+                        </span>
+                      ) : (
+                        <span className="text-rose-700">→ not placed</span>
+                      )}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          )
+        })}
+      </div>
+    </details>
+  )
+}
+
+function periodLabel(period: string | null): string {
+  if (!period) return "Unscheduled"
+  if (period === "async") return "Async"
+  if (period.startsWith("period_")) return `Period ${period.slice(7)}`
+  if (period.startsWith("elective_")) return `Elective ${period.slice(9)}`
+  return period
 }
 
 function summarizeWarning(w: SolverWarning): string {
@@ -838,6 +1049,47 @@ function MetricsCard({ metrics }: { metrics: SolverMetrics }) {
           tone={metrics.teacher_load_balance_stdev < 1.5 ? "good" : metrics.teacher_load_balance_stdev < 2.5 ? "ok" : "bad"}
         />
       </div>
+    </div>
+  )
+}
+
+// Admin-editable notes on a draft. The solver leaves this blank on
+// generation; the office fills it in to record the human judgment
+// behind a commit decision ("chose this over draft #3 — Tricia's
+// load is more even, and APUSH lands P3 like she asked").
+function DraftNotesCard({
+  draftId,
+  notes,
+}: {
+  draftId: string
+  notes: string | null
+}) {
+  return (
+    <div className="rounded-[2rem] border border-slate-200 bg-white px-6 py-4 shadow-sm">
+      <h4 className="text-sm font-bold uppercase tracking-[0.18em] text-brand-orange">
+        Draft notes
+      </h4>
+      <p className="mt-1 text-xs text-slate-500">
+        Why this draft, what you tweaked, what to revisit. Saved on the
+        draft so the reasoning survives past the decision.
+      </p>
+      <form action={updateDraftNotesAction} className="mt-3 space-y-2">
+        <input type="hidden" name="draft_id" value={draftId} />
+        <textarea
+          name="notes"
+          rows={3}
+          maxLength={4000}
+          defaultValue={notes ?? ""}
+          placeholder="e.g. Committed over draft #3 — better teacher load balance, APUSH lands P3 as requested."
+          className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+        />
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2 text-xs font-semibold text-white shadow-md transition hover:brightness-110"
+        >
+          Save notes
+        </button>
+      </form>
     </div>
   )
 }
