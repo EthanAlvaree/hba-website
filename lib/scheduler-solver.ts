@@ -832,21 +832,43 @@ function wouldBreakConsecutiveCap(
 }
 
 // Mutates the supplied solver state to improve the greedy result.
-// Repeatedly applies two cheap, monotonic moves until neither yields
-// any more progress:
+// Two phases:
 //
-//   - Move A (fill-cracks): For each unfulfilled request, try to add
-//     the student to an existing section of the same course where
-//     they fit.
+//   Phase 1 (deterministic, monotonic): repeatedly applies cheap
+//   moves until none improve the schedule. Each move only ADDS
+//   fulfillment or keeps things the same — safe to run to fixpoint.
 //
-//   - Move B (spawn-extra): For each cluster of >= min_section_size
-//     unfulfilled students for the same course, spawn an extra
-//     section in any (qualified teacher × free period) combo that
-//     satisfies workload + consecutive + student-availability checks.
+//     - Move A (fill-cracks): drop an unfulfilled student into an
+//       existing section of the same course where they fit.
+//     - Move B (spawn-extra): spawn a new section for a >= min
+//       cluster of unfulfilled students.
+//     - Move C (swap-to-free): for an unfulfilled request blocked by
+//       a period conflict, try moving the student between sections
+//       of the conflicting course so the wanted section opens up.
+//     - Move D (period rebalance): try shifting an existing section
+//       to a different period if all current students stay AND new
+//       unfulfilled students can join at the new period.
 //
-// Both moves only ADD fulfillment (no swaps that could regress). Safe
-// to run to fixpoint.
-function runLocalSearchPass(state: {
+//   Phase 2 (iterated local search): "kick" the schedule by removing
+//   the lowest-value section, then re-run Phase 1. If the new score
+//   beats the old one, keep it; otherwise revert. Lets us escape
+//   simple local optima without the full machinery of simulated
+//   annealing — which is overkill for HBA's ~50-student size but
+//   useful when the greedy + monotonic passes get stuck.
+function runLocalSearchPass(state: LocalSearchState): void {
+  runDeterministicPhase(state)
+
+  // Iterated local search: try up to a handful of "remove a section,
+  // re-relax" kicks. Bounded because each kick + relax is O(courses ×
+  // periods × demand) and we want the solver to stay snappy.
+  const MAX_KICKS = 8
+  for (let i = 0; i < MAX_KICKS; i++) {
+    const accepted = tryKickAndRelax(state)
+    if (!accepted) break
+  }
+}
+
+type LocalSearchState = {
   proposed: ProposedSection[]
   warnings: SolverWarning[]
   requests: RequestInput[]
@@ -863,12 +885,16 @@ function runLocalSearchPass(state: {
   courseSectionLetters: Map<string, number>
   minSectionSize: number
   defaultMaxSection: number
-}): void {
+}
+
+function runDeterministicPhase(state: LocalSearchState): void {
   const MAX_ITERATIONS = 100
   for (let iter = 0; iter < MAX_ITERATIONS; iter++) {
     const a = moveAFillCracks(state)
     const b = moveBSpawnExtra(state)
-    if (!a && !b) break
+    const c = moveCSwapToFreeSlot(state)
+    const d = moveDRebalancePeriod(state)
+    if (!a && !b && !c && !d) break
   }
 }
 
@@ -1071,6 +1097,448 @@ function moveBSpawnExtra(state: Parameters<typeof runLocalSearchPass>[0]): boole
   }
 
   return didAnything
+}
+
+// Move C: an unfulfilled request for course X is blocked because
+// student S' is already booked at the period an X-section runs in,
+// for some other course Y. If there's another section of Y in a
+// period S' can attend, move S' between Y's sections so X's period
+// opens up. Only triggers when both sides of the swap are legal (no
+// availability blocks, no max-size overruns).
+function moveCSwapToFreeSlot(state: LocalSearchState): boolean {
+  const {
+    proposed,
+    warnings,
+    requests,
+    studentPeriodTaken,
+    unavailableByStudent,
+    defaultMaxSection,
+  } = state
+
+  const requestByKey = new Map(
+    requests.map((r) => [`${r.student_id}|${r.course_id}`, r])
+  )
+
+  // Build lookups fresh; the previous moves may have mutated state.
+  const sectionsByCourse = new Map<string, ProposedSection[]>()
+  for (const s of proposed) {
+    const arr = sectionsByCourse.get(s.course_id) ?? []
+    arr.push(s)
+    sectionsByCourse.set(s.course_id, arr)
+  }
+
+  let didAnything = false
+  const unfulfilled = findUnfulfilledIndices(warnings)
+
+  for (let i = unfulfilled.length - 1; i >= 0; i--) {
+    const { index, warning } = unfulfilled[i]
+    const sPrime = warning.student_id
+    const X = warning.course_id
+
+    const xSections = sectionsByCourse.get(X) ?? []
+    if (xSections.length === 0) continue
+
+    let acceptedThisWarning = false
+
+    for (const xSection of xSections) {
+      if (acceptedThisWarning) break
+      if (xSection.period === null) continue
+      if (xSection.student_ids.length >= defaultMaxSection) continue
+      if (xSection.student_ids.includes(sPrime)) continue
+
+      const P = xSection.period
+      if (unavailableByStudent.get(sPrime)?.has(P)) continue
+
+      const sPrimeTaken =
+        studentPeriodTaken.get(sPrime) ?? new Set<SectionPeriod>()
+      if (!sPrimeTaken.has(P)) {
+        // Free at P. Either pass A should have handled it (room ran
+        // out by the time A walked over) or the section is full. In
+        // either case the swap algorithm has nothing to do here.
+        continue
+      }
+
+      // Find the section that owns S' at period P.
+      const conflictingSection = proposed.find(
+        (s) =>
+          s.period === P &&
+          s.course_id !== X &&
+          s.student_ids.includes(sPrime)
+      )
+      if (!conflictingSection) continue
+
+      const Y = conflictingSection.course_id
+
+      // Try every alternative Y section to move S' into.
+      const yAlternatives = (sectionsByCourse.get(Y) ?? []).filter(
+        (s) => s !== conflictingSection
+      )
+
+      for (const yAlt of yAlternatives) {
+        if (yAlt.period === null) continue
+        if (yAlt.student_ids.length >= defaultMaxSection) continue
+        if (yAlt.student_ids.includes(sPrime)) continue
+        const Q = yAlt.period
+        if (unavailableByStudent.get(sPrime)?.has(Q)) continue
+        if (sPrimeTaken.has(Q)) continue
+
+        // Execute the swap: pull S' from conflictingSection, push
+        // into yAlt, and add S' to xSection at P.
+        removeStudentFromSection(conflictingSection, sPrime)
+        addStudentToSection(yAlt, sPrime, requestByKey)
+        addStudentToSection(xSection, sPrime, requestByKey)
+
+        sPrimeTaken.delete(P)
+        // P stays taken because xSection now has S'.
+        sPrimeTaken.add(P)
+        // Q is now taken by yAlt.
+        sPrimeTaken.add(Q)
+        studentPeriodTaken.set(sPrime, sPrimeTaken)
+
+        warnings.splice(index, 1)
+        didAnything = true
+        acceptedThisWarning = true
+        break
+      }
+    }
+  }
+
+  return didAnything
+}
+
+// Helper: pull `studentId` out of `section`'s student_ids +
+// fulfilled_request_by_student. Doesn't touch the period-tracking
+// maps; the caller updates those.
+function removeStudentFromSection(
+  section: ProposedSection,
+  studentId: string
+): void {
+  const idx = section.student_ids.indexOf(studentId)
+  if (idx >= 0) section.student_ids.splice(idx, 1)
+  delete section.fulfilled_request_by_student[studentId]
+}
+
+// Helper: append `studentId` into `section`'s student_ids + look up
+// the matching request and record it in fulfilled_request_by_student.
+function addStudentToSection(
+  section: ProposedSection,
+  studentId: string,
+  requestByKey: Map<string, RequestInput>
+): void {
+  if (section.student_ids.includes(studentId)) return
+  section.student_ids.push(studentId)
+  const req = requestByKey.get(`${studentId}|${section.course_id}`)
+  if (req) {
+    section.fulfilled_request_by_student[studentId] = req.id
+  }
+}
+
+// Move D: try shifting an existing section to a different period that
+// strictly improves coverage. The candidate period has to (a) be free
+// for the teacher (excluding this section's current slot), (b) keep
+// every current student attending (no one gets kicked), and (c)
+// unlock at least one new unfulfilled student for the course. The
+// strict-improvement framing means accepting a move never regresses.
+function moveDRebalancePeriod(state: LocalSearchState): boolean {
+  const {
+    proposed,
+    warnings,
+    requests,
+    studentPeriodTaken,
+    teacherPeriodTaken,
+    unavailableByTeacher,
+    unavailableByStudent,
+    maxConsecutiveByTeacher,
+    facultyById,
+    defaultMaxSection,
+  } = state
+
+  const requestByKey = new Map(
+    requests.map((r) => [`${r.student_id}|${r.course_id}`, r])
+  )
+
+  // Pre-bucket unfulfilled per course.
+  const unfulfilledByCourse = new Map<string, RequestInput[]>()
+  for (const w of warnings) {
+    if (w.kind !== "unfulfilled_request") continue
+    const req = requestByKey.get(`${w.student_id}|${w.course_id}`)
+    if (!req) continue
+    const arr = unfulfilledByCourse.get(w.course_id) ?? []
+    arr.push(req)
+    unfulfilledByCourse.set(w.course_id, arr)
+  }
+
+  let didAnything = false
+
+  for (const section of proposed) {
+    if (section.period === null) continue
+    if (!section.teacher_profile_id) continue
+    const teacher = facultyById.get(section.teacher_profile_id)
+    if (!teacher) continue
+
+    const courseUnfulfilled = unfulfilledByCourse.get(section.course_id) ?? []
+    if (courseUnfulfilled.length === 0) continue
+
+    const currentPeriod = section.period
+    const teacherTaken =
+      teacherPeriodTaken.get(teacher.id) ?? new Set<SectionPeriod>()
+    const teacherUnavail =
+      unavailableByTeacher.get(teacher.id) ?? new Set<SectionPeriod>()
+    const maxConsec = maxConsecutiveByTeacher.get(teacher.id) ?? null
+
+    for (const candidate of sectionPeriodSchema.options) {
+      if (candidate === currentPeriod) continue
+      if (teacherUnavail.has(candidate)) continue
+
+      // Teacher has to be free at the candidate AFTER releasing this
+      // section's current slot. Build a temp set that simulates that.
+      const teacherSimulated = new Set(teacherTaken)
+      teacherSimulated.delete(currentPeriod)
+      if (teacherSimulated.has(candidate)) continue
+      if (
+        maxConsec !== null &&
+        wouldBreakConsecutiveCap(teacherSimulated, candidate, maxConsec)
+      ) {
+        continue
+      }
+
+      // Every existing student has to be able to attend at `candidate`
+      // without conflicting with their other sections (excluding this one).
+      let allStay = true
+      for (const sid of section.student_ids) {
+        if (unavailableByStudent.get(sid)?.has(candidate)) {
+          allStay = false
+          break
+        }
+        const sTaken =
+          studentPeriodTaken.get(sid) ?? new Set<SectionPeriod>()
+        if (sTaken.has(candidate) && !sTaken.has(currentPeriod)) {
+          // Shouldn't happen — they should have currentPeriod
+          // because they're in this section — but guard anyway.
+          allStay = false
+          break
+        }
+        if (
+          sTaken.has(candidate) &&
+          sTaken.has(currentPeriod) &&
+          candidate !== currentPeriod
+        ) {
+          // They're already booked at both — moving this section to
+          // candidate would mean they're double-booked at candidate.
+          // The double-book at currentPeriod can't happen except via
+          // section reassignment, so this branch is defensive.
+          allStay = false
+          break
+        }
+      }
+      if (!allStay) continue
+
+      // How many unfulfilled students could join at candidate?
+      const room = defaultMaxSection - section.student_ids.length
+      const joiners: RequestInput[] = []
+      for (const req of courseUnfulfilled) {
+        if (joiners.length >= room) break
+        if (unavailableByStudent.get(req.student_id)?.has(candidate)) continue
+        const sTaken =
+          studentPeriodTaken.get(req.student_id) ?? new Set<SectionPeriod>()
+        if (sTaken.has(candidate)) continue
+        joiners.push(req)
+      }
+      if (joiners.length === 0) continue
+
+      // Commit the period move + new students.
+      teacherTaken.delete(currentPeriod)
+      teacherTaken.add(candidate)
+      teacherPeriodTaken.set(teacher.id, teacherTaken)
+
+      for (const sid of section.student_ids) {
+        const sTaken =
+          studentPeriodTaken.get(sid) ?? new Set<SectionPeriod>()
+        sTaken.delete(currentPeriod)
+        sTaken.add(candidate)
+        studentPeriodTaken.set(sid, sTaken)
+      }
+
+      section.period = candidate
+
+      const joinedIds = new Set<string>()
+      for (const req of joiners) {
+        addStudentToSection(section, req.student_id, requestByKey)
+        const sTaken =
+          studentPeriodTaken.get(req.student_id) ?? new Set<SectionPeriod>()
+        sTaken.add(candidate)
+        studentPeriodTaken.set(req.student_id, sTaken)
+        joinedIds.add(req.student_id)
+      }
+
+      // Remove their unfulfilled_request warnings.
+      for (let i = warnings.length - 1; i >= 0; i--) {
+        const w = warnings[i]
+        if (
+          w.kind === "unfulfilled_request" &&
+          w.course_id === section.course_id &&
+          joinedIds.has(w.student_id)
+        ) {
+          warnings.splice(i, 1)
+        }
+      }
+
+      didAnything = true
+      break // one rebalance per section per outer iteration
+    }
+  }
+
+  return didAnything
+}
+
+// Iterated local search: snapshot the state, remove the
+// lowest-value section, re-run the deterministic phase, and accept
+// the result only if the new score beats the snapshot. Helps escape
+// local optima where a sacrificial below_min section is blocking a
+// teacher's slot that a better section could use.
+function tryKickAndRelax(state: LocalSearchState): boolean {
+  if (state.proposed.length === 0) return false
+
+  const baseline = scoreState(state)
+  const snapshot = snapshotLocalSearchState(state)
+
+  // Pick the lowest-value section. "Value" prefers small + below_min +
+  // alternates-only — these are the most likely to be displacing a
+  // better section.
+  let targetIdx = -1
+  let lowest = Infinity
+  for (let i = 0; i < state.proposed.length; i++) {
+    const s = state.proposed[i]
+    let v = s.student_ids.length
+    if (s.student_ids.length < state.minSectionSize) v -= 5
+    state.requests.forEach((r) => {
+      if (s.fulfilled_request_by_student[r.student_id] === r.id) {
+        if (r.kind === "alternate") v -= 2
+        if (r.kind === "elective") v -= 1
+      }
+    })
+    if (v < lowest) {
+      lowest = v
+      targetIdx = i
+    }
+  }
+  if (targetIdx === -1) return false
+
+  // Remove the chosen section, freeing every student's period + the
+  // teacher's period, and re-add their requests to the relevant
+  // unfulfilled_request warnings.
+  removeSectionInPlace(state, targetIdx)
+
+  runDeterministicPhase(state)
+
+  const newScore = scoreState(state)
+  if (newScore > baseline) {
+    return true
+  }
+  // Worse or same — revert.
+  restoreLocalSearchState(state, snapshot)
+  return false
+}
+
+function scoreState(state: LocalSearchState): number {
+  return computeScore({
+    sections: state.proposed,
+    requests: state.requests,
+    warnings: state.warnings,
+    minSectionSize: state.minSectionSize,
+  })
+}
+
+// Mutates `state` to remove the section at index `idx`. Restores the
+// students it held back to "unfulfilled_request" warnings (the
+// deterministic phase will try to re-place them in something better)
+// and clears the teacher's hold on the period.
+function removeSectionInPlace(state: LocalSearchState, idx: number): void {
+  const section = state.proposed[idx]
+  if (!section) return
+  if (section.period !== null) {
+    if (section.teacher_profile_id) {
+      const tTaken = state.teacherPeriodTaken.get(section.teacher_profile_id)
+      tTaken?.delete(section.period)
+    }
+    for (const sid of section.student_ids) {
+      const sTaken = state.studentPeriodTaken.get(sid)
+      sTaken?.delete(section.period)
+    }
+  }
+
+  const course = state.courseById.get(section.course_id)
+  if (course) {
+    for (const sid of section.student_ids) {
+      const reqId = section.fulfilled_request_by_student[sid]
+      const req = reqId
+        ? state.requests.find((r) => r.id === reqId)
+        : state.requests.find(
+            (r) => r.student_id === sid && r.course_id === section.course_id
+          )
+      if (req) {
+        state.warnings.push({
+          kind: "unfulfilled_request",
+          student_id: sid,
+          course_id: section.course_id,
+          course_name: course.name,
+          request_kind: req.kind,
+        })
+      }
+    }
+  }
+
+  state.proposed.splice(idx, 1)
+}
+
+// Snapshot / restore for the iterated-local-search rollback. Cheap
+// for HBA-size schedules (low hundreds of section + student rows).
+type LocalSearchSnapshot = {
+  proposed: ProposedSection[]
+  warnings: SolverWarning[]
+  studentPeriodTaken: Map<string, Set<SectionPeriod>>
+  teacherPeriodTaken: Map<string, Set<SectionPeriod>>
+  courseSectionLetters: Map<string, number>
+}
+
+function snapshotLocalSearchState(
+  state: LocalSearchState
+): LocalSearchSnapshot {
+  return {
+    proposed: state.proposed.map((s) => ({
+      ...s,
+      student_ids: [...s.student_ids],
+      fulfilled_request_by_student: { ...s.fulfilled_request_by_student },
+    })),
+    warnings: state.warnings.map((w) => ({ ...w })),
+    studentPeriodTaken: cloneMapOfSets(state.studentPeriodTaken),
+    teacherPeriodTaken: cloneMapOfSets(state.teacherPeriodTaken),
+    courseSectionLetters: new Map(state.courseSectionLetters),
+  }
+}
+
+function restoreLocalSearchState(
+  state: LocalSearchState,
+  snap: LocalSearchSnapshot
+): void {
+  state.proposed.length = 0
+  for (const s of snap.proposed) state.proposed.push(s)
+  state.warnings.length = 0
+  for (const w of snap.warnings) state.warnings.push(w)
+  state.studentPeriodTaken.clear()
+  for (const [k, v] of snap.studentPeriodTaken) state.studentPeriodTaken.set(k, v)
+  state.teacherPeriodTaken.clear()
+  for (const [k, v] of snap.teacherPeriodTaken) state.teacherPeriodTaken.set(k, v)
+  state.courseSectionLetters.clear()
+  for (const [k, v] of snap.courseSectionLetters) {
+    state.courseSectionLetters.set(k, v)
+  }
+}
+
+function cloneMapOfSets<K, V>(src: Map<K, Set<V>>): Map<K, Set<V>> {
+  const out = new Map<K, Set<V>>()
+  for (const [k, v] of src) out.set(k, new Set(v))
+  return out
 }
 
 // Pure: which prereq alternatives for `courseId` (from the supplied
