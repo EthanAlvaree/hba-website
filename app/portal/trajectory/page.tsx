@@ -1,16 +1,19 @@
-// Student graduation-trajectory page.
+// Student graduation-trajectory page — the sideways-tree builder.
 //
-// Shows the student's progress against HBA's published graduation
-// requirements alongside an eligibility map: what they've taken, what
-// they're taking now, what they're allowed to take next year, and
-// what's gated behind prereqs / alternating-year rotation / grade
-// level. Eligible courses can be added straight to their course-
-// request list from this page; ineligible ones are surfaced so the
-// reason is clear (and admin can grant an override if warranted).
+// Each core subject area renders as a tree growing left-to-right:
+// one node per school year. Past + current years are solid (the
+// course the student took/is taking). The "next year" column is the
+// interactive pick column — eligible courses branch out as selectable
+// cards that drop straight into the student's course-request list.
+// Years beyond next render faded, previewing what unlocks later.
+//
+// This page is the BUILDER. /portal/course-requests is the
+// REVIEW + SUBMIT step — students assemble their list here, then go
+// there to rank + submit.
 //
 // Two viewers:
-//   - Students see their own trajectory.
-//   - Admins can preview ?as=<studentId> the same way /portal works.
+//   - Students see + build their own trajectory.
+//   - Admins can preview ?as=<studentId> (read-only, no add buttons).
 
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
@@ -29,7 +32,6 @@ import {
   subjectAreaLabel,
   type StudentCourseRequestKind,
   type TrajectoryEntry,
-  type TrajectoryResult,
   type TrajectorySubjectSummary,
 } from "@/lib/scheduler"
 import StudentAvailabilityCard from "@/components/portal/StudentAvailabilityCard"
@@ -48,19 +50,24 @@ type PageProps = {
 const trackLabel = (track: "basic" | "college_bound") =>
   track === "basic" ? "Basic diploma" : "College-bound"
 
-const statusOrder: Record<TrajectoryEntry["status"], number> = {
-  completed: 0,
-  in_progress: 1,
-  eligible: 2,
-  needs_prereq: 3,
-  wrong_year: 4,
-  grade_locked: 5,
-}
-
 const kindLabel: Record<StudentCourseRequestKind, string> = {
   core: "Core",
   elective: "Elective",
   alternate: "Alternate",
+}
+
+function gradeLabel(grade: number): string {
+  const suffix =
+    grade === 9
+      ? "th"
+      : grade === 10
+        ? "th"
+        : grade === 11
+          ? "th"
+          : grade === 12
+            ? "th"
+            : "th"
+  return `${grade}${suffix} grade`
 }
 
 export default async function TrajectoryPage({ searchParams }: PageProps) {
@@ -97,10 +104,9 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
     listStudentAvailability(targetStudentId),
   ])
 
-  // Pull all terms so we can offer the next upcoming term to the
-  // "Add to requests" forms. The course-request action requires a
-  // term_id — pick the first not-yet-ended term whose academic_year
-  // start matches the trajectory's offering-year filter.
+  // The course-request action needs a term_id. Pick the first
+  // not-yet-ended term whose academic year matches the trajectory's
+  // next-year window.
   const todayIso = new Date().toISOString().slice(0, 10)
   const terms = await listTerms()
   const nextTerm =
@@ -109,13 +115,13 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
       .find(
         (t) =>
           trajectory.next_academic_year_start === null ||
-          t.academic_year.startsWith(String(trajectory.next_academic_year_start))
+          t.academic_year.startsWith(
+            String(trajectory.next_academic_year_start)
+          )
       ) ??
     terms.find((t) => t.end_date >= todayIso) ??
     null
 
-  // Already-requested course IDs (for the picked term) so we don't
-  // surface "Add" on a course they've already added.
   const existingRequests = nextTerm
     ? await listStudentCourseRequests({
         student_id: targetStudentId,
@@ -130,6 +136,23 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
     detail.preferred_name?.trim() ||
     `${detail.legal_first_name} ${detail.legal_last_name}`
 
+  // Year columns: from the earliest relevant grade through the
+  // "next" grade. HBA is 9-12; clamp sensibly but follow the student
+  // if they're outside that range.
+  const currentGrade = trajectory.current_grade
+  const nextGrade = trajectory.next_grade
+  const spanStart = Math.min(9, currentGrade ?? 9)
+  const spanEnd = nextGrade ?? Math.max(12, currentGrade ?? 12)
+  const yearColumns: number[] = []
+  for (let g = spanStart; g <= spanEnd; g++) yearColumns.push(g)
+  // One trailing "later" column when the student isn't yet a senior —
+  // previews the courses that unlock past next year.
+  const showLaterColumn = nextGrade !== null && nextGrade < 12
+
+  const requestableSubjects = trajectory.subjects.filter(
+    (s) => s.entries.length > 0
+  )
+
   return (
     <div className="space-y-6">
       <header className="space-y-2">
@@ -140,11 +163,11 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
           {studentName}&rsquo;s graduation map
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
-          Your progress toward HBA&rsquo;s graduation requirements, plus
-          the courses you&rsquo;re eligible to take next year. Click into
-          any eligible course to add it to your course-request list.
-          Ineligible courses are shown so the reason is clear — talk to
-          your advisor if you think you should qualify.
+          Each subject grows left-to-right, one node per school year.
+          Solid nodes are courses you&rsquo;ve taken or are taking. The
+          highlighted column is next year — pick from the branches to
+          add a course to your request list. Faded nodes preview what
+          unlocks down the line.
         </p>
       </header>
 
@@ -173,19 +196,19 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
         </div>
         <Link
           href="/portal/course-requests"
-          className="text-sm font-semibold text-brand-navy underline-offset-4 hover:underline"
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
         >
-          Go to course requests →
+          Review &amp; submit my requests →
         </Link>
       </div>
 
       {raw.saved === "1" && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-900">
           Added to your course requests for{" "}
-          {nextTerm?.name ?? "the upcoming term"}.
+          {nextTerm?.name ?? "the upcoming term"}. Keep building, then
+          review &amp; submit when you&rsquo;re ready.
         </div>
       )}
-
       {raw.saved === "availability" && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-sm text-emerald-900">
           Availability saved.
@@ -199,30 +222,46 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
         />
       )}
 
-      {trajectory.next_academic_year_start !== null && (
-        <p className="text-xs text-slate-500">
-          Eligibility shown for the {trajectory.next_academic_year_start}–
-          {trajectory.next_academic_year_start + 1} academic year.
-        </p>
-      )}
+      {/* Legend */}
+      <div className="flex flex-wrap gap-3 text-[11px] text-slate-600">
+        <LegendChip className="border-emerald-300 bg-emerald-50" label="Completed" />
+        <LegendChip className="border-sky-300 bg-sky-50" label="In progress" />
+        <LegendChip
+          className="border-brand-orange bg-brand-orange/10"
+          label="Pick for next year"
+        />
+        <LegendChip
+          className="border-slate-300 bg-slate-50 opacity-60"
+          label="Unlocks later"
+        />
+      </div>
 
-      <div className="space-y-6">
-        {trajectory.subjects
-          .filter((s) => s.entries.length > 0)
-          .map((subject) => (
-            <SubjectSection
-              key={subject.subject_area}
-              subject={subject}
-              studentId={targetStudentId!}
-              nextTermId={nextTerm?.id ?? null}
-              track={track}
-              alreadyRequestedCourseIds={alreadyRequestedCourseIds}
-              previewing={previewing}
-            />
-          ))}
+      {/* Subject trees */}
+      <div className="space-y-5">
+        {requestableSubjects.length === 0 && (
+          <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">
+            No course data mapped to graduation subjects yet. Once the
+            office tags the catalogue, your trajectory shows up here.
+          </section>
+        )}
+        {requestableSubjects.map((subject) => (
+          <SubjectTree
+            key={subject.subject_area}
+            subject={subject}
+            track={track}
+            yearColumns={yearColumns}
+            currentGrade={currentGrade}
+            nextGrade={nextGrade}
+            showLaterColumn={showLaterColumn}
+            studentId={targetStudentId!}
+            nextTermId={nextTerm?.id ?? null}
+            alreadyRequestedCourseIds={alreadyRequestedCourseIds}
+            previewing={previewing}
+          />
+        ))}
 
         {trajectory.unmapped_courses.length > 0 && (
-          <UnmappedSection
+          <ElectivesShelf
             entries={trajectory.unmapped_courses}
             studentId={targetStudentId!}
             nextTermId={nextTerm?.id ?? null}
@@ -243,18 +282,39 @@ function trackTabClass(active: boolean): string {
     : `${base} border-slate-200 bg-white text-slate-700 hover:border-slate-400`
 }
 
-function SubjectSection({
+function LegendChip({ className, label }: { className: string; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className={`h-3 w-3 rounded-full border ${className}`} />
+      {label}
+    </span>
+  )
+}
+
+// ============================================================================
+// Subject tree — one horizontal row, a node per school year
+// ============================================================================
+
+function SubjectTree({
   subject,
+  track,
+  yearColumns,
+  currentGrade,
+  nextGrade,
+  showLaterColumn,
   studentId,
   nextTermId,
-  track,
   alreadyRequestedCourseIds,
   previewing,
 }: {
   subject: TrajectorySubjectSummary
+  track: "basic" | "college_bound"
+  yearColumns: number[]
+  currentGrade: number | null
+  nextGrade: number | null
+  showLaterColumn: boolean
   studentId: string
   nextTermId: string | null
-  track: "basic" | "college_bound"
   alreadyRequestedCourseIds: Set<string>
   previewing: boolean
 }) {
@@ -262,119 +322,319 @@ function SubjectSection({
     track === "basic"
       ? subject.required_credits_basic
       : subject.required_credits_college_bound
-  const credits = subject.credits_completed + subject.credits_in_progress
+  const earned = subject.credits_completed + subject.credits_in_progress
   const progressPct =
     required && required > 0
-      ? Math.min(100, Math.round((credits / required) * 100))
+      ? Math.min(100, Math.round((earned / required) * 100))
       : 0
 
-  // Sort entries by status group, then by display order (AP/honors up).
-  const sortedEntries = [...subject.entries].sort((a, b) => {
-    const sa = statusOrder[a.status]
-    const sb = statusOrder[b.status]
-    if (sa !== sb) return sa - sb
-    if (a.is_ap !== b.is_ap) return a.is_ap ? -1 : 1
-    if (a.is_honors !== b.is_honors) return a.is_honors ? -1 : 1
-    return a.name.localeCompare(b.name)
-  })
+  // Index completed / in-progress entries by the grade they were taken.
+  const takenByGrade = new Map<number, TrajectoryEntry[]>()
+  for (const e of subject.entries) {
+    if (e.status !== "completed" && e.status !== "in_progress") continue
+    const g = e.grade_when_taken
+    if (g === null || g === undefined) continue
+    const arr = takenByGrade.get(g) ?? []
+    arr.push(e)
+    takenByGrade.set(g, arr)
+  }
+  // Anything completed/in-progress without a resolvable grade — show
+  // it in a catch-all so it isn't silently dropped.
+  const undatedTaken = subject.entries.filter(
+    (e) =>
+      (e.status === "completed" || e.status === "in_progress") &&
+      (e.grade_when_taken === null || e.grade_when_taken === undefined)
+  )
+
+  const eligibleEntries = subject.entries.filter((e) => e.status === "eligible")
+  const lockedEntries = subject.entries.filter(
+    (e) => e.status === "needs_prereq" || e.status === "grade_locked"
+  )
 
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
+    <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
       <div className="flex flex-wrap items-baseline justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-extrabold text-brand-navy">
-            {subjectAreaLabel(subject.subject_area)}
-          </h2>
-          <p className="mt-1 text-xs text-slate-500">
+        <h2 className="text-xl font-extrabold text-brand-navy">
+          {subjectAreaLabel(subject.subject_area)}
+        </h2>
+        <div className="flex items-center gap-3">
+          <p className="text-xs text-slate-500">
             {subject.credits_completed.toFixed(1)} earned
             {subject.credits_in_progress > 0 && (
               <> · {subject.credits_in_progress.toFixed(1)} in progress</>
             )}
             {required !== null && (
-              <>
-                {" "}· {required.toFixed(0)} required for {trackLabel(track).toLowerCase()}
-              </>
+              <> · {required.toFixed(0)} required</>
             )}
           </p>
-        </div>
-        {required !== null && required > 0 && (
-          <div className="w-40">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
-              <div
-                className={`h-full ${
-                  progressPct >= 100 ? "bg-emerald-500" : "bg-brand-orange"
-                }`}
-                style={{ width: `${progressPct}%` }}
-              />
+          {required !== null && required > 0 && (
+            <div className="w-28">
+              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className={`h-full ${
+                    progressPct >= 100 ? "bg-emerald-500" : "bg-brand-orange"
+                  }`}
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
             </div>
-            <p className="mt-1 text-right text-[11px] text-slate-500">
-              {progressPct}%
-            </p>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
-      <ul className="mt-4 space-y-2">
-        {sortedEntries.map((entry) => (
-          <CourseRow
-            key={entry.course_id}
-            entry={entry}
-            studentId={studentId}
-            nextTermId={nextTermId}
-            alreadyRequested={alreadyRequestedCourseIds.has(entry.course_id)}
-            previewing={previewing}
-          />
-        ))}
-      </ul>
+      {/* The tree: horizontally scrollable row of year columns */}
+      <div className="mt-4 overflow-x-auto pb-2">
+        <div className="flex min-w-max items-stretch gap-0">
+          {yearColumns.map((grade, idx) => {
+            const phase: YearPhase =
+              currentGrade !== null && grade < currentGrade
+                ? "past"
+                : currentGrade !== null && grade === currentGrade
+                  ? "current"
+                  : nextGrade !== null && grade === nextGrade
+                    ? "next"
+                    : "future"
+            return (
+              <YearColumn
+                key={grade}
+                grade={grade}
+                phase={phase}
+                isFirst={idx === 0}
+                takenEntries={takenByGrade.get(grade) ?? []}
+                eligibleEntries={phase === "next" ? eligibleEntries : []}
+                studentId={studentId}
+                nextTermId={nextTermId}
+                alreadyRequestedCourseIds={alreadyRequestedCourseIds}
+                previewing={previewing}
+              />
+            )
+          })}
+
+          {/* Trailing "unlocks later" column for non-seniors. */}
+          {showLaterColumn && (
+            <LaterColumn lockedEntries={lockedEntries} />
+          )}
+        </div>
+      </div>
+
+      {undatedTaken.length > 0 && (
+        <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Also completed (year not recorded)
+          </p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {undatedTaken.map((e) => (
+              <span
+                key={e.course_id}
+                className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs text-emerald-800"
+              >
+                {e.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   )
 }
 
-function UnmappedSection({
-  entries,
+type YearPhase = "past" | "current" | "next" | "future"
+
+const PHASE_CONNECTOR = "h-px w-6 self-center bg-slate-200"
+
+function YearColumn({
+  grade,
+  phase,
+  isFirst,
+  takenEntries,
+  eligibleEntries,
   studentId,
   nextTermId,
   alreadyRequestedCourseIds,
   previewing,
 }: {
-  entries: TrajectoryEntry[]
+  grade: number
+  phase: YearPhase
+  isFirst: boolean
+  takenEntries: TrajectoryEntry[]
+  eligibleEntries: TrajectoryEntry[]
   studentId: string
   nextTermId: string | null
   alreadyRequestedCourseIds: Set<string>
   previewing: boolean
 }) {
-  const sortedEntries = [...entries].sort((a, b) => {
-    const sa = statusOrder[a.status]
-    const sb = statusOrder[b.status]
-    if (sa !== sb) return sa - sb
-    return a.name.localeCompare(b.name)
-  })
+  const isPick = phase === "next"
   return (
-    <section className="rounded-[2rem] border border-slate-200 bg-slate-50/60 px-6 py-6 shadow-sm">
-      <h2 className="text-xl font-extrabold text-brand-navy">
-        Other electives
-      </h2>
-      <p className="mt-1 text-xs text-slate-500">
-        Courses not tied to a specific graduation requirement. Most
-        students pick one or two from this list.
-      </p>
-      <ul className="mt-4 space-y-2">
-        {sortedEntries.map((entry) => (
-          <CourseRow
-            key={entry.course_id}
-            entry={entry}
-            studentId={studentId}
-            nextTermId={nextTermId}
-            alreadyRequested={alreadyRequestedCourseIds.has(entry.course_id)}
-            previewing={previewing}
-          />
+    <div className="flex items-stretch">
+      {!isFirst && <div className={PHASE_CONNECTOR} />}
+      <div
+        className={`flex w-48 flex-col gap-2 rounded-2xl border px-3 py-3 ${
+          isPick
+            ? "border-brand-orange bg-brand-orange/5"
+            : phase === "current"
+              ? "border-sky-200 bg-sky-50/40"
+              : "border-slate-200 bg-slate-50/60"
+        }`}
+      >
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-600">
+            {gradeLabel(grade)}
+          </p>
+          {isPick && (
+            <span className="rounded-full bg-brand-orange px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white">
+              Pick
+            </span>
+          )}
+          {phase === "current" && (
+            <span className="rounded-full bg-sky-600 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.12em] text-white">
+              Now
+            </span>
+          )}
+        </div>
+
+        {/* Past / current: solid completed nodes */}
+        {takenEntries.map((e) => (
+          <CompletedNode key={e.course_id} entry={e} />
         ))}
-      </ul>
-    </section>
+
+        {/* Next year: branching eligible picks */}
+        {isPick &&
+          eligibleEntries.map((e) => (
+            <EligibleBranch
+              key={e.course_id}
+              entry={e}
+              studentId={studentId}
+              nextTermId={nextTermId}
+              alreadyRequested={alreadyRequestedCourseIds.has(e.course_id)}
+              previewing={previewing}
+            />
+          ))}
+        {isPick && eligibleEntries.length === 0 && (
+          <p className="rounded-xl border border-dashed border-slate-300 px-2 py-3 text-center text-[11px] text-slate-400">
+            Nothing eligible in this subject — your requirement may
+            already be met, or talk to your advisor.
+          </p>
+        )}
+
+        {/* Past / current with nothing recorded */}
+        {!isPick && takenEntries.length === 0 && (
+          <p className="rounded-xl border border-dashed border-slate-200 px-2 py-3 text-center text-[11px] text-slate-300">
+            —
+          </p>
+        )}
+      </div>
+    </div>
   )
 }
 
-function CourseRow({
+function LaterColumn({ lockedEntries }: { lockedEntries: TrajectoryEntry[] }) {
+  return (
+    <div className="flex items-stretch">
+      <div className={PHASE_CONNECTOR} />
+      <div className="flex w-48 flex-col gap-2 rounded-2xl border border-slate-200 bg-slate-50/60 px-3 py-3 opacity-70">
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-500">
+          Unlocks later
+        </p>
+        {lockedEntries.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-slate-200 px-2 py-3 text-center text-[11px] text-slate-400">
+            Everything in this subject is already open to you.
+          </p>
+        ) : (
+          lockedEntries.map((e) => <LockedNode key={e.course_id} entry={e} />)
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ============================================================================
+// Node variants
+// ============================================================================
+
+function CourseTags({ entry }: { entry: TrajectoryEntry }) {
+  return (
+    <>
+      {entry.is_ap && (
+        <span className="rounded-full bg-brand-orange/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-brand-orange">
+          AP
+        </span>
+      )}
+      {entry.is_honors && !entry.is_ap && (
+        <span className="rounded-full bg-sky-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-sky-700">
+          Honors
+        </span>
+      )}
+    </>
+  )
+}
+
+function CompletedNode({ entry }: { entry: TrajectoryEntry }) {
+  const inProgress = entry.status === "in_progress"
+  return (
+    <div
+      className={`rounded-xl border px-2.5 py-2 ${
+        inProgress
+          ? "border-sky-300 bg-sky-50"
+          : "border-emerald-300 bg-emerald-50"
+      }`}
+    >
+      <div className="flex flex-wrap items-center gap-1">
+        <p className="text-xs font-semibold text-slate-900">{entry.name}</p>
+        <CourseTags entry={entry} />
+      </div>
+      <p
+        className={`mt-0.5 text-[10px] ${
+          inProgress ? "text-sky-700" : "text-emerald-700"
+        }`}
+      >
+        {inProgress ? (
+          <>In progress{entry.in_progress_term_name ? ` · ${entry.in_progress_term_name}` : ""}</>
+        ) : (
+          <>
+            Completed
+            {entry.completed_grade_letter
+              ? ` · grade ${entry.completed_grade_letter}`
+              : ""}
+          </>
+        )}
+      </p>
+    </div>
+  )
+}
+
+function LockedNode({ entry }: { entry: TrajectoryEntry }) {
+  const missing = entry.missing_prereqs ?? []
+  // Collapse OR-groups so "needs Precalc or Honors Precalc" shows once.
+  const groups = new Map<string, string[]>()
+  for (const m of missing) {
+    const key = m.group_key ?? `_solo_${m.code}`
+    const arr = groups.get(key) ?? []
+    arr.push(m.name)
+    groups.set(key, arr)
+  }
+  return (
+    <div className="rounded-xl border border-slate-300 bg-white/70 px-2.5 py-2">
+      <div className="flex flex-wrap items-center gap-1">
+        <p className="text-xs font-semibold text-slate-600">{entry.name}</p>
+        <CourseTags entry={entry} />
+      </div>
+      {entry.status === "needs_prereq" && groups.size > 0 ? (
+        <p className="mt-0.5 text-[10px] text-slate-500">
+          After:{" "}
+          {[...groups.values()].map((opts) => opts.join(" or ")).join("; ")}
+        </p>
+      ) : entry.status === "grade_locked" ? (
+        <p className="mt-0.5 text-[10px] text-slate-500">
+          Opens in a later grade
+        </p>
+      ) : (
+        <p className="mt-0.5 text-[10px] text-slate-500">Not yet eligible</p>
+      )}
+    </div>
+  )
+}
+
+function EligibleBranch({
   entry,
   studentId,
   nextTermId,
@@ -387,195 +647,136 @@ function CourseRow({
   alreadyRequested: boolean
   previewing: boolean
 }) {
-  const toneClass = (() => {
-    switch (entry.status) {
-      case "completed":
-        return "border-emerald-200 bg-emerald-50/60"
-      case "in_progress":
-        return "border-sky-200 bg-sky-50/60"
-      case "eligible":
-        return "border-brand-navy/20 bg-white"
-      case "needs_prereq":
-        return "border-amber-200 bg-amber-50/40"
-      case "wrong_year":
-      case "grade_locked":
-        return "border-slate-200 bg-slate-50 opacity-80"
-    }
-  })()
-
   return (
-    <li className={`rounded-2xl border px-4 py-3 ${toneClass}`}>
-      <div className="grid gap-3 sm:grid-cols-[minmax(0,2fr)_minmax(0,1.5fr)_auto] sm:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-slate-900">
-              {entry.name}
-            </p>
-            <code className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-slate-700">
-              {entry.code}
-            </code>
-            {entry.is_ap && (
-              <span className="rounded-full bg-brand-orange/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-brand-orange">
-                AP
-              </span>
-            )}
-            {entry.is_honors && !entry.is_ap && (
-              <span className="rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-sky-700">
-                Honors
-              </span>
-            )}
-            {entry.override_granted && (
-              <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-violet-700">
-                Override granted
-              </span>
-            )}
-          </div>
-          <p className="mt-1 text-xs text-slate-500">
-            {entry.credit_hours.toFixed(1)} credit{entry.credit_hours === 1 ? "" : "s"}
-            {entry.grade_levels.length > 0 && (
-              <> · Grades {entry.grade_levels.join("/")}</>
-            )}
-            {entry.offered_pattern === "odd_start_year" && (
-              <> · Offered odd-start years</>
-            )}
-            {entry.offered_pattern === "even_start_year" && (
-              <> · Offered even-start years</>
-            )}
-          </p>
-        </div>
-
-        <StatusDetail entry={entry} />
-
-        <div className="flex justify-end">
-          {entry.status === "eligible" && nextTermId && !previewing && (
-            <AddToRequestForm
-              studentId={studentId}
-              termId={nextTermId}
-              courseId={entry.course_id}
-              alreadyRequested={alreadyRequested}
-            />
-          )}
-          {entry.status === "eligible" && previewing && (
-            <span className="text-[11px] italic text-slate-500">
-              (admin preview)
-            </span>
-          )}
-        </div>
+    <div className="rounded-xl border border-brand-navy/25 bg-white px-2.5 py-2 shadow-sm">
+      <div className="flex flex-wrap items-center gap-1">
+        <p className="text-xs font-semibold text-slate-900">{entry.name}</p>
+        <CourseTags entry={entry} />
+        {entry.override_granted && (
+          <span className="rounded-full bg-violet-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-[0.1em] text-violet-700">
+            Override
+          </span>
+        )}
       </div>
-    </li>
+      <p className="mt-0.5 text-[10px] text-slate-500">
+        {entry.credit_hours.toFixed(1)} credit
+        {entry.credit_hours === 1 ? "" : "s"}
+        {entry.offered_pattern === "odd_start_year" && " · odd-year course"}
+        {entry.offered_pattern === "even_start_year" && " · even-year course"}
+      </p>
+
+      {alreadyRequested ? (
+        <p className="mt-1.5 text-[10px] font-semibold text-emerald-700">
+          On your list ✓
+        </p>
+      ) : previewing ? (
+        <p className="mt-1.5 text-[10px] italic text-slate-400">
+          (admin preview)
+        </p>
+      ) : nextTermId ? (
+        <form
+          action={addCourseRequestAction}
+          className="mt-1.5 flex items-center gap-1"
+        >
+          <input type="hidden" name="student_id" value={studentId} />
+          <input type="hidden" name="term_id" value={nextTermId} />
+          <input type="hidden" name="course_id" value={entry.course_id} />
+          <input type="hidden" name="redirect_to" value="trajectory" />
+          <select
+            name="kind"
+            defaultValue="core"
+            className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-1.5 py-1 text-[10px] text-slate-900"
+          >
+            {studentCourseRequestKindSchema.options.map((kind) => (
+              <option key={kind} value={kind}>
+                {kindLabel[kind]}
+              </option>
+            ))}
+          </select>
+          <button
+            type="submit"
+            className="shrink-0 rounded-lg bg-brand-navy px-2 py-1 text-[10px] font-semibold text-white transition hover:brightness-110"
+          >
+            Add
+          </button>
+        </form>
+      ) : null}
+    </div>
   )
 }
 
-function StatusDetail({ entry }: { entry: TrajectoryEntry }) {
-  switch (entry.status) {
-    case "completed":
-      return (
-        <p className="text-xs text-emerald-800">
-          Completed
-          {entry.completed_term_name && <> · {entry.completed_term_name}</>}
-          {entry.completed_grade_letter && (
-            <> · grade {entry.completed_grade_letter}</>
-          )}
-        </p>
-      )
-    case "in_progress":
-      return (
-        <p className="text-xs text-sky-800">
-          Currently enrolled
-          {entry.in_progress_term_name && <> · {entry.in_progress_term_name}</>}
-        </p>
-      )
-    case "eligible":
-      return <p className="text-xs text-slate-600">Eligible next year</p>
-    case "needs_prereq": {
-      // Collapse by group_key so OR-groups show once.
-      const groups = new Map<string, { code: string; name: string }[]>()
-      for (const m of entry.missing_prereqs ?? []) {
-        const key = m.group_key ?? `_solo_${m.code}`
-        const arr = groups.get(key) ?? []
-        arr.push(m)
-        groups.set(key, arr)
-      }
-      return (
-        <div className="text-xs text-amber-900">
-          <p className="font-semibold">Needs prereq:</p>
-          <ul className="mt-1 space-y-0.5">
-            {[...groups.values()].map((opts, idx) => (
-              <li key={idx}>
-                {opts.map((o) => o.name).join(" or ")}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )
-    }
-    case "wrong_year":
-      return (
-        <p className="text-xs text-slate-600">
-          Not offered next year ({entry.offered_pattern === "odd_start_year" ? "odd-start years only" : "even-start years only"}).
-        </p>
-      )
-    case "grade_locked":
-      return (
-        <p className="text-xs text-slate-600">
-          Locked until grade{" "}
-          {entry.grade_levels
-            .map((g) => parseInt(g, 10))
-            .filter((n) => Number.isFinite(n))
-            .reduce<number | null>(
-              (acc, v) => (acc === null || v < acc ? v : acc),
-              null
-            ) ?? "?"}
-          .
-        </p>
-      )
-  }
-}
+// ============================================================================
+// Electives shelf — courses not tied to a graduation subject
+// ============================================================================
 
-function AddToRequestForm({
+function ElectivesShelf({
+  entries,
   studentId,
-  termId,
-  courseId,
-  alreadyRequested,
+  nextTermId,
+  alreadyRequestedCourseIds,
+  previewing,
 }: {
+  entries: TrajectoryEntry[]
   studentId: string
-  termId: string
-  courseId: string
-  alreadyRequested: boolean
+  nextTermId: string | null
+  alreadyRequestedCourseIds: Set<string>
+  previewing: boolean
 }) {
-  if (alreadyRequested) {
-    return (
-      <span className="text-[11px] font-semibold text-emerald-700">
-        Already on your list ✓
-      </span>
-    )
-  }
+  const eligible = entries.filter((e) => e.status === "eligible")
+  const taken = entries.filter(
+    (e) => e.status === "completed" || e.status === "in_progress"
+  )
   return (
-    <form
-      action={addCourseRequestAction}
-      className="flex flex-wrap items-center gap-2"
-    >
-      <input type="hidden" name="student_id" value={studentId} />
-      <input type="hidden" name="term_id" value={termId} />
-      <input type="hidden" name="course_id" value={courseId} />
-      <input type="hidden" name="redirect_to" value="trajectory" />
-      <select
-        name="kind"
-        defaultValue="core"
-        className="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-900"
-      >
-        {studentCourseRequestKindSchema.options.map((kind) => (
-          <option key={kind} value={kind}>
-            {kindLabel[kind]}
-          </option>
-        ))}
-      </select>
-      <button
-        type="submit"
-        className="inline-flex items-center justify-center rounded-full bg-brand-navy px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition hover:brightness-110"
-      >
-        Add to requests
-      </button>
-    </form>
+    <section className="rounded-[2rem] border border-slate-200 bg-slate-50/60 px-6 py-5 shadow-sm">
+      <h2 className="text-xl font-extrabold text-brand-navy">
+        Other electives
+      </h2>
+      <p className="mt-1 text-xs text-slate-500">
+        Courses not tied to a specific graduation requirement. Most
+        students pick one or two.
+      </p>
+
+      {taken.length > 0 && (
+        <div className="mt-3">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+            Taken
+          </p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {taken.map((e) => (
+              <span
+                key={e.course_id}
+                className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs text-emerald-800"
+              >
+                {e.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="mt-3">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          Eligible next year
+        </p>
+        {eligible.length === 0 ? (
+          <p className="mt-1 text-xs text-slate-400">
+            Nothing new to pick right now.
+          </p>
+        ) : (
+          <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {eligible.map((e) => (
+              <EligibleBranch
+                key={e.course_id}
+                entry={e}
+                studentId={studentId}
+                nextTermId={nextTermId}
+                alreadyRequested={alreadyRequestedCourseIds.has(e.course_id)}
+                previewing={previewing}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+    </section>
   )
 }

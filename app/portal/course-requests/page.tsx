@@ -1,21 +1,14 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import {
-  getProfileByEmail,
-  getStudentByProfileId,
-  listCourses,
-  type CourseRecord,
-} from "@/lib/sis"
+import { getProfileByEmail, getStudentByProfileId } from "@/lib/sis"
 import {
   listStudentCourseRequests,
-  studentCourseRequestKindSchema,
   type StudentCourseRequestKind,
   type StudentCourseRequestWithCourse,
 } from "@/lib/scheduler"
 import { createClient } from "@supabase/supabase-js"
 import {
-  addCourseRequestAction,
   deleteCourseRequestAction,
   submitCourseRequestsAction,
 } from "./actions"
@@ -118,39 +111,62 @@ export default async function CourseRequestsPage({ searchParams }: PageProps) {
     : upcomingTerms[0].id
   const targetTerm = upcomingTerms.find((t) => t.id === targetTermId)!
 
-  const [requests, courses] = await Promise.all([
-    listStudentCourseRequests({ student_id: student.id, term_id: targetTermId }),
-    listCourses(),
-  ])
-
-  const activeCourses = courses.filter((c) => c.active)
-  const requestedCourseIds = new Set(requests.map((r) => r.course_id))
-  const requestableCourses = activeCourses.filter((c) => !requestedCourseIds.has(c.id))
+  const requests = await listStudentCourseRequests({
+    student_id: student.id,
+    term_id: targetTermId,
+  })
 
   const coreCount = requests.filter((r) => r.kind === "core").length
   const electiveCount = requests.filter((r) => r.kind === "elective").length
   const alternateCount = requests.filter((r) => r.kind === "alternate").length
   const submittedAt = requests.find((r) => r.submitted_at)?.submitted_at ?? null
 
+  // Group requests by catalog subject for a categorized review view —
+  // "your Math picks", "your English picks", etc.
+  const bySubject = new Map<string, StudentCourseRequestWithCourse[]>()
+  for (const r of requests) {
+    const subject = r.course?.subject?.trim() || "Other"
+    const arr = bySubject.get(subject) ?? []
+    arr.push(r)
+    bySubject.set(subject, arr)
+  }
+  const subjectGroups = [...bySubject.entries()].sort((a, b) =>
+    a[0].localeCompare(b[0])
+  )
+  const kindRank: Record<StudentCourseRequestKind, number> = {
+    core: 0,
+    elective: 1,
+    alternate: 2,
+  }
+  for (const [, rows] of subjectGroups) {
+    rows.sort((a, b) => {
+      const k = kindRank[a.kind] - kindRank[b.kind]
+      if (k !== 0) return k
+      return a.preference_rank - b.preference_rank
+    })
+  }
+
   return (
     <CourseRequestsLayout title="Course requests">
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h2 className="text-2xl font-extrabold text-brand-navy">Course requests</h2>
+            <h2 className="text-2xl font-extrabold text-brand-navy">
+              Review &amp; submit course requests
+            </h2>
             <p className="mt-2 text-sm text-slate-600">
-              Tell us what you&rsquo;d like to take next term. Pick 6 core
-              courses and 2 electives, plus a few alternates the scheduler
-              can fall back to. You&rsquo;ll get your top-ranked picks when
-              the schedule works out; alternates fill in when a section is
-              full or can&rsquo;t be scheduled.
+              This is the list you built on your graduation map, grouped
+              by subject. Check it over, then submit so the scheduler can
+              plan your term. To <strong>add</strong> a course, head back
+              to the graduation map — it only shows courses you&rsquo;re
+              actually eligible for next year.
             </p>
           </div>
           <Link
             href="/portal/trajectory"
-            className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
           >
-            View graduation trajectory →
+            ← Build my list on the graduation map
           </Link>
         </div>
       </section>
@@ -188,12 +204,12 @@ export default async function CourseRequestsPage({ searchParams }: PageProps) {
         </p>
       </section>
 
-      {/* Existing requests */}
+      {/* Existing requests, grouped by subject */}
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h3 className="text-lg font-extrabold text-brand-navy">
-              Your requests for {targetTerm.name}
+              Your picks for {targetTerm.name}
             </h3>
             <p className="mt-1 text-sm text-slate-600">
               {coreCount} core &middot; {electiveCount} elective &middot;{" "}
@@ -213,95 +229,38 @@ export default async function CourseRequestsPage({ searchParams }: PageProps) {
         </div>
 
         {requests.length === 0 ? (
-          <p className="mt-4 text-sm text-slate-600">No requests yet.</p>
+          <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 px-6 py-8 text-center">
+            <p className="text-sm text-slate-600">
+              No courses on your list yet.
+            </p>
+            <Link
+              href="/portal/trajectory"
+              className="mt-3 inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+            >
+              Pick courses on the graduation map →
+            </Link>
+          </div>
         ) : (
-          <ul className="mt-4 space-y-2">
-            {(["core", "elective", "alternate"] as const).flatMap((kind) => {
-              const rows = requests.filter((r) => r.kind === kind)
-              if (rows.length === 0) return []
-              return [
-                <li key={`heading-${kind}`} className="pt-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  {kindLabel[kind]}
-                </li>,
-                ...rows.map((r) => <RequestRow key={r.id} request={r} student_id={student.id} />),
-              ]
-            })}
-          </ul>
+          <div className="mt-4 space-y-5">
+            {subjectGroups.map(([subject, rows]) => (
+              <div key={subject} className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-orange">
+                  {subject}
+                </p>
+                <ul className="space-y-2">
+                  {rows.map((r) => (
+                    <RequestRow
+                      key={r.id}
+                      request={r}
+                      student_id={student.id}
+                    />
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
         )}
       </section>
-
-      {/* Add a request */}
-      {requestableCourses.length > 0 && (
-        <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-          <h3 className="text-lg font-extrabold text-brand-navy">Add a course</h3>
-          <form action={addCourseRequestAction} className="mt-4 space-y-3">
-            <input type="hidden" name="student_id" value={student.id} />
-            <input type="hidden" name="term_id" value={targetTermId} />
-
-            <div className="grid gap-3 sm:grid-cols-2">
-              <label className="space-y-1 text-xs font-medium text-slate-700">
-                <span className="block">Course</span>
-                <select
-                  name="course_id"
-                  required
-                  defaultValue=""
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-                >
-                  <option value="">Pick a course…</option>
-                  {requestableCourses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.code} — {course.name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="space-y-1 text-xs font-medium text-slate-700">
-                <span className="block">Kind</span>
-                <select
-                  name="kind"
-                  defaultValue="core"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-                >
-                  {studentCourseRequestKindSchema.options.map((kind) => (
-                    <option key={kind} value={kind}>
-                      {kindLabel[kind]}
-                    </option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="space-y-1 text-xs font-medium text-slate-700">
-                <span className="block">Preference rank</span>
-                <input
-                  name="preference_rank"
-                  type="number"
-                  min="1"
-                  defaultValue="1"
-                  className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
-                />
-              </label>
-
-              <label className="space-y-1 text-xs font-medium text-slate-700">
-                <span className="block">Notes (optional)</span>
-                <input
-                  name="notes"
-                  maxLength={2000}
-                  placeholder="Why this course matters to you"
-                  className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
-                />
-              </label>
-            </div>
-
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-            >
-              Add to my list
-            </button>
-          </form>
-        </section>
-      )}
 
       {/* Submit */}
       <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-6 shadow-sm">

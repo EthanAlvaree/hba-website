@@ -680,6 +680,12 @@ export type TrajectoryEntry = {
   in_progress_term_name?: string | null
   missing_prereqs?: TrajectoryMissingPrereq[]
   override_granted?: boolean
+  /** For completed / in-progress entries: the grade level the student
+   *  was in when they took (or are taking) the course, derived from the
+   *  term's academic year vs. the student's current grade. null when it
+   *  can't be determined (missing academic_year, non-numeric grade).
+   *  Drives the per-year columns in the trajectory tree UI. */
+  grade_when_taken?: number | null
 }
 
 export type TrajectorySubjectSummary = {
@@ -693,6 +699,13 @@ export type TrajectorySubjectSummary = {
 
 export type TrajectoryResult = {
   next_academic_year_start: number | null
+  /** Student's current grade as a number (9-12), or null when the
+   *  grade isn't a parseable number. Drives the trajectory tree's
+   *  "which column is past / next / future" logic. */
+  current_grade: number | null
+  /** current_grade + 1, or null. The column the student is picking
+   *  courses for. */
+  next_grade: number | null
   subjects: TrajectorySubjectSummary[]
   unmapped_courses: TrajectoryEntry[]
 }
@@ -893,6 +906,25 @@ export async function computeStudentTrajectory(
   const coursesById = new Map((coursesResult.data ?? []).map((c) => [c.id, c]))
   const overrideCourseIds = new Set(overridesResult.map((o) => o.course_id))
 
+  // The academic year "happening now" — used to back-compute which
+  // grade a past course was taken in. The latest term that has already
+  // started anchors it.
+  const currentAcademicYearStart = startYear(
+    fallbackTerm?.academic_year ?? upcomingTerm?.academic_year ?? null
+  )
+  const currentGradeNum = parseInt(student.current_grade ?? "", 10)
+
+  // Pure: given the academic year a course was taken in, what grade
+  // was the student in? gradeNow − (yearNow − yearTaken). null when we
+  // can't anchor it.
+  const gradeWhenTaken = (courseAcademicYear: string | null): number | null => {
+    if (!Number.isFinite(currentGradeNum)) return null
+    if (currentAcademicYearStart === null) return null
+    const taken = startYear(courseAcademicYear)
+    if (taken === null) return null
+    return currentGradeNum - (currentAcademicYearStart - taken)
+  }
+
   // Bucket enrollments. "completed" = ended-term enrollment in 'enrolled'
   // or 'completed' status. "in progress" = enrollment in 'enrolled' or
   // 'audit' status whose term is current.
@@ -900,9 +932,12 @@ export async function computeStudentTrajectory(
   const inProgressCourseIds = new Set<string>()
   const completedMeta = new Map<
     string,
-    { term_name: string; grade_letter: string | null }
+    { term_name: string; grade_letter: string | null; grade_when_taken: number | null }
   >()
-  const inProgressMeta = new Map<string, { term_name: string }>()
+  const inProgressMeta = new Map<
+    string,
+    { term_name: string; grade_when_taken: number | null }
+  >()
 
   for (const e of enrollmentsResult.data ?? []) {
     if (!e.section?.course_id || !e.section.term) continue
@@ -913,13 +948,20 @@ export async function computeStudentTrajectory(
       completedMeta.set(e.section.course_id, {
         term_name: term.name,
         grade_letter: e.final_grade_letter,
+        grade_when_taken: gradeWhenTaken(term.academic_year),
       })
     } else if (
       (e.status === "enrolled" || e.status === "audit") &&
       term.is_current
     ) {
       inProgressCourseIds.add(e.section.course_id)
-      inProgressMeta.set(e.section.course_id, { term_name: term.name })
+      inProgressMeta.set(e.section.course_id, {
+        term_name: term.name,
+        // In-progress = the student's current grade.
+        grade_when_taken: Number.isFinite(currentGradeNum)
+          ? currentGradeNum
+          : null,
+      })
     }
   }
 
@@ -930,9 +972,8 @@ export async function computeStudentTrajectory(
     ...inProgressCourseIds,
   ])
 
-  // Determine the student's grade for the next year. We add 1 to their
-  // current grade unless it's a final grade like "12" (which graduates).
-  const currentGradeNum = parseInt(student.current_grade ?? "", 10)
+  // The student's grade for next year. Add 1 to their current grade
+  // unless it's a final grade like "12" (which graduates).
   const nextGrade = Number.isFinite(currentGradeNum)
     ? String(currentGradeNum + 1)
     : null
@@ -965,6 +1006,7 @@ export async function computeStudentTrajectory(
         status: "completed",
         completed_term_name: meta?.term_name ?? null,
         completed_grade_letter: meta?.grade_letter ?? null,
+        grade_when_taken: meta?.grade_when_taken ?? null,
       })
       continue
     }
@@ -974,6 +1016,7 @@ export async function computeStudentTrajectory(
         ...base,
         status: "in_progress",
         in_progress_term_name: meta?.term_name ?? null,
+        grade_when_taken: meta?.grade_when_taken ?? null,
       })
       continue
     }
@@ -1062,6 +1105,11 @@ export async function computeStudentTrajectory(
 
   return {
     next_academic_year_start: nextStartYear,
+    current_grade: Number.isFinite(currentGradeNum) ? currentGradeNum : null,
+    next_grade:
+      nextGrade !== null && Number.isFinite(parseInt(nextGrade, 10))
+        ? parseInt(nextGrade, 10)
+        : null,
     subjects,
     unmapped_courses: unmappedCourses,
   }
