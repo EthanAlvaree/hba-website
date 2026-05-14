@@ -170,7 +170,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HIM1",
-    name: "Honors Integrated Math 1",
+    name: "Integrated Math 1 (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -181,7 +181,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HIM2",
-    name: "Honors Integrated Math 2",
+    name: "Integrated Math 2 (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -192,7 +192,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HIM3",
-    name: "Honors Integrated Math 3",
+    name: "Integrated Math 3 (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -214,7 +214,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HPRECALC",
-    name: "Honors Precalculus",
+    name: "Precalculus (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -269,7 +269,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HLINALG",
-    name: "Honors Linear Algebra",
+    name: "Linear Algebra (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -280,7 +280,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HMULTIVAR",
-    name: "Honors Multivariable Calculus",
+    name: "Multivariable Calculus (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -291,7 +291,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HGROUP",
-    name: "Honors Group Theory and Abstract Algebra",
+    name: "Group Theory and Abstract Algebra (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -302,7 +302,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HSET",
-    name: "Honors Set Theory and Real Analysis",
+    name: "Set Theory and Real Analysis (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -313,7 +313,7 @@ const math: CanonicalCourse[] = [
   },
   {
     code: "MATH-HMLMATH",
-    name: "Honors Mathematics of Machine Learning",
+    name: "Mathematics of Machine Learning (H)",
     category: "math",
     is_ap: false,
     is_honors: true,
@@ -341,7 +341,7 @@ const science: CanonicalCourse[] = [
   },
   {
     code: "SCI-HBIO",
-    name: "Honors Biology",
+    name: "Biology (H)",
     category: "science",
     is_ap: false,
     is_honors: true,
@@ -363,7 +363,7 @@ const science: CanonicalCourse[] = [
   },
   {
     code: "SCI-HCHEM",
-    name: "Honors Chemistry: In the Earth System",
+    name: "Chemistry: In the Earth System (H)",
     category: "science",
     is_ap: false,
     is_honors: true,
@@ -548,6 +548,18 @@ const socialScience: CanonicalCourse[] = [
     credit_hours: 1,
     ucCategory: "A",
     grade_levels: ["10"],
+  },
+  {
+    // CA AB 101 one-semester ethnic studies graduation requirement.
+    // ucCategory omitted — pending UC A-G approval.
+    code: "SS-ETHNIC",
+    name: "Ethnic Studies",
+    category: "social-science",
+    is_ap: false,
+    is_honors: false,
+    is_elective: false,
+    credit_hours: 0.5,
+    grade_levels: ["9", "10", "11", "12"],
   },
   {
     code: "SS-USHIST",
@@ -853,6 +865,7 @@ const electives: CanonicalCourse[] = [
   { code: "ELEC-STUDIOART", name: "Studio Art", category: "electives", is_ap: false, is_honors: false, is_elective: true, credit_hours: 1, ucCategory: "F", grade_levels: ["9", "10", "11", "12"] },
   { code: "ELEC-APARTHIST", name: "AP Art History", category: "electives", is_ap: true, is_honors: false, is_elective: true, credit_hours: 1, ucCategory: "F", grade_levels: ["10", "11", "12"] },
   { code: "ELEC-APMUSIC", name: "AP Music Theory", category: "electives", is_ap: true, is_honors: false, is_elective: true, credit_hours: 1, ucCategory: "F", grade_levels: ["10", "11", "12"] },
+  { code: "ELEC-AP3DART", name: "AP 3D Art and Design", category: "electives", is_ap: true, is_honors: false, is_elective: true, credit_hours: 1, ucCategory: "F", grade_levels: ["10", "11", "12"] },
   { code: "ELEC-LOGIC", name: "Logic and Philosophy", category: "electives", is_ap: false, is_honors: false, is_elective: true, credit_hours: 1, ucCategory: "G", grade_levels: ["10", "11", "12"] },
   { code: "ELEC-CREATWRIT", name: "Creative Writing", category: "electives", is_ap: false, is_honors: false, is_elective: true, credit_hours: 1, ucCategory: "G", grade_levels: ["9", "10", "11", "12"] },
   { code: "ELEC-PUBSPEAK", name: "Public Speaking", category: "electives", is_ap: false, is_honors: false, is_elective: true, credit_hours: 0.5, ucCategory: "G", grade_levels: ["9", "10", "11", "12"] },

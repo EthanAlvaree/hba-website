@@ -48,7 +48,7 @@ export const summerCategories: SummerCategory[] = [
         sixWeek: true,
       },
       {
-        name: "Honors Chemistry: In the Earth System",
+        name: "Chemistry: In the Earth System (H)",
         dates: "June 8 – July 24",
         time: "8:00 – 11:00am",
         price: "$3,000",
@@ -97,7 +97,7 @@ export const summerCategories: SummerCategory[] = [
         status: "Call for availability",
       },
       {
-        name: "Honors Integrated Math 1",
+        name: "Integrated Math 1 (H)",
         dates: "June 8 – July 24",
         time: "8:00 – 10:30am",
         price: "$2,900",
@@ -110,7 +110,7 @@ export const summerCategories: SummerCategory[] = [
         status: "Call for availability",
       },
       {
-        name: "Honors Integrated Math 2",
+        name: "Integrated Math 2 (H)",
         dates: "June 8 – July 24",
         time: "10:30am – 1:00pm",
         price: "$2,900",
@@ -123,13 +123,13 @@ export const summerCategories: SummerCategory[] = [
         sixWeek: true,
       },
       {
-        name: "Honors Integrated Math 3",
+        name: "Integrated Math 3 (H)",
         dates: "June 8 – July 24",
         time: "8:00 – 10:30am",
         price: "$2,900",
       },
       {
-        name: "Honors Precalculus",
+        name: "Precalculus (H)",
         dates: "June 8 – July 24",
         time: "8:00 – 10:30am",
         price: "$2,900",

@@ -90,9 +90,9 @@ const pathways: Pathway[] = [
       "AP Statistics",
       "AP Calculus BC",
       "AP Computer Science A",
-      "Honors Linear Algebra",
-      "Honors Multivariable Calculus",
-      "Honors Mathematics of Machine Learning",
+      "Linear Algebra (H)",
+      "Multivariable Calculus (H)",
+      "Mathematics of Machine Learning (H)",
     ],
     capstone: "AWS Cloud Practitioner certification",
     icon: CpuChipIcon,
@@ -119,7 +119,7 @@ const pathways: Pathway[] = [
     tagline:
       "Foundations deeper than the standard three sciences for future physicians, biologists, and researchers.",
     courses: [
-      "Honors Chemistry: In the Earth System",
+      "Chemistry: In the Earth System (H)",
       "AP Biology",
       "AP Chemistry",
       "AP Environmental Science",
