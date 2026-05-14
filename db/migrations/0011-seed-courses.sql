@@ -58,7 +58,7 @@ values
   ('CS-APCSP', 'AP Computer Science Principles', 'Computer Science', 'computer-science', null, array['10', '11', '12']::text[], true, false, false, 1, true),
   ('CS-APCSA', 'AP Computer Science A', 'Computer Science', 'computer-science', null, array['11', '12']::text[], true, false, false, 1, true),
   ('SS-WORLD', 'World History', 'Social Science', 'social-science', null, array['10']::text[], false, false, false, 1, true),
-  ('SS-USHIST', 'U.S. History', 'Social Science', 'social-science', null, array['11']::text[], false, false, false, 1, true),
+  ('SS-USHIST', 'United States History', 'Social Science', 'social-science', null, array['11']::text[], false, false, false, 1, true),
   ('SS-ECON', 'Economics', 'Social Science', 'social-science', null, array['12']::text[], false, false, false, 0.5, true),
   ('SS-PERSFIN', 'Personal Finance', 'Social Science', 'social-science', null, array['10', '11', '12']::text[], false, false, true, 0.5, true),
   ('SS-PSYCH', 'Psychology', 'Social Science', 'social-science', null, array['10', '11', '12']::text[], false, false, true, 1, true),

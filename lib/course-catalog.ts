@@ -551,7 +551,7 @@ const socialScience: CanonicalCourse[] = [
   },
   {
     code: "SS-USHIST",
-    name: "U.S. History",
+    name: "United States History",
     category: "social-science",
     is_ap: false,
     is_honors: false,
