@@ -1,0 +1,57 @@
+# Belt-and-suspenders Vercel deploy trigger.
+#
+# Vercel's GitHub App integration has been intermittently missing
+# pushes to `preview`. This workflow doesn't replace it — it just
+# also pings a Vercel Deploy Hook on every push, so a deploy fires
+# even when the App misses the event. Vercel dedupes by commit SHA,
+# so a double-trigger is harmless (you get one build, not two).
+#
+# Setup (one-time): see the repo's deploy docs / the PR that added
+# this file. In short:
+#   1. Vercel → Project → Settings → Git → Deploy Hooks → create one
+#      named "preview" pointed at the `preview` branch.
+#   2. Copy the hook URL.
+#   3. GitHub → repo Settings → Secrets and variables → Actions →
+#      New repository secret → name VERCEL_PREVIEW_DEPLOY_HOOK,
+#      value = the hook URL.
+#
+# If the secret is missing the workflow no-ops cleanly rather than
+# failing — so the repo still builds for anyone who hasn't set it up.
+
+name: Trigger Vercel preview deploy
+
+on:
+  push:
+    branches:
+      - preview
+
+# One trigger per branch at a time — if two pushes land close
+# together, the in-progress run is cancelled and the latest wins.
+concurrency:
+  group: vercel-deploy-preview
+  cancel-in-progress: true
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Vercel deploy hook
+        env:
+          HOOK_URL: ${{ secrets.VERCEL_PREVIEW_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK_URL" ]; then
+            echo "VERCEL_PREVIEW_DEPLOY_HOOK secret is not set — skipping."
+            echo "Add it under repo Settings → Secrets and variables → Actions."
+            exit 0
+          fi
+          echo "Triggering Vercel deploy for commit ${GITHUB_SHA}..."
+          HTTP_CODE=$(curl -s -o /tmp/hook_response -w "%{http_code}" -X POST "$HOOK_URL")
+          echo "Vercel responded with HTTP $HTTP_CODE"
+          cat /tmp/hook_response
+          echo ""
+          if [ "$HTTP_CODE" -ge 200 ] && [ "$HTTP_CODE" -lt 300 ]; then
+            echo "Deploy queued."
+          else
+            echo "Deploy hook returned a non-2xx status."
+            exit 1
+          fi
