@@ -1236,7 +1236,8 @@ function PostEnrollmentFileCard({
           <p className="text-sm text-slate-600">
             Immunizations, medical history, insurance, accommodations, and
             citizenship/visa data collected from the family after admission.
-            Edited by parents on /parent/students/{studentId.slice(0, 8)}…/complete-file.
+            Families fill this in from the parent portal — or you can
+            enter it on their behalf.
           </p>
           <p className="text-xs text-slate-500">
             {filledSections} of 6 sections have data
@@ -1252,22 +1253,34 @@ function PostEnrollmentFileCard({
           </p>
         </div>
 
-        {data && (
-          <form action={setPostEnrollmentVerifiedAction}>
-            <input type="hidden" name="student_id" value={studentId} />
-            <input type="hidden" name="verified" value={verifiedAt ? "0" : "1"} />
-            <button
-              type="submit"
-              className={`inline-flex items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-md transition ${
-                verifiedAt
-                  ? "border border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
-                  : "bg-emerald-700 text-white hover:brightness-110"
-              }`}
-            >
-              {verifiedAt ? "Clear verification" : "Mark verified"}
-            </button>
-          </form>
-        )}
+        <div className="flex flex-col items-stretch gap-2 sm:items-end">
+          <Link
+            href={`/parent/students/${studentId}/complete-file`}
+            className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          >
+            {data ? "Edit file" : "Start file"} →
+          </Link>
+          {data && (
+            <form action={setPostEnrollmentVerifiedAction}>
+              <input type="hidden" name="student_id" value={studentId} />
+              <input
+                type="hidden"
+                name="verified"
+                value={verifiedAt ? "0" : "1"}
+              />
+              <button
+                type="submit"
+                className={`inline-flex w-full items-center justify-center rounded-full px-5 py-2 text-sm font-semibold shadow-md transition ${
+                  verifiedAt
+                    ? "border border-rose-200 bg-white text-rose-700 hover:bg-rose-50"
+                    : "bg-emerald-700 text-white hover:brightness-110"
+                }`}
+              >
+                {verifiedAt ? "Clear verification" : "Mark verified"}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">

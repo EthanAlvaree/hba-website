@@ -14,13 +14,21 @@ import {
   upsertPostEnrollmentData,
 } from "@/lib/post-enrollment"
 
-// Verifies the signed-in user is a parent linked to this specific student.
-// Used by every action on this page — parents can only touch their own kid's
-// data. Returns the parent profile's email for "uploaded_by" attribution.
-async function assertParentForStudent(studentId: string): Promise<string> {
+// Verifies the signed-in user may edit this student's post-enrollment
+// file: either a parent linked to the student, OR an admin acting on
+// their behalf (younger families, phone intake, etc.). Used by every
+// action on this page. Returns the actor's email for "uploaded_by" /
+// audit attribution.
+async function assertCanEditPostEnrollment(
+  studentId: string
+): Promise<string> {
   const session = await auth()
   if (!session?.user?.email) {
     redirect("/admin/sign-in")
+  }
+  // Admins may edit any student's file.
+  if (session.isAdmin) {
+    return session.user.email
   }
   const profile = await getProfileByEmail(session.user.email)
   if (!profile || !profile.roles.includes("parent")) {
@@ -28,8 +36,8 @@ async function assertParentForStudent(studentId: string): Promise<string> {
   }
   const link = await getParentLinkForStudent(profile.id, studentId)
   if (!link) {
-    // The signed-in parent isn't linked to this student. 404 leaks less
-    // than redirect (doesn't confirm or deny existence).
+    // The signed-in parent isn't linked to this student. Redirect
+    // leaks less than a 404 (doesn't confirm or deny existence).
     redirect("/parent")
   }
   return profile.email
@@ -44,7 +52,7 @@ function revalidateCompleteFile(studentId: string) {
 export async function savePostEnrollmentDataAction(formData: FormData) {
   const studentId = formData.get("student_id")
   if (typeof studentId !== "string") throw new Error("Missing student_id.")
-  await assertParentForStudent(studentId)
+  await assertCanEditPostEnrollment(studentId)
 
   const str = (key: string) => formData.get(key) ?? ""
   const bool = (key: string) => formData.get(key) === "on"
@@ -102,7 +110,7 @@ export async function savePostEnrollmentDataAction(formData: FormData) {
 export async function submitPostEnrollmentAction(formData: FormData) {
   const studentId = formData.get("student_id")
   if (typeof studentId !== "string") throw new Error("Missing student_id.")
-  await assertParentForStudent(studentId)
+  await assertCanEditPostEnrollment(studentId)
 
   await markPostEnrollmentSubmittedByFamily(studentId)
   revalidateCompleteFile(studentId)
@@ -112,7 +120,7 @@ export async function submitPostEnrollmentAction(formData: FormData) {
 export async function uploadStudentDocumentAction(formData: FormData) {
   const studentId = formData.get("student_id")
   if (typeof studentId !== "string") throw new Error("Missing student_id.")
-  const email = await assertParentForStudent(studentId)
+  const email = await assertCanEditPostEnrollment(studentId)
 
   const kindRaw = formData.get("kind")
   const kindParsed = studentDocumentKindSchema.safeParse(kindRaw)
@@ -154,11 +162,11 @@ export async function deleteStudentDocumentAction(formData: FormData) {
   const documentId = formData.get("document_id")
   if (typeof studentId !== "string") throw new Error("Missing student_id.")
   if (typeof documentId !== "string") throw new Error("Missing document_id.")
-  await assertParentForStudent(studentId)
+  await assertCanEditPostEnrollment(studentId)
 
   // Sanity check: the document must actually belong to this student. Stops a
   // parent who has TWO kids from deleting a doc belonging to a kid they're
-  // not linked to (assertParentForStudent is keyed on studentId).
+  // not linked to (assertCanEditPostEnrollment is keyed on studentId).
   const doc = await getStudentDocumentById(documentId)
   if (!doc || doc.student_id !== studentId) {
     throw new Error("Document not found.")

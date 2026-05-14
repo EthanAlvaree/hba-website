@@ -45,15 +45,21 @@ export default async function CompleteFilePage({ params, searchParams }: PagePro
     redirect("/admin/sign-in")
   }
 
-  const profile = await getProfileByEmail(session.user.email)
-  if (!profile || !profile.roles.includes("parent")) {
-    redirect("/admin/sign-in")
-  }
-
   const { id: studentId } = await params
-  const link = await getParentLinkForStudent(profile.id, studentId)
-  if (!link) {
-    notFound()
+  const isAdmin = session.isAdmin === true
+
+  // Parents reach this page for their own linked kid. Admins reach it
+  // from the student detail page to fill the file in on a family's
+  // behalf (phone intake, families who can't navigate the portal).
+  if (!isAdmin) {
+    const profile = await getProfileByEmail(session.user.email)
+    if (!profile || !profile.roles.includes("parent")) {
+      redirect("/admin/sign-in")
+    }
+    const link = await getParentLinkForStudent(profile.id, studentId)
+    if (!link) {
+      notFound()
+    }
   }
 
   const student = await getStudentDetail(studentId)
@@ -76,12 +82,23 @@ export default async function CompleteFilePage({ params, searchParams }: PagePro
     <div className="space-y-6">
         <div>
           <Link
-            href={`/parent/students/${studentId}`}
+            href={
+              isAdmin
+                ? `/admin/students/${studentId}`
+                : `/parent/students/${studentId}`
+            }
             className="text-sm font-semibold text-brand-navy underline-offset-4 hover:underline"
           >
             ← Back to {displayName}
           </Link>
         </div>
+
+        {isAdmin && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            You&rsquo;re editing this file as an admin, on the
+            family&rsquo;s behalf. Saves are attributed to your account.
+          </div>
+        )}
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
           <h1 className="text-3xl font-extrabold text-brand-navy">
