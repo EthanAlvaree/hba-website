@@ -15,6 +15,7 @@ import {
 } from "@/lib/applications"
 import {
   isFamilyNotifiableStatus,
+  provisionStudentM365Account,
   sendApplicationStatusUpdateToFamily,
   sendEnrollmentWelcomeToFamily,
 } from "@/lib/graph"
@@ -170,19 +171,37 @@ export async function enrollApplicationAction(formData: FormData) {
     throw new Error(parsed.error.issues[0]?.message ?? "Enrollment failed.")
   }
 
+  const application = await getApplicationById(parsed.data.application_id)
+  if (!application) {
+    throw new Error("Application not found.")
+  }
+
+  // Provision the student's M365 account FIRST. If this throws (e.g. the
+  // Graph permission isn't consented yet), nothing else has run — the admin
+  // fixes the issue and re-submits. Both this and enrollAcceptedApplication
+  // reuse existing records, so the retry is safe.
+  const displayName =
+    [application.student_first_name, application.student_last_name]
+      .filter(Boolean)
+      .join(" ")
+      .trim() || parsed.data.student_hba_email
+  const provision = await provisionStudentM365Account({
+    upn: parsed.data.student_hba_email,
+    displayName,
+  })
+
   await enrollAcceptedApplication(parsed.data)
 
-  // Best-effort: notify the family that the school account is ready and
-  // point them at /welcome for setup. A Graph failure here shouldn't roll
-  // back the enrollment — it can be re-sent manually from /admin/messaging.
+  // Best-effort: notify the family that the school account is ready (with the
+  // temp password when we just created it) and point them at /welcome. A
+  // Graph send failure here shouldn't roll back the enrollment — it can be
+  // re-sent manually from /admin/messaging.
   try {
-    const application = await getApplicationById(parsed.data.application_id)
-    if (application) {
-      await sendEnrollmentWelcomeToFamily({
-        application,
-        studentHbaEmail: parsed.data.student_hba_email,
-      })
-    }
+    await sendEnrollmentWelcomeToFamily({
+      application,
+      studentHbaEmail: parsed.data.student_hba_email,
+      tempPassword: provision.tempPassword,
+    })
   } catch (err) {
     console.error("[enroll] welcome email failed", err)
   }

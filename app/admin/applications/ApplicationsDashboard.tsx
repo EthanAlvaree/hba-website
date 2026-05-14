@@ -14,6 +14,7 @@ import {
   updateApplicationDataAction,
   uploadApplicationDocumentAdminAction,
 } from "./actions"
+import { studentUpnFromApplication } from "@/lib/graph"
 
 export const applicationSortOptions = ["newest", "oldest", "name"] as const
 
@@ -942,10 +943,12 @@ export default function ApplicationsDashboard({
                             Enroll this student
                           </p>
                           <p className="text-sm text-emerald-800">
-                            Creates the student record, the parent/guardian profiles,
-                            and links them together. Run this once the family has
-                            accepted and the student&rsquo;s HBA Microsoft 365 account
-                            has been provisioned.
+                            Creates the student record, the parent/guardian
+                            profiles, and links them together &mdash; and
+                            provisions the student&rsquo;s HBA Microsoft 365
+                            account (with an Office 365 A1 license) on submit.
+                            The email below is suggested in the standard
+                            format; review and edit it before enrolling.
                           </p>
                         </div>
 
@@ -956,6 +959,10 @@ export default function ApplicationsDashboard({
                               name="student_hba_email"
                               type="email"
                               required
+                              defaultValue={studentUpnFromApplication(
+                                application,
+                                new Date().getFullYear()
+                              )}
                               placeholder="firstname.lastname@highbluffacademy.com"
                               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
                             />

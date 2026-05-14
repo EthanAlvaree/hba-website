@@ -1,3 +1,4 @@
+import { randomInt } from "node:crypto"
 import { brand, siteConfig } from "@/lib/site"
 import type { ContactSubmissionRecord } from "@/lib/contact-submissions"
 import type { ApplicationRecord } from "@/lib/applications"
@@ -608,8 +609,11 @@ function buildFamilyStatusHtml(
 export async function sendEnrollmentWelcomeToFamily(options: {
   application: ApplicationRecord
   studentHbaEmail: string
+  /** Set when enrollment just created the M365 account. null when an
+   *  existing account was reused (the family already has a password). */
+  tempPassword?: string | null
 }) {
-  const { application, studentHbaEmail } = options
+  const { application, studentHbaEmail, tempPassword } = options
 
   const guardianEmails: string[] = []
   if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
@@ -627,13 +631,28 @@ export async function sendEnrollmentWelcomeToFamily(options: {
   const welcomeUrl = `${siteConfig.url}/welcome`
   const subject = `${studentName} is enrolled — here's how to set up the school account`
 
+  const credentialsBlock = tempPassword
+    ? [
+        `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;">`,
+        `<strong>Their school email:</strong><br />`,
+        `<span style="font-family:Consolas,Menlo,monospace;font-size:16px;color:${brand.navy};">${escapeHtml(studentHbaEmail)}</span>`,
+        `<br /><br /><strong>Temporary password:</strong><br />`,
+        `<span style="font-family:Consolas,Menlo,monospace;font-size:16px;color:${brand.navy};">${escapeHtml(tempPassword)}</span>`,
+        `<br /><br /><span style="font-size:13px;color:#555;">You'll be asked to set a new password the first time you sign in. This temporary one works only once.</span>`,
+        `</p>`,
+      ].join("")
+    : [
+        `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;">`,
+        `<strong>Their school email:</strong><br />`,
+        `<span style="font-family:Consolas,Menlo,monospace;font-size:16px;color:${brand.navy};">${escapeHtml(studentHbaEmail)}</span>`,
+        `<br /><br /><span style="font-size:13px;color:#555;">This account already exists — sign in with the existing password. If it's been forgotten, the walkthrough below covers resetting it.</span>`,
+        `</p>`,
+      ].join("")
+
   const html = [
     `<p>Hi ${escapeHtml(parentName)},</p>`,
     `<p>Welcome to ${escapeHtml(siteConfig.name)}! <strong>${escapeHtml(studentName)}</strong> is now formally enrolled and has a school Microsoft 365 account waiting for them.</p>`,
-    `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;">`,
-    `<strong>Their school email:</strong><br />`,
-    `<span style="font-family:Consolas,Menlo,monospace;font-size:16px;color:${brand.navy};">${escapeHtml(studentHbaEmail)}</span>`,
-    `</p>`,
+    credentialsBlock,
     `<p>Before the first day, please set up the account using our short walkthrough. It takes about 15 minutes and covers signing in, installing Microsoft Authenticator (required for security), and getting the Microsoft apps on the phone and computer.</p>`,
     `<p style="margin:24px 0;">`,
     `<a href="${welcomeUrl}" style="display:inline-block;padding:12px 24px;background:${brand.navy};color:#fff;text-decoration:none;border-radius:999px;font-weight:600;">Open the setup walkthrough</a>`,
@@ -802,6 +821,230 @@ export function emailFromM365User(user: M365User): string | null {
   if (!candidate) return null
   const lowered = candidate.toLowerCase().trim()
   return lowered.length > 0 ? lowered : null
+}
+
+// ============================================================================
+// Student account provisioning
+// ============================================================================
+//
+// Enrollment auto-creates the student's M365 account (first.last.YY@…) and
+// assigns the Office 365 A1 for Students license. An existing account is
+// reused (re-enrollment after a gap). Needs the Graph app to have
+// User.ReadWrite.All + Organization.Read.All consented in Entra.
+
+const STUDENT_LICENSE_PART_NUMBER =
+  process.env.M365_STUDENT_LICENSE_SKU ?? "STANDARDWOFFPACK_STUDENT"
+
+/** Lowercase, strip diacritics + non-alphanumerics. "Alvarée" -> "alvaree". */
+export function normalizeNamePart(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+}
+
+/** Build the standard student UPN: first.last.YY@<domain>. YY is the 2-digit
+ *  graduation year (enrollmentYear + 12 - entryGrade). Falls back to
+ *  first.last@<domain> when the grade can't be parsed — the admin can add
+ *  the suffix on the enroll form. */
+export function studentUpnFromApplication(
+  application: {
+    student_first_name: string | null
+    student_last_name: string | null
+    student_desired_grade: string | null
+    student_current_grade: string | null
+  },
+  enrollmentYear: number
+): string {
+  const first = normalizeNamePart(application.student_first_name ?? "")
+  const last = normalizeNamePart(application.student_last_name ?? "")
+  const base = [first, last].filter(Boolean).join(".") || "student"
+  const domain = siteConfig.contact.emailDomain
+  const gradeText =
+    application.student_desired_grade ?? application.student_current_grade ?? ""
+  const gradeMatch = gradeText.match(/\d+/)
+  if (!gradeMatch) return `${base}@${domain}`
+  const grade = parseInt(gradeMatch[0], 10)
+  if (!Number.isFinite(grade) || grade < 1 || grade > 12) {
+    return `${base}@${domain}`
+  }
+  const gradYear = enrollmentYear + (12 - grade)
+  return `${base}.${String(gradYear).slice(-2)}@${domain}`
+}
+
+type GraphProvisionUser = {
+  id: string
+  userPrincipalName: string
+  assignedLicenses?: Array<{ skuId: string }>
+}
+
+export type ProvisionResult = {
+  upn: string
+  created: boolean
+  /** Set only when this call created the account. null when an existing
+   *  account was reused. */
+  tempPassword: string | null
+}
+
+/** Turn a non-ok Graph response into a friendly error, calling out the
+ *  permission-consent case explicitly (the most likely first-run failure). */
+async function graphProvisionError(
+  response: Response,
+  whatWeTried: string
+): Promise<Error> {
+  const body = await response.text().catch(() => "")
+  if (response.status === 403) {
+    return new Error(
+      `Microsoft rejected the request to ${whatWeTried} (403). The Graph app ` +
+        `needs the User.ReadWrite.All and Organization.Read.All application ` +
+        `permissions granted with admin consent in Entra.`
+    )
+  }
+  return new Error(`Failed to ${whatWeTried}: ${response.status} ${body}`.trim())
+}
+
+/** GET /users/{upn}; null on 404. */
+async function findM365UserByUpn(
+  upn: string,
+  accessToken: string
+): Promise<GraphProvisionUser | null> {
+  const response = await fetch(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(upn)}?$select=id,userPrincipalName,assignedLicenses`,
+    { headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store" }
+  )
+  if (response.status === 404) return null
+  if (!response.ok) {
+    throw await graphProvisionError(response, "look up the student account")
+  }
+  return (await response.json()) as GraphProvisionUser
+}
+
+/** Resolve the Office 365 A1 for Students sku id from /subscribedSkus. */
+async function resolveStudentLicenseSkuId(
+  accessToken: string
+): Promise<string> {
+  const response = await fetch(
+    "https://graph.microsoft.com/v1.0/subscribedSkus?$select=skuId,skuPartNumber",
+    { headers: { Authorization: `Bearer ${accessToken}` }, cache: "no-store" }
+  )
+  if (!response.ok) {
+    throw await graphProvisionError(response, "read the tenant's license SKUs")
+  }
+  const data = (await response.json()) as {
+    value: Array<{ skuId: string; skuPartNumber: string }>
+  }
+  const wanted = STUDENT_LICENSE_PART_NUMBER.toLowerCase()
+  // The env override may be a part number or a GUID — match either.
+  const match = data.value.find(
+    (s) =>
+      s.skuPartNumber.toLowerCase() === wanted ||
+      s.skuId.toLowerCase() === wanted
+  )
+  if (!match) {
+    const available = data.value.map((s) => s.skuPartNumber).join(", ")
+    throw new Error(
+      `Couldn't find the student license SKU "${STUDENT_LICENSE_PART_NUMBER}". ` +
+        `Available in this tenant: ${available || "(none)"}. Set ` +
+        `M365_STUDENT_LICENSE_SKU to the correct part number or GUID.`
+    )
+  }
+  return match.skuId
+}
+
+/** Random 16-char password meeting Entra complexity (all 4 character classes;
+ *  ambiguous glyphs like 0/O/1/l excluded). */
+export function generateTempPassword(): string {
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ"
+  const lower = "abcdefghijkmnpqrstuvwxyz"
+  const digit = "23456789"
+  const symbol = "!@#$%^&*?"
+  const all = upper + lower + digit + symbol
+  const pick = (set: string) => set[randomInt(set.length)]
+  const chars = [pick(upper), pick(lower), pick(digit), pick(symbol)]
+  while (chars.length < 16) chars.push(pick(all))
+  // Fisher–Yates shuffle so the guaranteed characters aren't always in front.
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = randomInt(i + 1)
+    ;[chars[i], chars[j]] = [chars[j], chars[i]]
+  }
+  return chars.join("")
+}
+
+/** Ensure the student has an M365 account (created if absent) AND the Office
+ *  365 A1 for Students license. Idempotent — safe to re-run after a partial
+ *  failure: an existing account is reused and a missing license is filled in. */
+export async function provisionStudentM365Account(input: {
+  upn: string
+  displayName: string
+}): Promise<ProvisionResult> {
+  const accessToken = await getGraphAccessToken()
+  const upn = input.upn.trim().toLowerCase()
+
+  const skuId = await resolveStudentLicenseSkuId(accessToken)
+  let user = await findM365UserByUpn(upn, accessToken)
+  let created = false
+  let tempPassword: string | null = null
+
+  if (!user) {
+    tempPassword = generateTempPassword()
+    const localPart = upn.split("@")[0] ?? upn
+    const response = await fetch("https://graph.microsoft.com/v1.0/users", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+      body: JSON.stringify({
+        accountEnabled: true,
+        displayName: input.displayName,
+        mailNickname: localPart,
+        userPrincipalName: upn,
+        usageLocation: "US",
+        passwordProfile: {
+          password: tempPassword,
+          forceChangePasswordNextSignIn: true,
+        },
+      }),
+    })
+    if (!response.ok) {
+      throw await graphProvisionError(response, "create the student account")
+    }
+    user = (await response.json()) as GraphProvisionUser
+    created = true
+  }
+
+  // Ensure the student license is assigned. Skip if already present so a
+  // re-run on an existing, already-licensed account is a no-op.
+  const hasLicense = (user.assignedLicenses ?? []).some(
+    (l) => l.skuId.toLowerCase() === skuId.toLowerCase()
+  )
+  if (!hasLicense) {
+    const response = await fetch(
+      `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(user.id)}/assignLicense`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({
+          addLicenses: [{ skuId, disabledPlans: [] }],
+          removeLicenses: [],
+        }),
+      }
+    )
+    if (!response.ok) {
+      throw await graphProvisionError(
+        response,
+        "assign the Office 365 A1 for Students license"
+      )
+    }
+  }
+
+  return { upn, created, tempPassword }
 }
 
 // Push a profile photo TO Microsoft Graph for the given user. PUT to
