@@ -11,21 +11,18 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
   facultyPortraitUrl,
-  faculty as codeFaculty,
-  getFacultyBioOverrideForProfile,
-  type FacultyMember,
+  getFacultyBioForProfile,
+  type FacultyBioRow,
 } from "@/lib/faculty"
 import FacultyPortraitCard from "@/components/faculty/PortraitCard"
-import { siteConfig } from "@/lib/site"
 import { getServiceSupabase } from "@/lib/supabase-server"
 import { saveBioAction } from "@/app/faculty-portal/teaching/actions"
-import { seedFacultyBioForProfileAction } from "./actions"
 
 export const dynamic = "force-dynamic"
 
 type PageProps = {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ saved?: string; seeded?: string; seed_error?: string; portrait?: string }>
+  searchParams: Promise<{ saved?: string; portrait?: string }>
 }
 
 export default async function AdminFacultyBioPage({
@@ -54,16 +51,7 @@ export default async function AdminFacultyBioPage({
     }>()
   if (!profile) notFound()
 
-  const override = await getFacultyBioOverrideForProfile(profile.id)
-
-  // Match the profile to a code-side faculty entry by email convention
-  // (same logic as /faculty-portal/teaching).
-  const codeFacultyEntry: FacultyMember | null =
-    codeFaculty.find(
-      (m) =>
-        profile.email.toLowerCase() ===
-        `${m.slug.split("-")[0]?.toLowerCase()}@${siteConfig.contact.emailDomain}`
-    ) ?? null
+  const bio = await getFacultyBioForProfile(profile.id)
 
   const isFaculty = profile.roles.includes("faculty")
   const fullName =
@@ -96,27 +84,12 @@ export default async function AdminFacultyBioPage({
       {!isFaculty && (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           This profile doesn&rsquo;t have the <code>faculty</code> role.
-          Editing their bio still works, but the public faculty page
-          won&rsquo;t render them unless they&rsquo;re also in{" "}
-          <code>lib/faculty.ts</code>.
+          Editing their bio still works, but you may want to add the
+          role on the profiles page so the rest of the SIS treats them
+          as faculty.
         </div>
       )}
 
-      {raw.seeded === "1" && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
-          Seeded the bio with code-side defaults. Edit below and save.
-        </div>
-      )}
-      {raw.seeded === "already" && (
-        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-          A bio override already exists for this profile — nothing to seed.
-        </div>
-      )}
-      {raw.seed_error && (
-        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-900">
-          {raw.seed_error}
-        </div>
-      )}
       {raw.saved === "bio" && (
         <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
           Bio saved. Changes appear on /faculty in a few minutes.
@@ -128,67 +101,37 @@ export default async function AdminFacultyBioPage({
         </div>
       )}
 
-      {!override && codeFacultyEntry && (
-        <section className="rounded-2xl border border-sky-200 bg-sky-50/60 px-5 py-4 shadow-sm">
-          <h2 className="text-base font-extrabold text-brand-navy">
-            Seed from code defaults
-          </h2>
-          <p className="mt-1 text-sm text-slate-700">
-            This profile has no bio override yet. The form below will save
-            as a new override; you can also pre-fill it with the existing
-            prose from <code>lib/faculty.ts</code> first.
-          </p>
-          <form action={seedFacultyBioForProfileAction} className="mt-3">
-            <input type="hidden" name="profile_id" value={profile.id} />
-            <button
-              type="submit"
-              className="inline-flex items-center justify-center rounded-full bg-sky-700 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
-            >
-              Pre-fill with code defaults
-            </button>
-          </form>
-        </section>
-      )}
-
       <FacultyPortraitCard
         profileId={profile.id}
-        currentPortraitUrl={facultyPortraitUrl(override?.public_photo_path ?? null)}
-        codeImagePath={codeFacultyEntry?.image ?? null}
+        currentPortraitUrl={facultyPortraitUrl(bio?.public_photo_path ?? null)}
+        codeImagePath={bio?.image ?? null}
         asAdmin
       />
 
-      <AdminBioEditor
-        profileId={profile.id}
-        codeDefaults={codeFacultyEntry}
-        override={override}
-      />
+      <AdminBioEditor profileId={profile.id} bio={bio} fullName={fullName} />
     </div>
   )
 }
 
-type BioOverride = Awaited<ReturnType<typeof getFacultyBioOverrideForProfile>>
-
 function AdminBioEditor({
   profileId,
-  codeDefaults,
-  override,
+  bio,
+  fullName,
 }: {
   profileId: string
-  codeDefaults: FacultyMember | null
-  override: BioOverride
+  bio: FacultyBioRow | null
+  fullName: string
 }) {
-  const title = override?.title ?? codeDefaults?.title ?? ""
-  const area = override?.area ?? codeDefaults?.area ?? ""
-  const hbaStart = override?.hba_start ?? codeDefaults?.hbaStart ?? ""
-  const careerStart = override?.career_start ?? codeDefaults?.careerStart ?? ""
-  const coursesTaught = (
-    override?.courses_taught ??
-    codeDefaults?.coursesTaught ??
-    []
-  ).join("\n")
-  const shortBio = override?.short_bio ?? codeDefaults?.shortBio ?? ""
-  const fullBio = override?.full_bio ?? codeDefaults?.fullBio ?? ""
-  const hasOverride = override !== null
+  const slug = bio?.slug ?? ""
+  const name = bio?.name ?? fullName
+  const title = bio?.title ?? ""
+  const area = bio?.area ?? ""
+  const hbaStart = bio?.hba_start ?? ""
+  const careerStart = bio?.career_start ?? ""
+  const coursesTaught = (bio?.courses_taught ?? []).join("\n")
+  const shortBio = bio?.short_bio ?? ""
+  const fullBio = bio?.full_bio ?? ""
+  const hasRow = bio !== null
 
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
@@ -196,14 +139,15 @@ function AdminBioEditor({
         <div>
           <h2 className="text-lg font-extrabold text-brand-navy">Public bio</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Same editor the faculty member sees at{" "}
-            <code className="text-xs">/faculty-portal/teaching</code>. Saves go
-            through the same action; both surfaces stay in sync.
+            The faculty_bios record powering{" "}
+            <code className="text-xs">/faculty</code>. The faculty member
+            edits the same fields (minus URL slug) at{" "}
+            <code className="text-xs">/faculty-portal/teaching</code>.
           </p>
         </div>
-        {hasOverride && (
+        {hasRow && (
           <span className="rounded-full bg-emerald-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
-            Customized
+            On file
           </span>
         )}
       </div>
@@ -211,6 +155,37 @@ function AdminBioEditor({
       <form action={saveBioAction} className="mt-4 space-y-3">
         <input type="hidden" name="profile_id" value={profileId} />
         <input type="hidden" name="admin" value="1" />
+
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">
+              Display name <span className="text-rose-600">*</span>
+            </span>
+            <input
+              name="name"
+              defaultValue={name}
+              maxLength={160}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">
+              URL slug <span className="text-rose-600">*</span>
+            </span>
+            <input
+              name="slug"
+              defaultValue={slug}
+              maxLength={120}
+              placeholder="e.g. jane-doe — lives at /faculty/jane-doe"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+        </div>
+        <p className="-mt-1 text-[11px] text-slate-500">
+          Name + slug publish this person on the public faculty page.
+          Keep the slug stable once set — changing it breaks the
+          existing URL.
+        </p>
 
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="space-y-1 text-xs font-medium text-slate-700">

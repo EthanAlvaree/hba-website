@@ -9,17 +9,12 @@
 
 import { notFound } from "next/navigation"
 import Link from "next/link"
-import { faculty } from "@/lib/faculty"
+import { getFacultyBySlug } from "@/lib/faculty"
 import { siteConfig } from "@/lib/site"
 import SignatureTemplate from "@/components/email-signatures/SignatureTemplate"
 import CopyHtmlButton from "./CopyHtmlButton"
 
-export const dynamic = "force-static"
-export const revalidate = 3600
-
-export async function generateStaticParams() {
-  return faculty.map((f) => ({ slug: f.slug }))
-}
+export const dynamic = "force-dynamic"
 
 export async function generateMetadata({
   params,
@@ -27,7 +22,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const member = faculty.find((f) => f.slug === slug)
+  const member = await getFacultyBySlug(slug)
   return {
     title: member ? `${member.name} — Email signature` : "Email signature",
   }
@@ -39,7 +34,7 @@ export default async function FacultySignaturePage({
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  const member = faculty.find((f) => f.slug === slug)
+  const member = await getFacultyBySlug(slug)
   if (!member) notFound()
 
   // Derive email from the slug: first segment before the first hyphen,

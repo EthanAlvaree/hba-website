@@ -1347,24 +1347,29 @@ export type BioSeedResult = {
 }
 
 export async function seedTeacherQualificationsFromBios(): Promise<BioSeedResult> {
-  // Import faculty module dynamically to avoid pulling its assets into
-  // every page that imports lib/scheduler.ts.
-  const { faculty } = await import("@/lib/faculty")
-
   const supabase = getSupabase()
 
-  // Fetch all profiles + all courses once.
-  const [profilesRes, coursesRes] = await Promise.all([
-    supabase.from("profiles").select("id, email, display_name").returns<
-      Array<{ id: string; email: string; display_name: string | null }>
-    >(),
+  // faculty_bios is the source of truth. Each row is already keyed by
+  // profile_id, so there's no email-convention matching to do — the
+  // only resolution left is courses_taught (names) → course ids.
+  const [biosRes, coursesRes] = await Promise.all([
+    supabase
+      .from("faculty_bios")
+      .select("profile_id, name, courses_taught")
+      .returns<
+        Array<{
+          profile_id: string
+          name: string | null
+          courses_taught: string[] | null
+        }>
+      >(),
     supabase.from("courses").select("id, name").returns<Array<{ id: string; name: string }>>(),
   ])
 
-  if (profilesRes.error) throw new Error(profilesRes.error.message)
+  if (biosRes.error) throw new Error(biosRes.error.message)
   if (coursesRes.error) throw new Error(coursesRes.error.message)
 
-  const profiles = profilesRes.data ?? []
+  const bios = biosRes.data ?? []
   const courses = coursesRes.data ?? []
 
   const coursesByName = new Map<string, string>()
@@ -1373,37 +1378,22 @@ export async function seedTeacherQualificationsFromBios(): Promise<BioSeedResult
   }
 
   const result: BioSeedResult = {
-    bios_total: faculty.length,
-    bios_matched_to_profile: 0,
+    bios_total: bios.length,
+    bios_matched_to_profile: bios.length,
     bios_no_profile: [],
     courses_inserted: 0,
     courses_skipped_existing: 0,
     courses_no_match: [],
   }
 
-  for (const bio of faculty) {
-    // Extract first name from the slug (e.g. "ellen-sullivan" → "ellen").
-    const firstName = bio.slug.split("-")[0]?.toLowerCase() ?? ""
-    if (!firstName) {
-      result.bios_no_profile.push(bio.name)
-      continue
-    }
+  for (const bio of bios) {
+    const bioName = bio.name ?? bio.profile_id
+    if (!bio.courses_taught || bio.courses_taught.length === 0) continue
 
-    const expectedEmail = `${firstName}@${siteConfig.contact.emailDomain}`
-    const profile = profiles.find((p) => p.email === expectedEmail)
-    if (!profile) {
-      result.bios_no_profile.push(bio.name)
-      continue
-    }
-
-    result.bios_matched_to_profile += 1
-
-    if (!bio.coursesTaught || bio.coursesTaught.length === 0) continue
-
-    for (const courseName of bio.coursesTaught) {
+    for (const courseName of bio.courses_taught) {
       const courseId = coursesByName.get(courseName.toLowerCase().trim())
       if (!courseId) {
-        result.courses_no_match.push(`${bio.name}: ${courseName}`)
+        result.courses_no_match.push(`${bioName}: ${courseName}`)
         continue
       }
 
@@ -1411,7 +1401,7 @@ export async function seedTeacherQualificationsFromBios(): Promise<BioSeedResult
       const { data: existing } = await supabase
         .from("teacher_qualifications")
         .select("id")
-        .eq("profile_id", profile.id)
+        .eq("profile_id", bio.profile_id)
         .eq("course_id", courseId)
         .maybeSingle<{ id: string }>()
 
@@ -1423,14 +1413,14 @@ export async function seedTeacherQualificationsFromBios(): Promise<BioSeedResult
       const { error: insertError } = await supabase
         .from("teacher_qualifications")
         .insert({
-          profile_id: profile.id,
+          profile_id: bio.profile_id,
           course_id: courseId,
           preference_rank: 1,
         })
 
       if (insertError) {
         throw new Error(
-          `Failed to insert qualification for ${bio.name} / ${courseName}: ${insertError.message}`
+          `Failed to insert qualification for ${bioName} / ${courseName}: ${insertError.message}`
         )
       }
       result.courses_inserted += 1

@@ -18,9 +18,9 @@ import {
 import { sectionPeriodSchema } from "@/lib/sis"
 import {
   clearFacultyPortrait,
-  getFacultyBioOverrideForProfile,
+  getFacultyBioForProfile,
   setFacultyPortraitFromBuffer,
-  upsertFacultyBioOverride,
+  upsertFacultyBio,
 } from "@/lib/faculty"
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
@@ -211,6 +211,10 @@ const bioSchema = z.object({
     .nullable(),
   short_bio: z.string().trim().max(800).optional().nullable(),
   full_bio: z.string().trim().max(12000).optional().nullable(),
+  // Identity fields — only the admin editor submits these (a faculty
+  // member can't change their own public URL slug).
+  slug: z.string().trim().max(120).optional().nullable(),
+  name: z.string().trim().max(160).optional().nullable(),
 })
 
 function emptyToNull(s: string | null | undefined): string | null {
@@ -233,6 +237,8 @@ export async function saveBioAction(formData: FormData) {
     courses_taught: formData.get("courses_taught") ?? "",
     short_bio: formData.get("short_bio") ?? "",
     full_bio: formData.get("full_bio") ?? "",
+    slug: formData.get("slug") ?? "",
+    name: formData.get("name") ?? "",
   })
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Save failed.")
@@ -251,13 +257,24 @@ export async function saveBioAction(formData: FormData) {
   const fromAdmin = formData.get("admin") === "1"
 
   // When an admin saves on behalf of a faculty member, snapshot the
-  // existing override first so we can diff and record which fields
-  // actually changed in the audit log.
+  // existing row first so we can diff and record which fields actually
+  // changed in the audit log.
   const before = fromAdmin
-    ? await getFacultyBioOverrideForProfile(targetProfileId)
+    ? await getFacultyBioForProfile(targetProfileId)
     : null
 
-  const nextOverride = {
+  const nextOverride: {
+    profile_id: string
+    title: string | null
+    area: string | null
+    hba_start: string | null
+    career_start: string | null
+    courses_taught: string[] | null
+    short_bio: string | null
+    full_bio: string | null
+    slug?: string | null
+    name?: string | null
+  } = {
     profile_id: targetProfileId,
     title: emptyToNull(parsed.data.title ?? null),
     area: emptyToNull(parsed.data.area ?? null),
@@ -268,7 +285,14 @@ export async function saveBioAction(formData: FormData) {
     full_bio: emptyToNull(parsed.data.full_bio ?? null),
   }
 
-  await upsertFacultyBioOverride(nextOverride)
+  // Identity fields are admin-only. Faculty self-edit never touches the
+  // slug/name, so those keys are simply omitted from the upsert.
+  if (fromAdmin) {
+    nextOverride.slug = emptyToNull(parsed.data.slug ?? null)
+    nextOverride.name = emptyToNull(parsed.data.name ?? null)
+  }
+
+  await upsertFacultyBio(nextOverride)
 
   if (fromAdmin) {
     const fields: Array<keyof typeof nextOverride> = [
@@ -279,6 +303,8 @@ export async function saveBioAction(formData: FormData) {
       "courses_taught",
       "short_bio",
       "full_bio",
+      "slug",
+      "name",
     ]
     const changedFields = fields.filter((f) => {
       const a = before ? (before as Record<string, unknown>)[f] ?? null : null

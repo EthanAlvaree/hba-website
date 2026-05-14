@@ -5,28 +5,16 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
-import {
-  faculty,
-  getFacultyBySlug,
-  getFacultyBySlugWithOverrides,
-  getNeighbors,
-} from "@/lib/faculty"
+import { getFacultyBySlug, getNeighbors } from "@/lib/faculty"
 import { siteConfig } from "@/lib/site"
 
 export const dynamic = "force-dynamic"
 
 type Props = { params: Promise<{ slug: string }> }
 
-export function generateStaticParams() {
-  return faculty.map((m) => ({ slug: m.slug }))
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  // Metadata uses the synchronous code-side data — the DB overrides
-  // don't add much to OG cards and keeping this sync makes
-  // generateMetadata cheaper.
-  const member = getFacultyBySlug(slug)
+  const member = await getFacultyBySlug(slug)
   if (!member) return { title: "Faculty — High Bluff Academy" }
 
   return {
@@ -43,10 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FacultyDetailPage({ params }: Props) {
   const { slug } = await params
-  const member = await getFacultyBySlugWithOverrides(slug)
+  const member = await getFacultyBySlug(slug)
   if (!member) notFound()
 
-  const neighbors = getNeighbors(slug)
+  const neighbors = await getNeighbors(slug)
   const paragraphs = member.fullBio.split("\n\n").filter(Boolean)
 
   // Schema.org Person markup — helps search engines understand the page.

@@ -2691,9 +2691,13 @@ async function emailMatchesFacultyBio(email: string): Promise<boolean> {
   const localPart = email.split("@")[0]?.toLowerCase() ?? ""
   if (!localPart) return false
   try {
-    const { faculty } = await import("@/lib/faculty")
-    return faculty.some((bio) => {
-      const bioFirst = bio.slug.split("-")[0]?.toLowerCase() ?? ""
+    const { data } = await getSupabase()
+      .from("faculty_bios")
+      .select("slug")
+      .not("slug", "is", null)
+      .returns<Array<{ slug: string }>>()
+    return (data ?? []).some((row) => {
+      const bioFirst = row.slug.split("-")[0]?.toLowerCase() ?? ""
       return bioFirst === localPart
     })
   } catch (error) {

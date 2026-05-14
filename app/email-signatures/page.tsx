@@ -1,12 +1,15 @@
 import Link from "next/link"
-import { faculty } from "@/lib/faculty"
+import { getFacultyMembers } from "@/lib/faculty"
 import { siteConfig } from "@/lib/site"
+
+export const dynamic = "force-dynamic"
 
 export const metadata = {
   title: "Email signatures",
 }
 
-export default function EmailSignaturesIndexPage() {
+export default async function EmailSignaturesIndexPage() {
+  const faculty = await getFacultyMembers()
   const sorted = [...faculty].sort((a, b) => a.name.localeCompare(b.name))
 
   // Group leadership first for easy office discovery.

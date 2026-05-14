@@ -22,11 +22,8 @@ import { QualificationsDragList } from "./QualificationsDragList"
 import { listAdminAuditEvents } from "@/lib/audit"
 import {
   facultyPortraitUrl,
-  getFacultyBioOverrideForProfile,
-  faculty as codeFaculty,
-  type FacultyMember,
+  getFacultyBioForProfile,
 } from "@/lib/faculty"
-import { siteConfig } from "@/lib/site"
 import FacultyPortraitCard from "@/components/faculty/PortraitCard"
 
 export const dynamic = "force-dynamic"
@@ -47,25 +44,14 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
     redirect("/admin/sign-in")
   }
 
-  const [qualifications, availability, workload, courses, recentAudit, bioOverride] = await Promise.all([
+  const [qualifications, availability, workload, courses, recentAudit, bio] = await Promise.all([
     listTeacherQualifications(profile.id),
     listTeacherAvailability(profile.id),
     getTeacherWorkload(profile.id),
     listCourses(),
     listAdminAuditEvents({ target_kind: "profile", target_id: profile.id, limit: 25 }),
-    getFacultyBioOverrideForProfile(profile.id),
+    getFacultyBioForProfile(profile.id),
   ])
-
-  // Find the code-side faculty entry that corresponds to this profile,
-  // matched by the email convention (slug.split("-")[0] @ emailDomain).
-  // null when there's no matching entry (e.g. a brand-new hire not yet
-  // added to lib/faculty.ts).
-  const codeFacultyEntry: FacultyMember | null =
-    codeFaculty.find(
-      (m) =>
-        profile.email.toLowerCase() ===
-        `${m.slug.split("-")[0]?.toLowerCase()}@${siteConfig.contact.emailDomain}`
-    ) ?? null
 
   const availabilityMap = buildAvailabilityMap(availability)
   const qualifiedCourseIds = new Set(qualifications.map((q) => q.course_id))
@@ -117,15 +103,11 @@ export default async function TeachingProfilePage({ searchParams }: PageProps) {
 
         <FacultyPortraitCard
           profileId={profile.id}
-          currentPortraitUrl={facultyPortraitUrl(bioOverride?.public_photo_path ?? null)}
-          codeImagePath={codeFacultyEntry?.image ?? null}
+          currentPortraitUrl={facultyPortraitUrl(bio?.public_photo_path ?? null)}
+          codeImagePath={bio?.image ?? null}
         />
 
-        <BioCard
-          profileId={profile.id}
-          codeDefaults={codeFacultyEntry}
-          override={bioOverride}
-        />
+        <BioCard profileId={profile.id} bio={bio} />
 
         <QualificationsCard
           profileId={profile.id}
@@ -422,36 +404,24 @@ function WorkloadCard({
 // Bio card — faculty edit their public-page bio
 // ============================================================================
 
-type BioOverride = Awaited<ReturnType<typeof getFacultyBioOverrideForProfile>>
+type BioRow = Awaited<ReturnType<typeof getFacultyBioForProfile>>
 
 function BioCard({
   profileId,
-  codeDefaults,
-  override,
+  bio,
 }: {
   profileId: string
-  codeDefaults: FacultyMember | null
-  override: BioOverride
+  bio: BioRow
 }) {
-  const previewHref = codeDefaults?.slug
-    ? `/faculty/${codeDefaults.slug}`
-    : null
-  // What ends up in each input: prefer the saved override; fall back
-  // to the code-side default. Empty fields render the code default as
-  // a placeholder so the faculty member knows what the public page
-  // will show if they leave it blank.
-  const title = override?.title ?? codeDefaults?.title ?? ""
-  const area = override?.area ?? codeDefaults?.area ?? ""
-  const hbaStart = override?.hba_start ?? codeDefaults?.hbaStart ?? ""
-  const careerStart = override?.career_start ?? codeDefaults?.careerStart ?? ""
-  const coursesTaught = (
-    override?.courses_taught ??
-    codeDefaults?.coursesTaught ??
-    []
-  ).join("\n")
-  const shortBio = override?.short_bio ?? codeDefaults?.shortBio ?? ""
-  const fullBio = override?.full_bio ?? codeDefaults?.fullBio ?? ""
-  const hasOverride = override !== null
+  const previewHref = bio?.slug ? `/faculty/${bio.slug}` : null
+  const title = bio?.title ?? ""
+  const area = bio?.area ?? ""
+  const hbaStart = bio?.hba_start ?? ""
+  const careerStart = bio?.career_start ?? ""
+  const coursesTaught = (bio?.courses_taught ?? []).join("\n")
+  const shortBio = bio?.short_bio ?? ""
+  const fullBio = bio?.full_bio ?? ""
+  const hasOverride = bio !== null
 
   return (
     <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
@@ -491,11 +461,10 @@ function BioCard({
         </div>
       </div>
 
-      {!codeDefaults && (
+      {!bio?.slug && (
         <p className="mt-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900">
-          You aren&rsquo;t in the static faculty list yet — your bio
-          here will show up on the public page once an admin adds you
-          to the directory.
+          Your bio doesn&rsquo;t have a public URL yet — it will show up
+          on the public faculty page once an admin assigns you a slug.
         </p>
       )}
 
