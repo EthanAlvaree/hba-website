@@ -41,6 +41,11 @@ export type CanonicalCourse = {
   grade_levels: string[]
   /** Short blurb shown nowhere yet — reserved for future per-course pages. */
   description?: string
+  /** Retired from the active catalogue. Kept in this list so historical
+   *  references (faculty bios, transcripts) still resolve by name, but
+   *  hidden from the public catalogue page. Mirrors `active = false` on
+   *  the SIS courses row. */
+  retired?: boolean
 }
 
 export type CourseCategory = {
@@ -54,7 +59,7 @@ export const courseCategories: CourseCategory[] = [
     id: "math",
     label: "Mathematics",
     description:
-      "From Algebra 1 through Multivariable Calculus, with honors and AP tracks at every level.",
+      "From Integrated Math 1 through Multivariable Calculus (H), with honors and AP tracks at every level.",
   },
   {
     id: "science",
@@ -112,6 +117,7 @@ const math: CanonicalCourse[] = [
     credit_hours: 1,
     ucCategory: "C",
     grade_levels: ["9", "10"],
+    retired: true,
   },
   {
     code: "MATH-GEO",
@@ -123,6 +129,7 @@ const math: CanonicalCourse[] = [
     credit_hours: 1,
     ucCategory: "C",
     grade_levels: ["9", "10", "11"],
+    retired: true,
   },
   {
     code: "MATH-ALG2",
@@ -134,6 +141,7 @@ const math: CanonicalCourse[] = [
     credit_hours: 1,
     ucCategory: "C",
     grade_levels: ["10", "11", "12"],
+    retired: true,
   },
   {
     code: "MATH-IM1",
@@ -222,6 +230,7 @@ const math: CanonicalCourse[] = [
     credit_hours: 1,
     ucCategory: "C",
     grade_levels: ["10", "11", "12"],
+    retired: true,
   },
   {
     code: "MATH-APPRECALC",
@@ -924,7 +933,10 @@ export function coursesByCategory(): Record<CourseCategoryId, CanonicalCourse[]>
     pe: [] as CanonicalCourse[],
   } satisfies Record<CourseCategoryId, CanonicalCourse[]>
 
+  // Retired courses stay in `canonicalCourses` for name resolution but
+  // are hidden from the public catalogue page.
   for (const course of canonicalCourses) {
+    if (course.retired) continue
     out[course.category].push(course)
   }
   return out
