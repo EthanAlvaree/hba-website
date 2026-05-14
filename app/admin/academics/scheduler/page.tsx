@@ -241,12 +241,20 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
                 override + commit lands next), then approve.
               </p>
             </div>
-            <Link
-              href="/admin/academics/scheduler/course-requests"
-              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
-            >
-              View course requests →
-            </Link>
+            <div className="flex flex-wrap items-center gap-2">
+              <Link
+                href="/admin/academics/scheduler/course-requests"
+                className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+              >
+                View course requests →
+              </Link>
+              <Link
+                href="/admin/academics/scheduler/compare"
+                className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+              >
+                Compare drafts →
+              </Link>
+            </div>
           </div>
         </section>
 
