@@ -254,6 +254,12 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
               >
                 Compare drafts →
               </Link>
+              <Link
+                href="/admin/academics/scheduler/what-if"
+                className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+              >
+                What-if explorer →
+              </Link>
             </div>
           </div>
         </section>

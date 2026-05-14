@@ -233,6 +233,22 @@ export type SolverOptions = {
   term_id: string
   min_section_size?: number       // default 2 (per Ethan's "no 1-1 classes" rule)
   default_max_section_size?: number  // applied if course has no max_enrollment; default 20
+
+  // ---- What-if overrides ----
+  // The /admin/academics/scheduler/what-if explorer passes these to
+  // see how the schedule changes if a constraint is loosened. They
+  // never touch the underlying data — purely a per-run override.
+  //
+  // profile_ids whose teacher_availability rows are ignored for this
+  // run ("what if Tricia could teach 1st period?").
+  ignore_teacher_unavailability?: string[]
+  // student_ids whose student_availability rows are ignored for this
+  // run ("what if Brynn could attend P5/P6?").
+  ignore_student_unavailability?: string[]
+  // When true, teacher max_periods_per_week + max_consecutive_periods
+  // caps are dropped ("what if everyone could pick up an extra
+  // section?").
+  relax_workload_caps?: boolean
 }
 
 // ============================================================================
@@ -398,10 +414,17 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     list.sort((a, b) => a.preference_rank - b.preference_rank)
   }
 
+  // What-if override sets — empty unless the explorer passed them.
+  const ignoreTeacherUnavail = new Set(options.ignore_teacher_unavailability ?? [])
+  const ignoreStudentUnavail = new Set(options.ignore_student_unavailability ?? [])
+  const relaxWorkloadCaps = options.relax_workload_caps === true
+
   // Availability indexed by teacher → set of periods they CAN'T teach
-  // (default available; explicit false flips them out).
+  // (default available; explicit false flips them out). A teacher in
+  // the what-if ignore-set is treated as fully available.
   const unavailableByTeacher = new Map<string, Set<SectionPeriod>>()
   for (const a of availability) {
+    if (ignoreTeacherUnavail.has(a.profile_id)) continue
     if (!a.available) {
       const set = unavailableByTeacher.get(a.profile_id) ?? new Set<SectionPeriod>()
       set.add(a.period)
@@ -410,9 +433,11 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
   }
 
   // Same shape for students. Default availability = "anything"; only
-  // explicit unavailable rows constrain the solver.
+  // explicit unavailable rows constrain the solver. A student in the
+  // what-if ignore-set is treated as fully available.
   const unavailableByStudent = new Map<string, Set<SectionPeriod>>()
   for (const a of studentAvailability) {
+    if (ignoreStudentUnavail.has(a.student_id)) continue
     if (!a.available) {
       const set = unavailableByStudent.get(a.student_id) ?? new Set<SectionPeriod>()
       set.add(a.period)
@@ -420,15 +445,19 @@ export async function solveScheduleForTerm(options: SolverOptions): Promise<Solv
     }
   }
 
-  // Workload caps. null = no cap. Default cap = 8 periods/week.
+  // Workload caps. null = no cap. Default cap = 8 periods/week. When the
+  // what-if explorer passes relax_workload_caps, both maps stay empty
+  // so the solver behaves as if every teacher has no limit.
   const maxPeriodsByTeacher = new Map<string, number>()
   const maxConsecutiveByTeacher = new Map<string, number>()
-  for (const w of workloads) {
-    if (typeof w.max_periods_per_week === "number") {
-      maxPeriodsByTeacher.set(w.profile_id, w.max_periods_per_week)
-    }
-    if (typeof w.max_consecutive_periods === "number") {
-      maxConsecutiveByTeacher.set(w.profile_id, w.max_consecutive_periods)
+  if (!relaxWorkloadCaps) {
+    for (const w of workloads) {
+      if (typeof w.max_periods_per_week === "number") {
+        maxPeriodsByTeacher.set(w.profile_id, w.max_periods_per_week)
+      }
+      if (typeof w.max_consecutive_periods === "number") {
+        maxConsecutiveByTeacher.set(w.profile_id, w.max_consecutive_periods)
+      }
     }
   }
 

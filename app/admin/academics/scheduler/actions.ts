@@ -73,6 +73,87 @@ export async function generateScheduleDraftAction(formData: FormData) {
   redirect(`/admin/academics/scheduler?draft_id=${persisted.id}`)
 }
 
+// ============================================================================
+// What-if explorer — generate a draft with constraints loosened
+// ============================================================================
+
+const whatIfSchema = z.object({
+  term_id: z.uuid(),
+  min_section_size: z.coerce.number().int().min(1).max(50).optional().default(2),
+  ignore_teacher_unavailability: z.array(z.uuid()).default([]),
+  ignore_student_unavailability: z.array(z.uuid()).default([]),
+  relax_workload_caps: z.boolean().default(false),
+})
+
+export async function generateWhatIfDraftAction(formData: FormData) {
+  const session = await assertAdmin()
+
+  const parsed = whatIfSchema.safeParse({
+    term_id: formData.get("term_id"),
+    min_section_size: formData.get("min_section_size") ?? 2,
+    ignore_teacher_unavailability: formData
+      .getAll("ignore_teacher_unavailability")
+      .map(String),
+    ignore_student_unavailability: formData
+      .getAll("ignore_student_unavailability")
+      .map(String),
+    relax_workload_caps: formData.get("relax_workload_caps") === "on",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid request.")
+  }
+
+  let result
+  try {
+    result = await solveScheduleForTerm({
+      term_id: parsed.data.term_id,
+      min_section_size: parsed.data.min_section_size,
+      ignore_teacher_unavailability: parsed.data.ignore_teacher_unavailability,
+      ignore_student_unavailability: parsed.data.ignore_student_unavailability,
+      relax_workload_caps: parsed.data.relax_workload_caps,
+    })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Solver failed"
+    redirect(
+      `/admin/academics/scheduler/what-if?term_id=${parsed.data.term_id}&solver_error=${encodeURIComponent(message)}`
+    )
+  }
+
+  // Build a human-readable note describing exactly what was loosened,
+  // so the draft is self-documenting in the list + compare views.
+  const tweaks: string[] = []
+  if (parsed.data.min_section_size !== 2) {
+    tweaks.push(`min section size = ${parsed.data.min_section_size}`)
+  }
+  if (parsed.data.ignore_teacher_unavailability.length > 0) {
+    tweaks.push(
+      `ignored ${parsed.data.ignore_teacher_unavailability.length} teacher availability constraint(s)`
+    )
+  }
+  if (parsed.data.ignore_student_unavailability.length > 0) {
+    tweaks.push(
+      `ignored ${parsed.data.ignore_student_unavailability.length} student availability constraint(s)`
+    )
+  }
+  if (parsed.data.relax_workload_caps) {
+    tweaks.push("relaxed all teacher workload caps")
+  }
+  const notes =
+    tweaks.length > 0
+      ? `What-if draft — ${tweaks.join("; ")}.`
+      : "What-if draft — no constraints loosened (baseline)."
+
+  const persisted = await persistDraft({
+    term_id: parsed.data.term_id,
+    created_by: session?.user?.email ?? null,
+    result,
+    notes,
+  })
+
+  revalidateScheduler()
+  redirect(`/admin/academics/scheduler?draft_id=${persisted.id}`)
+}
+
 const draftStatusSchema = z.object({
   draft_id: z.uuid(),
   status: z.enum(["proposed", "reviewed", "committed", "discarded"]),
