@@ -203,11 +203,16 @@ export default function AcademicHistoryCard({
   studentId,
   entries,
   courses,
+  hbaCourseIds,
   error,
 }: {
   studentId: string
   entries: AcademicHistoryRecord[]
   courses: CourseRecord[]
+  /** Course ids the student has an HBA enrollment for. An entry that
+   *  articulates to one of these and isn't yet marked superseded is
+   *  probably the original attempt of a course retaken at HBA. */
+  hbaCourseIds: Set<string>
   error?: string
 }) {
   const sortedCourses = [...courses].sort((a, b) =>
@@ -245,7 +250,12 @@ export default function AcademicHistoryCard({
         </p>
       ) : (
         <ul className="mt-4 space-y-2">
-          {entries.map((entry) => (
+          {entries.map((entry) => {
+            const looksLikeRetake =
+              entry.course_id != null &&
+              hbaCourseIds.has(entry.course_id) &&
+              !entry.superseded
+            return (
             <li key={entry.id}>
               <details className="rounded-2xl border border-slate-200 bg-slate-50/60">
                 <summary className="flex cursor-pointer list-none flex-wrap items-center gap-2 px-4 py-3">
@@ -282,6 +292,14 @@ export default function AcademicHistoryCard({
                 </summary>
 
                 <div className="space-y-4 border-t border-slate-200 px-4 py-4">
+                  {looksLikeRetake && (
+                    <p className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-900">
+                      This student has an HBA enrollment for the articulated
+                      course. If this entry is the original attempt they
+                      retook at HBA, check <strong>Retaken at HBA</strong> so
+                      it drops out of the cumulative GPA and credit totals.
+                    </p>
+                  )}
                   <form
                     action={updateAcademicHistoryAction}
                     className="space-y-4"
@@ -321,7 +339,8 @@ export default function AcademicHistoryCard({
                 </div>
               </details>
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
 

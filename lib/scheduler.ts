@@ -717,6 +717,22 @@ export type TrajectoryEntry = {
   grade_when_taken?: number | null
 }
 
+// Transfer / external coursework that counts toward a subject's
+// requirement. Not a TrajectoryEntry — it has no HBA course_id and
+// can't be picked — so it renders as a read-only note on the subject
+// tree rather than a node in the year columns.
+export type TrajectoryTransferEntry = {
+  id: string
+  title: string
+  school_name: string
+  academic_year: string | null
+  grade_letter: string | null
+  credits: number
+  /** Counted toward credits_completed? False for failing grades — the
+   *  row still shows so the picture is complete, but it earned nothing. */
+  counted: boolean
+}
+
 export type TrajectorySubjectSummary = {
   subject_area: SubjectArea
   required_credits_basic: number | null
@@ -724,6 +740,10 @@ export type TrajectorySubjectSummary = {
   credits_completed: number
   credits_in_progress: number
   entries: TrajectoryEntry[]
+  /** Accepted transfer credit tagged to this subject (non-superseded).
+   *  Already folded into credits_completed for the rows where
+   *  `counted` is true. */
+  transfer_entries: TrajectoryTransferEntry[]
 }
 
 export type TrajectoryResult = {
@@ -909,10 +929,16 @@ export async function computeStudentTrajectory(
     // requirement buckets, but isn't an HBA enrollment.
     supabase
       .from("academic_history")
-      .select("subject_area, credits, superseded, grade_letter")
+      .select(
+        "id, title, school_name, academic_year, subject_area, credits, superseded, grade_letter"
+      )
       .eq("student_id", studentId)
       .returns<
         Array<{
+          id: string
+          title: string
+          school_name: string
+          academic_year: string | null
           subject_area: string | null
           credits: number
           superseded: boolean
@@ -932,18 +958,34 @@ export async function computeStudentTrajectory(
 
   // Roll transfer credit up by subject area. A row counts toward a
   // requirement bucket when it's mapped to a subject, not superseded
-  // by an HBA retake, and carries a passing letter grade.
+  // by an HBA retake, and carries a passing letter grade. Non-counting
+  // rows (failing / ungraded) still surface on the tree so the picture
+  // is complete — superseded rows don't (they belong to the retake).
   const transferCreditsByArea = new Map<SubjectArea, number>()
+  const transferEntriesByArea = new Map<SubjectArea, TrajectoryTransferEntry[]>()
   for (const row of academicHistoryResult.data ?? []) {
     if (row.superseded) continue
     if (!row.subject_area) continue
     if (!(subjectAreas as readonly string[]).includes(row.subject_area)) continue
-    if (!row.grade_letter || row.grade_letter === "F") continue
     const area = row.subject_area as SubjectArea
-    transferCreditsByArea.set(
-      area,
-      (transferCreditsByArea.get(area) ?? 0) + Number(row.credits)
-    )
+    const counted = Boolean(row.grade_letter) && row.grade_letter !== "F"
+    if (counted) {
+      transferCreditsByArea.set(
+        area,
+        (transferCreditsByArea.get(area) ?? 0) + Number(row.credits)
+      )
+    }
+    const arr = transferEntriesByArea.get(area) ?? []
+    arr.push({
+      id: row.id,
+      title: row.title,
+      school_name: row.school_name,
+      academic_year: row.academic_year,
+      grade_letter: row.grade_letter,
+      credits: Number(row.credits),
+      counted,
+    })
+    transferEntriesByArea.set(area, arr)
   }
 
   // Determine next academic year start (calendar year). Fall back to
@@ -1169,6 +1211,7 @@ export async function computeStudentTrajectory(
       credits_completed,
       credits_in_progress,
       entries: areaEntries,
+      transfer_entries: transferEntriesByArea.get(area) ?? [],
     }
   })
 

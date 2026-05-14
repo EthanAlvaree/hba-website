@@ -127,7 +127,7 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
         {raw.role_ok === "1" && (
           <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
             <p className="text-sm font-semibold text-emerald-900">
-              Admin role updated.
+              Profile saved.
             </p>
           </section>
         )}

@@ -61,7 +61,8 @@
       "Bash(rm app/admin/_components/AdminShell.tsx app/admin/_components/sign-out-action.ts)",
       "Bash(rmdir app/admin/_components)",
       "Bash(cat > *)",
-      "Bash(npx tsx *)"
+      "Bash(npx tsx *)",
+      "Bash(npx --yes tsx --version)"
     ],
     "additionalDirectories": [
       "C:\\dev\\hba-website",

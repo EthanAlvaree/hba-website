@@ -238,6 +238,15 @@ export default async function StudentDetailPage({
   const enrollmentBuckets = groupEnrollmentsByTerm(student.enrollments)
   const activeEnrollments = student.enrollments.filter((e) => e.status === "enrolled")
 
+  // Course ids the student has an HBA enrollment for — drives the
+  // "looks like a retake" hint on academic-history entries that
+  // articulate to one of these courses.
+  const hbaCourseIds = new Set(
+    student.enrollments
+      .map((e) => e.section?.course?.id)
+      .filter((courseId): courseId is string => Boolean(courseId))
+  )
+
   return (
     <div className="space-y-6">
         <StudentsHeader />
@@ -890,6 +899,7 @@ export default async function StudentDetailPage({
           studentId={student.id}
           entries={academicHistory}
           courses={allCourses}
+          hbaCourseIds={hbaCourseIds}
           error={rawSearch.ah_error}
         />
 

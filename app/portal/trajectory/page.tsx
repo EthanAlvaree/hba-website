@@ -151,7 +151,7 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
   const showLaterColumn = nextGrade !== null && nextGrade < 12
 
   const requestableSubjects = trajectory.subjects.filter(
-    (s) => s.entries.length > 0
+    (s) => s.entries.length > 0 || s.transfer_entries.length > 0
   )
 
   return (
@@ -432,6 +432,33 @@ function SubjectTree({
                 className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-0.5 text-xs text-emerald-800"
               >
                 {e.name}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {subject.transfer_entries.length > 0 && (
+        <div className="mt-3 rounded-2xl border border-indigo-200 bg-indigo-50/50 px-4 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-600">
+            Transfer credit
+          </p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {subject.transfer_entries.map((t) => (
+              <span
+                key={t.id}
+                title={`${t.school_name}${
+                  t.academic_year ? ` · ${t.academic_year}` : ""
+                }`}
+                className={`rounded-full border px-2.5 py-0.5 text-xs ${
+                  t.counted
+                    ? "border-indigo-200 bg-white text-indigo-800"
+                    : "border-slate-200 bg-white text-slate-400 line-through"
+                }`}
+              >
+                {t.title}
+                {t.grade_letter ? ` · ${t.grade_letter}` : ""}
+                {t.counted ? ` · ${t.credits.toFixed(1)} cr` : " · no credit"}
               </span>
             ))}
           </div>
