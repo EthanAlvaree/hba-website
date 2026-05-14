@@ -10,6 +10,10 @@ export type PortalNavItem = {
   label: string
   href: string
   children?: Array<{ id: string; label: string; href: string }>
+  /** Optional count badge — e.g. number of applications awaiting
+   *  triage. Rendered as a small pill on the right of the nav item.
+   *  0 or undefined renders nothing. */
+  badge?: number
 }
 
 export type PortalAudience = "admin" | "faculty" | "student" | "parent"
@@ -140,13 +144,25 @@ export default function PortalShell({
                 <li key={section.id}>
                   <Link
                     href={section.href}
-                    className={`block rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                    className={`flex items-center justify-between gap-2 rounded-xl px-3 py-2 text-sm font-semibold transition ${
                       sectionActive
                         ? "bg-brand-navy text-white"
                         : "text-slate-700 hover:bg-slate-100"
                     }`}
                   >
-                    {section.label}
+                    <span>{section.label}</span>
+                    {typeof section.badge === "number" && section.badge > 0 && (
+                      <span
+                        className={`inline-flex min-w-5 items-center justify-center rounded-full px-1.5 py-0.5 text-[11px] font-bold ${
+                          sectionActive
+                            ? "bg-white text-brand-navy"
+                            : "bg-brand-orange text-white"
+                        }`}
+                        aria-label={`${section.badge} need attention`}
+                      >
+                        {section.badge > 99 ? "99+" : section.badge}
+                      </span>
+                    )}
                   </Link>
                   {section.children && sectionActive && (
                     <ul className="mt-1 ml-3 space-y-0.5 border-l border-slate-200 pl-3">

@@ -1,38 +1,80 @@
 import { auth } from "@/auth"
 import { avatarForEmail } from "@/lib/profile-photos"
+import { getServiceSupabase } from "@/lib/supabase-server"
 import PortalShell, { type CrossPortalLink, type PortalNavItem } from "@/app/_components/PortalShell"
 
-const adminNav: PortalNavItem[] = [
-  { id: "applications", label: "Applications", href: "/admin/applications" },
-  { id: "students", label: "Students", href: "/admin/students" },
-  {
-    id: "academics",
-    label: "Academics",
-    href: "/admin/academics",
-    children: [
-      { id: "terms", label: "Terms", href: "/admin/academics/terms" },
-      { id: "courses", label: "Courses", href: "/admin/academics/courses" },
-      { id: "sections", label: "Sections", href: "/admin/academics/sections" },
-      {
-        id: "requirements",
-        label: "Graduation reqs",
-        href: "/admin/academics/requirements",
-      },
-      { id: "scheduler", label: "Scheduler", href: "/admin/academics/scheduler" },
-    ],
-  },
-  { id: "profiles", label: "Profiles", href: "/admin/profiles" },
-  {
-    id: "contact-submissions",
-    label: "Contact submissions",
-    href: "/admin/contact-submissions",
-  },
-  { id: "messaging", label: "Messaging", href: "/admin/messaging" },
-  { id: "reports", label: "Reports", href: "/admin/reports" },
-  { id: "tools", label: "Tools", href: "/admin/tools" },
-  { id: "orphans", label: "Orphans", href: "/admin/orphans" },
-  { id: "audit-log", label: "Audit log", href: "/admin/audit-log" },
-]
+// Counts of items awaiting an admin response. Drives the alert badges
+// on the admin nav. Best-effort — if either query fails we just don't
+// show a badge rather than breaking the whole shell.
+async function getAdminAlertCounts(): Promise<{
+  applications: number
+  contactSubmissions: number
+}> {
+  try {
+    const supabase = getServiceSupabase()
+    const [appsRes, contactsRes] = await Promise.all([
+      // Applications sitting in 'submitted' — received but not yet triaged.
+      supabase
+        .from("applications")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "submitted"),
+      // Contact submissions still in 'new' — no one has responded yet.
+      supabase
+        .from("contact_submissions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "new"),
+    ])
+    return {
+      applications: appsRes.count ?? 0,
+      contactSubmissions: contactsRes.count ?? 0,
+    }
+  } catch {
+    return { applications: 0, contactSubmissions: 0 }
+  }
+}
+
+function buildAdminNav(counts: {
+  applications: number
+  contactSubmissions: number
+}): PortalNavItem[] {
+  return [
+    {
+      id: "applications",
+      label: "Applications",
+      href: "/admin/applications",
+      badge: counts.applications,
+    },
+    { id: "students", label: "Students", href: "/admin/students" },
+    {
+      id: "academics",
+      label: "Academics",
+      href: "/admin/academics",
+      children: [
+        { id: "terms", label: "Terms", href: "/admin/academics/terms" },
+        { id: "courses", label: "Courses", href: "/admin/academics/courses" },
+        { id: "sections", label: "Sections", href: "/admin/academics/sections" },
+        {
+          id: "requirements",
+          label: "Graduation reqs",
+          href: "/admin/academics/requirements",
+        },
+        { id: "scheduler", label: "Scheduler", href: "/admin/academics/scheduler" },
+      ],
+    },
+    { id: "profiles", label: "Profiles", href: "/admin/profiles" },
+    {
+      id: "contact-submissions",
+      label: "Contact submissions",
+      href: "/admin/contact-submissions",
+      badge: counts.contactSubmissions,
+    },
+    { id: "messaging", label: "Messaging", href: "/admin/messaging" },
+    { id: "reports", label: "Reports", href: "/admin/reports" },
+    { id: "tools", label: "Tools", href: "/admin/tools" },
+    { id: "orphans", label: "Orphans", href: "/admin/orphans" },
+    { id: "audit-log", label: "Audit log", href: "/admin/audit-log" },
+  ]
+}
 
 const adminCrossPortal: CrossPortalLink[] = [
   { label: "Faculty portal", href: "/faculty-portal" },
@@ -57,7 +99,10 @@ export default async function AdminLayout({
   }
 
   const userEmail = session.user?.email ?? ""
-  const avatar = await avatarForEmail(userEmail)
+  const [avatar, alertCounts] = await Promise.all([
+    avatarForEmail(userEmail),
+    getAdminAlertCounts(),
+  ])
 
   return (
     <PortalShell
@@ -65,7 +110,7 @@ export default async function AdminLayout({
       userEmail={userEmail}
       userPhotoUrl={avatar.photoUrl}
       userInitials={avatar.initials}
-      navSections={adminNav}
+      navSections={buildAdminNav(alertCounts)}
       crossPortalLinks={adminCrossPortal}
     >
       {children}
