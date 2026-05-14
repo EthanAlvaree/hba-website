@@ -221,18 +221,6 @@ const math: CanonicalCourse[] = [
     grade_levels: ["11", "12"],
   },
   {
-    code: "MATH-HPRECALC",
-    name: "Precalculus (H)",
-    category: "math",
-    is_ap: false,
-    is_honors: true,
-    is_elective: false,
-    credit_hours: 1,
-    ucCategory: "C",
-    grade_levels: ["10", "11", "12"],
-    retired: true,
-  },
-  {
     code: "MATH-APPRECALC",
     name: "AP Precalculus",
     category: "math",

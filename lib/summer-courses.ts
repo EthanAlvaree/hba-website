@@ -129,12 +129,6 @@ export const summerCategories: SummerCategory[] = [
         price: "$2,900",
       },
       {
-        name: "Precalculus (H)",
-        dates: "June 8 – July 24",
-        time: "8:00 – 10:30am",
-        price: "$2,900",
-      },
-      {
         name: "Intro to Calculus",
         dates: "June 8 – July 24",
         time: "8:00 – 10:30am",

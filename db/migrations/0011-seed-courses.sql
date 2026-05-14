@@ -29,7 +29,6 @@ values
   ('MATH-HIM2', 'Integrated Math 2 (H)', 'Mathematics', 'math', null, array['10']::text[], false, true, false, 1, true),
   ('MATH-HIM3', 'Integrated Math 3 (H)', 'Mathematics', 'math', null, array['11']::text[], false, true, false, 1, true),
   ('MATH-PRECALC', 'Intro to Calculus', 'Mathematics', 'math', null, array['11', '12']::text[], false, false, false, 1, true),
-  ('MATH-HPRECALC', 'Precalculus (H)', 'Mathematics', 'math', null, array['10', '11', '12']::text[], false, true, false, 1, true),
   ('MATH-APPRECALC', 'AP Precalculus', 'Mathematics', 'math', null, array['10', '11', '12']::text[], true, false, false, 1, true),
   ('MATH-APSTATS', 'AP Statistics', 'Mathematics', 'math', null, array['11', '12']::text[], true, false, false, 1, true),
   ('MATH-APCALCAB', 'AP Calculus AB', 'Mathematics', 'math', null, array['11', '12']::text[], true, false, false, 1, true),
