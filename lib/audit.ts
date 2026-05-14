@@ -68,6 +68,10 @@ export const ADMIN_AUDIT_ACTIONS = {
   student_availability_admin_edit: "student.availability_admin_edit",
   parent_link_create_manual: "parent_link.create_manual",
   course_request_admin_edit: "course_request.admin_edit",
+  // Transfer / external coursework — mutates the cumulative transcript.
+  academic_history_create: "academic_history.create",
+  academic_history_update: "academic_history.update",
+  academic_history_delete: "academic_history.delete",
   // Faculty bios.
   faculty_bio_seed: "faculty_bio.seed",
   faculty_bio_bulk_seed: "faculty_bio.bulk_seed",

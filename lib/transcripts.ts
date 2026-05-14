@@ -5,6 +5,10 @@
 // the transcript page shows both side-by-side for college-application use.
 
 import { gradePoints, weightedGradePoints } from "@/lib/gradebook"
+import {
+  listAcademicHistory,
+  type AcademicHistorySource,
+} from "@/lib/academic-history"
 import type {
   SectionModality,
   SectionPeriod,
@@ -30,6 +34,28 @@ export type TranscriptCourse = {
   final_grade_letter: string | null
   final_grade_percentage: number | null
   // Per-course grade points (used in GPA math). Null when no letter grade.
+  unweighted_points: number | null
+  weighted_points: number | null
+}
+
+// One row of transfer / external coursework (from academic_history).
+// Not an HBA enrollment — rendered in its own transcript section and
+// folded into the cumulative GPA only, never the HBA-only GPA.
+export type TransferCourse = {
+  id: string
+  title: string
+  school_name: string
+  academic_year: string | null
+  term_label: string | null
+  source: AcademicHistorySource
+  subject_area: string | null
+  grade_letter: string | null
+  credits: number
+  is_ap: boolean
+  is_honors: boolean
+  counts_toward_gpa: boolean
+  // Retaken at HBA — stays visible but excluded from GPA + credit math.
+  superseded: boolean
   unweighted_points: number | null
   weighted_points: number | null
 }
@@ -65,6 +91,16 @@ export type Transcript = {
     | "status"
   > & { hba_email: string | null }
   terms: TranscriptTerm[]
+  // Transfer / external coursework, ordered for display.
+  transfer_courses: TransferCourse[]
+  // HBA-only rollups — locked HBA enrollments, nothing else.
+  hba_credits_attempted: number
+  hba_credits_earned: number
+  hba_gpa: number | null
+  hba_gpa_weighted: number | null
+  // Cumulative rollups — HBA enrollments + accepted (non-superseded)
+  // transfer credit. Superseded retakes are excluded; credit-only
+  // transfer rows count for credit but not GPA.
   cumulative_credits_attempted: number
   cumulative_credits_earned: number
   cumulative_gpa: number | null
@@ -164,6 +200,10 @@ export async function buildTranscriptForStudent(
     throw new Error(`Failed to load transcript enrollments: ${enrollmentsError.message}`)
   }
 
+  // Transfer / external coursework. Unioned into the cumulative GPA
+  // below; never touches the HBA-only GPA.
+  const academicHistory = await listAcademicHistory(studentId)
+
   // Bucket by term.
   type Bucket = TranscriptTerm
   const buckets = new Map<string, Bucket>()
@@ -224,11 +264,11 @@ export async function buildTranscriptForStudent(
     }
   }
 
-  // Compute per-term rollups, then cumulative across all terms.
-  let cumWeightedPoints = 0
-  let cumWeightedPointsW = 0
-  let cumCredits = 0
-  let cumCreditsEarned = 0
+  // Compute per-term rollups, then the HBA-only rollup across all terms.
+  let hbaPoints = 0
+  let hbaPointsW = 0
+  let hbaCredits = 0
+  let hbaCreditsEarned = 0
 
   for (const bucket of buckets.values()) {
     // Sort courses inside a term for stable display: required courses first
@@ -260,15 +300,72 @@ export async function buildTranscriptForStudent(
     bucket.term_gpa = credits > 0 ? pointsXCredit / credits : null
     bucket.term_gpa_weighted = credits > 0 ? pointsXCreditW / credits : null
 
-    cumWeightedPoints += pointsXCredit
-    cumWeightedPointsW += pointsXCreditW
-    cumCredits += credits
-    cumCreditsEarned += creditsEarned
+    hbaPoints += pointsXCredit
+    hbaPointsW += pointsXCreditW
+    hbaCredits += credits
+    hbaCreditsEarned += creditsEarned
   }
 
   const terms = [...buckets.values()].sort((left, right) =>
     left.start_date.localeCompare(right.start_date)
   )
+
+  // Fold in transfer / external coursework. Three buckets of behavior:
+  //  - superseded (retaken at HBA): excluded from GPA and credit, but
+  //    still rendered on the transcript.
+  //  - counts_toward_gpa = false (credit-only / Pass): earns credit,
+  //    skipped in GPA math.
+  //  - otherwise: full participation in cumulative GPA + credit.
+  // A row with no letter grade is treated as in-progress — rendered,
+  // but contributes nothing.
+  let transferPoints = 0
+  let transferPointsW = 0
+  let transferGpaCredits = 0
+  let transferCreditsAttempted = 0
+  let transferCreditsEarned = 0
+
+  const transfer_courses: TransferCourse[] = academicHistory.map((row) => {
+    const letter = row.grade_letter
+    const unweighted = letter ? gradePoints(letter) : null
+    const weighted = letter
+      ? weightedGradePoints(letter, {
+          is_ap: row.is_ap,
+          is_honors: row.is_honors,
+        })
+      : null
+
+    if (letter && !row.superseded) {
+      transferCreditsAttempted += row.credits
+      if (letter !== "F") transferCreditsEarned += row.credits
+      if (row.counts_toward_gpa && unweighted !== null) {
+        transferPoints += unweighted * row.credits
+        transferPointsW += (weighted ?? unweighted) * row.credits
+        transferGpaCredits += row.credits
+      }
+    }
+
+    return {
+      id: row.id,
+      title: row.title,
+      school_name: row.school_name,
+      academic_year: row.academic_year,
+      term_label: row.term_label,
+      source: row.source,
+      subject_area: row.subject_area,
+      grade_letter: letter,
+      credits: row.credits,
+      is_ap: row.is_ap,
+      is_honors: row.is_honors,
+      counts_toward_gpa: row.counts_toward_gpa,
+      superseded: row.superseded,
+      unweighted_points: unweighted,
+      weighted_points: weighted,
+    }
+  })
+
+  const cumGpaCredits = hbaCredits + transferGpaCredits
+  const cumCreditsAttempted = hbaCredits + transferCreditsAttempted
+  const cumCreditsEarned = hbaCreditsEarned + transferCreditsEarned
 
   return {
     student: {
@@ -286,10 +383,17 @@ export async function buildTranscriptForStudent(
       hba_email: studentRow.profile?.email ?? null,
     },
     terms,
-    cumulative_credits_attempted: cumCredits,
+    transfer_courses,
+    hba_credits_attempted: hbaCredits,
+    hba_credits_earned: hbaCreditsEarned,
+    hba_gpa: hbaCredits > 0 ? hbaPoints / hbaCredits : null,
+    hba_gpa_weighted: hbaCredits > 0 ? hbaPointsW / hbaCredits : null,
+    cumulative_credits_attempted: cumCreditsAttempted,
     cumulative_credits_earned: cumCreditsEarned,
-    cumulative_gpa: cumCredits > 0 ? cumWeightedPoints / cumCredits : null,
-    cumulative_gpa_weighted: cumCredits > 0 ? cumWeightedPointsW / cumCredits : null,
+    cumulative_gpa:
+      cumGpaCredits > 0 ? (hbaPoints + transferPoints) / cumGpaCredits : null,
+    cumulative_gpa_weighted:
+      cumGpaCredits > 0 ? (hbaPointsW + transferPointsW) / cumGpaCredits : null,
     generated_at: new Date().toISOString(),
   }
 }

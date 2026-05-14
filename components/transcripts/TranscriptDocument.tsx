@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { siteConfig } from "@/lib/site"
+import { academicHistorySourceLabels } from "@/lib/academic-history"
 import type { Transcript, TranscriptCourse } from "@/lib/transcripts"
 
 const pacific = "America/Los_Angeles"
@@ -53,7 +54,9 @@ export default function TranscriptDocument({
   reportCardBasePath?: string
 }) {
   const student = transcript.student
-  const hasGrades = transcript.terms.length > 0
+  const hasHbaGrades = transcript.terms.length > 0
+  const hasTransfer = transcript.transfer_courses.length > 0
+  const hasAny = hasHbaGrades || hasTransfer
   const isOfficial = variant === "official"
 
   return (
@@ -113,13 +116,16 @@ export default function TranscriptDocument({
         </dl>
       </section>
 
-      {!hasGrades ? (
+      {!hasAny && (
         <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-10 text-center text-sm text-slate-600 shadow-sm print:rounded-none print:border-0 print:py-4 print:shadow-none">
-          No locked final grades on record yet. Final grades are added to the
-          transcript when a section&rsquo;s grades are locked at term end.
+          No locked final grades or transfer credit on record yet. HBA final
+          grades are added when a section&rsquo;s grades are locked at term
+          end; transfer credit is entered from the student&rsquo;s admin
+          profile.
         </section>
-      ) : (
-        transcript.terms.map((term) => (
+      )}
+
+      {transcript.terms.map((term) => (
           <section
             key={term.term_id}
             className="rounded-[2rem] border border-slate-200 bg-white px-8 py-6 shadow-sm print:break-inside-avoid print:rounded-none print:border-0 print:px-0 print:py-2 print:shadow-none"
@@ -224,29 +230,154 @@ export default function TranscriptDocument({
               </table>
             </div>
           </section>
-        ))
+        ))}
+
+      {hasTransfer && (
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-8 py-6 shadow-sm print:break-inside-avoid print:rounded-none print:border-0 print:px-0 print:py-2 print:shadow-none">
+          <h3 className="text-lg font-extrabold text-brand-navy">
+            Transfer &amp; external coursework
+          </h3>
+          <p className="mt-1 text-xs text-slate-500">
+            Coursework completed at another school. Credit accepted by HBA
+            counts toward the cumulative GPA below; courses retaken at HBA
+            are shown for completeness but excluded from GPA and credit.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-slate-200 text-left text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <th className="py-2 pr-2">Course</th>
+                  <th className="py-2 pr-2">School</th>
+                  <th className="py-2 pr-2">Year</th>
+                  <th className="py-2 pr-2 text-right">Credits</th>
+                  <th className="py-2 pr-2">Grade</th>
+                  <th className="py-2 text-right">Points</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transcript.transfer_courses.map((course) => {
+                  const tag = course.is_ap
+                    ? "AP"
+                    : course.is_honors
+                    ? "Honors"
+                    : null
+                  return (
+                    <tr
+                      key={course.id}
+                      className="border-b border-slate-100 last:border-b-0"
+                    >
+                      <td className="py-2 pr-2 text-slate-900">
+                        <span
+                          className={`font-semibold ${
+                            course.superseded
+                              ? "text-slate-400 line-through"
+                              : ""
+                          }`}
+                        >
+                          {course.title}
+                        </span>
+                        {tag && (
+                          <span className="ml-2 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600 print:border-0 print:bg-transparent print:p-0">
+                            {tag}
+                          </span>
+                        )}
+                        <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                          {academicHistorySourceLabels[course.source]}
+                        </span>
+                        {course.superseded && (
+                          <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-700">
+                            Retaken at HBA
+                          </span>
+                        )}
+                        {!course.superseded &&
+                          !course.counts_toward_gpa &&
+                          course.grade_letter && (
+                            <span className="ml-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
+                              Credit only
+                            </span>
+                          )}
+                      </td>
+                      <td className="py-2 pr-2 text-slate-700">
+                        {course.school_name}
+                      </td>
+                      <td className="py-2 pr-2 text-slate-700">
+                        {course.academic_year ?? "—"}
+                        {course.term_label ? ` · ${course.term_label}` : ""}
+                      </td>
+                      <td className="py-2 pr-2 text-right text-slate-700">
+                        {course.credits.toFixed(2)}
+                      </td>
+                      <td className="py-2 pr-2 font-semibold text-slate-900">
+                        {course.grade_letter ?? "—"}
+                      </td>
+                      <td className="py-2 text-right text-slate-700">
+                        {course.superseded || !course.counts_toward_gpa
+                          ? "—"
+                          : course.unweighted_points !== null
+                          ? course.unweighted_points.toFixed(2)
+                          : "—"}
+                        {!course.superseded &&
+                          course.counts_toward_gpa &&
+                          course.weighted_points !== null &&
+                          course.unweighted_points !== null &&
+                          course.weighted_points !==
+                            course.unweighted_points && (
+                            <span className="ml-1 text-xs text-slate-500">
+                              ({course.weighted_points.toFixed(2)} w)
+                            </span>
+                          )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
-      {hasGrades && (
+      {hasAny && (
         <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-8 py-6 shadow-sm print:break-inside-avoid print:rounded-none print:border print:border-emerald-200 print:px-4 print:py-3 print:shadow-none">
-          <h3 className="text-lg font-extrabold text-emerald-900">Cumulative</h3>
+          <h3 className="text-lg font-extrabold text-emerald-900">
+            {hasTransfer ? "GPA & credits" : "Cumulative"}
+          </h3>
           <dl className="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
             <Row
-              label="Cumulative GPA (unweighted)"
+              label={hasTransfer ? "HBA GPA (unweighted)" : "Cumulative GPA (unweighted)"}
               value={
-                transcript.cumulative_gpa !== null
-                  ? transcript.cumulative_gpa.toFixed(2)
+                transcript.hba_gpa !== null
+                  ? transcript.hba_gpa.toFixed(2)
                   : "—"
               }
             />
             <Row
-              label="Cumulative GPA (weighted)"
+              label={hasTransfer ? "HBA GPA (weighted)" : "Cumulative GPA (weighted)"}
               value={
-                transcript.cumulative_gpa_weighted !== null
-                  ? transcript.cumulative_gpa_weighted.toFixed(2)
+                transcript.hba_gpa_weighted !== null
+                  ? transcript.hba_gpa_weighted.toFixed(2)
                   : "—"
               }
             />
+            {hasTransfer && (
+              <>
+                <Row
+                  label="Cumulative GPA (unweighted)"
+                  value={
+                    transcript.cumulative_gpa !== null
+                      ? transcript.cumulative_gpa.toFixed(2)
+                      : "—"
+                  }
+                />
+                <Row
+                  label="Cumulative GPA (weighted)"
+                  value={
+                    transcript.cumulative_gpa_weighted !== null
+                      ? transcript.cumulative_gpa_weighted.toFixed(2)
+                      : "—"
+                  }
+                />
+              </>
+            )}
             <Row
               label="Credits earned"
               value={transcript.cumulative_credits_earned.toFixed(2)}
@@ -256,6 +387,12 @@ export default function TranscriptDocument({
               value={transcript.cumulative_credits_attempted.toFixed(2)}
             />
           </dl>
+          {hasTransfer && (
+            <p className="mt-2 text-xs text-emerald-800">
+              HBA GPA covers locked HBA coursework only. Cumulative GPA also
+              includes accepted transfer credit. Credit totals are cumulative.
+            </p>
+          )}
           <p className="mt-3 text-xs text-emerald-800">
             GPA scale: A = 4.0, A− = 3.7, B+ = 3.3, B = 3.0, B− = 2.7, C+ = 2.3,
             C = 2.0, C− = 1.7, D+ = 1.3, D = 1.0, D− = 0.7, F = 0.0. Weighted

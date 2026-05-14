@@ -20,6 +20,14 @@ import {
   withdrawStudentInputSchema,
 } from "@/lib/sis"
 import { z } from "zod"
+import {
+  academicHistoryCreateSchema,
+  academicHistoryUpdateSchema,
+  createAcademicHistoryEntry,
+  deleteAcademicHistoryEntry,
+  getAcademicHistoryStudentId,
+  updateAcademicHistoryEntry,
+} from "@/lib/academic-history"
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 import {
   clearProfilePhoto,
@@ -568,4 +576,120 @@ export async function revokeStudentPrereqOverrideAction(formData: FormData) {
   revalidateStudent(parsed.data.student_id)
   revalidatePath(`/portal/trajectory`)
   redirect(`/admin/students/${parsed.data.student_id}#prereq-overrides`)
+}
+
+// ============================================================================
+// Academic history — transfer / external coursework. Mutates the
+// cumulative transcript + graduation trajectory, so every change is
+// audit-logged and the transcript/trajectory pages are revalidated.
+// ============================================================================
+
+// The shared form-field shape for add + update. Checkboxes are absent
+// from FormData when unchecked, so `=== "on"` is the read.
+function readAcademicHistoryFields(formData: FormData) {
+  return {
+    title: formData.get("title") ?? "",
+    school_name: formData.get("school_name") ?? "",
+    academic_year: formData.get("academic_year") ?? "",
+    term_label: formData.get("term_label") ?? "",
+    grade_letter: formData.get("grade_letter") ?? "",
+    credits: formData.get("credits") ?? "1",
+    subject_area: formData.get("subject_area") ?? "",
+    course_id: formData.get("course_id") ?? "",
+    source: formData.get("source") ?? "transfer",
+    is_ap: formData.get("is_ap") === "on",
+    is_honors: formData.get("is_honors") === "on",
+    counts_toward_gpa: formData.get("counts_toward_gpa") === "on",
+    superseded: formData.get("superseded") === "on",
+    notes: formData.get("notes") ?? "",
+  }
+}
+
+function revalidateStudentTranscript(studentId: string) {
+  revalidateStudent(studentId)
+  revalidatePath(`/admin/students/${studentId}/transcript`)
+  revalidatePath(`/portal/transcript`)
+  revalidatePath(`/portal/trajectory`)
+}
+
+export async function addAcademicHistoryAction(formData: FormData) {
+  await assertAdmin()
+  const studentId = String(formData.get("student_id") ?? "").trim()
+
+  const parsed = academicHistoryCreateSchema.safeParse({
+    student_id: studentId,
+    ...readAcademicHistoryFields(formData),
+  })
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Couldn't add the entry."
+    redirect(
+      `/admin/students/${studentId}?ah_error=${encodeURIComponent(message)}#academic-history`
+    )
+  }
+
+  const entry = await createAcademicHistoryEntry(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.academic_history_create,
+    target_kind: "academic_history",
+    target_id: entry.id,
+    details: {
+      student_id: entry.student_id,
+      title: entry.title,
+      school_name: entry.school_name,
+    },
+  })
+  revalidateStudentTranscript(parsed.data.student_id)
+  redirect(`/admin/students/${parsed.data.student_id}#academic-history`)
+}
+
+export async function updateAcademicHistoryAction(formData: FormData) {
+  await assertAdmin()
+  const studentId = String(formData.get("student_id") ?? "").trim()
+
+  const parsed = academicHistoryUpdateSchema.safeParse({
+    id: formData.get("id"),
+    ...readAcademicHistoryFields(formData),
+  })
+  if (!parsed.success) {
+    const message = parsed.error.issues[0]?.message ?? "Couldn't save the entry."
+    redirect(
+      `/admin/students/${studentId}?ah_error=${encodeURIComponent(message)}#academic-history`
+    )
+  }
+
+  const entry = await updateAcademicHistoryEntry(parsed.data)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.academic_history_update,
+    target_kind: "academic_history",
+    target_id: entry.id,
+    details: {
+      student_id: entry.student_id,
+      title: entry.title,
+      superseded: entry.superseded,
+    },
+  })
+  revalidateStudentTranscript(entry.student_id)
+  redirect(`/admin/students/${entry.student_id}#academic-history`)
+}
+
+export async function deleteAcademicHistoryAction(formData: FormData) {
+  await assertAdmin()
+  const id = String(formData.get("id") ?? "").trim()
+  const studentId =
+    String(formData.get("student_id") ?? "").trim() ||
+    (await getAcademicHistoryStudentId(id)) ||
+    ""
+  if (!id) {
+    redirect(`/admin/students/${studentId}#academic-history`)
+  }
+
+  await deleteAcademicHistoryEntry(id)
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.academic_history_delete,
+    target_kind: "academic_history",
+    target_id: id,
+    details: { student_id: studentId },
+  })
+  if (studentId) revalidateStudentTranscript(studentId)
+  redirect(`/admin/students/${studentId}#academic-history`)
 }

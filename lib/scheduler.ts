@@ -401,7 +401,6 @@ export const subjectAreas = [
   "visual_performing_arts",
   "physical_education",
   "computer_science",
-  "college_preparatory",
   "elective",
 ] as const
 export type SubjectArea = (typeof subjectAreas)[number]
@@ -415,7 +414,6 @@ export const subjectAreaLabels: Record<SubjectArea, string> = {
   visual_performing_arts: "Visual & performing arts",
   physical_education: "Physical education",
   computer_science: "Computer science",
-  college_preparatory: "College-preparatory",
   elective: "Elective",
 }
 
@@ -871,6 +869,7 @@ export async function computeStudentTrajectory(
     overridesResult,
     enrollmentsResult,
     termsResult,
+    academicHistoryResult,
   ] = await Promise.all([
     supabase
       .from("students")
@@ -906,6 +905,20 @@ export async function computeStudentTrajectory(
       .select("start_date, academic_year")
       .order("start_date", { ascending: true })
       .returns<Array<{ start_date: string; academic_year: string }>>(),
+    // Transfer / external coursework — counts toward graduation
+    // requirement buckets, but isn't an HBA enrollment.
+    supabase
+      .from("academic_history")
+      .select("subject_area, credits, superseded, grade_letter")
+      .eq("student_id", studentId)
+      .returns<
+        Array<{
+          subject_area: string | null
+          credits: number
+          superseded: boolean
+          grade_letter: string | null
+        }>
+      >(),
   ])
 
   if (studentError) throw new Error(`Student lookup failed: ${studentError.message}`)
@@ -914,6 +927,24 @@ export async function computeStudentTrajectory(
   if (assignmentsResult.error) throw new Error(assignmentsResult.error.message)
   if (enrollmentsResult.error) throw new Error(enrollmentsResult.error.message)
   if (termsResult.error) throw new Error(termsResult.error.message)
+  if (academicHistoryResult.error)
+    throw new Error(academicHistoryResult.error.message)
+
+  // Roll transfer credit up by subject area. A row counts toward a
+  // requirement bucket when it's mapped to a subject, not superseded
+  // by an HBA retake, and carries a passing letter grade.
+  const transferCreditsByArea = new Map<SubjectArea, number>()
+  for (const row of academicHistoryResult.data ?? []) {
+    if (row.superseded) continue
+    if (!row.subject_area) continue
+    if (!(subjectAreas as readonly string[]).includes(row.subject_area)) continue
+    if (!row.grade_letter || row.grade_letter === "F") continue
+    const area = row.subject_area as SubjectArea
+    transferCreditsByArea.set(
+      area,
+      (transferCreditsByArea.get(area) ?? 0) + Number(row.credits)
+    )
+  }
 
   // Determine next academic year start (calendar year). Fall back to
   // the current academic year if there's no future term on file.
@@ -1114,9 +1145,12 @@ export async function computeStudentTrajectory(
   // under each — Studio Art counts toward both VPA and Elective.
   const subjects: TrajectorySubjectSummary[] = subjectAreas.map((area) => {
     const areaEntries = entries.filter((e) => e.subject_areas.includes(area))
-    const credits_completed = areaEntries
-      .filter((e) => e.status === "completed")
-      .reduce((sum, e) => sum + e.credit_hours, 0)
+    // HBA completed credits + accepted transfer credit tagged to this area.
+    const credits_completed =
+      areaEntries
+        .filter((e) => e.status === "completed")
+        .reduce((sum, e) => sum + e.credit_hours, 0) +
+      (transferCreditsByArea.get(area) ?? 0)
     const credits_in_progress = areaEntries
       .filter((e) => e.status === "in_progress")
       .reduce((sum, e) => sum + e.credit_hours, 0)

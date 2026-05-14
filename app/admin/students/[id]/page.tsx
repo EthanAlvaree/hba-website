@@ -24,7 +24,9 @@ import {
   listStudentPrereqOverrides,
   type StudentPrereqOverrideRecord,
 } from "@/lib/scheduler"
+import { listAcademicHistory } from "@/lib/academic-history"
 import StudentAvailabilityCard from "@/components/portal/StudentAvailabilityCard"
+import AcademicHistoryCard from "./AcademicHistoryCard"
 import StudentsHeader from "../StudentsHeader"
 import {
   addParentLinkAction,
@@ -195,6 +197,7 @@ export default async function StudentDetailPage({
     saved?: string
     parent_link_added?: string
     parent_link_error?: string
+    ah_error?: string
   }>
 }) {
   const session = await auth()
@@ -217,6 +220,7 @@ export default async function StudentDetailPage({
     prereqOverrides,
     allCourses,
     studentAvailability,
+    academicHistory,
   ] = await Promise.all([
     getPostEnrollmentData(id),
     listStudentDocuments(id),
@@ -224,6 +228,7 @@ export default async function StudentDetailPage({
     listStudentPrereqOverrides(id),
     listCourses(),
     listStudentAvailability(id),
+    listAcademicHistory(id),
   ])
 
   const displayName = student.preferred_name?.trim()
@@ -880,6 +885,13 @@ export default async function StudentDetailPage({
             </div>
           )}
         </section>
+
+        <AcademicHistoryCard
+          studentId={student.id}
+          entries={academicHistory}
+          courses={allCourses}
+          error={rawSearch.ah_error}
+        />
 
         <section className="rounded-[2rem] border border-brand-navy/15 bg-white px-6 py-6 shadow-sm">
           <h3 className="text-lg font-extrabold text-brand-navy">
