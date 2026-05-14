@@ -11,9 +11,10 @@
 // REVIEW + SUBMIT step — students assemble their list here, then go
 // there to rank + submit.
 //
-// Two viewers:
-//   - Students see + build their own trajectory.
-//   - Admins can preview ?as=<studentId> (read-only, no add buttons).
+// Two viewers, both can edit:
+//   - Students build their own trajectory.
+//   - Admins open ?as=<studentId> to build on a student's behalf —
+//     the add forms post with admin=1 and bounce back here.
 
 import Link from "next/link"
 import { notFound, redirect } from "next/navigation"
@@ -157,17 +158,20 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
     <div className="space-y-6">
       <header className="space-y-2">
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
-          {previewing ? "Admin preview · trajectory" : "Graduation trajectory"}
+          {previewing
+            ? "Admin · building on behalf"
+            : "Graduation trajectory"}
         </p>
         <h1 className="text-3xl font-extrabold text-brand-navy">
           {studentName}&rsquo;s graduation map
         </h1>
         <p className="max-w-3xl text-sm leading-relaxed text-slate-600">
           Each subject grows left-to-right, one node per school year.
-          Solid nodes are courses you&rsquo;ve taken or are taking. The
-          highlighted column is next year — pick from the branches to
-          add a course to your request list. Faded nodes preview what
-          unlocks down the line.
+          Solid nodes are courses {previewing ? "they've" : "you've"}{" "}
+          taken or are taking — those years are locked. The highlighted
+          column is next year: pick from the branches to add a course
+          to {previewing ? "their" : "your"} request list. Faded nodes
+          preview what unlocks down the line.
         </p>
       </header>
 
@@ -215,12 +219,11 @@ export default async function TrajectoryPage({ searchParams }: PageProps) {
         </div>
       )}
 
-      {!previewing && (
-        <StudentAvailabilityCard
-          studentId={targetStudentId}
-          availability={availability}
-        />
-      )}
+      <StudentAvailabilityCard
+        studentId={targetStudentId}
+        availability={availability}
+        asAdmin={previewing}
+      />
 
       {/* Legend */}
       <div className="flex flex-wrap gap-3 text-[11px] text-slate-600">
@@ -667,11 +670,7 @@ function EligibleBranch({
 
       {alreadyRequested ? (
         <p className="mt-1.5 text-[10px] font-semibold text-emerald-700">
-          On your list ✓
-        </p>
-      ) : previewing ? (
-        <p className="mt-1.5 text-[10px] italic text-slate-400">
-          (admin preview)
+          On {previewing ? "their" : "your"} list ✓
         </p>
       ) : nextTermId ? (
         <form
@@ -682,6 +681,9 @@ function EligibleBranch({
           <input type="hidden" name="term_id" value={nextTermId} />
           <input type="hidden" name="course_id" value={entry.course_id} />
           <input type="hidden" name="redirect_to" value="trajectory" />
+          {/* Admin building on a student's behalf — admin=1 lets the
+              action accept the edit and bounce back to ?as= mode. */}
+          {previewing && <input type="hidden" name="admin" value="1" />}
           <select
             name="kind"
             defaultValue="core"

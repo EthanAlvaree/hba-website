@@ -54,20 +54,27 @@ function revalidateCourseRequests(studentId: string, termId: string) {
   revalidatePath(`/admin/students/${studentId}/course-requests`)
 }
 
-// Where to send the caller after a save. Admin path = the admin
-// per-student course-requests editor; student path = the portal
-// course-requests page (or the trajectory page if redirect_to hint).
+// Where to send the caller after a save. The redirect_to=trajectory
+// hint wins — it's set by the trajectory tree's inline add forms,
+// which both students and admins use. An admin editing from the tree
+// (admin=1 + redirect_to=trajectory) bounces back to the same tree in
+// ?as= mode. Otherwise admin=1 lands on the admin per-student
+// course-requests editor; plain student saves land on the portal
+// course-requests page.
 function courseRequestsRedirect(
   formData: FormData,
   studentId: string,
   termId: string,
   query: string
 ): string {
-  if (formData.get("admin") === "1") {
-    return `/admin/students/${studentId}/course-requests?term_id=${termId}&${query}`
-  }
+  const fromAdmin = formData.get("admin") === "1"
   if (formData.get("redirect_to") === "trajectory") {
-    return `/portal/trajectory?${query}`
+    return fromAdmin
+      ? `/portal/trajectory?as=${studentId}&${query}`
+      : `/portal/trajectory?${query}`
+  }
+  if (fromAdmin) {
+    return `/admin/students/${studentId}/course-requests?term_id=${termId}&${query}`
   }
   return `/portal/course-requests?term_id=${termId}&${query}`
 }
