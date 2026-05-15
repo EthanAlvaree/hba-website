@@ -170,11 +170,14 @@ Notes:
 async function main() {
   const args = parseArgs()
 
-  const url = process.env.HBA_SUPABASE_URL
-  const key = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
+  const url = process.env.SUPABASE_URL ?? process.env.HBA_SUPABASE_URL
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ??
+    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
   if (!url || !key) {
     console.error(
-      "Missing HBA_SUPABASE_URL or HBA_SUPABASE_SERVICE_ROLE_KEY. See --help."
+      "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY (legacy HBA_* names\n" +
+        "also accepted). See --help."
     )
     process.exit(2)
   }

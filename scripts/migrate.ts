@@ -12,10 +12,11 @@
 //   npm run db:migrate:status    Show applied vs. pending, change nothing.
 //
 // Environment (read from .env.local, or the process env):
-//   HBA_DATABASE_URL   Direct Postgres connection string for the
+//   DATABASE_URL       Direct Postgres connection string for the
 //                      Supabase project. Get it from the Supabase
 //                      dashboard: Project Settings -> Database ->
 //                      Connection string -> URI (port 5432).
+//                      Legacy alias HBA_DATABASE_URL still works.
 //
 // Baseline: the 38 migrations that predate this runner were applied by
 // hand. On the very first run (empty schema_migrations table) the
@@ -107,12 +108,14 @@ async function main() {
   loadEnvLocal()
   const statusOnly = process.argv.includes("--status")
 
-  const connectionString = process.env.HBA_DATABASE_URL
+  const connectionString =
+    process.env.DATABASE_URL ?? process.env.HBA_DATABASE_URL
   if (!connectionString) {
     console.error(
-      "Missing HBA_DATABASE_URL. Add it to .env.local — the direct\n" +
-        "Postgres connection string from Supabase: Project Settings ->\n" +
-        "Database -> Connection string -> URI (port 5432)."
+      "Missing DATABASE_URL (or legacy HBA_DATABASE_URL). Add it to\n" +
+        ".env.local — the direct Postgres connection string from\n" +
+        "Supabase: Project Settings -> Database -> Connection string ->\n" +
+        "URI (port 5432)."
     )
     process.exit(2)
   }

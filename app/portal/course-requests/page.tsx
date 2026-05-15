@@ -8,6 +8,7 @@ import {
   type StudentCourseRequestWithCourse,
 } from "@/lib/scheduler"
 import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 import {
   deleteCourseRequestAction,
   submitCourseRequestsAction,
@@ -78,8 +79,8 @@ export default async function CourseRequestsPage({ searchParams }: PageProps) {
   // Fetch upcoming (or current) terms. We use a thin direct query — the
   // existing helpers don't take time filters yet.
   const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseServiceRoleKey()!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 

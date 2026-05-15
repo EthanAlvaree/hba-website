@@ -15,10 +15,11 @@
 // bypasses RLS and must not reach the browser.
 
 import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 
 function build() {
-  const supabaseUrl = process.env.HBA_SUPABASE_URL
-  const supabaseServiceRoleKey = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
+  const supabaseUrl = getSupabaseUrl()
+  const supabaseServiceRoleKey = getSupabaseServiceRoleKey()
   if (!supabaseUrl || !supabaseServiceRoleKey) {
     throw new Error("Supabase server environment variables are missing.")
   }

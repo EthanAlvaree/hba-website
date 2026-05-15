@@ -24,6 +24,7 @@ import {
 import { buildTranscriptForStudent } from "@/lib/transcripts"
 import GpaSummary from "@/components/portal/GpaSummary"
 import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 
@@ -62,8 +63,8 @@ function teacherShortName(
 // Avoids importing the lazy client from lib/attendance.ts (which doesn't
 // expose a batched helper).
 function getSupabase() {
-  const url = process.env.HBA_SUPABASE_URL
-  const key = process.env.HBA_SUPABASE_SERVICE_ROLE_KEY
+  const url = getSupabaseUrl()
+  const key = getSupabaseServiceRoleKey()
   if (!url || !key) throw new Error("Supabase env vars missing")
   return createClient(url, key, {
     auth: { autoRefreshToken: false, persistSession: false },

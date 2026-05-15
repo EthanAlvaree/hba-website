@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { createClient } from "@supabase/supabase-js"
 import { getProfileByEmail } from "@/lib/sis"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 import {
   listConferenceEvents,
   listSlotsForTeacher,
@@ -52,8 +53,8 @@ export default async function FacultyConferencesPage() {
   const studentMap = new Map<string, string>()
   if (studentIds.size > 0) {
     const supabase = createClient(
-      process.env.HBA_SUPABASE_URL!,
-      process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+      getSupabaseUrl()!,
+      getSupabaseServiceRoleKey()!,
       { auth: { autoRefreshToken: false, persistSession: false } }
     )
     const { data } = await supabase

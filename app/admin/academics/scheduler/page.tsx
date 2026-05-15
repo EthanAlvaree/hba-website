@@ -21,6 +21,7 @@ import {
   updateDraftSectionAction,
 } from "./actions"
 import { DraftAssignmentsBoard, type BoardData } from "./DraftAssignmentsBoard"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 
@@ -125,8 +126,8 @@ export default async function SchedulerAdminPage({ searchParams }: PageProps) {
   const raw = await searchParams
 
   const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseServiceRoleKey()!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 

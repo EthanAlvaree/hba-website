@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 import {
   getProfileByEmail,
   listStudentsForParent,
@@ -49,8 +50,8 @@ export default async function ParentConferencesPage({ searchParams }: PageProps)
 
   // For each active event, load slots + filter to "teachers of my kids."
   const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseServiceRoleKey()!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 

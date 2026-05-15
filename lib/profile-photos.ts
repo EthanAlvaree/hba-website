@@ -26,6 +26,7 @@ import sharp from "sharp"
 import { pushPhotoToM365 } from "@/lib/graph"
 import { isHbaEmail } from "@/lib/admin"
 import { getServiceSupabase } from "@/lib/supabase-server"
+import { getSupabaseUrl } from "@/lib/env"
 
 const BUCKET = "profile-photos"
 const MAX_INPUT_BYTES = 10 * 1024 * 1024 // 10 MB; matches bucket
@@ -286,7 +287,7 @@ export async function clearProfilePhoto(profileId: string): Promise<void> {
  *  profile has no photo. Safe to render directly in <img src>. */
 export function profilePhotoUrl(photoPath: string | null | undefined): string | null {
   if (!photoPath) return null
-  const base = process.env.HBA_SUPABASE_URL
+  const base = getSupabaseUrl()
   if (!base) return null
   // Trim trailing slash if someone set the env var with one.
   const cleanBase = base.replace(/\/$/, "")

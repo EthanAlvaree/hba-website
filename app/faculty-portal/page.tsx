@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { getProfileByEmail } from "@/lib/sis"
 import { createClient } from "@supabase/supabase-js"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 
@@ -47,8 +48,8 @@ export default async function FacultyHomePage() {
   // Load this teacher's assigned sections. We use a direct client because
   // the existing helpers don't expose "by teacher" filtering yet.
   const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseServiceRoleKey()!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 

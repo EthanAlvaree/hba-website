@@ -9,6 +9,7 @@
 // stable — change one only with a redirect.
 
 import { getServiceSupabase } from "@/lib/supabase-server"
+import { getSupabaseUrl } from "@/lib/env"
 
 export type FacultyMember = {
   /** URL slug — used at /faculty/<slug>. */
@@ -82,7 +83,7 @@ export function facultyPortraitUrl(
   path: string | null | undefined
 ): string | null {
   if (!path) return null
-  const base = process.env.HBA_SUPABASE_URL
+  const base = getSupabaseUrl()
   if (!base) return null
   return `${base.replace(/\/$/, "")}/storage/v1/object/public/${PORTRAIT_BUCKET}/${path}`
 }

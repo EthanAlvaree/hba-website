@@ -14,6 +14,7 @@ import {
 import { sectionPeriodSchema, sectionModalitySchema } from "@/lib/sis"
 import { createClient } from "@supabase/supabase-js"
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
+import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 
 async function assertAdmin() {
   const session = await auth()
@@ -168,8 +169,8 @@ export async function setDraftStatusAction(formData: FormData) {
   if (!parsed.success) throw new Error("Invalid request.")
 
   const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseServiceRoleKey()!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
@@ -210,8 +211,8 @@ export async function updateDraftNotesAction(formData: FormData) {
   }
 
   const supabase = createClient(
-    process.env.HBA_SUPABASE_URL!,
-    process.env.HBA_SUPABASE_SERVICE_ROLE_KEY!,
+    getSupabaseUrl()!,
+    getSupabaseServiceRoleKey()!,
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
