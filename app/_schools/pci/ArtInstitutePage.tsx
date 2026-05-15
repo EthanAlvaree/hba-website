@@ -38,6 +38,9 @@ const curriculum = [
     h: "Narrative production",
     b: "Storytelling with color, color scripting, atmospheric control, emotional keying — moving from coloring to deliberate visual narrative.",
     image: "/images/pci/storytelling-1.webp",
+    // Portrait-oriented comic page — letterbox instead of cropping
+    // so the full panel grid stays legible.
+    fit: "contain" as const,
   },
   {
     n: "05",
@@ -168,34 +171,37 @@ export default function PciArtInstitutePage() {
           </h2>
 
           <div className="mt-16 space-y-px bg-gray-200 border-y border-gray-200">
-            {curriculum.map(({ n, h, b, image }) => (
-              <div key={n} className="bg-white grid grid-cols-1 lg:grid-cols-12 gap-6 py-8 px-2 items-center">
-                <div className="lg:col-span-2">
-                  <span className="text-5xl lg:text-6xl font-black text-brand-orange leading-none">
-                    {n}
-                  </span>
-                </div>
-                <div className="lg:col-span-4">
-                  <h3 className="text-2xl lg:text-3xl font-black tracking-tight text-brand-navy-deep">
-                    {h}
-                  </h3>
-                  <p className="mt-4 text-base lg:text-lg text-gray-700 leading-relaxed font-light">
-                    {b}
-                  </p>
-                </div>
-                <div className="lg:col-span-6">
-                  <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
-                    <Image
-                      src={image}
-                      alt={h}
-                      fill
-                      sizes="(max-width: 1024px) 100vw, 600px"
-                      className="object-cover"
-                    />
+            {curriculum.map((row) => {
+              const fit = "fit" in row ? row.fit : "cover"
+              return (
+                <div key={row.n} className="bg-white grid grid-cols-1 lg:grid-cols-12 gap-6 py-8 px-2 items-center">
+                  <div className="lg:col-span-2">
+                    <span className="text-5xl lg:text-6xl font-black text-brand-orange leading-none">
+                      {row.n}
+                    </span>
+                  </div>
+                  <div className="lg:col-span-4">
+                    <h3 className="text-2xl lg:text-3xl font-black tracking-tight text-brand-navy-deep">
+                      {row.h}
+                    </h3>
+                    <p className="mt-4 text-base lg:text-lg text-gray-700 leading-relaxed font-light">
+                      {row.b}
+                    </p>
+                  </div>
+                  <div className="lg:col-span-6">
+                    <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
+                      <Image
+                        src={row.image}
+                        alt={row.h}
+                        fill
+                        sizes="(max-width: 1024px) 100vw, 600px"
+                        className={fit === "contain" ? "object-contain" : "object-cover"}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>

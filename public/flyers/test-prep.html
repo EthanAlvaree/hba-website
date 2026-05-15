@@ -38,9 +38,13 @@
   }
 
   /* ─── Top brand band ─── */
+  /* Cream background so the color logo (designed for light surfaces)
+     reads cleanly. Body text shifts to navy-deep for contrast; the
+     orange location subtitle and the orange border-bottom keep the
+     brand color presence. */
   .brand {
-    background: var(--navy-deep);
-    color: #fff;
+    background: var(--cream);
+    color: var(--navy-deep);
     padding: 0.22in 0.5in;
     display: flex;
     align-items: center;
