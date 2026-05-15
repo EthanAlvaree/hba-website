@@ -148,7 +148,16 @@ export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
                         Sign in
                       </Link>
 
-                      {schoolKey !== "pci" && (
+                      {schoolKey === "pci" ? (
+                        // PCI's primary CTA is Contact (no online apply flow yet).
+                        <Link
+                          href="/contact"
+                          className="w-full block text-center bg-brand-orange text-white py-2 rounded-sm font-semibold text-sm mt-2"
+                          onClick={onClose}
+                        >
+                          Contact
+                        </Link>
+                      ) : (
                         <Link
                           href={siteConfig.external.enrollment}
                           className="w-full block text-center bg-brand-orange text-white py-2 rounded-sm font-semibold text-sm mt-2"

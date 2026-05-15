@@ -71,7 +71,16 @@ export default function Navbar() {
           >
             Sign in
           </Link>
-          {schoolKey !== "pci" && (
+          {schoolKey === "pci" ? (
+            // PCI's primary conversion is reaching out — Contact is PCI's
+            // equivalent of HBA's Apply CTA. Same visual hierarchy.
+            <Link
+              href="/contact"
+              className="bg-brand-orange text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
+            >
+              Contact
+            </Link>
+          ) : (
             <Link
               href={siteConfig.external.enrollment}
               className="bg-brand-orange text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
