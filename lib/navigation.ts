@@ -141,7 +141,7 @@ const hbaNavigation: NavItem[] = [
   },
 ]
 
-// PCI's nav is intentionally slim — three destinations, no dropdowns.
+// PCI's nav is intentionally slim — four destinations, no dropdowns.
 // Contact is omitted here because it's surfaced as the orange CTA
 // button (PCI's equivalent of HBA's Apply). Matches the editorial /
 // institute layout, not HBA's prep-school multi-column megamenu.
@@ -150,6 +150,7 @@ const pciNavigation: NavItem[] = [
   { title: "Art Institute", href: "/art" },
   { title: "Test prep", href: "/test-prep" },
   { title: "About", href: "/about" },
+  { title: "Team", href: "/faculty" },
 ]
 
 export const navigation: NavItem[] =
