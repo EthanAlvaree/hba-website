@@ -17,12 +17,13 @@ import {
   type ConferenceSlotForEmail,
 } from "@/lib/conference-emails"
 import { getServiceSupabase } from "@/lib/supabase-server"
+import { getCronSecret } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET
+  const secret = getCronSecret()
   if (!secret) {
     return NextResponse.json(
       { ok: false, error: "CRON_SECRET is not configured." },

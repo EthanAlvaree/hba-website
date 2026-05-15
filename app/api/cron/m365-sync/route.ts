@@ -8,6 +8,7 @@
 
 import { NextResponse } from "next/server"
 import { runM365Sync } from "@/lib/m365-sync"
+import { getCronSecret } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
   // Vercel cron auth: when the project has CRON_SECRET set, Vercel injects
   // `Authorization: Bearer <secret>` on the scheduled GET. We reject anything
   // else so this endpoint can't be hammered from the public internet.
-  const secret = process.env.CRON_SECRET
+  const secret = getCronSecret()
   if (!secret) {
     return NextResponse.json(
       { ok: false, error: "CRON_SECRET is not configured. Refusing to run." },

@@ -1,5 +1,10 @@
 import { randomInt } from "node:crypto"
 import { brand, siteConfig } from "@/lib/site"
+import {
+  getApplicationNotificationTo,
+  getContactNotificationTo,
+  getGraphMailSender,
+} from "@/lib/env"
 import type { ContactSubmissionRecord } from "@/lib/contact-submissions"
 import type { ApplicationRecord } from "@/lib/applications"
 
@@ -19,13 +24,15 @@ function getGraphConfig() {
     graphClientSecret: getRequiredEnv("GRAPH_CLIENT_SECRET"),
     graphTenantId: getRequiredEnv("GRAPH_TENANT_ID"),
     graphMailSender:
-      process.env.GRAPH_MAIL_SENDER ?? `noreply@${siteConfig.contact.emailDomain}`,
-    notificationRecipients: (process.env.CONTACT_NOTIFICATION_TO ?? siteConfig.contact.infoEmail)
+      getGraphMailSender() ?? `noreply@${siteConfig.contact.emailDomain}`,
+    notificationRecipients: (
+      getContactNotificationTo() ?? siteConfig.contact.infoEmail
+    )
       .split(",")
       .map((email) => email.trim())
       .filter(Boolean),
     applicationRecipients: (
-      process.env.APPLICATION_NOTIFICATION_TO ?? siteConfig.contact.admissionsEmail
+      getApplicationNotificationTo() ?? siteConfig.contact.admissionsEmail
     )
       .split(",")
       .map((email) => email.trim())

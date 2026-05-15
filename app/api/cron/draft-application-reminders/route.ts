@@ -18,6 +18,7 @@ import { NextResponse } from "next/server"
 import { sendApplicationDraftReminder } from "@/lib/graph"
 import { siteConfig } from "@/lib/site"
 import { getServiceSupabase } from "@/lib/supabase-server"
+import { getCronSecret } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -29,7 +30,7 @@ function buildResumeUrl(token: string) {
 }
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET
+  const secret = getCronSecret()
   if (!secret) {
     return NextResponse.json(
       { ok: false, error: "CRON_SECRET is not configured. Refusing to run." },

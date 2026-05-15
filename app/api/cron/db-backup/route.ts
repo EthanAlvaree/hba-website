@@ -11,13 +11,14 @@
 import { NextResponse } from "next/server"
 import { runDatabaseBackup } from "@/lib/db-backup"
 import { logAdminAuditEvent } from "@/lib/audit"
+import { getCronSecret } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
 export const maxDuration = 300 // 5 min cap; backup completes in seconds.
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET
+  const secret = getCronSecret()
   if (!secret) {
     return NextResponse.json(
       { ok: false, error: "CRON_SECRET is not configured. Refusing to run." },

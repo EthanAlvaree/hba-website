@@ -15,6 +15,7 @@ import { dispatchMassEmail, type Audience } from "@/lib/mass-email"
 import { logAdminAuditEvent } from "@/lib/audit"
 import { siteConfig } from "@/lib/site"
 import { getServiceSupabase } from "@/lib/supabase-server"
+import { getCronSecret } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -65,7 +66,7 @@ function buildMassEmailHtml(userBody: string, senderLabel: string): string {
 }
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET
+  const secret = getCronSecret()
   if (!secret) {
     return NextResponse.json(
       { ok: false, error: "CRON_SECRET is not configured." },

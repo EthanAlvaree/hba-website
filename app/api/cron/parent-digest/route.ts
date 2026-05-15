@@ -13,6 +13,7 @@
 import { NextResponse } from "next/server"
 import { buildDigestEmailHtml, buildParentDigests } from "@/lib/parent-digest"
 import { sendCustomEmail } from "@/lib/graph"
+import { getCronSecret } from "@/lib/env"
 
 export const dynamic = "force-dynamic"
 export const runtime = "nodejs"
@@ -28,7 +29,7 @@ function isoDateInPacific(date: Date): string {
 }
 
 export async function GET(request: Request) {
-  const secret = process.env.CRON_SECRET
+  const secret = getCronSecret()
   if (!secret) {
     return NextResponse.json(
       { ok: false, error: "CRON_SECRET is not configured. Refusing to run." },
