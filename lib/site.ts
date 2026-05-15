@@ -215,13 +215,11 @@ const pci: SiteConfig = {
     navy: "#1f5f6b",
     navyDeep: "#0e3a44",
     orange: "#e08a3c",
-    // Logo paths intentionally omitted until real PCI logo files are
-    // dropped into public/images/pci/. Consumers fall back to a text
-    // mark (the shortName "PCI") in the meantime. When the assets are
-    // ready, set: { headerWhite: "/images/pci/logo-white.webp",
-    // footerColor: "/images/pci/logo-color.webp", round:
-    // "/images/pci/logo-round.webp" }.
-    // logos: undefined,
+    logos: {
+      headerWhite: "/images/pci/logo-white.webp",
+      footerColor: "/images/pci/logo-color.webp",
+      // No round / seal asset yet — Footer falls back to a text mark.
+    },
   },
 }
 

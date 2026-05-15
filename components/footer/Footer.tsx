@@ -166,8 +166,8 @@ function HbaFooter() {
 }
 
 // Minimal PCI footer — clean slate. Expand as PCI's content matures.
-// Skips HBA-specific badges (WASC/UC), the campus aerial, and the long
-// resource/policy list since most of those pages don't exist on PCI.
+// Skips HBA-specific badges (WASC/UC) and the long resource/policy
+// list since most of those pages don't exist on PCI.
 function PciFooter() {
   const { address, contact, social } = siteConfig
   const hasAddress =
@@ -177,7 +177,19 @@ function PciFooter() {
   const logoRound = siteConfig.brand.logos?.round
 
   return (
-    <footer className="mt-20 bg-gradient-to-b from-brand-navy to-brand-navy-deep text-white">
+    <footer className="mt-20">
+      {/* Hero / aerial */}
+      <div className="w-full h-72 relative">
+        <Image
+          src="/images/pci/footer-hero.webp"
+          alt={`${siteConfig.name}`}
+          fill
+          sizes="100vw"
+          className="object-cover"
+        />
+      </div>
+
+      <div className="bg-gradient-to-b from-brand-navy to-brand-navy-deep text-white">
       <div className="max-w-5xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-2 gap-10">
         <div>
           {logoRound ? (
@@ -263,6 +275,7 @@ function PciFooter() {
 
       <div className="bg-brand-navy-deep py-6 text-center text-sm text-gray-300 border-t border-white/10">
         © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
+      </div>
       </div>
     </footer>
   )

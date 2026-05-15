@@ -7,6 +7,7 @@
 // (drop a real file there and it appears automatically); until then,
 // the hero uses a CSS gradient.
 
+import Image from "next/image"
 import Link from "next/link"
 import { siteConfig } from "@/lib/site"
 
@@ -14,11 +15,17 @@ export default function PciHomePage() {
   return (
     <main className="bg-white">
       {/* HERO */}
-      <section className="relative isolate overflow-hidden bg-gradient-to-br from-brand-navy via-[#1f5f6b] to-brand-navy-deep text-white">
-        <div className="absolute inset-0 opacity-30">
-          {/* Replace this with a real hero image at /images/pci/hero.webp */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--color-brand-orange)/20,_transparent_70%)]" />
-        </div>
+      <section className="relative isolate overflow-hidden text-white">
+        <Image
+          src="/images/pci/hero.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover -z-10"
+        />
+        {/* Dark overlay so text stays legible on top of the photo. */}
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy/85 via-[#1f5f6b]/75 to-brand-navy-deep/90 -z-10" />
         <div className="relative max-w-5xl mx-auto px-6 lg:px-12 py-28 lg:py-40">
           <p className="text-xs font-bold uppercase tracking-[0.24em] text-brand-orange">
             {siteConfig.shortName}
