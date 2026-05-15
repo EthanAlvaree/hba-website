@@ -81,6 +81,10 @@
     margin: 0.12in 0.5in 0;
     padding: 0.14in 0.20in;
     border-left: 3px solid var(--orange);
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 0.20in;
+    align-items: center;
   }
   .approach h2 {
     margin: 0 0 4px; font-weight: 900; font-size: 12pt;
@@ -91,6 +95,16 @@
     font-weight: 300; color: var(--muted);
   }
   .approach .em { color: var(--navy-deep); font-weight: 500; }
+  .approach .photo {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .approach .photo img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
 
   /* ─── Tracks grid ─── */
   .tracks {
@@ -234,14 +248,20 @@
 
   <!-- APPROACH -->
   <section class="approach">
-    <h2>How we work</h2>
-    <p>
-      <span class="em">Small cohorts. Real instructors. No AI shortcuts.</span>
-      We measure your baseline, identify weak spots, and run the cycle of
-      practice → review → re-test until the scores hold. International and
-      bilingual students welcome — we support TOEFL, academic English, and
-      AP transition.
-    </p>
+    <div>
+      <h2>How we work</h2>
+      <p>
+        <span class="em">Small cohorts. Real instructors.</span>
+        We measure your baseline, identify weak spots, and run the cycle of
+        practice → review → re-test until the scores hold. International and
+        bilingual students welcome — we support TOEFL, academic English, and
+        AP transition.
+      </p>
+    </div>
+    <div class="photo">
+      <img src="../images/pci/students-working2.webp"
+           alt="Students working together at PCI" />
+    </div>
   </section>
 
   <!-- TRACKS -->
@@ -269,7 +289,8 @@
         <div class="label">AP exam preparation</div>
         <div class="h">Advanced Placement</div>
         <ul>
-          <li>AP Calculus AB / BC · AP Statistics</li>
+          <li>AP Calculus AB / BC</li>
+          <li>AP Statistics</li>
           <li>AP Biology · Chemistry · Physics 1 &amp; C</li>
           <li>AP English Language &amp; Literature</li>
           <li>AP US History, World History, CS Principles</li>
