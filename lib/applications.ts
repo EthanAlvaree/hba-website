@@ -466,6 +466,13 @@ export type ApplicationRecord = {
   source: string
   spam_provider: string | null
   spam_verified: boolean
+
+  /** Set by the Stripe webhook when the $350 registration fee clears.
+   *  Until this is non-null, the application is "submitted but not
+   *  paid" — it doesn't trigger admin notifications and stays out of
+   *  the active queue. */
+  fee_paid_at: string | null
+  stripe_session_id: string | null
 }
 
 export type ApplicationSummary = {
@@ -521,7 +528,8 @@ const applicationSelectColumns =
   "homestay_address_region, homestay_address_postal_code, homestay_address_country, " +
   "course_interest, prior_schools, how_did_you_hear, notes_from_family, " +
   "internal_notes, assigned_to, admit_decision_at, archived_at, " +
-  "source, spam_provider, spam_verified"
+  "source, spam_provider, spam_verified, " +
+  "fee_paid_at, stripe_session_id"
 
 // Reduce a parsed input into the snake_case payload Supabase expects.
 // Strips the meta-fields (turnstile_token, submitted_at, website, draft_token)
@@ -667,6 +675,47 @@ export async function submitApplication(input: ApplicationSubmitInput) {
 
   if (error) {
     throw new Error(`Failed to submit application: ${error.message}`)
+  }
+
+  return data
+}
+
+// ============================================================================
+// Registration-fee payment
+// ============================================================================
+
+/** Mark an application as having paid the registration fee. Called from
+ *  the Stripe webhook (`checkout.session.completed`). Idempotent: a
+ *  second call with the same session_id is a no-op. Returns the
+ *  application if this call was the one that flipped it from unpaid to
+ *  paid (so the caller knows whether to send the "thanks, we got it"
+ *  family confirmation + the admin notification), or null if it was
+ *  already paid. */
+export async function markApplicationPaid(input: {
+  application_id: string
+  stripe_session_id: string
+}): Promise<ApplicationRecord | null> {
+  const existing = await getApplicationById(input.application_id)
+  if (!existing) {
+    throw new Error(`Application ${input.application_id} not found.`)
+  }
+  if (existing.fee_paid_at) {
+    // Already paid — webhook re-delivery or admin re-marked. No-op.
+    return null
+  }
+
+  const { data, error } = await getSupabase()
+    .from("applications")
+    .update({
+      fee_paid_at: new Date().toISOString(),
+      stripe_session_id: input.stripe_session_id,
+    })
+    .eq("id", input.application_id)
+    .select(applicationSelectColumns)
+    .single<ApplicationRecord>()
+
+  if (error) {
+    throw new Error(`Failed to mark application paid: ${error.message}`)
   }
 
   return data

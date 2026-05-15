@@ -9,6 +9,7 @@ import {
   sendApplicationSubmittedConfirmation,
 } from "@/lib/graph"
 import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit"
+import { siteConfig } from "@/lib/site"
 import { verifyTurnstileToken } from "@/lib/turnstile"
 
 export const dynamic = "force-dynamic"
@@ -109,28 +110,50 @@ export async function POST(request: Request) {
 
     const application = await submitApplication(parsed.data)
 
-    let notificationDelivered = true
+    // When a Stripe registration-fee link is configured (HBA), do NOT
+    // send admin or family notifications here — those fire from the
+    // Stripe webhook once payment clears, so the office isn't pinged
+    // for applications that the family never paid for. Return the
+    // payment redirect URL so the wizard can hand the family off to
+    // Stripe.
+    //
+    // When no Stripe link is configured (PCI today), the application
+    // is fully submitted on the spot and we send the notifications
+    // immediately, as before.
+    const stripeLink = siteConfig.external.stripeRegistrationLink
 
-    try {
-      await sendApplicationNotification(application)
-    } catch (error) {
-      notificationDelivered = false
-      console.error("Application notification email failed.", error)
+    if (!stripeLink) {
+      let notificationDelivered = true
+      try {
+        await sendApplicationNotification(application)
+      } catch (error) {
+        notificationDelivered = false
+        console.error("Application notification email failed.", error)
+      }
+      try {
+        await sendApplicationSubmittedConfirmation({ application })
+      } catch (error) {
+        console.error("Applicant confirmation email failed.", error)
+      }
+      return NextResponse.json({
+        success: true,
+        application_id: application.id,
+        notification_delivered: notificationDelivered,
+        payment_redirect_url: null,
+      })
     }
 
-    // Applicant confirmation — best-effort, never fails the request.
-    // The admin notification above is the higher-priority side; the
-    // family confirmation is a courtesy.
-    try {
-      await sendApplicationSubmittedConfirmation({ application })
-    } catch (error) {
-      console.error("Applicant confirmation email failed.", error)
-    }
+    // Build the Stripe redirect URL with client_reference_id so the
+    // webhook can match the payment back to this application.
+    const paymentRedirectUrl = `${stripeLink}?client_reference_id=${encodeURIComponent(
+      application.id
+    )}`
 
     return NextResponse.json({
       success: true,
       application_id: application.id,
-      notification_delivered: notificationDelivered,
+      notification_delivered: false, // notifications fire after payment
+      payment_redirect_url: paymentRedirectUrl,
     })
   } catch (error) {
     if (error instanceof z.ZodError) {

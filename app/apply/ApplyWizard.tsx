@@ -940,6 +940,7 @@ export default function ApplyWizard({
         success: boolean
         application_id?: string
         notification_delivered?: boolean
+        payment_redirect_url?: string | null
         error?: string
       }
 
@@ -949,16 +950,28 @@ export default function ApplyWizard({
         return
       }
 
+      // Drop the localStorage backup now — submission persisted server-side.
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem(localBackupKey)
+      }
+
+      // Payment-gated path (HBA): the application row is saved as a
+      // pending record; the family hands off to Stripe, and our webhook
+      // marks it paid + sends notifications. Redirect to Stripe now.
+      if (result.payment_redirect_url) {
+        if (typeof window !== "undefined") {
+          window.location.href = result.payment_redirect_url
+        }
+        return
+      }
+
+      // No Stripe payment configured (e.g. PCI today): the application
+      // is fully submitted and notifications already went out.
       setSubmission({
         type: "submitted",
         applicationId: result.application_id,
         guardianEmail: state.guardian1_email?.trim() || undefined,
       })
-      // Successful submit — drop the localStorage backup so a refresh
-      // doesn't offer to restore stale data.
-      if (typeof window !== "undefined") {
-        window.localStorage.removeItem(localBackupKey)
-      }
     } catch {
       setSubmission({ type: "error", message: "Network error while submitting. Please try again." })
       window.turnstile?.reset()
@@ -1011,43 +1024,6 @@ export default function ApplyWizard({
             </p>
           )}
         </div>
-
-        {siteConfig.external.stripeRegistrationLink && (
-          <div className="mx-auto mt-10 max-w-2xl rounded-2xl border-2 border-brand-orange bg-white px-6 py-6 shadow-md">
-            <div className="text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
-                Next step — required
-              </p>
-              <h3 className="mt-1 text-2xl font-extrabold text-brand-navy">
-                Pay the $350 registration fee
-              </h3>
-              <p className="mx-auto mt-3 max-w-md text-sm text-slate-700">
-                Your application is in. The non-refundable $350 registration
-                fee secures your spot in the review queue — the admissions
-                team begins working on accepted applications once it&rsquo;s
-                received.
-              </p>
-              <a
-                href={`${siteConfig.external.stripeRegistrationLink}${
-                  submission.applicationId
-                    ? `?client_reference_id=${encodeURIComponent(
-                        submission.applicationId
-                      )}`
-                    : ""
-                }`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center justify-center rounded-full bg-brand-orange px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-110"
-              >
-                Pay $350 registration fee →
-              </a>
-              <p className="mt-4 text-xs text-slate-500">
-                Secure payment through Stripe. You&rsquo;ll receive a
-                receipt by email.
-              </p>
-            </div>
-          </div>
-        )}
 
         <div className="mx-auto mt-10 max-w-2xl space-y-4 text-left">
           <h3 className="text-center text-sm font-bold uppercase tracking-[0.18em] text-brand-orange">
@@ -1282,7 +1258,11 @@ export default function ApplyWizard({
               disabled={submission.type === "submitting" || submission.type === "saving"}
               className="inline-flex items-center justify-center rounded-full bg-brand-orange px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
             >
-              {submission.type === "submitting" ? "Submitting…" : "Submit application"}
+              {submission.type === "submitting"
+                ? "Submitting…"
+                : siteConfig.external.stripeRegistrationLink
+                  ? "Pay & submit — $350 →"
+                  : "Submit application"}
             </button>
           )}
         </div>
