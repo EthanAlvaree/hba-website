@@ -1,17 +1,37 @@
 // app/faculty/page.tsx
+//
+// Dispatcher: PCI uses the curated /app/_schools/pci/FacultyPage; HBA
+// keeps the Supabase-backed list rendered inline below.
 
 import Image from "next/image"
 import Link from "next/link"
+import type { Metadata } from "next"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { getFacultyMembers, type FacultyMember } from "@/lib/faculty"
+import { schoolKey, siteConfig } from "@/lib/site"
+import PciFacultyPage from "@/app/_schools/pci/FacultyPage"
 
 export const dynamic = "force-dynamic"
 
-export const metadata = {
-  title: "Faculty and staff — High Bluff Academy",
-  description:
-    "Meet the educators, leaders, and mentors at High Bluff Academy — small classes, personalized attention, and faculty who know each student by name.",
+export function generateMetadata(): Metadata {
+  if (schoolKey === "pci") {
+    return {
+      title: `Faculty & Mentors — ${siteConfig.name}`,
+      description:
+        "The leadership, guest artists, and STEM faculty behind Pacific Crest Institute's programs.",
+    }
+  }
+  return {
+    title: `Faculty and staff — ${siteConfig.name}`,
+    description:
+      "Meet the educators, leaders, and mentors at High Bluff Academy — small classes, personalized attention, and faculty who know each student by name.",
+  }
+}
+
+export default function FacultyRoute() {
+  if (schoolKey === "pci") return <PciFacultyPage />
+  return <HbaFacultyPage />
 }
 
 function FacultyCard({ member }: { member: FacultyMember }) {
@@ -45,7 +65,7 @@ function FacultyCard({ member }: { member: FacultyMember }) {
   )
 }
 
-export default async function FacultyPage() {
+async function HbaFacultyPage() {
   const faculty = await getFacultyMembers()
   const leadership = faculty.filter((m) => m.leadership)
   const teachers = faculty.filter((m) => !m.leadership)

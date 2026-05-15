@@ -1,4 +1,7 @@
 // app/faculty/[slug]/page.tsx
+//
+// Dispatcher: PCI uses the curated /app/_schools/pci/FacultyDetailPage;
+// HBA keeps the Supabase-backed bio detail page rendered inline below.
 
 import Image from "next/image"
 import Link from "next/link"
@@ -6,22 +9,27 @@ import { notFound } from "next/navigation"
 import type { Metadata } from "next"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { getFacultyBySlug, getNeighbors } from "@/lib/faculty"
-import { siteConfig } from "@/lib/site"
+import { schoolKey, siteConfig } from "@/lib/site"
+import PciFacultyDetailPage, {
+  generateMetadata as pciFacultyDetailMetadata,
+} from "@/app/_schools/pci/FacultyDetailPage"
 
 export const dynamic = "force-dynamic"
 
 type Props = { params: Promise<{ slug: string }> }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  if (schoolKey === "pci") return pciFacultyDetailMetadata({ params })
+
   const { slug } = await params
   const member = await getFacultyBySlug(slug)
-  if (!member) return { title: "Faculty — High Bluff Academy" }
+  if (!member) return { title: `Faculty — ${siteConfig.name}` }
 
   return {
-    title: `${member.name} — High Bluff Academy`,
+    title: `${member.name} — ${siteConfig.name}`,
     description: member.shortBio,
     openGraph: {
-      title: `${member.name} — High Bluff Academy`,
+      title: `${member.name} — ${siteConfig.name}`,
       description: member.shortBio,
       images: [{ url: member.image }],
       type: "profile",
@@ -29,7 +37,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function FacultyDetailPage({ params }: Props) {
+export default function FacultyDetailRoute({ params }: Props) {
+  if (schoolKey === "pci") return <PciFacultyDetailPage params={params} />
+  return <HbaFacultyDetailPage params={params} />
+}
+
+async function HbaFacultyDetailPage({ params }: Props) {
   const { slug } = await params
   const member = await getFacultyBySlug(slug)
   if (!member) notFound()
