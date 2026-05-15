@@ -4,7 +4,6 @@
 // <ContactForm> component (Turnstile-protected, posts to /api/contact)
 // — that endpoint already routes to siteConfig.contact.infoEmail, so
 // PCI's submissions go to info@pacificcrestinstitute.com automatically.
-// PCI-specific copy lives here; the form itself is school-agnostic.
 
 import ContactForm from "@/app/contact/ContactForm"
 import { siteConfig } from "@/lib/site"
@@ -19,75 +18,89 @@ export default function PciContactPage() {
   const hasPhone = !contact.phone.startsWith("TODO_")
 
   return (
-    <main className="bg-gray-50">
-      {/* HERO */}
-      <section className="bg-gradient-to-br from-brand-navy via-[#1f5f6b] to-brand-navy-deep text-white">
-        <div className="max-w-4xl mx-auto px-6 lg:px-12 py-24 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.24em] text-brand-orange">
-            Contact
+    <main className="bg-white text-brand-navy-deep">
+      {/* ─── HERO ──────────────────────────────────────────────────── */}
+      <section className="relative bg-brand-navy-deep text-white">
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy-deep via-brand-navy to-black opacity-95" />
+        <div className="relative mx-auto max-w-6xl px-6 lg:px-12 pt-28 lg:pt-36 pb-20 lg:pb-28">
+          <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
+            Get in touch
           </p>
-          <h1 className="mt-3 text-4xl lg:text-5xl font-extrabold tracking-tight">
-            Talk to {siteConfig.shortName}
+          <h1 className="mt-6 text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[0.95] max-w-3xl">
+            Tell us what your student is into.
           </h1>
-          <p className="mt-6 max-w-2xl mx-auto text-lg text-white/90 font-light leading-relaxed">
-            Questions about programs, schedules, or whether
-            {" "}{siteConfig.shortName} is the right fit? Drop us a note —
-            we usually respond within one business day.
+          <p className="mt-8 max-w-2xl text-lg lg:text-xl text-white/80 leading-relaxed font-light">
+            Questions about programs, cohorts, schedules, or whether
+            PCI is the right fit? Drop a note — we usually respond
+            within one business day.
           </p>
         </div>
       </section>
 
-      <section className="py-16">
-        <div className="max-w-3xl mx-auto px-6 lg:px-12 grid gap-10 md:grid-cols-[1fr_2fr]">
-          {/* Direct contact info */}
-          <div className="space-y-6">
+      {/* ─── CONTACT GRID ──────────────────────────────────────────── */}
+      <section className="py-20 lg:py-28">
+        <div className="mx-auto max-w-6xl px-6 lg:px-12 grid gap-14 lg:grid-cols-12">
+          {/* Direct contact column */}
+          <aside className="lg:col-span-4 space-y-10">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
-                Email
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-orange">
+                General inquiries
               </p>
               <a
                 href={`mailto:${contact.infoEmail}`}
-                className="mt-1 block text-brand-navy font-semibold hover:underline break-all"
+                className="mt-2 block text-xl lg:text-2xl font-black tracking-tight break-all hover:text-brand-orange transition"
               >
                 {contact.infoEmail}
               </a>
             </div>
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-orange">
+                Admissions
+              </p>
+              <a
+                href={`mailto:${contact.admissionsEmail}`}
+                className="mt-2 block text-xl lg:text-2xl font-black tracking-tight break-all hover:text-brand-orange transition"
+              >
+                {contact.admissionsEmail}
+              </a>
+            </div>
             {hasPhone && (
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
+                <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-orange">
                   Phone
                 </p>
                 <a
                   href={`tel:${contact.phoneTel}`}
-                  className="mt-1 block text-brand-navy font-semibold hover:underline"
+                  className="mt-2 block text-xl lg:text-2xl font-black tracking-tight hover:text-brand-orange transition"
                 >
                   {contact.phone}
                 </a>
               </div>
             )}
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
-                Admissions
+              <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-brand-orange">
+                Response time
               </p>
-              <a
-                href={`mailto:${contact.admissionsEmail}`}
-                className="mt-1 block text-brand-navy font-semibold hover:underline break-all"
-              >
-                {contact.admissionsEmail}
-              </a>
+              <p className="mt-2 text-base text-gray-700 leading-relaxed font-light">
+                We aim to respond within one business day. For urgent
+                program questions, email admissions directly.
+              </p>
             </div>
-          </div>
+          </aside>
 
-          {/* Form */}
-          <div className="rounded-3xl border border-gray-200 bg-white p-6 lg:p-8 shadow-sm">
-            <h2 className="text-2xl font-extrabold text-brand-navy">
-              Send a message
-            </h2>
-            <p className="mt-1 text-sm text-gray-600">
-              We&rsquo;ll get back to you by email.
-            </p>
-            <div className="mt-6">
-              <ContactForm />
+          {/* Form column */}
+          <div className="lg:col-span-8">
+            <div className="bg-[#f6f4ef] p-6 lg:p-10 border-t-4 border-brand-orange">
+              <h2 className="text-3xl lg:text-4xl font-black tracking-tight text-brand-navy-deep">
+                Send a message
+              </h2>
+              <p className="mt-2 text-base text-gray-700 font-light">
+                We&rsquo;ll reply by email. Fields marked with an
+                asterisk are required.
+              </p>
+              <div className="mt-8">
+                <ContactForm />
+              </div>
             </div>
           </div>
         </div>

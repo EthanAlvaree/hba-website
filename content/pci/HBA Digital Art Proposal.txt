@@ -1,0 +1,281 @@
+HBA Digital 
+Art Program 
+Proposal
+Bridging the Gap 
+Between Student 
+Creativity and 
+Professional 
+Industry Standards
+The Opportunity: 
+Beyond "Studio Art"
+• The Current State: Our Friday-only "Studio 
+Art" elective class provides a valuable 
+creative outlet, but lacks the time, tools, and 
+training required for modern digital mastery.
+• The Gap:Some students are already meeting 
+during lunch and after school, but there is 
+not enough time to learn and reach mastery.
+• Current Limit: Students only have time for 
+"flatting" (simple coloring).
+• The Goal:Teach advanced skills like lighting, 
+shadows, and storytelling.
+• The Need:A structured Mon–Thu schedule 
+allows for "deep work" and finished, 
+professional-grade portfolios.
+Real Skills vs. 
+AI Generation
+• Previously: Last year, the digital art class 
+at HBA focused only on AI generation.
+• Human Artistry: We teach students to 
+draw and paint by hand.
+• No AI Shortcuts: We do not use "AI 
+prompts." We build real talent.
+• The "How" and "Why": Students learn 
+why every line and color matters.
+• Core Skills: Learning form, light, 
+storytelling, and professional tools.
+• The Outcome: Students learn to create
+art, not just "ask" a computer to do it.
+Program Vision & Value to 
+HBA
+• A Flagship Program: Position HBA as 
+a local leader in career-aligned arts 
+education.
+• Professional Preparation: Prepare 
+students for the $200B+ creative 
+industry by blending technical, 
+artistic, and professional training.
+• Unique Differentiation: Offer a 
+curriculum rarely found at the high 
+school level, that includes – real-world production exposure,– credits in actual printed books, – mentorship from legendary industry 
+professionals
+Course at a Glance 
+(The Roadmap)
+• 1. The Drawing and Lineart
+Fundamentals. Drawing fundamentals, 
+anatomy, and software training.
+• 2. Light & Color. Mastering the physics of 
+light, shadow zones, and color theory.
+• 3. Software Training using industry 
+standard tools and workflow processes.
+• 4. Narrative Production. Storytelling with 
+color, color scripting, and advanced 
+rendering.
+• 5. Portfolio & Publication Opportunity.
+Finalizing professional pieces for 
+hardcover publication and industry
+standard portfolios.
+1. Drawing and Lineart
+Fundamentals
+• Anatomy fundamentals
+• Shape language and character design
+• Silhouette clarity, visual readability, 
+avoiding tangent lines
+• Environment sketching and spatial 
+design
+• Technical drawing: perspective
+Foundations of Light
+• Types of light sources– direct (key/center)– rim lights– ambient light– fill lights
+• Lighting zone phenomena– Specular highlights, – center (diffuse) light, – form light and halftones, – Terminator– reflected / bounce light
+• Light Behavior and Physics– Emission strength, distance, and fall off (inverse square law)– Light transmission (subsurface scattering, reflections, and 
+refractions)
+• Material response (metal, glass, fabric, skin, fur, etc.)
+Foundations of 
+Shadow
+• Types of Shadows– Form shadow– Core shadow– Cast shadow– Occlusion/crevice shadow
+• Shadow Zone Phenomena– Terminator– Halftones– Reflected / bounce light– Umbra and penumbra
+• Shadow Behavior & Physics– Shadow softness (light size and distance)– Falloff inside shadows– Ambient light influence
+• Material Response (matte vs. glossy, rough vs. 
+smooth, transparent vs. opaque, etc.)
+Color Theory
+• 3 Dimensions of Color– Value, – Saturation, – Hue
+• Color Relationships– Complementary colors– Analogous colors– Triadic and split-complementary schemes– Warm vs. cool palettes
+• Color Changes with Light Angle– Surfaces facing light are brighter– Turning away from light makes colors darker– Halftones become more saturated– Hue shifts depending on the mix of light color 
+and local color– Shadows show the color of reflected light
+Color Theory in 
+Practice
+• Color behavior– Color temperature– Color & Context: simultaneous 
+contrast and Chevreul’s Laws– Atmospheric perspective– Local color vs. lighting color
+• Visual focus & Storytelling– Using Value contrast to guide the 
+eye– Using saturation to emphasize 
+focal points– Color hierarchy and readability– Mood and emotional tone
+Storytelling 
+with Color
+• Visual Narrative: Using color to tell 
+the story without words
+• Atmospheric Control:Mastering 
+palette shifts to dictate the 
+"temperature" of a scene: e.g. “hot”, 
+“cold”, or “scary”.
+• Emotional Keying:Using specific 
+palettes to show how a character 
+feels.
+• Compositional Focus:Using color 
+contrast to guide the viewer’s eye.
+• Smart Choices:Moving from "just 
+coloring" to choosing colors with a 
+plan.
+Storytelling 
+with Color
+• Visual Narrative: Using color to tell 
+the story without words
+• Atmospheric Control:Mastering 
+palette shifts to dictate the 
+"temperature" of a scene: e.g. “hot”, 
+“cold”, or “scary”.
+• Emotional Keying:Using specific 
+palettes to show how a character 
+feels.
+• Compositional Focus:Using color 
+contrast to guide the viewer’s eye.
+• Smart Choices:Moving from "just 
+coloring" to choosing colors with a 
+plan.
+Storytelling 
+with Color
+• Visual Narrative: Using color to tell 
+the story without words
+• Atmospheric Control:Mastering 
+palette shifts to dictate the 
+"temperature" of a scene: e.g. “hot”, 
+“cold”, or “scary”.
+• Emotional Keying:Using specific 
+palettes to show how a character 
+feels.
+• Compositional Focus:Using color 
+contrast to guide the viewer’s eye.
+• Smart Choices:Moving from "just 
+coloring" to choosing colors with a 
+plan.
+Palettes, Behaviors, and Storytelling
+Software and 
+Digital Production
+• Industry-Standard Formats: Mastery of 
+layered .PSD and Clip Studio Paint pipelines.
+• Asset Management:Professional file 
+organization and naming conventions.
+• Non-Destructive Workflows: Utilizing masks 
+and adjustment layers for revisions, so original 
+art is never lost or destroyed.
+• Selection Tools: Mastering "Magic Wand" and 
+freehand tools for speed.
+• Custom Toolsets:Creating and changing 
+brushes to fit different materials and art styles.
+Software and Layers
+• Types of Layers: Background, flats, 
+rendering, inks, holds, lettering
+• Layer modes: normal, multiply, 
+overlay, hardlight, etc.
+• Adjustment layers and blending 
+modes
+• Selection and masking techniques 
+(clipping masks, layer masks)
+• Transformations: gaussian blur, 
+binarization, converting brightness to 
+opacity, correcting line weight, 
+removing dust, auto-actions
+The Process: Inks, Flats, Holds, and Rendering
+Final layer: Lettering
+Real-World Publication 
+Opportunities
+• Tangible Results: This is not just a 
+"grade-based" class; it is a "results
+based" studio.
+• Professional Credits: Students 
+receive formal credits in 
+professionally printed books.
+• The Hardcover Portfolio: Every 
+student works toward the goal of 
+seeing their art in a high-quality 
+hardcover publication, providing a 
+massive boost to college 
+applications and professional 
+resumes.
+Industry Exposure: Guest Feedback 
+Sessions with Professionals
+Ken Penders is a longtime author, 
+illustrator, and publisher best known for his 
+work on Sonic the Hedgehog from 1993 to 
+2006. He created many original characters 
+and storylines, including writing every issue 
+of Knuckles the Echidna (1997) and the 
+Princess Sally (1995) miniseries. 
+Beyond Sonic, Ken has worked on titles such 
+as Star Trek, King of the Hill, and The Legend 
+of Zelda. He has also worked in animation, 
+story development, filmmaking, and 
+independent publishing. His studio, Floating 
+Island Productions, is currently releasing 
+hardcover editions of his original stories.
+Scott Shaw is an award-winning penciller, 
+animator, and writer with over 50 years of 
+experience. He was the first artist on Archie 
+Comics’ Sonic the Hedgehog series (1992), 
+recently collected in Floating Island Productions’ 
+hardcover Scott Shaw’s Sonic Days. He also 
+worked as co-creator on The Simpsons comic 
+books and classic properties like The Flintstones. 
+Scott has taught cartooning and animation at the 
+college level and co-founded San Diego 
+Comic-Con in 1970. His expertise in visual humor, 
+character design, and production pipelines offers 
+students an inspiring look into the professional art 
+world.
+Kurt Michael Russell has been working as a 
+professional digital colorist since 2011, 
+known for his work on comics published by 
+DC, Image, Vault, IDW, Dark Horse, and 
+other major publishers. 
+Since 2014, Kurt also teaches digital 
+coloring through popular online courses 
+and YouTube, helping thousands of artists 
+learn digital coloring. His expertise in 
+lighting, mood, rendering, and digital 
+workflow gives students practical, 
+industry-ready skills.
+• Industry-Standard Digital Skills: Students learn professional-grade rendering, color 
+theory, and file management in Clip Studio Paint and Photoshop.
+Student 
+Outcomes
+• Professional Portfolio Pieces: Students won't just have sketches; they will have finished, 
+high-resolution pieces ready for college applications or professional inquiries.
+• Real-World Production Exposure: Experience working within a production pipeline, 
+meeting deadlines, and preparing files for high-quality printing.
+• Collaboration & Feedback: Direct experience receiving and implementing professional 
+critiques from industry veterans.
+• Creative Confidence: The shift from being an art enthusiast to a skilled creator who 
+understands the "how" and "why" behind their work.
+Logistics & 
+Implementation
+• Industry-Aligned Learning: Real
+world production work on 
+professional titles provides 
+students with 'Work-Integrated 
+Learning' (WIL) and internship-level 
+experience.
+• Professional Software: The 
+program utilizes industry-standard 
+Clip Studio Paint licenses at a cost 
+of only $33.99/year per student.– Status: We already have 5 
+active licenses
+• Hardware: To participate, students 
+need a digital drawing tablet (e.g., 
+iPad with Apple Pencil or Surface 
+Pro with Surface Pen).– Should be communicated to 
+parents as a necessary tool 
+for enrollment
+Conclusion: 
+Value to HBA
+• Innovation: A unique 
+flagship program that 
+differentiates HBA from 
+other institutions.
+• Engagement: Attracts and 
+retains creative students 
+by providing a high-tech, 
+career-aligned elective.
+• Confidence: Empowers 
+students by turning their 
+passion for art into a 
+measurable, professional 
+skill set.

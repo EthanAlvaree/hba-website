@@ -141,11 +141,15 @@ const hbaNavigation: NavItem[] = [
   },
 ]
 
-// PCI is brand-new — start with just Contact in the nav. The logo
-// click-through to "/" is the home link. Add items here as more PCI
-// pages come online.
+// PCI's nav is intentionally slim — four destinations, no dropdowns.
+// Matches the editorial / institute layout, not HBA's prep-school
+// multi-column megamenu. Expand only if new top-level destinations
+// land; keep depth shallow.
 const pciNavigation: NavItem[] = [
-  { title: "Contact", href: "/contact" },
+  { title: "Art Institute", href: "/art" },
+  { title: "Test prep", href: "/test-prep" },
+  { title: "About", href: "/about" },
+  { title: "Contact", href: "/contact", align: "right" },
 ]
 
 export const navigation: NavItem[] =

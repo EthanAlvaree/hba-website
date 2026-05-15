@@ -2,8 +2,15 @@ import Image from "next/image";
 import PageHero from "@/components/ui/PageHero";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import YouTubeEmbed from "@/components/ui/YouTubeEmbed";
+import { schoolKey } from "@/lib/site";
+import PciAboutPage from "@/app/_schools/pci/AboutPage";
 
 export default function AboutPage() {
+  if (schoolKey === "pci") return <PciAboutPage />;
+  return <HbaAboutPage />;
+}
+
+function HbaAboutPage() {
   return (
     <main className="bg-gray-50 overflow-hidden">
       <PageHero

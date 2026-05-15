@@ -1,0 +1,110 @@
+Pacific Crest Institute (PCI) — Master Overview
+
+1. Identity & Mission
+Pacific Crest Institute (PCI) is a San Diego–based academic services company founded by Ethan Alvarée, Molly Sun, and Kun Xuan as equal partners. PCI provides:
+•	Academic tutoring
+•	Test preparation
+•	Enrichment programs
+•	Digital art and creative media courses (in partnership with a professional publisher)
+•	Portfolio building opportunities for students
+Mission: Deliver high quality, student centered academic and creative instruction that empowers learners to grow, build confidence, and prepare for college and career pathways.
+
+2. Leadership Structure
+All three founders are equal business partners.
+Kun Xuan — Strategic Advisor & Co Founder
+•	Provides strategic guidance, long term planning, and business development
+•	Supports high level partnerships and institutional relationships
+Ethan Alvarée — CEO
+•	Oversees curriculum, instruction, academic quality, and program development
+•	Leads technology, systems, and operational infrastructure
+•	Manages partnerships related to curriculum, publishing, and academic content
+Molly Sun — Director of Marketing, Recruitment, and Administration
+•	Oversees admissions, family communication, and operational workflows
+•	Manages customer experience, onboarding, and administrative systems
+•	Leads community engagement and parent facing communication
+
+3. Governance Principles
+PCI is intentionally structured to be:
+•	Clean — no blurred lines with HBA or PCHS
+•	Separate — its own brand, domain, and operational identity
+•	Transparent — no conflicts of interest in partnerships or contracts
+PCI does not rely on HBA infrastructure, accounts, or governance. PCI will eventually operate from its own Microsoft 365 tenant.
+
+4. Technology & Infrastructure Plan
+Phase 1 — Startup Phase (Current)
+•	Operate temporarily within the HBA Microsoft 365 tenant
+•	Use domain based PCI accounts (not aliases)
+•	Maintain separate PCI folders, Teams, and SharePoint sites
+•	Keep PCI data isolated from HBA data
+Phase 2 — Growth Phase
+•	Register pacificcrestinstitute.com
+•	Create PCI specific email accounts (info@, admin@, ethan@, molly@, kun@)
+•	Build PCI’s own SharePoint, Teams, and OneDrive structure
+•	Establish PCI’s Google Business Profile
+Phase 3 — Independence Phase
+•	Create a dedicated PCI Microsoft 365 tenant
+•	Migrate PCI users, SharePoint sites, Teams, and OneDrives
+•	Transfer the PCI domain to the new tenant
+•	Maintain clean separation from HBA and PCHS
+This ensures PCI can scale without technical debt.
+
+5. Branding & Public Presence
+PCI will maintain:
+•	Its own website
+•	Its own YouTube channel
+•	Its own Google Business listing
+•	Its own social media presence
+•	Its own visual identity and messaging
+PCI is not a subsidiary of HBA or PCHS — it is a standalone educational services company.
+
+6. Partnership With FIP / Ken
+PCI’s partnership with the publisher must include:
+•	Co producer credit on all books where PCI students contribute
+•	Student credit structure that clearly defines how students are credited
+•	Limited but real creative oversight, including:
+o	design elements
+o	production quality
+o	print proofs
+•	Non exclusive promotional rights for PCI to use student work in marketing
+•	Clear boundaries preventing PCI from being treated as a freelancer or labor provider
+PCI must retain:
+•	creative dignity
+•	institutional credit
+•	student protection
+•	brand integrity
+
+7. Conflict of Interest Safeguards
+PCI must remain cleanly separated from:
+HBA
+•	PCI does not make decisions for HBA
+•	PCI does not use HBA resources without approval
+•	PCI does not influence HBA governance
+•	PCI does not create financial entanglements
+PCHS (future nonprofit)
+•	PCI may partner with PCHS, but:
+o	PCHS board must approve any agreements
+This keeps PCI compliant with nonprofit governance rules.
+
+8. Long Term Vision
+PCI is designed to grow into:
+•	A premium academic services provider
+•	A creative arts and digital media hub
+•	A partner for schools, publishers, and educational organizations
+•	A scalable, multi program educational brand
+PCI’s structure supports future expansion into:
+•	Online courses
+•	Digital art academies
+•	Curriculum development
+•	Publishing partnerships
+•	College prep programs
+•	Summer institutes
+
+9. Summary
+PCI is:
+•	A clean, independent academic services company
+•	Co founded by Kun, Ethan, and Molly
+•	Structured to avoid conflicts with HBA and PCHS
+•	Built for long term scalability
+•	Supported by a clear governance and technology roadmap
+•	Positioned for partnerships, publishing, and creative expansion
+

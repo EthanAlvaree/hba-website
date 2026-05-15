@@ -6,7 +6,7 @@ import { Dialog, Transition, Disclosure } from "@headlessui/react"
 import { XMarkIcon, ChevronDownIcon } from "@heroicons/react/24/outline"
 import Link from "next/link"
 import type { NavItem } from "@/lib/navigation"
-import { siteConfig } from "@/lib/site"
+import { schoolKey, siteConfig } from "@/lib/site"
 
 interface MobileMenuProps {
   open: boolean
@@ -113,28 +113,32 @@ export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
                     )}
 
                     <div className="pt-4 border-t mt-2">
-                      <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
-                        Quick links
-                      </h4>
-                      <ul className="space-y-1 mb-4">
-                        {[
-                          { label: "Parent/guardian", href: "/community/parents" },
-                          { label: "Alumni", href: "/community/alumni" },
-                          { label: "School store", href: "/community/store" },
-                          { label: "Calendar", href: "/calendar" },
-                          { label: "Contact", href: "/contact" },
-                        ].map((link) => (
-                          <li key={link.href}>
-                            <Link
-                              href={link.href}
-                              className="text-sm text-gray-700 py-1 block"
-                              onClick={onClose}
-                            >
-                              {link.label}
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
+                      {schoolKey !== "pci" && (
+                        <>
+                          <h4 className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+                            Quick links
+                          </h4>
+                          <ul className="space-y-1 mb-4">
+                            {[
+                              { label: "Parent/guardian", href: "/community/parents" },
+                              { label: "Alumni", href: "/community/alumni" },
+                              { label: "School store", href: "/community/store" },
+                              { label: "Calendar", href: "/calendar" },
+                              { label: "Contact", href: "/contact" },
+                            ].map((link) => (
+                              <li key={link.href}>
+                                <Link
+                                  href={link.href}
+                                  className="text-sm text-gray-700 py-1 block"
+                                  onClick={onClose}
+                                >
+                                  {link.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      )}
 
                       <Link
                         href="/admin/sign-in"
@@ -144,13 +148,15 @@ export default function MobileMenu({ open, onClose, items }: MobileMenuProps) {
                         Sign in
                       </Link>
 
-                      <Link
-                        href={siteConfig.external.enrollment}
-                        className="w-full block text-center bg-brand-orange text-white py-2 rounded-sm font-semibold text-sm"
-                        onClick={onClose}
-                      >
-                        Apply
-                      </Link>
+                      {schoolKey !== "pci" && (
+                        <Link
+                          href={siteConfig.external.enrollment}
+                          className="w-full block text-center bg-brand-orange text-white py-2 rounded-sm font-semibold text-sm mt-2"
+                          onClick={onClose}
+                        >
+                          Apply
+                        </Link>
+                      )}
                     </div>
                   </nav>
                 </div>
