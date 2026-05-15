@@ -41,135 +41,138 @@
   .brand {
     background: var(--navy-deep);
     color: #fff;
-    padding: 0.32in 0.5in;
+    padding: 0.22in 0.5in;
     display: flex;
     align-items: center;
-    gap: 0.24in;
-    border-bottom: 4px solid var(--orange);
+    gap: 0.22in;
+    border-bottom: 3px solid var(--orange);
   }
-  .brand img { height: 0.55in; width: auto; display: block; }
-  .brand .word { font-weight: 800; font-size: 18pt; letter-spacing: -0.5px; }
+  .brand img { height: 0.46in; width: auto; display: block; }
+  .brand .word { font-weight: 800; font-size: 15pt; letter-spacing: -0.4px; }
   .brand .word small {
-    display: block; font-weight: 600; font-size: 8.5pt;
+    display: block; font-weight: 600; font-size: 7.5pt;
     letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange);
-    margin-top: 2px;
+    margin-top: 1px;
   }
 
   /* ─── Hero ─── */
-  .hero { padding: 0.34in 0.5in 0.22in; }
+  .hero { padding: 0.22in 0.5in 0.14in; }
   .eyebrow {
-    font-weight: 700; font-size: 8.5pt; letter-spacing: 0.28em;
+    font-weight: 700; font-size: 8pt; letter-spacing: 0.28em;
     text-transform: uppercase; color: var(--orange);
   }
   .hero h1 {
-    margin: 8px 0 6px; font-weight: 900; font-size: 44pt;
-    letter-spacing: -1.5px; line-height: 0.95; color: var(--navy-deep);
+    margin: 6px 0 5px; font-weight: 900; font-size: 32pt;
+    letter-spacing: -1.2px; line-height: 0.96; color: var(--navy-deep);
   }
   .hero h1 .accent { color: var(--orange); }
   .hero .lede {
-    font-weight: 300; font-size: 12.5pt; line-height: 1.45;
+    font-weight: 300; font-size: 10.5pt; line-height: 1.4;
     color: var(--muted); max-width: 6.6in;
   }
 
   /* ─── Stats strip ─── */
   .stats {
-    margin: 0.18in 0.5in 0;
+    margin: 0.14in 0.5in 0;
     display: grid; grid-template-columns: repeat(4, 1fr);
     background: var(--cream);
     border-top: 3px solid var(--orange);
   }
-  .stat { padding: 0.16in 0.18in; border-right: 1px solid rgba(0,0,0,0.07); }
+  .stat { padding: 0.12in 0.16in; border-right: 1px solid rgba(0,0,0,0.07); }
   .stat:last-child { border-right: none; }
   .stat .v {
-    font-weight: 900; font-size: 17pt; letter-spacing: -0.3px;
+    font-weight: 900; font-size: 14pt; letter-spacing: -0.3px;
     color: var(--navy-deep); line-height: 1;
   }
   .stat .k {
-    margin-top: 4px; font-weight: 700; font-size: 7.5pt;
+    margin-top: 3px; font-weight: 700; font-size: 7pt;
     letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);
   }
 
   /* ─── Two-column: pitch + image ─── */
   .pitch {
-    padding: 0.26in 0.5in 0.18in;
+    padding: 0.16in 0.5in 0.12in;
     display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 0.32in;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 0.24in;
     align-items: start;
   }
   .pitch h2 {
-    margin: 0 0 8px; font-weight: 900; font-size: 17pt;
-    letter-spacing: -0.4px; color: var(--navy-deep); line-height: 1.05;
+    margin: 0 0 6px; font-weight: 900; font-size: 14pt;
+    letter-spacing: -0.3px; color: var(--navy-deep); line-height: 1.05;
   }
   .pitch p {
-    margin: 0 0 8px; font-size: 10.5pt; line-height: 1.5;
+    margin: 0 0 5px; font-size: 9.5pt; line-height: 1.42;
     font-weight: 300; color: var(--muted);
   }
   .pitch .quote {
-    margin-top: 6px; padding: 8px 12px;
+    margin-top: 5px; padding: 6px 10px;
     border-left: 3px solid var(--orange);
     font-style: italic; font-weight: 400;
-    font-size: 10.5pt; color: var(--navy-deep);
+    font-size: 9.5pt; line-height: 1.35; color: var(--navy-deep);
   }
   .book {
     position: relative;
+    max-width: 1.8in;
     aspect-ratio: 3 / 4;
     background: #f3f4f6;
     overflow: hidden;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    box-shadow: 0 5px 14px rgba(0,0,0,0.18);
     border: 1px solid rgba(0,0,0,0.08);
+    margin: 0 auto;
   }
   .book img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .book-caption {
-    margin-top: 6px; font-size: 7.5pt; font-weight: 700;
+    margin-top: 5px; font-size: 7pt; font-weight: 700;
     letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+    text-align: center;
   }
 
   /* ─── Curriculum ─── */
   .curriculum {
-    margin: 0 0.5in; padding: 0.18in 0;
+    margin: 0 0.5in; padding: 0.12in 0;
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
   }
   .curriculum-head {
     display: flex; align-items: baseline; justify-content: space-between;
-    margin-bottom: 0.12in;
+    margin-bottom: 0.10in;
   }
   .curriculum-head h3 {
-    margin: 0; font-weight: 900; font-size: 14pt;
+    margin: 0; font-weight: 900; font-size: 12pt;
     color: var(--navy-deep); letter-spacing: -0.3px;
   }
   .curriculum-list {
     display: grid; grid-template-columns: repeat(5, 1fr);
-    gap: 0.14in;
+    gap: 0.12in;
   }
-  .ch { padding-right: 6px; }
+  .ch { padding-right: 4px; }
   .ch .n {
-    font-weight: 900; font-size: 18pt; color: var(--orange);
+    font-weight: 900; font-size: 15pt; color: var(--orange);
     line-height: 1;
   }
   .ch .t {
-    margin-top: 6px; font-weight: 800; font-size: 9.5pt;
-    color: var(--navy-deep); line-height: 1.2;
+    margin-top: 4px; font-weight: 800; font-size: 8.5pt;
+    color: var(--navy-deep); line-height: 1.15;
   }
   .ch .b {
-    margin-top: 4px; font-size: 8pt; line-height: 1.4;
+    margin-top: 3px; font-size: 7.5pt; line-height: 1.3;
     font-weight: 300; color: var(--muted);
   }
 
   /* ─── Mentor strip ─── */
-  .mentors { padding: 0.22in 0.5in 0.16in; }
+  .mentors { padding: 0.14in 0.5in 0.10in; }
   .mentors h3 {
-    margin: 0 0 0.12in; font-weight: 900; font-size: 13pt;
+    margin: 0 0 0.10in; font-weight: 900; font-size: 11pt;
     color: var(--navy-deep); letter-spacing: -0.3px;
   }
   .mentor-row {
     display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 0.22in;
+    gap: 0.16in;
   }
-  .mentor { display: flex; gap: 10px; align-items: center; }
+  .mentor { display: flex; gap: 8px; align-items: center; }
   .mentor .portrait {
-    flex: 0 0 0.7in; width: 0.7in; height: 0.7in;
+    flex: 0 0 0.58in; width: 0.58in; height: 0.58in;
     background: #e5e7eb; overflow: hidden;
     border: 2px solid var(--navy-deep);
   }
@@ -178,16 +181,16 @@
     filter: grayscale(100%) contrast(1.05);
   }
   .mentor .who .name {
-    font-weight: 900; font-size: 10.5pt; color: var(--navy-deep);
+    font-weight: 900; font-size: 9.5pt; color: var(--navy-deep);
     line-height: 1.1;
   }
   .mentor .who .role {
-    margin-top: 3px; font-weight: 700; font-size: 7pt;
+    margin-top: 2px; font-weight: 700; font-size: 6.5pt;
     letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange);
   }
   .mentor .who .firm {
-    margin-top: 3px; font-size: 8pt; color: var(--muted);
-    font-weight: 300; line-height: 1.3;
+    margin-top: 2px; font-size: 7.5pt; color: var(--muted);
+    font-weight: 300; line-height: 1.25;
   }
 
   /* ─── Footer ─── */
@@ -195,23 +198,23 @@
     margin-top: auto;
     background: var(--navy-deep);
     color: #fff;
-    padding: 0.22in 0.5in;
+    padding: 0.16in 0.5in;
     display: flex; align-items: center; justify-content: space-between;
-    border-top: 4px solid var(--orange);
+    border-top: 3px solid var(--orange);
   }
   .foot .left .ask {
-    font-weight: 900; font-size: 12pt; letter-spacing: -0.3px;
+    font-weight: 900; font-size: 11pt; letter-spacing: -0.3px;
   }
   .foot .left .sub {
-    margin-top: 3px; font-weight: 300; font-size: 9pt; color: rgba(255,255,255,0.78);
+    margin-top: 2px; font-weight: 300; font-size: 8.5pt; color: rgba(255,255,255,0.78);
   }
   .foot .right { text-align: right; }
   .foot .right .url {
-    font-weight: 800; font-size: 11pt; color: var(--orange);
+    font-weight: 800; font-size: 10pt; color: var(--orange);
     letter-spacing: -0.2px;
   }
   .foot .right .mail {
-    margin-top: 3px; font-weight: 400; font-size: 9pt; color: rgba(255,255,255,0.85);
+    margin-top: 2px; font-weight: 400; font-size: 8.5pt; color: rgba(255,255,255,0.85);
   }
 
   /* ─── Print rules ─── */
