@@ -12,9 +12,14 @@ in and provisioning the external resources.
 
 Decide and gather:
 
-- **Microsoft 365 tenant for PCI.** Strongly recommended: a *separate*
-  tenant from HBA. Clean data isolation, separate license pools, separate
-  domains. (Shared tenant is possible but couples the two operationally.)
+- **Microsoft 365 tenant.** HBA + PCI currently share one M365 tenant
+  with both `highbluffacademy.com` and `pacificcrestinstitute.com` as
+  verified domains. People with dual roles (Ethan, Molly, Kun) have one
+  account per domain. This means the PCI Vercel project reuses the same
+  `GRAPH_*` credentials as HBA — only `GRAPH_MAIL_SENDER` differs
+  (point it at a real mailbox on the PCI domain, e.g.
+  `noreply@pacificcrestinstitute.com`). The license SKU
+  (`STANDARDWOFFPACK_STUDENT`) is the same pool.
 - **Supabase project for PCI.** A separate Supabase project. Student PII
   shouldn't sit in HBA's database.
 - **Vercel project for PCI.** A second Vercel project pointing at this
@@ -57,10 +62,10 @@ the warning stops.
      direct connections are IPv6-only on most home networks. Replace
      `[YOUR-PASSWORD]` with the password from above.
 
-2. Put `DATABASE_URL` in a temporary local `.env.local` (or just export
-   it inline) and run:
+2. Save PCI's connection settings to `.env.pci.local` (keeping HBA's
+   `.env.local` untouched) and point the migration runner at it:
    ```
-   npm run db:migrate
+   npm run db:migrate -- --env=.env.pci.local
    ```
    The runner creates `schema_migrations` and applies every numbered file
    in `db/migrations/` from scratch (since the table is empty and this is
@@ -73,30 +78,28 @@ the warning stops.
    ```
    Should report all current migrations applied, 0 pending.
 
-## 3. Provision the Microsoft Graph app
+## 3. Microsoft Graph app
 
-In PCI's M365 tenant:
+Because HBA and PCI share the same M365 tenant, **PCI reuses the
+existing HBA Graph app registration** — no new app reg required. The
+permissions are already granted (User.ReadWrite.All, User.Read.All,
+Organization.Read.All, Mail.Send, Directory.Read.All), and they apply
+tenant-wide, so they cover the PCI domain too.
 
-1. **Register an app** in Entra → App registrations → New registration.
-   Name it something like "PCI SIS Graph". Single tenant. Capture the
-   **client ID** and **tenant ID**.
-2. **Create a client secret** under Certificates & secrets → New client
-   secret. Capture the value (shown once).
-3. **Add API permissions** (Microsoft Graph → Application permissions),
-   then grant admin consent for each:
-   - `User.ReadWrite.All` (creates student accounts + assigns licenses)
-   - `User.Read.All` (M365 sync)
-   - `Organization.Read.All` (resolves the student license SKU)
-   - `Mail.Send` (sends notification emails)
-   - `Directory.Read.All` (legacy, defense-in-depth — match HBA's grant
-     for consistency)
+PCI's Vercel project will use the **same** `GRAPH_CLIENT_ID`,
+`GRAPH_CLIENT_SECRET`, and `GRAPH_TENANT_ID` as HBA's. The only Graph
+env var that differs is `GRAPH_MAIL_SENDER` — point that at a mailbox on
+the PCI domain (e.g. `noreply@pacificcrestinstitute.com` or
+`info@pacificcrestinstitute.com`).
 
-   For OIDC sign-in (NextAuth), add the standard delegated scopes:
-   `openid`, `profile`, `email`, `offline_access`, `User.Read`.
-4. **Confirm the student-license SKU exists in this tenant.** The
-   provisioner defaults to `STANDARDWOFFPACK_STUDENT` ("Office 365 A1 for
-   students"). If the PCI tenant uses a different SKU part number, set
-   `M365_STUDENT_LICENSE_SKU` to the right one in the Vercel env.
+The student license SKU (`STANDARDWOFFPACK_STUDENT` — Office 365 A1 for
+Students) is the same shared pool. The `M365_STUDENT_LICENSE_SKU`
+override env var is not needed unless that changes.
+
+If HBA and PCI ever split tenants, this is the only section that would
+change: PCI would get its own Graph app reg with the same permission
+set, and the `GRAPH_*` env vars on PCI's Vercel project would point at
+that new reg.
 
 ## 4. Create the Vercel project
 

@@ -33,10 +33,22 @@ const MIGRATIONS_DIR = path.resolve(process.cwd(), "db/migrations")
 const BASELINE_THROUGH = "0038"
 
 // ---------------------------------------------------------------------------
-// .env.local loader — standalone scripts don't get Next.js's env loading.
+// .env loader — standalone scripts don't get Next.js's env loading.
+// Defaults to `.env.local`; override with `--env=<path>` (e.g. when
+// migrating a different deployment's DB: `npm run db:migrate --
+// --env=.env.pci.local`).
 // ---------------------------------------------------------------------------
+function envPathFromArgs(): string {
+  const arg = process.argv.find((a) => a.startsWith("--env="))
+  if (arg) return arg.slice("--env=".length)
+  // Also accept `--env <path>` as two args.
+  const i = process.argv.indexOf("--env")
+  if (i !== -1 && process.argv[i + 1]) return process.argv[i + 1]
+  return ".env.local"
+}
+
 function loadEnvLocal() {
-  const envPath = path.resolve(process.cwd(), ".env.local")
+  const envPath = path.resolve(process.cwd(), envPathFromArgs())
   if (!existsSync(envPath)) return
   const text = readFileSync(envPath, "utf-8")
   for (const rawLine of text.split(/\r?\n/)) {
