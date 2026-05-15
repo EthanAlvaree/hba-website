@@ -31,6 +31,7 @@ const partners: Partner[] = [
     description:
       "Pacific Crest Institute partners with HBA to extend our test prep and arts offerings — from focused SAT and ACT courses to portfolio-grade studio and digital art instruction. Students benefit from specialist teachers and a structured approach that complements our in-house college counseling.",
     image: "/images/hba/partnerships/pacific-crest.webp",
+    website: "https://www.pacificcrestinstitute.com",
   },
   {
     name: "Study Hut Tutoring",
@@ -99,14 +100,31 @@ export default function PartnershipsPage() {
               }`}
             >
               <div className="lg:col-span-5">
-                <div className="relative h-[320px] rounded-3xl overflow-hidden shadow-xl bg-white">
-                  <Image
-                    src={partner.image}
-                    alt={partner.name}
-                    fill
-                    className="object-contain p-8"
-                  />
-                </div>
+                {partner.website ? (
+                  <a
+                    href={partner.website}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`Visit ${partner.name}`}
+                    className="block relative h-[320px] rounded-3xl overflow-hidden shadow-xl bg-white transition hover:shadow-2xl hover:-translate-y-0.5"
+                  >
+                    <Image
+                      src={partner.image}
+                      alt={partner.name}
+                      fill
+                      className="object-contain p-8"
+                    />
+                  </a>
+                ) : (
+                  <div className="relative h-[320px] rounded-3xl overflow-hidden shadow-xl bg-white">
+                    <Image
+                      src={partner.image}
+                      alt={partner.name}
+                      fill
+                      className="object-contain p-8"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="lg:col-span-7 space-y-4">
@@ -121,7 +139,20 @@ export default function PartnershipsPage() {
                   )}
                 </div>
 
-                <h3 className="text-3xl font-extrabold text-brand-navy">{partner.name}</h3>
+                <h3 className="text-3xl font-extrabold text-brand-navy">
+                  {partner.website ? (
+                    <a
+                      href={partner.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-brand-orange transition"
+                    >
+                      {partner.name}
+                    </a>
+                  ) : (
+                    partner.name
+                  )}
+                </h3>
                 <p className="text-lg font-medium text-gray-800">{partner.shortDesc}</p>
                 <p className="text-gray-600 font-light leading-relaxed">
                   {partner.description}

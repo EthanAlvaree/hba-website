@@ -1,15 +1,19 @@
 // app/sitemap.ts
 //
 // Auto-generates /sitemap.xml at build time. Search engines fetch this to
-// discover and prioritize pages. To add a new page, append it to
-// `staticRoutes`. Dynamic routes (e.g. faculty bios) are derived from their
-// data sources so adding a new faculty member automatically grows the sitemap.
+// discover and prioritize pages. School-aware — HBA's sitemap covers HBA's
+// route map (admissions, programs, etc.); PCI's covers PCI's (art, test
+// prep, faculty, contact). Each deploy lists only its own URLs so we don't
+// hand crawlers links that 404 on the deployed tenant.
 
 import type { MetadataRoute } from "next"
-import { siteConfig } from "@/lib/site"
+import { schoolKey, siteConfig } from "@/lib/site"
 import { getFacultyMembers } from "@/lib/faculty"
+import { pciPeople } from "@/app/_schools/pci/people"
 
-const STATIC_ROUTES: { path: string; priority: number }[] = [
+type StaticRoute = { path: string; priority: number }
+
+const HBA_ROUTES: StaticRoute[] = [
   // Top-priority entry points
   { path: "/", priority: 1.0 },
   { path: "/admissions", priority: 0.9 },
@@ -49,28 +53,53 @@ const STATIC_ROUTES: { path: string; priority: number }[] = [
   { path: "/terms", priority: 0.2 },
 ]
 
+const PCI_ROUTES: StaticRoute[] = [
+  // Top-priority entry points
+  { path: "/", priority: 1.0 },
+  { path: "/art", priority: 0.9 },
+  { path: "/test-prep", priority: 0.9 },
+
+  // Secondary
+  { path: "/about", priority: 0.8 },
+  { path: "/faculty", priority: 0.8 },
+  { path: "/contact", priority: 0.7 },
+]
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date()
+  const isPci = schoolKey === "pci"
 
-  const staticEntries = STATIC_ROUTES.map(({ path, priority }) => ({
+  const routes = isPci ? PCI_ROUTES : HBA_ROUTES
+  const staticEntries = routes.map(({ path, priority }) => ({
     url: `${siteConfig.url}${path}`,
     lastModified,
     priority,
   }))
 
-  // Faculty bios live in the DB. Tolerate a failed fetch at build time
-  // (e.g. before the faculty_bios migration runs) — the sitemap still
-  // generates with the static routes.
+  // Faculty / team bio detail pages.
   let facultyEntries: MetadataRoute.Sitemap = []
-  try {
-    const faculty = await getFacultyMembers()
-    facultyEntries = faculty.map((member) => ({
-      url: `${siteConfig.url}/faculty/${member.slug}`,
+  if (isPci) {
+    // PCI's roster is hardcoded in app/_schools/pci/people.ts — no DB call
+    // needed and no failure mode to guard.
+    facultyEntries = pciPeople.map((p) => ({
+      url: `${siteConfig.url}/faculty/${p.slug}`,
       lastModified,
       priority: 0.6,
     }))
-  } catch (error) {
-    console.error("sitemap: faculty fetch failed, omitting bios", error)
+  } else {
+    // HBA's bios live in Supabase. Tolerate a failed fetch at build time
+    // (e.g. before the faculty_bios migration runs) — the sitemap still
+    // generates with the static routes.
+    try {
+      const faculty = await getFacultyMembers()
+      facultyEntries = faculty.map((member) => ({
+        url: `${siteConfig.url}/faculty/${member.slug}`,
+        lastModified,
+        priority: 0.6,
+      }))
+    } catch (error) {
+      console.error("sitemap: faculty fetch failed, omitting bios", error)
+    }
   }
 
   return [...staticEntries, ...facultyEntries]
