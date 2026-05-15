@@ -24,6 +24,7 @@ import {
   adminUploadApplicationDocument,
 } from "@/lib/application-storage"
 import { enrollAcceptedApplication, enrollApplicationSchema } from "@/lib/sis"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
 const optionalText = z
   .string()
@@ -190,21 +191,39 @@ export async function enrollApplicationAction(formData: FormData) {
     displayName,
   })
 
-  await enrollAcceptedApplication(parsed.data)
+  const enrolled = await enrollAcceptedApplication(parsed.data)
 
   // Best-effort: notify the family that the school account is ready (with the
   // temp password when we just created it) and point them at /welcome. A
   // Graph send failure here shouldn't roll back the enrollment — it can be
   // re-sent manually from /admin/messaging.
+  let welcomeEmailSent = false
   try {
     await sendEnrollmentWelcomeToFamily({
       application,
       studentHbaEmail: parsed.data.student_hba_email,
       tempPassword: provision.tempPassword,
     })
+    welcomeEmailSent = true
   } catch (err) {
     console.error("[enroll] welcome email failed", err)
   }
+
+  // The lifecycle peer of student.withdraw — captures who enrolled the
+  // student, which M365 account was provisioned, and whether the family
+  // notification actually went out. Useful for "when was X enrolled?" and
+  // "did the welcome email reach them?" without trawling logs.
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.student_enroll,
+    target_kind: "student",
+    target_id: enrolled.student.id,
+    details: {
+      application_id: application.id,
+      student_hba_email: parsed.data.student_hba_email,
+      m365_account_created: provision.created,
+      welcome_email_sent: welcomeEmailSent,
+    },
+  })
 
   revalidateApplicationViews()
   redirectBackToQueue(redirectTo)
