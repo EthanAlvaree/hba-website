@@ -37,7 +37,7 @@ export type FacultyMember = {
 
 // Fallback portrait when a faculty member has neither an uploaded
 // portrait nor a /public image path.
-const FACULTY_PLACEHOLDER_IMAGE = "/images/faculty/faculty-hero.webp"
+const FACULTY_PLACEHOLDER_IMAGE = "/images/hba/faculty/faculty-hero.webp"
 
 const PORTRAIT_BUCKET = "profile-photos"
 const PORTRAIT_MAX_DIMENSION = 1200

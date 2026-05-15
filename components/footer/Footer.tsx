@@ -19,7 +19,7 @@ function HbaFooter() {
       {/* Campus Image */}
       <div className="w-full h-72 relative">
         <Image
-          src="/images/home/campus-aerial.webp"
+          src="/images/hba/home/campus-aerial.webp"
           alt={`${siteConfig.name} campus`}
           fill
           sizes="100vw"
@@ -38,7 +38,7 @@ function HbaFooter() {
           <div>
             <div className="relative w-24 h-24 mb-4">
               <Image
-                src="/images/brand/hba-logo-color.webp"
+                src="/images/hba/brand/hba-logo-color.webp"
                 alt={`${siteConfig.name} logo`}
                 fill
                 sizes="96px"
@@ -105,7 +105,7 @@ function HbaFooter() {
                 aria-label={`${siteConfig.name} home`}
                 className="relative w-20 h-20 transition-opacity hover:opacity-80"
               >
-                <Image src="/images/brand/hba-logo-round.webp" alt={`${siteConfig.shortName} seal`} fill sizes="80px" className="object-contain"/>
+                <Image src="/images/hba/brand/hba-logo-round.webp" alt={`${siteConfig.shortName} seal`} fill sizes="80px" className="object-contain"/>
               </Link>
               <Link
                 href="https://directory.acswasc.org/"
@@ -114,7 +114,7 @@ function HbaFooter() {
                 aria-label="WASC accredited — view directory"
                 className="relative w-20 h-20 transition-opacity hover:opacity-80"
               >
-                <Image src="/images/brand/wasc-round.webp" alt="WASC Accredited" fill sizes="80px" className="object-contain"/>
+                <Image src="/images/hba/brand/wasc-round.webp" alt="WASC Accredited" fill sizes="80px" className="object-contain"/>
               </Link>
               <Link
                 href="https://hs-articulation.ucop.edu/agcourselist"
@@ -123,7 +123,7 @@ function HbaFooter() {
                 aria-label="UC A-G approved — view course list"
                 className="relative w-20 h-20 transition-opacity hover:opacity-80"
               >
-                <Image src="/images/brand/uc.webp" alt="UC A-G Approved" fill sizes="80px" className="object-contain"/>
+                <Image src="/images/hba/brand/uc.webp" alt="UC A-G Approved" fill sizes="80px" className="object-contain"/>
               </Link>
             </div>
           </div>

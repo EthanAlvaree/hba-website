@@ -16,7 +16,7 @@ function HbaContact() {
       <PageHero
         title="Contact High Bluff Academy"
         subtitle="We’re here to help — reach out anytime."
-        image="/images/contact/contact-hero.webp"
+        image="/images/hba/contact/contact-hero.webp"
       />
 
       <Breadcrumbs />

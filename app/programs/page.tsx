@@ -181,7 +181,7 @@ export default function ProgramsPage() {
       <PageHero
         title="Academic programs"
         subtitle="A flexible, college-preparatory pathway tailored to each student's strengths and goals."
-        image="/images/programs/programs-hero.webp"
+        image="/images/hba/programs/programs-hero.webp"
       />
 
       <Breadcrumbs />
@@ -246,7 +246,7 @@ export default function ProgramsPage() {
           <div className="lg:col-span-6">
             <div className="relative h-[520px] rounded-3xl overflow-hidden shadow-2xl group">
               <Image
-                src="/images/programs/courses.webp"
+                src="/images/hba/programs/courses.webp"
                 alt="Students engaged in class"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -269,7 +269,7 @@ export default function ProgramsPage() {
       <section id="ap" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/programs/ap-courses.webp"
+            src="/images/hba/programs/ap-courses.webp"
             alt=""
             fill
             className="object-cover"
@@ -429,7 +429,7 @@ export default function ProgramsPage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/programs/summer-programs.webp"
+              src="/images/hba/programs/summer-programs.webp"
               alt="Students in summer class"
               fill
               className="object-cover"
@@ -444,7 +444,7 @@ export default function ProgramsPage() {
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="relative h-[340px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/programs/online-programs.webp"
+              src="/images/hba/programs/online-programs.webp"
               alt="Student learning online"
               fill
               className="object-cover"

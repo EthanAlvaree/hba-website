@@ -114,7 +114,7 @@ export default function StorePage() {
       <PageHero
         title="School store"
         subtitle="Order official documents, graduation regalia, and keepsakes from High Bluff Academy."
-        image="/images/community/store-hero.webp"
+        image="/images/hba/community/store-hero.webp"
       />
 
       <Breadcrumbs />

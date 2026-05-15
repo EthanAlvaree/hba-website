@@ -11,7 +11,7 @@ export default function ParentsPage() {
       <PageHero
         title="For parents and guardians"
         subtitle="Resources, tools, and ways to stay connected to your student's education."
-        image="/images/community/parents-hero.webp"
+        image="/images/hba/community/parents-hero.webp"
       />
 
       <Breadcrumbs />
@@ -163,7 +163,7 @@ export default function ParentsPage() {
       <section className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/community/parents-meeting.webp"
+            src="/images/hba/community/parents-meeting.webp"
             alt="Parents and faculty"
             fill
             className="object-cover"
@@ -211,7 +211,7 @@ export default function ParentsPage() {
         <div className="reveal max-w-6xl mx-auto px-6 lg:px-12 grid gap-16 md:grid-cols-2 items-center">
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/community/parents-involved.webp"
+              src="/images/hba/community/parents-involved.webp"
               alt="Parents involved at HBA"
               fill
               className="object-cover"

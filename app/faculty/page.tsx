@@ -55,7 +55,7 @@ export default async function FacultyPage() {
       <PageHero
         title="Faculty and staff"
         subtitle="Exceptional educators, mentors, and leaders dedicated to every student’s success."
-        image="/images/faculty/faculty-hero.webp"
+        image="/images/hba/faculty/faculty-hero.webp"
       />
 
       <Breadcrumbs />

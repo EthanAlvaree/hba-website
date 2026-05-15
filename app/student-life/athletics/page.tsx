@@ -28,7 +28,7 @@ const stories: AthleteStory[] = [
     outcome: "ATP top-40 in the world; #1 D1 recruit (2019)",
     story:
       "Brandon was the #1 recruit in 2019 for Division 1 tennis and is now a top-40 player on the ATP Tour. HBA built a schedule around his travel and training so he could work out daily with his coach, compete in tournaments, and still maintain a 4.3 GPA.",
-    image: "/images/athletics/brandon-nakashima.webp",
+    image: "/images/hba/athletics/brandon-nakashima.webp",
   },
   {
     name: "Bryce Nakashima",
@@ -36,7 +36,7 @@ const stories: AthleteStory[] = [
     outcome: "Now at Ohio State University",
     story:
       "Brandon’s brother Bryce also benefited from a flexible HBA schedule that supported a serious tennis training regimen. He is now a student at Ohio State.",
-    image: "/images/athletics/bryce-nakashima.webp",
+    image: "/images/hba/athletics/bryce-nakashima.webp",
   },
   {
     name: "Ethan Schiffman",
@@ -44,7 +44,7 @@ const stories: AthleteStory[] = [
     outcome: "Now at UC Berkeley",
     story:
       "HBA helped Ethan balance a rigorous AP-heavy course load with a busy junior tennis schedule. He went on to enroll at UC Berkeley.",
-    image: "/images/athletics/ethan-schiffman.webp",
+    image: "/images/hba/athletics/ethan-schiffman.webp",
     imagePosition: "top",
   },
   {
@@ -54,7 +54,7 @@ const stories: AthleteStory[] = [
     outcome: "USC golf",
     story:
       "Krando transferred from La Jolla Country Day to HBA and added an extra year of high school. The flexibility gave him time to develop his golf game while raising his GPA and adding more AP classes — and he achieved his lifelong goal of attending USC as a recruited golfer.",
-    image: "/images/athletics/krando-nishiba.webp",
+    image: "/images/hba/athletics/krando-nishiba.webp",
     imagePosition: "top",
   },
   {
@@ -64,7 +64,7 @@ const stories: AthleteStory[] = [
     outcome: "Now at Ohio State University",
     story:
       "A high-level gymnast who travelled to Irvine daily after school to train, often arriving home after 11pm on school nights. HBA created a 9:30am late-start schedule so he could get adequate sleep and still complete a full college-prep curriculum.",
-    image: "/images/athletics/tomohiro-kawada.webp",
+    image: "/images/hba/athletics/tomohiro-kawada.webp",
   },
   {
     name: "Andrew Heiati",
@@ -73,7 +73,7 @@ const stories: AthleteStory[] = [
     outcome: "Pan-American Champion; SDSU Webb Honors College, Mechanical Engineering",
     story:
       "Andrew was the Pan-American Tae Kwon Do Champion. He competed in national and international tournaments while taking two years of AP Calculus, Linear Algebra, and two years of AP Physics — and was admitted to SDSU’s prestigious Webb Honors College.",
-    image: "/images/athletics/andrew-heiati.webp",
+    image: "/images/hba/athletics/andrew-heiati.webp",
   },
   {
     name: "Gabe Panikowski",
@@ -81,7 +81,7 @@ const stories: AthleteStory[] = [
     outcome: "First-team All-American kicker; now at Oklahoma State",
     story:
       "Gabe used HBA’s flexible scheduling to balance serious football training with a full college-prep course load. After stops at Sacramento State and Riverside City College, he was perfect on field goals at Idaho State in 2024 — 15-for-15, the most makes without a miss in the country, with a 55-yard long — earning first-team All-American honors and the Fred Mitchell Award as the nation’s best non-FBS kicker. He’s now a kicker for the Oklahoma State Cowboys.",
-    image: "/images/athletics/gabe-panikowski.webp",
+    image: "/images/hba/athletics/gabe-panikowski.webp",
   },
 ]
 
@@ -91,7 +91,7 @@ export default function AthleticsPage() {
       <PageHero
         title="Athletics"
         subtitle="A first-class education and the flexibility to compete at the highest levels."
-        image="/images/athletics/hero.webp"
+        image="/images/hba/athletics/hero.webp"
       />
 
       <Breadcrumbs />

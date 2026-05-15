@@ -21,7 +21,7 @@ insert into faculty_bios
   (profile_id, slug, name, title, area, image, hba_start, career_start,
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'kun-xuan', $name$Kun Xuan$name$, $t$Head of School$t$,
-  $a$Leadership$a$, '/images/faculty/kun-xuan.webp', null, null, null,
+  $a$Leadership$a$, '/images/hba/faculty/kun-xuan.webp', null, null, null,
   $s$Head of School with 17+ years in education and investment, focused on innovative, student-centered learning environments.$s$,
   $b$Mr. Kun earned his Bachelor of Science in Physics and Master of Science in Electronic Engineering from Fudan University. He currently serves as an Industrial Advisor at the University of Nottingham and is also a member of Mensa.
 
@@ -42,7 +42,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'george-humphreys', $name$George Humphreys$name$,
   $t$Director & Principal$t$, $a$Leadership · Science · Technology$a$,
-  '/images/faculty/george-humphreys.webp', 'June 2007', null,
+  '/images/hba/faculty/george-humphreys.webp', 'June 2007', null,
   array['Chemistry: In the Earth System','AP Chemistry','Physics of the Universe','AP Physics 1','Intro to Robotic Engineering','Intro to Programming','Integrated Math 1','Integrated Math 2','Integrated Math 3','Intro to Calculus','Health','PE Golf','Cooking']::text[],
   $s$Director and Principal known for Chemistry, AP Chemistry, Physics, and building lasting mentor relationships with students.$s$,
   $b$George began working at High Bluff Academy in the summer of 2007. During his tenure he earned local fame among the TPHS community for teaching Chemistry, AP Chemistry, Physics, and AP Physics 1, with a unique ability to take the most complex concepts and make them accessible and engaging for students.
@@ -65,7 +65,7 @@ insert into faculty_bios
 select p.id, 'ethan-alvaree', $name$Ethan Alvarée$name$,
   $t$Director of Instruction and Curriculum$t$,
   $a$Leadership · Mathematics · Technology$a$,
-  '/images/faculty/ethan-alvaree.webp', '2018', '2013',
+  '/images/hba/faculty/ethan-alvaree.webp', '2018', '2013',
   array['Integrated Math 1','Integrated Math 2','Integrated Math 3','Integrated Math 1 (H)','Integrated Math 2 (H)','Integrated Math 3 (H)','AP Precalculus','AP Calculus AB','AP Calculus BC','AP Statistics','Multivariable Calculus (H)','Linear Algebra (H)','Group Theory and Abstract Algebra (H)','Set Theory and Real Analysis (H)','Mathematics of Machine Learning (H)','AP Computer Science Principles','AP Computer Science A','AP Microeconomics','Logic and Philosophy','Digital Art']::text[],
   $s$Math, statistics, and computer science educator, curriculum writer for College Board, and director of technology at HBA.$s$,
   $b$Ethan is an accomplished educator with more than ten years of teaching experience in mathematics, statistics, and computer science. They hold a B.S. from Michigan State University and an M.S. from UC San Diego. Since joining HBA in 2018, they have played a key role in implementing the integrated Common Core math curriculum and launching new courses in symbolic logic, linear algebra, and group theory.
@@ -86,7 +86,7 @@ insert into faculty_bios
 select p.id, 'molly-sun', $name$Molly Sun$name$,
   $t$Director of Admissions and Operations$t$,
   $a$Leadership · Admissions · Operations$a$,
-  '/images/faculty/molly-sun.webp', null, null, null,
+  '/images/hba/faculty/molly-sun.webp', null, null, null,
   $s$Admissions and operations leader with a background in higher education, language teaching, and cross-cultural communication.$s$,
   $b$Molly holds a Master’s degree in Higher Education Administration from Northeastern University, where she developed a strong foundation in the U.S. higher education system, including college access, student development, and enrollment management. She also holds California teaching credentials in Chinese, reflecting her commitment to both language education and cross-cultural communication.
 
@@ -108,7 +108,7 @@ insert into faculty_bios
 select p.id, 'kristin-oconnor', $name$Kristin O'Connor$name$,
   $t$Office Manager & Student Activities Coordinator$t$,
   $a$Student Support · Activities$a$,
-  '/images/faculty/kristin-oconnor.webp', null, null, null,
+  '/images/hba/faculty/kristin-oconnor.webp', null, null, null,
   $s$Office manager and activities coordinator with a background in Child Development and a passion for student success.$s$,
   $b$Kristin is pleased to be joining the High Bluff Academy Administration team. She earned her bachelor’s degree in Child Development from San Diego State University, where she developed a strong foundation in understanding how students grow academically, socially, and emotionally. Her education, combined with her dedication to supporting young people, has shaped her passion for working closely with families to ensure every student is equipped to reach their highest potential in both high school and college.
 
@@ -127,7 +127,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'ishaan-mishra', $name$Ishaan Mishra$name$,
   $t$Academic & College Counselor$t$, $a$Counseling · College Planning$a$,
-  '/images/faculty/ishaan-mishra.webp', null, null, null,
+  '/images/hba/faculty/ishaan-mishra.webp', null, null, null,
   $s$Academic and college counselor focused on helping students navigate college, career pathways, and long-term goals.$s$,
   $b$Ishaan is happy to be joining the team at High Bluff Academy, striving to assist students with their college and career planning. He holds a Bachelor of Arts in Child Development from Point Loma Nazarene University and a Master of Arts in Education with an emphasis in College Counseling and Student Development. Ishaan’s prior experience in K-12 dual enrollment support, as well as university admissions has shaped his passion for college and career preparation.
 
@@ -146,7 +146,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'ellen-sullivan', $name$Ellen Sullivan$name$,
   $t$English Teacher$t$, $a$English · Humanities$a$,
-  '/images/faculty/ellen-sullivan.webp', '2018', null,
+  '/images/hba/faculty/ellen-sullivan.webp', '2018', null,
   array['English 9','English 10','English 11','English 12','AP English Literature and Composition','AP English Language and Composition','AP Research','AP Seminar','Creative Writing','Public Speaking','Journalism','Art | Poetry | Prose Magazine','Yearbook','Community Service']::text[],
   $s$English and Social Science educator with a background in international affairs and a passion for literacy and communication.$s$,
   $b$After a career in international affairs, Ellen has been an English teacher since 2010 because it provides her the opportunity to work with young people to shape the reading, writing, and oral communication skills she knows are needed in today’s professional world. Encouraging and observing the growth in each of her students is one of Ellen’s greatest joys.
@@ -166,7 +166,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'alan-saltamachio', $name$Alan Saltamachio$name$,
   $t$Biology & Environmental Science Teacher$t$, $a$Science$a$,
-  '/images/faculty/alan-saltamachio.webp', '2023', '1989',
+  '/images/hba/faculty/alan-saltamachio.webp', '2023', '1989',
   array['Biology: The Living Earth','AP Biology','Environmental Science','AP Environmental Science','Health']::text[],
   $s$Veteran biology and environmental science teacher with 30+ years of experience and a passion for hands-on learning.$s$,
   $b$Alan earned his degree in Biology from Cal Poly SLO and received his teaching credential from SDSU. Alan has a California single subject teaching credential in Biology with supplemental authorization in introductory Chemistry.
@@ -188,7 +188,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'fran-dickson', $name$Fran Dickson$name$,
   $t$Spanish Department Chair$t$, $a$World Languages$a$,
-  '/images/faculty/fran-dickson.webp', '2023', '2008 in Santiago, Chile',
+  '/images/hba/faculty/fran-dickson.webp', '2023', '2008 in Santiago, Chile',
   array['Spanish 1','Spanish 2','Spanish 3','Spanish 4','AP Spanish Language and Culture']::text[],
   $s$Spanish teacher from Chile who brings language, culture, and lived experience into every lesson.$s$,
   $b$With 15 years of dedicated teaching experience, Fran Dickson has cultivated a deep passion for education and a special affinity for working with high school and adult students. Over the years, Fran has embraced diverse teaching environments across Santiago, Chile; Scottsdale, Arizona; Seattle, Washington; and most recently Rancho Santa Fe, California. This journey reflects a commitment to embracing cultural diversity and continuously challenging personal and professional growth in new cities and settings.
@@ -210,7 +210,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'tricia-tigli', $name$Tricia Tigli$name$,
   $t$French & ESL Teacher$t$, $a$World Languages · ESL · Humanities$a$,
-  '/images/faculty/tricia-tigli.webp', 'June 2021',
+  '/images/hba/faculty/tricia-tigli.webp', 'June 2021',
   '2011 at San Diego Unified School District',
   array['English 9','English 10','English Support','World History','French 1','French 2','French 3','French 4','AP French Language and Culture']::text[],
   $s$French and ESL teacher with a global background, deep linguistic training, and a love of travel and culture.$s$,
@@ -233,7 +233,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'kris-bunce', $name$Kris Bunce$name$,
   $t$Math & Science Teacher$t$, $a$Math · Science$a$,
-  '/images/faculty/kris-bunce.webp', 'Summer 2022', null,
+  '/images/hba/faculty/kris-bunce.webp', 'Summer 2022', null,
   array['Integrated Math 1','Integrated Math 2','Integrated Math 3','Integrated Math 1 (H)','Integrated Math 2 (H)','Integrated Math 3 (H)','AP Precalculus','AP Calculus AB','AP Calculus BC','AP Chemistry','AP Physics 1','AP Physics 2']::text[],
   $s$Former nuclear engineer and research scientist teaching math, chemistry, and physics with real-world rigor.$s$,
   $b$Kris is a former Nuclear Engineer/Research Scientist that currently teaches math, chemistry, and physics. He has been a teacher since 2010, teaching math and science courses for High Tech High, SDSU, and University of Phoenix. Kris also helps develop curriculum. In fact, he led two teams of instructional designers in reconstructing the math program at University of Phoenix.
@@ -251,7 +251,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'will-anderson', $name$Will Anderson, Ph.D.$name$,
   $t$Science Teacher$t$, $a$Science$a$,
-  '/images/faculty/will-anderson.webp', '2016', null,
+  '/images/hba/faculty/will-anderson.webp', '2016', null,
   array['Biology: The Living Earth','Biology (H)','AP Biology','Chemistry: In the Earth System','Chemistry: In the Earth System (H)','AP Chemistry','Environmental Science','AP Environmental Science','Psychology','AP Psychology']::text[],
   $s$Ph.D. biochemist and longtime San Diego educator making advanced science accessible and exciting for students.$s$,
   $b$Dr. Will Anderson is a Ph.D. biochemist with nearly two decades of experience living, working, and teaching in San Diego. He earned his degree in Biochemistry and Molecular Biology from Cornell University and his Ph.D. in Chemistry from the University of California, San Diego. He brings a broad background in scientific research to the classroom, having spent over 10 years conducting academic research at Cornell University, UCSD, and The Scripps Research Institute.
@@ -271,7 +271,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'lindy-benson', $name$Lindy Benson$name$,
   $t$Economics Teacher$t$, $a$Social Science · Economics$a$,
-  '/images/faculty/lindy-benson.webp', '2026', '1993',
+  '/images/hba/faculty/lindy-benson.webp', '2026', '1993',
   array['Economics','AP Microeconomics','AP Macroeconomics','Personal Finance']::text[],
   $s$Economics teacher with deep academic training, a global background, and a passion for both students and animals.$s$,
   $b$Born and raised in South Africa, Lindy holds a Bachelor of Commerce degree with majors in Accounting and Economics, as well as an Honours degree in Economics, from the University of South Africa. She is happily married with four children, and their lively home includes two dogs and five cats. A passionate long-distance runner, she has completed numerous half, full, and ultra marathons, balancing her love of family life with time on the road.
@@ -289,7 +289,7 @@ insert into faculty_bios
    courses_taught, short_bio, full_bio, is_leadership, display_order)
 select p.id, 'judy-beck', $name$Judy Beck$name$,
   $t$Studio Art Teacher$t$, $a$Visual Arts$a$,
-  '/images/faculty/judy-beck.webp', '2025', '2013',
+  '/images/hba/faculty/judy-beck.webp', '2025', '2013',
   array['Studio Art']::text[],
   $s$Artist, designer, and educator with a rich career in art, design, philanthropy, and global travel.$s$,
   $b$Judy attended Massachusetts College of Art, was a toy designer for Hasbro Toys, and went on a career in advertising and design, first with Doyle Dane & Bernbach, and then as the principal partner of Chambers of Design in Santa Monica, which specialized in tourism and travel clients. She also owned an interior design firm for many years.

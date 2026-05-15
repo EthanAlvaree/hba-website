@@ -104,7 +104,7 @@ and curated separately.
 | Faculty section roster                   | SIS                                                 |
 | Portal header (signed-in user)           | SIS                                                 |
 | Email signature inboxes                  | SIS (dynamic redirect; rendered by Outlook/Gmail)   |
-| Faculty bios page (`/faculty`)           | Static images in `public/images/faculty/*` (no sync) |
+| Faculty bios page (`/faculty`)           | Static images in `public/images/hba/faculty/*` (no sync) |
 
 ## Operational notes
 

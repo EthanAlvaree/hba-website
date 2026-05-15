@@ -23,7 +23,7 @@ export default async function CalendarPage() {
       <PageHero
         title="Calendar"
         subtitle="Important dates, school events, and key academic milestones — live and synced to your phone."
-        image="/images/calendar/calendar-hero.webp"
+        image="/images/hba/calendar/calendar-hero.webp"
       />
 
       <Breadcrumbs />
@@ -109,7 +109,7 @@ export default async function CalendarPage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/calendar/calendar-summer.webp"
+              src="/images/hba/calendar/calendar-summer.webp"
               alt="Summer at HBA"
               fill
               className="object-cover"

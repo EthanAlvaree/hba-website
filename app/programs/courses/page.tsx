@@ -54,7 +54,7 @@ export default async function CourseCataloguePage() {
       <PageHero
         title="Course catalogue"
         subtitle="The full slate of courses offered at High Bluff Academy — every academic course satisfies UC A–G requirements."
-        image="/images/programs/courses.webp"
+        image="/images/hba/programs/courses.webp"
       />
 
       <Breadcrumbs />

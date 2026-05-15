@@ -77,7 +77,7 @@ export default function OnlineHighSchoolPage() {
       <PageHero
         title="HBA Online High School"
         subtitle="An accredited, flexible high school program for students who learn best on their own terms."
-        image="/images/online/hero.webp"
+        image="/images/hba/online/hero.webp"
       />
 
       <Breadcrumbs />

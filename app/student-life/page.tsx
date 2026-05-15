@@ -12,7 +12,7 @@ export default function StudentLifePage() {
       <PageHero
         title="Student life"
         subtitle="A vibrant, connected community where students lead, explore, compete, and grow."
-        image="/images/student-life/studentlife-hero.webp"
+        image="/images/hba/student-life/studentlife-hero.webp"
       />
 
       <Breadcrumbs />
@@ -61,7 +61,7 @@ export default function StudentLifePage() {
           <div className="lg:col-span-6">
             <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl group">
               <Image
-                src="/images/student-life/asb.webp"
+                src="/images/hba/student-life/asb.webp"
                 alt="ASB leadership"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -77,7 +77,7 @@ export default function StudentLifePage() {
       <section id="mun" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/student-life/mun.webp"
+            src="/images/hba/student-life/mun.webp"
             alt="Model UN"
             fill
             className="object-cover"
@@ -108,7 +108,7 @@ export default function StudentLifePage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/student-life/mun.webp"
+              src="/images/hba/student-life/mun.webp"
               alt="Students participating in Model UN"
               fill
               className="object-cover"
@@ -126,7 +126,7 @@ export default function StudentLifePage() {
           <div className="lg:col-span-6">
             <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl group">
               <Image
-                src="/images/student-life/athletics.webp"
+                src="/images/hba/student-life/athletics.webp"
                 alt="Athletics at HBA"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -171,7 +171,7 @@ export default function StudentLifePage() {
       <section id="events" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/student-life/events.webp"
+            src="/images/hba/student-life/events.webp"
             alt="School events"
             fill
             className="object-cover"
@@ -201,7 +201,7 @@ export default function StudentLifePage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/student-life/fieldtrips.webp"
+              src="/images/hba/student-life/fieldtrips.webp"
               alt="Field trips"
               fill
               className="object-cover"

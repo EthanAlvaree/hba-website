@@ -9,25 +9,25 @@ const leaders = [
   {
     name: "Mr. Kun Xuan",
     role: "Head of School",
-    image: "/images/leadership/leadership-kun.webp",
+    image: "/images/hba/leadership/leadership-kun.webp",
     slug: "kun-xuan",
   },
   {
     name: "George Humphreys",
     role: "Director and Principal",
-    image: "/images/leadership/leadership-george.webp",
+    image: "/images/hba/leadership/leadership-george.webp",
     slug: "george-humphreys",
   },
   {
     name: "Ethan Alvarée",
     role: "Director of Instruction and Curriculum",
-    image: "/images/leadership/leadership-ethan.webp",
+    image: "/images/hba/leadership/leadership-ethan.webp",
     slug: "ethan-alvaree",
   },
   {
     name: "Molly Sun",
     role: "Director of Admissions and Operations",
-    image: "/images/leadership/leadership-molly.webp",
+    image: "/images/hba/leadership/leadership-molly.webp",
     slug: "molly-sun",
   },
 ]
@@ -38,7 +38,7 @@ export default function LeadershipPage() {
       <PageHero
         title="Leadership"
         subtitle="Guiding High Bluff Academy with vision, integrity, and a commitment to student success."
-        image="/images/leadership/leadership-hero.webp"
+        image="/images/hba/leadership/leadership-hero.webp"
       />
 
       <Breadcrumbs />
@@ -51,7 +51,7 @@ export default function LeadershipPage() {
             <div className="lg:col-span-5">
               <div className="relative aspect-[4/5] rounded-[50%] overflow-hidden shadow-2xl bg-gray-100">
                 <Image
-                  src="/images/leadership/leadership-kun.webp"
+                  src="/images/hba/leadership/leadership-kun.webp"
                   alt="Mr. Kun Xuan, Head of School"
                   fill
                   sizes="(min-width: 1024px) 40vw, 100vw"
@@ -95,7 +95,7 @@ export default function LeadershipPage() {
                 <div className="pt-4">
                   <p className="font-semibold text-brand-navy">Warm regards,</p>
                   <Image
-                    src="/images/leadership/kun-signature.webp"
+                    src="/images/hba/leadership/kun-signature.webp"
                     alt="Signature of Mr. Kun Xuan"
                     width={352}
                     height={118}

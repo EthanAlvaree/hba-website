@@ -87,7 +87,7 @@ export default async function GraduationRequirementsPage() {
       <PageHero
         title="Graduation requirements"
         subtitle="What it takes to graduate from High Bluff Academy — and what we recommend for students headed to four-year colleges."
-        image="/images/programs/courses.webp"
+        image="/images/hba/programs/courses.webp"
       />
 
       <Breadcrumbs />

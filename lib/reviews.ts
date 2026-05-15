@@ -36,37 +36,37 @@ export const sources: SourceMeta[] = [
     name: "Niche",
     url: "https://www.niche.com/k12/high-bluff-academy-rancho-santa-fe-ca/#reviews",
     accent: "#0F9B5A",
-    logo: "/images/reviews/niche.webp",
+    logo: "/images/hba/reviews/niche.webp",
   },
   {
     name: "GreatSchools",
     url: "https://www.greatschools.org/california/san-diego/26249-High-Bluff-Academy/#Reviews",
     accent: "#29B6F6",
-    logo: "/images/reviews/greatschools.webp",
+    logo: "/images/hba/reviews/greatschools.webp",
   },
   {
     name: "Private School Review",
     url: "https://www.privateschoolreview.com/high-bluff-academy-profile#reviews",
     accent: "#C9A227",
-    logo: "/images/reviews/private-school-review.webp",
+    logo: "/images/hba/reviews/private-school-review.webp",
   },
   {
     name: "FindingSchool",
     url: "https://www.findingschool.com/high-bluff-academy",
     accent: "#800000",
-    logo: "/images/reviews/findingschool.webp",
+    logo: "/images/hba/reviews/findingschool.webp",
   },
   {
     name: "Yelp",
     url: "https://www.yelp.com/biz/high-bluff-academy-rancho-santa-fe#reviews",
     accent: "#E31837",
-    logo: "/images/reviews/yelp.webp",
+    logo: "/images/hba/reviews/yelp.webp",
   },
   {
     name: "Facebook",
     url: "https://www.facebook.com/HighBluffAcademySanDiego/reviews",
     accent: "#1877F2",
-    logo: "/images/reviews/facebook.webp",
+    logo: "/images/hba/reviews/facebook.webp",
   },
 ]
 

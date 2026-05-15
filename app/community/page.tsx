@@ -12,7 +12,7 @@ export default function CommunityPage() {
       <PageHero
         title="Community at High Bluff Academy"
         subtitle="A connected, supportive, and service‑driven school culture."
-        image="/images/community/community-hero.webp"
+        image="/images/hba/community/community-hero.webp"
       />
 
       <Breadcrumbs />
@@ -58,7 +58,7 @@ export default function CommunityPage() {
           <div className="lg:col-span-6">
             <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl group">
               <Image
-                src="/images/community/service.webp"
+                src="/images/hba/community/service.webp"
                 alt="Community service"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -74,7 +74,7 @@ export default function CommunityPage() {
       <section id="advisory" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/community/advisory.webp"
+            src="/images/hba/community/advisory.webp"
             alt="Academic support"
             fill
             className="object-cover"
@@ -106,7 +106,7 @@ export default function CommunityPage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/community/advisory.webp"
+              src="/images/hba/community/advisory.webp"
               alt="Advisory program"
               fill
               className="object-cover"
@@ -124,7 +124,7 @@ export default function CommunityPage() {
           <div className="lg:col-span-6">
             <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl group">
               <Image
-                src="/images/community/nhs.webp"
+                src="/images/hba/community/nhs.webp"
                 alt="National Honor Society"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -191,7 +191,7 @@ export default function CommunityPage() {
 
           <div className="relative h-[360px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/community/partnerships.webp"
+              src="/images/hba/community/partnerships.webp"
               alt="Community partnerships"
               fill
               className="object-cover"
@@ -206,7 +206,7 @@ export default function CommunityPage() {
       <section id="volunteering" className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/community/volunteering.webp"
+            src="/images/hba/community/volunteering.webp"
             alt="Volunteering"
             fill
             className="object-cover"

@@ -25,7 +25,7 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
       <PageHero
         title="Apply to High Bluff Academy"
         subtitle="A five-step application. Save and return anytime — we’ll email you a link, and we also keep a local backup in your browser."
-        image="/images/admissions/admissions-hero.webp"
+        image="/images/hba/admissions/admissions-hero.webp"
       />
 
       <Breadcrumbs />

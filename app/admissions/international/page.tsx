@@ -56,7 +56,7 @@ export default function InternationalAdmissionsPage() {
       <PageHero
         title="International student admissions"
         subtitle="Welcome to San Diego — and to High Bluff Academy."
-        image="/images/admissions/international-hero.webp"
+        image="/images/hba/admissions/international-hero.webp"
       />
 
       <Breadcrumbs />
@@ -87,7 +87,7 @@ export default function InternationalAdmissionsPage() {
 
           <div className="lg:col-span-5 relative h-[420px] rounded-3xl overflow-hidden shadow-2xl">
             <Image
-              src="/images/admissions/san-diego.webp"
+              src="/images/hba/admissions/san-diego.webp"
               alt="San Diego coastline"
               fill
               className="object-cover"
@@ -107,7 +107,7 @@ export default function InternationalAdmissionsPage() {
       <section className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/admissions/tuition-bg.webp"
+            src="/images/hba/admissions/tuition-bg.webp"
             alt="Campus architecture"
             fill
             className="object-cover"
@@ -250,7 +250,7 @@ export default function InternationalAdmissionsPage() {
           </div>
           <div className="relative h-[320px] rounded-3xl overflow-hidden shadow-xl">
             <Image
-              src="/images/admissions/homestay.webp"
+              src="/images/hba/admissions/homestay.webp"
               alt="Homestay family"
               fill
               className="object-cover"

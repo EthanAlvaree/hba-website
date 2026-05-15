@@ -58,7 +58,7 @@ export default function ReviewsPage() {
       <PageHero
         title="What families are saying"
         subtitle="Reviews from the parents, students, and alumni who know HBA best."
-        image="/images/reviews/reviews-hero.webp"
+        image="/images/hba/reviews/reviews-hero.webp"
       />
 
       <Breadcrumbs />

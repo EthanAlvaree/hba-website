@@ -30,7 +30,7 @@ const partners: Partner[] = [
     shortDesc: "Targeted SAT/ACT preparation and serious visual-arts instruction.",
     description:
       "Pacific Crest Institute partners with HBA to extend our test prep and arts offerings — from focused SAT and ACT courses to portfolio-grade studio and digital art instruction. Students benefit from specialist teachers and a structured approach that complements our in-house college counseling.",
-    image: "/images/partnerships/pacific-crest.webp",
+    image: "/images/hba/partnerships/pacific-crest.webp",
   },
   {
     name: "Study Hut Tutoring",
@@ -38,7 +38,7 @@ const partners: Partner[] = [
     shortDesc: "On-demand tutoring across every subject HBA teaches.",
     description:
       "Study Hut Tutoring is a longtime San Diego partner. HBA students can access one-on-one and small-group tutoring through Study Hut for math, science, writing, world languages, and standardized test prep — including extra support over evenings and weekends.",
-    image: "/images/partnerships/study-hut.webp",
+    image: "/images/hba/partnerships/study-hut.webp",
   },
   {
     name: "Joy of Life Fitness",
@@ -46,7 +46,7 @@ const partners: Partner[] = [
     shortDesc: "Structured PE, weight training, Pilates, and yoga in small groups.",
     description:
       "Through our partnership with Joy of Life Fitness, students have access to a full physical education program: regular PE classes, weight training, Pilates, yoga, and small-group fitness sessions. The collaboration supports strength, flexibility, and overall wellness while keeping the personalized attention that defines an HBA experience.",
-    image: "/images/partnerships/joy-of-life.webp",
+    image: "/images/hba/partnerships/joy-of-life.webp",
   },
   {
     name: "Student dining partner",
@@ -54,7 +54,7 @@ const partners: Partner[] = [
     shortDesc: "A trusted local restaurant providing fresh daily lunches.",
     description:
       "We’re finalizing a partnership with a local restaurant to provide fresh, balanced lunches to HBA students every school day. Details and the partner announcement will be shared here soon.",
-    image: "/images/partnerships/dining.webp",
+    image: "/images/hba/partnerships/dining.webp",
     status: "Coming soon",
   },
 ]
@@ -65,7 +65,7 @@ export default function PartnershipsPage() {
       <PageHero
         title="Partnerships"
         subtitle="Specialist organizations that extend the resources available to every HBA student."
-        image="/images/partnerships/hero.webp"
+        image="/images/hba/partnerships/hero.webp"
       />
 
       <Breadcrumbs />

@@ -10,7 +10,7 @@ export default function TermsPage() {
       <PageHero
         title="Terms of use"
         subtitle={`The rules of the road for using ${siteConfig.domain}.`}
-        image="/images/policies/policy-hero.webp"
+        image="/images/hba/policies/policy-hero.webp"
       />
 
       <Breadcrumbs />

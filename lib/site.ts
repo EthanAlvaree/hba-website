@@ -162,9 +162,9 @@ const hba: SiteConfig = {
     navyDeep: "#0f1f36",
     orange: "#f37021",
     logos: {
-      headerWhite: "/images/brand/hba-logo-white-spaced.webp",
-      footerColor: "/images/brand/hba-logo-color.webp",
-      round: "/images/brand/hba-logo-round.webp",
+      headerWhite: "/images/hba/brand/hba-logo-white-spaced.webp",
+      footerColor: "/images/hba/brand/hba-logo-color.webp",
+      round: "/images/hba/brand/hba-logo-round.webp",
     },
   },
 }

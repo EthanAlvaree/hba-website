@@ -158,7 +158,7 @@ export default function CollegeAcceptancesPage() {
       <PageHero
         title="College acceptances"
         subtitle="Where High Bluff Academy graduates go next."
-        image="/images/college-acceptances/hero.webp"
+        image="/images/hba/college-acceptances/hero.webp"
       />
 
       <Breadcrumbs />

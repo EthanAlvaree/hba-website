@@ -11,7 +11,7 @@ export default function AlumniPage() {
       <PageHero
         title="Alumni"
         subtitle="Once an HBA student, always part of the family. Stay connected, give back, and pay it forward."
-        image="/images/community/alumni-hero.webp"
+        image="/images/hba/community/alumni-hero.webp"
       />
 
       <Breadcrumbs />
@@ -79,7 +79,7 @@ export default function AlumniPage() {
           <div className="lg:col-span-6">
             <div className="relative h-[420px] rounded-3xl overflow-hidden shadow-2xl group">
               <Image
-                src="/images/community/alumni-reunion.webp"
+                src="/images/hba/community/alumni-reunion.webp"
                 alt="Alumni gathering"
                 fill
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
@@ -122,7 +122,7 @@ export default function AlumniPage() {
       <section className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/community/alumni-mentor.webp"
+            src="/images/hba/community/alumni-mentor.webp"
             alt="Alumni mentoring students"
             fill
             className="object-cover"

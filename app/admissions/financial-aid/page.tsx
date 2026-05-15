@@ -27,7 +27,7 @@ export default function FinancialAidPage() {
       <PageHero
         title="Financial aid"
         subtitle="Need-based support to make the right school the affordable school."
-        image="/images/admissions/admissions-hero.webp"
+        image="/images/hba/admissions/admissions-hero.webp"
       />
 
       <Breadcrumbs />
@@ -240,7 +240,7 @@ export default function FinancialAidPage() {
       <section className="py-24 bg-brand-navy relative">
         <div className="absolute inset-0 opacity-20">
           <Image
-            src="/images/admissions/admissions-hero.webp"
+            src="/images/hba/admissions/admissions-hero.webp"
             alt=""
             fill
             className="object-cover"

@@ -24,7 +24,7 @@ are split per school. This guide is the map for adding PCI content.
   - `/` → `app/page.tsx` → `app/_schools/pci/HomePage.tsx` on PCI
   - `/contact` → `app/contact/page.tsx` → `app/_schools/pci/ContactPage.tsx`
 - **Images.** PCI assets live under `public/images/pci/`. HBA assets
-  remain under `public/images/brand/`, `public/images/home/`, etc.
+  remain under `public/images/hba/brand/`, `public/images/hba/home/`, etc.
 
 ## What's already split (PCI gets its own version)
 

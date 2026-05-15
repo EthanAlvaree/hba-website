@@ -25,7 +25,7 @@ export default function FacultyPortraitCard({
   profileId: string
   /** Current portrait URL (override → DB; falls back to null if none). */
   currentPortraitUrl: string | null
-  /** Code-side default image path (e.g. /images/faculty/jane.webp).
+  /** Code-side default image path (e.g. /images/hba/faculty/jane.webp).
    *  Used as the preview when no override is set. */
   codeImagePath: string | null
   asAdmin?: boolean
