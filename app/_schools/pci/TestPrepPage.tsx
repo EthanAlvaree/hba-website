@@ -3,6 +3,7 @@
 // PCI's second pillar — test prep, AP review, contest math, and the
 // olympiad track. Catalog-style page with grouped sections.
 
+import Image from "next/image"
 import Link from "next/link"
 import { siteConfig } from "@/lib/site"
 
@@ -68,50 +69,22 @@ const tracks = [
       "Scientific research and lab skills training",
     ],
   },
-  {
-    n: "05",
-    label: "Computer science",
-    title: "Coding & algorithms",
-    courses: [
-      "USACO preparation",
-      "Competitive programming fundamentals",
-      "Python and Java for competitions",
-      "Algorithms and data structures",
-      "Introduction to AI & computational thinking",
-    ],
-  },
-  {
-    n: "06",
-    label: "Humanities & writing",
-    title: "English & humanities",
-    courses: [
-      "Academic writing competitions",
-      "Debate and public speaking",
-      "National History Bowl / Bee preparation",
-      "Critical reading and essay development",
-    ],
-  },
-  {
-    n: "07",
-    label: "Boosters & intensives",
-    title: "Short-format support",
-    courses: [
-      "AP exam crash courses (4–6 weeks)",
-      "AP spring break intensive camp",
-      "AP final review weekend workshops",
-      "AP mock exam & score improvement sessions",
-      "AP summer preview courses",
-      "One-on-one tutoring and mentorship",
-    ],
-  },
 ]
 
 export default function PciTestPrepPage() {
   return (
     <main className="bg-white text-brand-navy-deep">
       {/* ─── HERO ──────────────────────────────────────────────────── */}
-      <section className="relative bg-brand-navy-deep text-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy-deep via-brand-navy to-black opacity-95" />
+      <section className="relative isolate overflow-hidden bg-brand-navy-deep text-white">
+        <Image
+          src="/images/pci/students-working.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover -z-10 opacity-30"
+          priority
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-navy-deep/95 via-brand-navy/85 to-black/95" />
         <div className="relative mx-auto max-w-6xl px-6 lg:px-12 pt-28 lg:pt-40 pb-24 lg:pb-32">
           <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
             Pillar 02 · Test Prep & Academics
@@ -171,7 +144,7 @@ export default function PciTestPrepPage() {
             The catalog
           </p>
           <h2 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight max-w-3xl leading-tight">
-            Seven tracks. One student at a time.
+            Four tracks. One student at a time.
           </h2>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-300 border border-gray-300">

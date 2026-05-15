@@ -143,7 +143,7 @@ export default function PciHomePage() {
               <ul className="mt-6 space-y-2 text-sm text-brand-navy-deep">
                 <li className="flex gap-3"><span className="text-brand-orange font-bold">·</span> AMC 8 / 10 / 12, AIME, USAMO preparation</li>
                 <li className="flex gap-3"><span className="text-brand-orange font-bold">·</span> SAT, ACT, TOEFL, and AP exam review</li>
-                <li className="flex gap-3"><span className="text-brand-orange font-bold">·</span> Physics, chemistry, biology, and CS olympiads</li>
+                <li className="flex gap-3"><span className="text-brand-orange font-bold">·</span> Physics, chemistry, and biology olympiads</li>
               </ul>
               <Link
                 href="/test-prep"
@@ -157,16 +157,24 @@ export default function PciHomePage() {
       </section>
 
       {/* ─── PULL QUOTE ────────────────────────────────────────────── */}
-      <section className="bg-brand-navy-deep text-white py-24 lg:py-32">
+      <section className="relative isolate overflow-hidden bg-brand-navy-deep text-white py-24 lg:py-32">
+        <Image
+          src="/images/pci/student-working.webp"
+          alt=""
+          fill
+          sizes="100vw"
+          className="object-cover -z-10 opacity-25"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-brand-navy-deep via-brand-navy-deep/85 to-brand-navy-deep/60" />
         <div className="mx-auto max-w-5xl px-6 lg:px-12">
           <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
             What makes PCI different
           </p>
           <blockquote className="mt-8 text-3xl lg:text-5xl font-black leading-[1.1] tracking-tight">
-            “The test prep market is saturated. We chose to build a
+            &ldquo;The test prep market is saturated. We chose to build a
             category of one — a real studio with a real publishing
             pipeline, where high-schoolers ship work that adults
-            buy.”
+            buy.&rdquo;
           </blockquote>
           <p className="mt-8 text-sm font-bold uppercase tracking-[0.24em] text-white/60">
             Ethan Alvarée · CEO, Pacific Crest Institute

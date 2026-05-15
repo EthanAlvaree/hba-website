@@ -230,7 +230,14 @@ const configs: Record<SchoolKey, SiteConfig> = { hba, pci }
 // ============================================================================
 
 function resolveSchoolKey(): SchoolKey {
-  const raw = process.env.SCHOOL_KEY?.trim().toLowerCase()
+  // Prefer NEXT_PUBLIC_SCHOOL_KEY — Next.js inlines NEXT_PUBLIC_* into
+  // client bundles at build time, so client components (Navbar, Footer,
+  // anything inside LayoutChrome) resolve the right tenant after
+  // hydration. SCHOOL_KEY (server-only) is honored as a fallback so
+  // existing deploys keep working until both vars are aligned.
+  const raw = (
+    process.env.NEXT_PUBLIC_SCHOOL_KEY || process.env.SCHOOL_KEY
+  )?.trim().toLowerCase()
   if (raw === "pci") return "pci"
   // Default everything else (including the empty unset case) to HBA so
   // existing deployments keep working without an env-var migration.

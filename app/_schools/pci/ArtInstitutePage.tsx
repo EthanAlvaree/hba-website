@@ -4,6 +4,7 @@
 // with Floating Island Productions. Heavier editorial layout — large
 // numerals, full-bleed sections, mentor cards.
 
+import Image from "next/image"
 import Link from "next/link"
 import { siteConfig } from "@/lib/site"
 
@@ -18,26 +19,31 @@ const curriculum = [
     n: "01",
     h: "Drawing & lineart fundamentals",
     b: "Anatomy, shape language, silhouette clarity, perspective, environment sketching, spatial design.",
+    image: "/images/pci/foundations-of-lineart-perspective.webp",
   },
   {
     n: "02",
     h: "Light & color",
     b: "The physics of light — key, rim, ambient, fill. Form, core, cast, and occlusion shadows. Falloff, materials, color theory across value, saturation, and hue.",
+    image: "/images/pci/foundations-of-light-and-shadow.webp",
   },
   {
     n: "03",
     h: "Software & digital production",
     b: "Industry pipelines in Clip Studio Paint and Photoshop. Selections, masks, adjustment layers, brushes, non-destructive workflows.",
+    image: "/images/pci/foundations-of-layers.webp",
   },
   {
     n: "04",
     h: "Narrative production",
     b: "Storytelling with color, color scripting, atmospheric control, emotional keying — moving from coloring to deliberate visual narrative.",
+    image: "/images/pci/storytelling-1.webp",
   },
   {
     n: "05",
     h: "Portfolio & publication",
     b: "Finalizing professional pieces. Page proofs. Print prep. Real publication credit in a hardcover book that ships to bookstores.",
+    image: "/images/pci/process-inks-flats-holds-rendering.webp",
   },
 ]
 
@@ -46,21 +52,19 @@ const mentors = [
     name: "Ken Penders",
     role: "Author / Illustrator / Publisher",
     bio: "Wrote and illustrated Sonic the Hedgehog comics from 1993–2006, including every issue of Knuckles the Echidna and the Princess Sally miniseries. Has worked on Star Trek, King of the Hill, and Zelda. Founder of Floating Island Productions.",
+    image: "/images/pci/bios/ken-penders.webp",
   },
   {
     name: "Scott Shaw",
     role: "Penciller / Animator / Writer",
     bio: "Award-winning artist with 50+ years experience. First artist on Archie's Sonic the Hedgehog series (1992). Co-creator on The Simpsons comics and The Flintstones. Co-founded San Diego Comic-Con in 1970.",
+    image: "/images/pci/bios/scott-shaw.webp",
   },
   {
     name: "Kurt Michael Russell",
     role: "Professional Colorist",
     bio: "Working colorist since 2011 — DC, Image, Vault, IDW, Dark Horse, and more. Teaches digital coloring online to thousands of students. Specializes in lighting, mood, and rendering workflow.",
-  },
-  {
-    name: "Adam Bryce Thomas",
-    role: "Comic Artist (IDW)",
-    bio: "Known for his work on IDW's Sonic the Hedgehog series. Guest drawing workshops focused on dynamic posing, character design, and clean professional lineart.",
+    image: "/images/pci/bios/kurt-michael-russell.webp",
   },
 ]
 
@@ -156,8 +160,8 @@ export default function PciArtInstitutePage() {
           </h2>
 
           <div className="mt-16 space-y-px bg-gray-200 border-y border-gray-200">
-            {curriculum.map(({ n, h, b }) => (
-              <div key={n} className="bg-white grid grid-cols-1 lg:grid-cols-12 gap-6 py-8 px-2">
+            {curriculum.map(({ n, h, b, image }) => (
+              <div key={n} className="bg-white grid grid-cols-1 lg:grid-cols-12 gap-6 py-8 px-2 items-center">
                 <div className="lg:col-span-2">
                   <span className="text-5xl lg:text-6xl font-black text-brand-orange leading-none">
                     {n}
@@ -167,11 +171,20 @@ export default function PciArtInstitutePage() {
                   <h3 className="text-2xl lg:text-3xl font-black tracking-tight text-brand-navy-deep">
                     {h}
                   </h3>
-                </div>
-                <div className="lg:col-span-6">
-                  <p className="text-base lg:text-lg text-gray-700 leading-relaxed font-light">
+                  <p className="mt-4 text-base lg:text-lg text-gray-700 leading-relaxed font-light">
                     {b}
                   </p>
+                </div>
+                <div className="lg:col-span-6">
+                  <div className="relative aspect-[16/10] bg-gray-100 overflow-hidden">
+                    <Image
+                      src={image}
+                      alt={h}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 600px"
+                      className="object-cover"
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -194,10 +207,19 @@ export default function PciArtInstitutePage() {
             publishers whose work students will see on bookstore shelves.
           </p>
 
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-px bg-white/15">
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/15">
             {mentors.map((m) => (
-              <article key={m.name} className="bg-brand-navy-deep p-8 lg:p-10">
-                <h3 className="text-2xl lg:text-3xl font-black tracking-tight">
+              <article key={m.name} className="bg-brand-navy-deep p-8 lg:p-10 flex flex-col">
+                <div className="relative aspect-square w-full overflow-hidden bg-black/40">
+                  <Image
+                    src={m.image}
+                    alt={m.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 320px"
+                    className="object-cover grayscale contrast-110"
+                  />
+                </div>
+                <h3 className="mt-6 text-2xl lg:text-3xl font-black tracking-tight">
                   {m.name}
                 </h3>
                 <p className="mt-2 text-xs font-bold uppercase tracking-[0.24em] text-brand-orange">
@@ -214,14 +236,29 @@ export default function PciArtInstitutePage() {
 
       {/* ─── PARTNERSHIP ───────────────────────────────────────────── */}
       <section className="py-24 lg:py-32 border-b border-gray-200">
-        <div className="mx-auto max-w-6xl px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <div className="lg:col-span-5">
-            <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
-              Partnership
+        <div className="mx-auto max-w-6xl px-6 lg:px-12 grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+          <div className="lg:col-span-5 space-y-8">
+            <div>
+              <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
+                Partnership
+              </p>
+              <h2 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight leading-tight">
+                In partnership with Floating Island Productions.
+              </h2>
+            </div>
+            <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden shadow-2xl ring-1 ring-black/10">
+              <Image
+                src="/images/pci/book-cover-scott-shaws-sonic-days.webp"
+                alt="Scott Shaw's Sonic Days — a hardcover published by Floating Island Productions"
+                fill
+                sizes="(max-width: 1024px) 100vw, 380px"
+                className="object-cover"
+              />
+            </div>
+            <p className="text-xs font-bold uppercase tracking-[0.24em] text-gray-500 max-w-sm">
+              Scott Shaw&rsquo;s Sonic Days — a recent hardcover from
+              Floating Island Productions.
             </p>
-            <h2 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight leading-tight">
-              In partnership with Floating Island Productions.
-            </h2>
           </div>
           <div className="lg:col-span-7 space-y-6 text-lg leading-relaxed text-gray-700 font-light">
             <p>
