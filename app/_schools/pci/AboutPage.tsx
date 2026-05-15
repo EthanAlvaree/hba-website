@@ -1,9 +1,10 @@
 // app/_schools/pci/AboutPage.tsx
 //
-// PCI's story — the Pacific Crest Trail metaphor, the three founders,
-// and the institute's mission. Editorial layout, light typography
-// rhythm with heavy display headers.
+// PCI's About page. Leads with the people (Ethan + Molly), then guest
+// artists, then STEM teachers, then the Pacific Crest Trail story and
+// mission. Bios are intentionally distinct from each person's HBA bio.
 
+import Image from "next/image"
 import Link from "next/link"
 import { siteConfig } from "@/lib/site"
 
@@ -13,21 +14,48 @@ export const metadata = {
     "Pacific Crest Institute was founded in San Diego to support students on their academic and creative journey — a name inspired by the Pacific Crest Trail and the values it represents.",
 }
 
-const founders = [
+const leadership = [
   {
     name: "Ethan Alvarée",
     role: "CEO & Co-founder",
-    bio: "Oversees curriculum, instruction, and academic quality. Leads technology, systems, and operational infrastructure, and manages partnerships related to curriculum and publishing — including PCI's relationship with Floating Island Productions.",
+    image: "/images/pci/people/ethan-alvaree.webp",
+    bio: "Ethan founded PCI to build the kind of weekend-deep, professionally-anchored programs the school week never has time for. They lead curriculum, instruction, and technology, manage the partnership with Floating Island Productions, and personally teach the Art Institute's flagship Saturday studio. Beyond PCI, Ethan is a College Board curriculum writer for AP Precalculus and SpringBoard, with more than a decade teaching mathematics, statistics, and computer science.",
   },
   {
     name: "Molly Sun",
     role: "Director of Marketing, Recruitment & Administration · Co-founder",
-    bio: "Oversees admissions, family communication, and operational workflows. Manages customer experience, onboarding, and administrative systems. Leads community engagement and parent-facing communication.",
+    image: "/images/pci/people/molly-sun.webp",
+    bio: "Molly leads PCI's recruitment, marketing, and family-facing operations — guiding new students and parents through every step from first inquiry to first class. She holds a Master's in Higher Education Administration from Northeastern University, taught Chinese at San Diego State, and brings particular care to international and bilingual families. She designs the onboarding workflows and builds the community programs that turn first-time visitors into long-term PCI families.",
+  },
+]
+
+const guestArtists = [
+  {
+    name: "Ken Penders",
+    role: "Author / Illustrator / Publisher",
+    image: "/images/pci/bios/ken-penders.webp",
+    bio: "Wrote and illustrated Sonic the Hedgehog comics from 1993–2006, including every issue of Knuckles the Echidna and the Princess Sally miniseries. Has worked on Star Trek, King of the Hill, and Zelda. Founder of Floating Island Productions and PCI's publishing partner.",
   },
   {
-    name: "Kun Xuan",
-    role: "Strategic Advisor & Co-founder",
-    bio: "Provides strategic guidance, long-term planning, and business development. Supports high-level partnerships and institutional relationships, helping PCI grow into a scalable, multi-program educational brand.",
+    name: "Scott Shaw",
+    role: "Penciller / Animator / Writer",
+    image: "/images/pci/bios/scott-shaw.webp",
+    bio: "Award-winning artist with 50+ years experience. First artist on Archie's Sonic the Hedgehog series (1992). Co-creator on The Simpsons comics and The Flintstones. Co-founded San Diego Comic-Con in 1970. Visits PCI for character-design and visual-humor workshops.",
+  },
+  {
+    name: "Kurt Michael Russell",
+    role: "Professional Colorist",
+    image: "/images/pci/bios/kurt-michael-russell.webp",
+    bio: "Working colorist since 2011 — DC, Image, Vault, IDW, Dark Horse, and more. Teaches digital coloring online to thousands of students. Brings PCI students master-class instruction in lighting, mood, and rendering workflow.",
+  },
+]
+
+const stemFaculty = [
+  {
+    name: "Will Anderson, Ph.D.",
+    role: "Science · Olympiad Track",
+    image: "/images/pci/people/will-anderson.webp",
+    bio: "Dr. Will is a Ph.D. biochemist with nearly two decades in San Diego science education. He earned his B.S. in Biochemistry and Molecular Biology from Cornell, his Ph.D. in Chemistry from UC San Diego, and conducted more than a decade of research at Cornell, UCSD, and The Scripps Research Institute. At PCI he leads science-track instruction — AP biology and chemistry review, USABO and USNCO olympiad preparation, and the kind of deep-conceptual teaching that turns memorizers into thinkers.",
   },
 ]
 
@@ -51,6 +79,128 @@ export default function PciAboutPage() {
             services company founded on a simple idea: real learning,
             like a long trail, rewards perseverance over speed.
           </p>
+        </div>
+      </section>
+
+      {/* ─── LEADERSHIP ────────────────────────────────────────────── */}
+      <section className="bg-white py-24 lg:py-32 border-b border-gray-200">
+        <div className="mx-auto max-w-6xl px-6 lg:px-12">
+          <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
+            Leadership
+          </p>
+          <h2 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight max-w-3xl leading-tight">
+            The people running PCI.
+          </h2>
+
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-px bg-gray-200 border border-gray-200">
+            {leadership.map((p) => (
+              <article key={p.name} className="bg-white p-8 lg:p-10 flex flex-col">
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-100">
+                  <Image
+                    src={p.image}
+                    alt={p.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 500px"
+                    className="object-cover"
+                  />
+                </div>
+                <h3 className="mt-6 text-2xl lg:text-3xl font-black tracking-tight text-brand-navy-deep">
+                  {p.name}
+                </h3>
+                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-orange">
+                  {p.role}
+                </p>
+                <p className="mt-6 text-base leading-relaxed text-gray-700 font-light">
+                  {p.bio}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── GUEST ARTISTS & INSTRUCTORS ───────────────────────────── */}
+      <section className="bg-brand-navy-deep text-white py-24 lg:py-32">
+        <div className="mx-auto max-w-6xl px-6 lg:px-12">
+          <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
+            Guest artists &amp; instructors
+          </p>
+          <h2 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight max-w-3xl leading-tight">
+            Working professionals, in the room.
+          </h2>
+          <p className="mt-6 text-lg text-white/75 leading-relaxed font-light max-w-3xl">
+            PCI&rsquo;s Art Institute brings in active industry artists,
+            colorists, and publishers for cohort workshops and feedback
+            sessions. Students learn from people whose work is on
+            bookstore shelves right now.
+          </p>
+
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-px bg-white/15">
+            {guestArtists.map((p) => (
+              <article key={p.name} className="bg-brand-navy-deep p-8 lg:p-10 flex flex-col">
+                <div className="relative aspect-square w-full overflow-hidden bg-black/40">
+                  <Image
+                    src={p.image}
+                    alt={p.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 320px"
+                    className="object-cover grayscale contrast-110"
+                  />
+                </div>
+                <h3 className="mt-6 text-2xl lg:text-3xl font-black tracking-tight">
+                  {p.name}
+                </h3>
+                <p className="mt-2 text-xs font-bold uppercase tracking-[0.24em] text-brand-orange">
+                  {p.role}
+                </p>
+                <p className="mt-6 text-base leading-relaxed text-white/75 font-light">
+                  {p.bio}
+                </p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── STEM / CONTEST FACULTY ────────────────────────────────── */}
+      <section className="bg-[#f6f4ef] py-24 lg:py-32">
+        <div className="mx-auto max-w-6xl px-6 lg:px-12">
+          <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
+            STEM &amp; contest faculty
+          </p>
+          <h2 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight max-w-3xl leading-tight">
+            The people behind the test-prep tracks.
+          </h2>
+          <p className="mt-6 text-lg text-gray-700 leading-relaxed font-light max-w-3xl">
+            Olympiad and AP-level instruction at PCI is led by faculty
+            who have done the science — not just taught from a textbook.
+            More instructors join as cohorts grow.
+          </p>
+
+          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-10">
+            {stemFaculty.map((p) => (
+              <article key={p.name} className="bg-white p-8 border-t-4 border-brand-orange flex flex-col">
+                <div className="relative aspect-[4/5] w-full overflow-hidden bg-gray-100">
+                  <Image
+                    src={p.image}
+                    alt={p.name}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 320px"
+                    className="object-cover"
+                  />
+                </div>
+                <h3 className="mt-6 text-xl lg:text-2xl font-black tracking-tight text-brand-navy-deep">
+                  {p.name}
+                </h3>
+                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-orange">
+                  {p.role}
+                </p>
+                <p className="mt-6 text-base leading-relaxed text-gray-700 font-light">
+                  {p.bio}
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -119,40 +269,6 @@ export default function PciAboutPage() {
                 <h3 className="text-xl font-black tracking-tight text-brand-navy-deep">{h}</h3>
                 <p className="mt-3 text-base text-gray-700 leading-relaxed font-light">{b}</p>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ─── FOUNDERS ──────────────────────────────────────────────── */}
-      <section className="bg-white py-24 lg:py-32 border-b border-gray-200">
-        <div className="mx-auto max-w-6xl px-6 lg:px-12">
-          <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
-            Founders
-          </p>
-          <h2 className="mt-4 text-4xl lg:text-5xl font-black tracking-tight max-w-3xl leading-tight">
-            Three equal partners.
-          </h2>
-          <p className="mt-6 text-lg text-gray-700 leading-relaxed font-light max-w-3xl">
-            PCI was co-founded by three partners who each bring a
-            distinct piece of the institute&rsquo;s operations together:
-            curriculum and infrastructure, family engagement and
-            administration, and strategic vision.
-          </p>
-
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-px bg-gray-200 border border-gray-200">
-            {founders.map((f) => (
-              <article key={f.name} className="bg-white p-8 lg:p-10">
-                <h3 className="text-2xl font-black tracking-tight text-brand-navy-deep">
-                  {f.name}
-                </h3>
-                <p className="mt-2 text-[11px] font-bold uppercase tracking-[0.18em] text-brand-orange">
-                  {f.role}
-                </p>
-                <p className="mt-6 text-base leading-relaxed text-gray-700 font-light">
-                  {f.bio}
-                </p>
-              </article>
             ))}
           </div>
         </div>
