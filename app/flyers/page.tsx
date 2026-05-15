@@ -37,6 +37,13 @@ const FLYERS: Flyer[] = [
     description:
       "Catalog-style flyer for SAT/ACT/TOEFL, AP review, math olympiads, and science olympiads. Emphasizes small cohorts and no-AI-shortcuts.",
   },
+  {
+    slug: "booth-sign",
+    title: "Booth sign — Books for sale",
+    subtitle: "Standing sign · Zelle QR · $50 each",
+    description:
+      "Simple table-top sign for the booth: large hardcover-book pricing on top, a 4.4-inch Zelle QR code below for on-the-spot payment. Not a handout — print once, stand up.",
+  },
 ]
 
 export default function FlyersIndexPage() {

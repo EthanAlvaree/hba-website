@@ -47,6 +47,9 @@ const curriculum = [
     h: "Portfolio & publication",
     b: "Finalizing professional pieces. Page proofs. Print prep. Real publication credit in a hardcover book that ships to bookstores.",
     image: "/images/pci/process-inks-flats-holds-rendering.webp",
+    // Tall production diagram — letterbox instead of cropping so the
+    // full inks → flats → holds → rendering progression stays legible.
+    fit: "contain" as const,
   },
 ]
 
