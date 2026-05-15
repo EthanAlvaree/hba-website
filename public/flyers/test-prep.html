@@ -174,13 +174,30 @@
   .foot .left .sub {
     margin-top: 2px; font-weight: 300; font-size: 8.5pt; color: rgba(255,255,255,0.78);
   }
-  .foot .right { text-align: right; }
+  .foot .right {
+    display: flex;
+    align-items: center;
+    gap: 0.16in;
+  }
+  .foot .right .text { text-align: right; }
   .foot .right .url {
     font-weight: 800; font-size: 10pt; color: var(--orange);
     letter-spacing: -0.2px;
   }
   .foot .right .mail {
     margin-top: 2px; font-weight: 400; font-size: 8.5pt; color: rgba(255,255,255,0.85);
+  }
+  .foot .right .qr {
+    flex-shrink: 0;
+    width: 0.7in;
+    height: 0.7in;
+    padding: 3px;
+    background: #fff;
+  }
+  .foot .right .qr img {
+    width: 100%; height: 100%; display: block;
+    image-rendering: crisp-edges;
+    image-rendering: -webkit-optimize-contrast;
   }
 
   /* ─── Print rules ─── */
@@ -309,8 +326,14 @@
       <div class="sub">Stop by the booth, or reach us online.</div>
     </div>
     <div class="right">
-      <div class="url">PacificCrestInstitute.com</div>
-      <div class="mail">info@pacificcrestinstitute.com</div>
+      <div class="qr">
+        <img src="../images/pci/qr-website.webp"
+             alt="Scan to visit PacificCrestInstitute.com" />
+      </div>
+      <div class="text">
+        <div class="url">PacificCrestInstitute.com</div>
+        <div class="mail">info@pacificcrestinstitute.com</div>
+      </div>
     </div>
   </footer>
 
