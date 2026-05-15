@@ -78,7 +78,7 @@ export default function ContactForm() {
                 name="name"
                 autoComplete="name"
                 placeholder="Parent or guardian full name"
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>
 
@@ -90,7 +90,7 @@ export default function ContactForm() {
                 name="email"
                 autoComplete="email"
                 placeholder="Parent or guardian email address"
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>
 
@@ -102,7 +102,7 @@ export default function ContactForm() {
                 name="phone"
                 autoComplete="tel"
                 placeholder="Best phone number"
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>
 
@@ -113,7 +113,7 @@ export default function ContactForm() {
                 name="studentName"
                 autoComplete="off"
                 placeholder="Student full name"
-                className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
               />
             </label>
           </div>
@@ -125,7 +125,7 @@ export default function ContactForm() {
               name="message"
               rows={6}
               placeholder="Tell us about your student, your goals, or any questions you have."
-              className="w-full rounded-3xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+              className="w-full rounded-3xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
             />
           </label>
 
@@ -135,7 +135,7 @@ export default function ContactForm() {
               name="howDidYouHear"
               autoComplete="off"
               placeholder="Referral name, school, social post, Google search, etc."
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
+              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20"
             />
           </label>
 
@@ -144,7 +144,7 @@ export default function ContactForm() {
               I would like to schedule a tour
             </legend>
             <div className="flex flex-wrap gap-3">
-              <label className="inline-flex items-center gap-3 rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-900">
+              <label className="inline-flex items-center gap-3 rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900">
                 <input
                   required
                   type="radio"
@@ -154,7 +154,7 @@ export default function ContactForm() {
                 />
                 Yes
               </label>
-              <label className="inline-flex items-center gap-3 rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-900">
+              <label className="inline-flex items-center gap-3 rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-900">
                 <input
                   required
                   type="radio"
