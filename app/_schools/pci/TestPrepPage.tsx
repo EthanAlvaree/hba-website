@@ -77,14 +77,14 @@ export default function PciTestPrepPage() {
       {/* ─── HERO ──────────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden bg-brand-navy-deep text-white">
         <Image
-          src="/images/pci/students-working.webp"
+          src="/images/pci/students-working2.webp"
           alt=""
           fill
           sizes="100vw"
-          className="object-cover -z-10 opacity-30"
+          className="object-cover -z-10"
           priority
         />
-        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-navy-deep/95 via-brand-navy/85 to-black/95" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-navy-deep/90 via-brand-navy/75 to-black/85" />
         <div className="relative mx-auto max-w-6xl px-6 lg:px-12 pt-28 lg:pt-40 pb-24 lg:pb-32">
           <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
             Pillar 02 · Test Prep & Academics

@@ -72,8 +72,16 @@ export default function PciArtInstitutePage() {
   return (
     <main className="bg-white text-brand-navy-deep">
       {/* ─── HERO ──────────────────────────────────────────────────── */}
-      <section className="relative bg-brand-navy-deep text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy-deep via-brand-navy to-black opacity-95" />
+      <section className="relative isolate bg-brand-navy-deep text-white overflow-hidden">
+        <Image
+          src="/images/pci/students-working.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover -z-10"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-navy-deep/90 via-brand-navy/75 to-black/85" />
         <div className="relative mx-auto max-w-6xl px-6 lg:px-12 pt-28 lg:pt-40 pb-24 lg:pb-32">
           <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
             Flagship program · The Art Institute
