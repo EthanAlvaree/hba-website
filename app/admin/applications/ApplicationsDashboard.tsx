@@ -15,6 +15,7 @@ import {
   uploadApplicationDocumentAdminAction,
 } from "./actions"
 import { studentUpnFromApplication } from "@/lib/graph"
+import { siteConfig } from "@/lib/site"
 
 export const applicationSortOptions = ["newest", "oldest", "name"] as const
 
@@ -963,7 +964,7 @@ export default function ApplicationsDashboard({
                                 application,
                                 new Date().getFullYear()
                               )}
-                              placeholder="firstname.lastname@highbluffacademy.com"
+                              placeholder={`firstname.lastname@${siteConfig.contact.emailDomain}`}
                               className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900"
                             />
                           </label>

@@ -97,10 +97,10 @@ export default async function ParentPortalPage() {
                 We don&rsquo;t have any students linked to your account yet. If
                 you believe this is wrong, contact the office at{" "}
                 <a
-                  href="mailto:info@highbluffacademy.com"
+                  href={`mailto:${siteConfig.contact.infoEmail}`}
                   className="font-semibold text-brand-navy underline-offset-4 hover:underline"
                 >
-                  info@highbluffacademy.com
+                  {siteConfig.contact.infoEmail}
                 </a>{" "}
                 so we can sort it out.
               </>

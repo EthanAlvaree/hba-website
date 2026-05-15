@@ -8,6 +8,7 @@
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
+import { siteConfig } from "@/lib/site"
 import {
   seedQualificationsFromBiosAction,
   syncM365Action,
@@ -63,7 +64,7 @@ export default async function AdminToolsPage({ searchParams }: PageProps) {
               Sync from Microsoft 365
             </h2>
             <p className="mt-1 text-sm text-slate-600">
-              Pulls every @highbluffacademy.com mailbox from your tenant
+              Pulls every @{siteConfig.contact.emailDomain} mailbox from your tenant
               and creates/updates a profile row for each. Existing roles
               are preserved; new profiles start with empty roles and get
               <code className="text-xs"> faculty</code> backfilled on
@@ -167,7 +168,7 @@ export default async function AdminToolsPage({ searchParams }: PageProps) {
               creates a <code className="text-xs">teacher_qualifications</code>{" "}
               row for every (faculty member × course) pair listed on their
               public bio. Matches bio → profile by first-name email (e.g.
-              Ellen Sullivan → ellen@highbluffacademy.com); courses match
+              Ellen Sullivan → ellen@{siteConfig.contact.emailDomain}); courses match
               the catalog by exact name. Idempotent — rows that already
               exist are left alone. Faculty can refine rank/notes on{" "}
               <code className="text-xs">/faculty-portal/teaching</code> after.
@@ -197,7 +198,7 @@ export default async function AdminToolsPage({ searchParams }: PageProps) {
           {raw.no_profile_count && Number(raw.no_profile_count) > 0 && (
             <p className="mt-2 text-xs text-emerald-800">
               <strong>{raw.no_profile_count}</strong> bio(s) had no matching
-              profile (no <code>firstname@highbluffacademy.com</code> in
+              profile (no <code>firstname@{siteConfig.contact.emailDomain}</code> in
               the DB yet): {raw.no_profile}
               {Number(raw.no_profile_count) > 8 && " … and more"}
             </p>

@@ -2,11 +2,12 @@
 
 import { useActionState } from "react"
 import { importParentLinksAction, type BulkImportResult } from "./actions"
+import { siteConfig } from "@/lib/site"
 
 const sampleCsv = `student_email,parent_email,relationship,is_primary,can_view_grades,can_view_attendance,is_homestay
-ben@highbluffacademy.com,sarah.parent@example.com,Mother,true,true,true,false
-ben@highbluffacademy.com,david.parent@example.com,Father,false,true,true,false
-maria@highbluffacademy.com,host.family@example.com,Homestay host,true,true,true,true`
+ben@${siteConfig.contact.emailDomain},sarah.parent@example.com,Mother,true,true,true,false
+ben@${siteConfig.contact.emailDomain},david.parent@example.com,Father,false,true,true,false
+maria@${siteConfig.contact.emailDomain},host.family@example.com,Homestay host,true,true,true,true`
 
 export function ImportClient() {
   const [state, formAction, pending] = useActionState<BulkImportResult | null, FormData>(

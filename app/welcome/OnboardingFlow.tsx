@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import { CheckIcon } from "@heroicons/react/24/solid"
+import { siteConfig } from "@/lib/site"
 
 const ICON_BASE = "/images/new-user-setup"
 const TEAMS_ICON = `${ICON_BASE}/teams.webp`
@@ -520,7 +521,7 @@ export default function OnboardingFlow() {
                     <span className="mt-3 block bg-white border border-brand-navy/20 rounded-lg px-4 py-3 font-mono text-sm sm:text-base font-semibold text-brand-navy text-center break-words">
                       firstname.lastname.
                       <span className="text-brand-orange">YY</span>
-                      <wbr />@highbluffacademy.com
+                      <wbr />@{siteConfig.contact.emailDomain}
                     </span>
                   </>
                 ),

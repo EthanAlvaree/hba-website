@@ -2,11 +2,12 @@
 
 import { useActionState } from "react"
 import { importStudentsAction, type BulkStudentImportResult } from "./actions"
+import { siteConfig } from "@/lib/site"
 
 const sampleCsv = `hba_email,legal_first_name,legal_last_name,preferred_name,current_grade,dob,enrollment_type
-ben.bui@highbluffacademy.com,Benjamin,Bui,Ben,11,2009-04-12,full_time
-maria.chen@highbluffacademy.com,Maria,Chen,,10,2010-09-30,full_time
-alex.tang@highbluffacademy.com,Alex,Tang,,9,2011-01-18,part_time`
+ben.bui@${siteConfig.contact.emailDomain},Benjamin,Bui,Ben,11,2009-04-12,full_time
+maria.chen@${siteConfig.contact.emailDomain},Maria,Chen,,10,2010-09-30,full_time
+alex.tang@${siteConfig.contact.emailDomain},Alex,Tang,,9,2011-01-18,part_time`
 
 export function ImportClient() {
   const [state, formAction, pending] = useActionState<BulkStudentImportResult | null, FormData>(

@@ -7,6 +7,7 @@ import {
   type AdminAuditRecord,
 } from "@/lib/audit"
 import BackupNowButton from "./BackupNowButton"
+import { siteConfig } from "@/lib/site"
 
 export const dynamic = "force-dynamic"
 
@@ -178,7 +179,7 @@ export default async function AuditLogPage({ searchParams }: PageProps) {
             <input
               name="actor"
               defaultValue={raw.actor ?? ""}
-              placeholder="admin@highbluffacademy.com"
+              placeholder={`admin@${siteConfig.contact.emailDomain}`}
               className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
             />
           </label>
