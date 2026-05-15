@@ -20,8 +20,16 @@ export default function PciAboutPage() {
   return (
     <main className="bg-white text-brand-navy-deep">
       {/* ─── HERO ──────────────────────────────────────────────────── */}
-      <section className="relative bg-brand-navy-deep text-white">
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-navy-deep via-brand-navy to-black opacity-95" />
+      <section className="relative isolate bg-brand-navy-deep text-white overflow-hidden">
+        <Image
+          src="/images/pci/about.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover -z-10"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-navy-deep/90 via-brand-navy/75 to-black/85" />
         <div className="relative mx-auto max-w-6xl px-6 lg:px-12 pt-28 lg:pt-40 pb-24 lg:pb-32">
           <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-brand-orange">
             About Pacific Crest Institute
@@ -59,7 +67,10 @@ export default function PciAboutPage() {
             </Link>
           </div>
 
-          <div className="mt-10 flex flex-wrap justify-center gap-x-8 gap-y-10">
+          {/* 6 circles. On large screens, all 6 fit in one row. On
+              smaller widths, the grid wraps to 3+3 so the layout never
+              leaves a single orphan card on its own row. */}
+          <div className="mt-10 grid grid-cols-3 lg:grid-cols-6 gap-x-4 gap-y-10">
             {pciPeople.map((p) => (
               <Link
                 key={p.slug}
@@ -78,7 +89,7 @@ export default function PciAboutPage() {
                 <p className="mt-3 text-sm font-black tracking-tight text-brand-navy-deep">
                   {p.name}
                 </p>
-                <p className="mt-1 max-w-[10rem] text-[10px] font-bold uppercase tracking-[0.16em] text-brand-orange leading-tight">
+                <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.16em] text-brand-orange leading-tight">
                   {p.role}
                 </p>
               </Link>
