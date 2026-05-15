@@ -48,11 +48,18 @@ The baseline cutoff is the `BASELINE_THROUGH` constant in
 
 For a brand-new Supabase project (e.g. a second deployment), the
 baseline rule is wrong — there's nothing to baseline. Pass `--fresh`
-to apply every migration from 0001 onward:
+to apply every migration from 0001 onward.
+
+If a single `.env.local` holds env vars for both deployments under
+prefixed names (`HBA_DATABASE_URL`, `PCI_DATABASE_URL`, …), use
+`--school=<prefix>` to pick which deployment to migrate:
 
 ```
-npm run db:migrate -- --env=.env.pci.local --fresh
+npm run db:migrate -- --school=pci --fresh
 ```
+
+(Or use a separate `.env.pci.local` file and `--env=.env.pci.local`
+instead — both patterns work.)
 
 The migrations are written idempotently (`create if not exists`,
 `insert ... on conflict`, guarded updates), so this produces the same

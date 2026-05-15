@@ -125,6 +125,26 @@ async function main() {
   // when 0001-0038 were already hand-applied to the target DB.
   const fresh = process.argv.includes("--fresh")
 
+  // --school=pci (or any other key) lets a single .env.local hold env
+  // vars for multiple deployments with prefixed names (HBA_*, PCI_*, …).
+  // When passed, we copy the prefixed values into the unprefixed names
+  // the rest of the script (and the app code) expects.
+  const schoolArg = process.argv
+    .find((a) => a.startsWith("--school="))
+    ?.slice("--school=".length)
+  if (schoolArg) {
+    const prefix = schoolArg.toUpperCase()
+    const map: Array<[string, string]> = [
+      ["DATABASE_URL", `${prefix}_DATABASE_URL`],
+      ["SUPABASE_URL", `${prefix}_SUPABASE_URL`],
+      ["SUPABASE_SERVICE_ROLE_KEY", `${prefix}_SUPABASE_SERVICE_ROLE_KEY`],
+    ]
+    for (const [dest, src] of map) {
+      const value = process.env[src]
+      if (value) process.env[dest] = value
+    }
+  }
+
   const connectionString =
     process.env.DATABASE_URL ?? process.env.HBA_DATABASE_URL
   if (!connectionString) {

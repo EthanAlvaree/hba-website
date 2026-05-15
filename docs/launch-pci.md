@@ -62,14 +62,23 @@ the warning stops.
      direct connections are IPv6-only on most home networks. Replace
      `[YOUR-PASSWORD]` with the password from above.
 
-2. Save PCI's connection settings to `.env.pci.local` (keeping HBA's
-   `.env.local` untouched) and point the migration runner at it with
-   `--fresh` (this is a brand-new database, so every migration from
-   0001 onward must actually run — the baseline-skip rule is only
-   correct on the HBA DB where 0001-0038 were hand-applied):
+2. Add PCI's connection settings to `.env.local` (alongside the
+   existing HBA values) with `PCI_` prefixes, e.g.:
    ```
-   npm run db:migrate -- --env=.env.pci.local --fresh
+   PCI_SUPABASE_URL=https://<pci-ref>.supabase.co
+   PCI_SUPABASE_SERVICE_ROLE_KEY=<service-role key>
+   PCI_DATABASE_URL=postgresql://...pooler.supabase.com:5432/postgres
    ```
+   Then run the migrations with `--school=pci --fresh`. The `--school`
+   flag tells the runner to map the prefixed names to the unprefixed
+   ones it (and the app code) expects; `--fresh` skips the baseline
+   shortcut so every migration from 0001 onward actually runs against
+   the new DB:
+   ```
+   npm run db:migrate -- --school=pci --fresh
+   ```
+   (Alternative: keep PCI's vars in a separate `.env.pci.local` file
+   with unprefixed names and use `--env=.env.pci.local` instead.)
    The runner creates `schema_migrations` and applies every numbered file
    in `db/migrations/` from scratch (since the table is empty and this is
    a fresh DB, the baseline rule still applies — see `scripts/migrate.ts`).
