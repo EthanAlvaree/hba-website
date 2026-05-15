@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import Avatar from "@/components/ui/Avatar"
+import { siteConfig } from "@/lib/site"
 import { signOutPortalAction } from "./portal-sign-out-action"
 
 export type PortalNavItem = {
@@ -101,7 +102,7 @@ export default function PortalShell({
             </label>
 
             <Link href={navSections[0]?.href ?? "/"} className="flex items-center gap-2">
-              <span className="text-base font-extrabold tracking-tight">HBA</span>
+              <span className="text-base font-extrabold tracking-tight">{siteConfig.shortName}</span>
               <span className="hidden text-xs uppercase tracking-[0.18em] text-white/70 sm:inline">
                 {audienceLabels[audience]}
               </span>
