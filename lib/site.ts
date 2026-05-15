@@ -63,6 +63,13 @@ export type SiteConfig = {
   external: {
     /** Application / re-enrollment URL. Native (`/apply`) by default. */
     enrollment: string
+    /** Hosted Stripe Payment Link URL for the registration fee. Shown
+     *  on the apply-wizard success view as a CTA. Family clicks → pays
+     *  on Stripe → Stripe records `client_reference_id=<application_id>`
+     *  on the payment so admins can reconcile in the Stripe dashboard.
+     *  Leave undefined to hide the CTA (e.g. PCI until its Stripe
+     *  account is set up). */
+    stripeRegistrationLink?: string
   }
 
   /** Brand hex values. Used by raw color contexts (charts, OG images,
@@ -135,6 +142,7 @@ const hba: SiteConfig = {
 
   external: {
     enrollment: "/apply",
+    stripeRegistrationLink: "https://buy.stripe.com/6oU3cwe2Sh037VnfdR6Vq00",
   },
 
   brand: {

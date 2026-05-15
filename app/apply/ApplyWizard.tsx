@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import Script from "next/script"
+import { siteConfig } from "@/lib/site"
 import { summerCategories } from "@/lib/summer-courses"
 import type {
   ApplicationEnrollmentType,
@@ -1010,6 +1011,43 @@ export default function ApplyWizard({
             </p>
           )}
         </div>
+
+        {siteConfig.external.stripeRegistrationLink && (
+          <div className="mx-auto mt-10 max-w-2xl rounded-2xl border-2 border-brand-orange bg-white px-6 py-6 shadow-md">
+            <div className="text-center">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
+                Next step — required
+              </p>
+              <h3 className="mt-1 text-2xl font-extrabold text-brand-navy">
+                Pay the $350 registration fee
+              </h3>
+              <p className="mx-auto mt-3 max-w-md text-sm text-slate-700">
+                Your application is in. The non-refundable $350 registration
+                fee secures your spot in the review queue — the admissions
+                team begins working on accepted applications once it&rsquo;s
+                received.
+              </p>
+              <a
+                href={`${siteConfig.external.stripeRegistrationLink}${
+                  submission.applicationId
+                    ? `?client_reference_id=${encodeURIComponent(
+                        submission.applicationId
+                      )}`
+                    : ""
+                }`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-5 inline-flex items-center justify-center rounded-full bg-brand-orange px-8 py-3 text-sm font-semibold text-white shadow-lg transition hover:brightness-110"
+              >
+                Pay $350 registration fee →
+              </a>
+              <p className="mt-4 text-xs text-slate-500">
+                Secure payment through Stripe. You&rsquo;ll receive a
+                receipt by email.
+              </p>
+            </div>
+          </div>
+        )}
 
         <div className="mx-auto mt-10 max-w-2xl space-y-4 text-left">
           <h3 className="text-center text-sm font-bold uppercase tracking-[0.18em] text-brand-orange">
