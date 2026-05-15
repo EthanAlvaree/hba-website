@@ -17,11 +17,16 @@ export const dynamic = "force-dynamic"
 const minimumSubmissionDelayMs = 1500
 const maximumSubmissionAgeMs = 1000 * 60 * 60 * 24
 
-// 3 application submissions per IP per hour. A real family submits once
-// (maybe twice if they hit a validation snag). Even the second-chance
-// case fits inside this budget.
+// 50 application submissions per IP per hour. One family submits once
+// or twice in practice, but a single IP can legitimately serve many
+// families — a school district network, a coffee shop, a household
+// with several students applying. Turnstile already blocks bots at the
+// edge of the form, so this rate limit is defense-in-depth against an
+// attacker who's solved Turnstile and is flooding submissions, not the
+// primary spam control. 50/hour blocks that abuse case with comfortable
+// margin for legitimate peak-enrollment traffic.
 const APPLY_WINDOW_MS = 60 * 60 * 1000
-const APPLY_MAX_HITS = 3
+const APPLY_MAX_HITS = 50
 
 export async function POST(request: Request) {
   try {
