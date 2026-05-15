@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pacific Crest Institute — The Art Institute</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1f5f6b;
+    --navy-deep: #0e3a44;
+    --orange: #e08a3c;
+    --cream: #f6f4ef;
+    --body: #1f2937;
+    --muted: #4b5563;
+    --rule: #d1d5db;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #e5e7eb; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    margin: 24px auto;
+    background: #fff;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ─── Top brand band ─── */
+  .brand {
+    background: var(--navy-deep);
+    color: #fff;
+    padding: 0.32in 0.5in;
+    display: flex;
+    align-items: center;
+    gap: 0.24in;
+    border-bottom: 4px solid var(--orange);
+  }
+  .brand img { height: 0.55in; width: auto; display: block; }
+  .brand .word { font-weight: 800; font-size: 18pt; letter-spacing: -0.5px; }
+  .brand .word small {
+    display: block; font-weight: 600; font-size: 8.5pt;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange);
+    margin-top: 2px;
+  }
+
+  /* ─── Hero ─── */
+  .hero { padding: 0.34in 0.5in 0.22in; }
+  .eyebrow {
+    font-weight: 700; font-size: 8.5pt; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--orange);
+  }
+  .hero h1 {
+    margin: 8px 0 6px; font-weight: 900; font-size: 44pt;
+    letter-spacing: -1.5px; line-height: 0.95; color: var(--navy-deep);
+  }
+  .hero h1 .accent { color: var(--orange); }
+  .hero .lede {
+    font-weight: 300; font-size: 12.5pt; line-height: 1.45;
+    color: var(--muted); max-width: 6.6in;
+  }
+
+  /* ─── Stats strip ─── */
+  .stats {
+    margin: 0.18in 0.5in 0;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    background: var(--cream);
+    border-top: 3px solid var(--orange);
+  }
+  .stat { padding: 0.16in 0.18in; border-right: 1px solid rgba(0,0,0,0.07); }
+  .stat:last-child { border-right: none; }
+  .stat .v {
+    font-weight: 900; font-size: 17pt; letter-spacing: -0.3px;
+    color: var(--navy-deep); line-height: 1;
+  }
+  .stat .k {
+    margin-top: 4px; font-weight: 700; font-size: 7.5pt;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);
+  }
+
+  /* ─── Two-column: pitch + image ─── */
+  .pitch {
+    padding: 0.26in 0.5in 0.18in;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 0.32in;
+    align-items: start;
+  }
+  .pitch h2 {
+    margin: 0 0 8px; font-weight: 900; font-size: 17pt;
+    letter-spacing: -0.4px; color: var(--navy-deep); line-height: 1.05;
+  }
+  .pitch p {
+    margin: 0 0 8px; font-size: 10.5pt; line-height: 1.5;
+    font-weight: 300; color: var(--muted);
+  }
+  .pitch .quote {
+    margin-top: 6px; padding: 8px 12px;
+    border-left: 3px solid var(--orange);
+    font-style: italic; font-weight: 400;
+    font-size: 10.5pt; color: var(--navy-deep);
+  }
+  .book {
+    position: relative;
+    aspect-ratio: 3 / 4;
+    background: #f3f4f6;
+    overflow: hidden;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .book img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .book-caption {
+    margin-top: 6px; font-size: 7.5pt; font-weight: 700;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+  }
+
+  /* ─── Curriculum ─── */
+  .curriculum {
+    margin: 0 0.5in; padding: 0.18in 0;
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+  }
+  .curriculum-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 0.12in;
+  }
+  .curriculum-head h3 {
+    margin: 0; font-weight: 900; font-size: 14pt;
+    color: var(--navy-deep); letter-spacing: -0.3px;
+  }
+  .curriculum-list {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 0.14in;
+  }
+  .ch { padding-right: 6px; }
+  .ch .n {
+    font-weight: 900; font-size: 18pt; color: var(--orange);
+    line-height: 1;
+  }
+  .ch .t {
+    margin-top: 6px; font-weight: 800; font-size: 9.5pt;
+    color: var(--navy-deep); line-height: 1.2;
+  }
+  .ch .b {
+    margin-top: 4px; font-size: 8pt; line-height: 1.4;
+    font-weight: 300; color: var(--muted);
+  }
+
+  /* ─── Mentor strip ─── */
+  .mentors { padding: 0.22in 0.5in 0.16in; }
+  .mentors h3 {
+    margin: 0 0 0.12in; font-weight: 900; font-size: 13pt;
+    color: var(--navy-deep); letter-spacing: -0.3px;
+  }
+  .mentor-row {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0.22in;
+  }
+  .mentor { display: flex; gap: 10px; align-items: center; }
+  .mentor .portrait {
+    flex: 0 0 0.7in; width: 0.7in; height: 0.7in;
+    background: #e5e7eb; overflow: hidden;
+    border: 2px solid var(--navy-deep);
+  }
+  .mentor .portrait img {
+    width: 100%; height: 100%; object-fit: cover;
+    filter: grayscale(100%) contrast(1.05);
+  }
+  .mentor .who .name {
+    font-weight: 900; font-size: 10.5pt; color: var(--navy-deep);
+    line-height: 1.1;
+  }
+  .mentor .who .role {
+    margin-top: 3px; font-weight: 700; font-size: 7pt;
+    letter-spacing: 0.14em; text-transform: uppercase; color: var(--orange);
+  }
+  .mentor .who .firm {
+    margin-top: 3px; font-size: 8pt; color: var(--muted);
+    font-weight: 300; line-height: 1.3;
+  }
+
+  /* ─── Footer ─── */
+  .foot {
+    margin-top: auto;
+    background: var(--navy-deep);
+    color: #fff;
+    padding: 0.22in 0.5in;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 4px solid var(--orange);
+  }
+  .foot .left .ask {
+    font-weight: 900; font-size: 12pt; letter-spacing: -0.3px;
+  }
+  .foot .left .sub {
+    margin-top: 3px; font-weight: 300; font-size: 9pt; color: rgba(255,255,255,0.78);
+  }
+  .foot .right { text-align: right; }
+  .foot .right .url {
+    font-weight: 800; font-size: 11pt; color: var(--orange);
+    letter-spacing: -0.2px;
+  }
+  .foot .right .mail {
+    margin-top: 3px; font-weight: 400; font-size: 9pt; color: rgba(255,255,255,0.85);
+  }
+
+  /* ─── Print rules ─── */
+  @page { size: letter; margin: 0; }
+  @media print {
+    html, body { background: #fff; margin: 0; }
+    .page { box-shadow: none; margin: 0; width: 8.5in; height: 11in; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- BRAND -->
+  <header class="brand">
+    <img src="../public/images/pci/logo-white.webp" alt="Pacific Crest Institute" />
+    <div class="word">
+      Pacific Crest Institute
+      <small>San Diego, California</small>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">Flagship program · The Art Institute</div>
+    <h1>A real studio.<br />A real publisher.<br /><span class="accent">Real published credit.</span></h1>
+    <p class="lede">
+      A 16-week Saturday conservatory in digital art, run in partnership with
+      Floating Island Productions. Students don&rsquo;t graduate with a
+      sketchbook — they graduate with their names in a printed hardcover book.
+    </p>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat"><div class="v">16 weeks</div><div class="k">Saturday studio</div></div>
+    <div class="stat"><div class="v">3 hours</div><div class="k">Per session</div></div>
+    <div class="stat"><div class="v">$4,800</div><div class="k">Full tuition</div></div>
+    <div class="stat"><div class="v">All levels</div><div class="k">No prior art required</div></div>
+  </div>
+
+  <!-- PITCH + BOOK -->
+  <section class="pitch">
+    <div>
+      <h2>Most art classes teach in a vacuum. We don&rsquo;t.</h2>
+      <p>
+        Students learn the same tools and workflows used by professionals
+        shipping hardcovers today — Clip Studio Paint, layered PSDs,
+        non-destructive workflows, flatting, holds, rendering, lettering —
+        and they apply them to pages that get printed and bound.
+      </p>
+      <p>
+        Each PCI student&rsquo;s flatting, rendering, and lighting work
+        appears on real pages in real books. They earn a complimentary
+        copy of the hardcover and their name in the credits page,
+        alongside the working professionals on the team.
+      </p>
+      <div class="quote">
+        We don&rsquo;t use AI prompts. We don&rsquo;t teach shortcuts.
+        We teach why every line and every color matters.
+      </div>
+    </div>
+    <div>
+      <div class="book">
+        <img src="../public/images/pci/book-cover-scott-shaws-sonic-days.webp"
+             alt="Scott Shaw's Sonic Days hardcover by Floating Island Productions" />
+      </div>
+      <div class="book-caption">
+        A recent hardcover from Floating Island Productions.
+      </div>
+    </div>
+  </section>
+
+  <!-- CURRICULUM -->
+  <section class="curriculum">
+    <div class="curriculum-head">
+      <h3>Five chapters, one finished book.</h3>
+    </div>
+    <div class="curriculum-list">
+      <div class="ch">
+        <div class="n">01</div>
+        <div class="t">Drawing &amp; lineart</div>
+        <div class="b">Anatomy, shape language, silhouette clarity, perspective.</div>
+      </div>
+      <div class="ch">
+        <div class="n">02</div>
+        <div class="t">Light &amp; color</div>
+        <div class="b">The physics of light, shadow zones, materials, value &amp; hue.</div>
+      </div>
+      <div class="ch">
+        <div class="n">03</div>
+        <div class="t">Software &amp; pipeline</div>
+        <div class="b">Clip Studio Paint, Photoshop, masks, brushes, non-destructive flow.</div>
+      </div>
+      <div class="ch">
+        <div class="n">04</div>
+        <div class="t">Narrative &amp; mood</div>
+        <div class="b">Storytelling with color, color scripting, atmospheric control.</div>
+      </div>
+      <div class="ch">
+        <div class="n">05</div>
+        <div class="t">Portfolio &amp; print</div>
+        <div class="b">Final pieces, page proofs, print prep, real publication credit.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MENTORS -->
+  <section class="mentors">
+    <h3>The people in the room aren&rsquo;t just teachers.</h3>
+    <div class="mentor-row">
+      <div class="mentor">
+        <div class="portrait"><img src="../public/images/pci/bios/ken-penders.webp" alt="Ken Penders" /></div>
+        <div class="who">
+          <div class="name">Ken Penders</div>
+          <div class="role">Author / Publisher</div>
+          <div class="firm">Sonic the Hedgehog, Knuckles the Echidna. Founder, Floating Island Productions.</div>
+        </div>
+      </div>
+      <div class="mentor">
+        <div class="portrait"><img src="../public/images/pci/bios/scott-shaw.webp" alt="Scott Shaw" /></div>
+        <div class="who">
+          <div class="name">Scott Shaw</div>
+          <div class="role">Penciller / Writer</div>
+          <div class="firm">50+ years experience. The Simpsons, Flintstones. Co-founder, San Diego Comic-Con.</div>
+        </div>
+      </div>
+      <div class="mentor">
+        <div class="portrait"><img src="../public/images/pci/bios/kurt-michael-russell.webp" alt="Kurt Michael Russell" /></div>
+        <div class="who">
+          <div class="name">Kurt Michael Russell</div>
+          <div class="role">Professional Colorist</div>
+          <div class="firm">DC, Image, Vault, IDW, Dark Horse. Teaches digital coloring to thousands.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="left">
+      <div class="ask">Cohorts are small. Let&rsquo;s talk.</div>
+      <div class="sub">Stop by the booth, or reach us online.</div>
+    </div>
+    <div class="right">
+      <div class="url">pacificcrestinstitute.com</div>
+      <div class="mail">info@pacificcrestinstitute.com</div>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>

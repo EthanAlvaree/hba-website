@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pacific Crest Institute — Test Prep &amp; Academics</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1f5f6b;
+    --navy-deep: #0e3a44;
+    --orange: #e08a3c;
+    --cream: #f6f4ef;
+    --body: #1f2937;
+    --muted: #4b5563;
+    --rule: #d1d5db;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #e5e7eb; }
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    width: 8.5in;
+    height: 11in;
+    margin: 24px auto;
+    background: #fff;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* ─── Top brand band ─── */
+  .brand {
+    background: var(--navy-deep);
+    color: #fff;
+    padding: 0.32in 0.5in;
+    display: flex;
+    align-items: center;
+    gap: 0.24in;
+    border-bottom: 4px solid var(--orange);
+  }
+  .brand img { height: 0.55in; width: auto; display: block; }
+  .brand .word { font-weight: 800; font-size: 18pt; letter-spacing: -0.5px; }
+  .brand .word small {
+    display: block; font-weight: 600; font-size: 8.5pt;
+    letter-spacing: 0.16em; text-transform: uppercase; color: var(--orange);
+    margin-top: 2px;
+  }
+
+  /* ─── Hero ─── */
+  .hero { padding: 0.34in 0.5in 0.22in; }
+  .eyebrow {
+    font-weight: 700; font-size: 8.5pt; letter-spacing: 0.28em;
+    text-transform: uppercase; color: var(--orange);
+  }
+  .hero h1 {
+    margin: 8px 0 6px; font-weight: 900; font-size: 44pt;
+    letter-spacing: -1.5px; line-height: 0.95; color: var(--navy-deep);
+  }
+  .hero h1 .accent { color: var(--orange); }
+  .hero .lede {
+    font-weight: 300; font-size: 12.5pt; line-height: 1.45;
+    color: var(--muted); max-width: 6.6in;
+  }
+
+  /* ─── Approach band ─── */
+  .approach {
+    background: var(--cream);
+    margin: 0.2in 0.5in 0;
+    padding: 0.2in 0.24in;
+    border-left: 4px solid var(--orange);
+  }
+  .approach h2 {
+    margin: 0 0 6px; font-weight: 900; font-size: 14pt;
+    color: var(--navy-deep); letter-spacing: -0.3px;
+  }
+  .approach p {
+    margin: 0; font-size: 10.5pt; line-height: 1.5;
+    font-weight: 300; color: var(--muted);
+  }
+  .approach .em { color: var(--navy-deep); font-weight: 500; }
+
+  /* ─── Tracks grid ─── */
+  .tracks {
+    padding: 0.26in 0.5in 0.18in;
+  }
+  .tracks-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 0.16in;
+  }
+  .tracks-head h3 {
+    margin: 0; font-weight: 900; font-size: 18pt;
+    color: var(--navy-deep); letter-spacing: -0.4px;
+  }
+  .tracks-head .count {
+    font-weight: 700; font-size: 8.5pt; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--muted);
+  }
+  .track-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 0.16in;
+  }
+  .track {
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--orange);
+    padding: 0.16in 0.18in;
+  }
+  .track .n {
+    font-weight: 900; font-size: 14pt; color: var(--orange);
+    line-height: 1;
+  }
+  .track .label {
+    margin-top: 4px; font-weight: 700; font-size: 7.5pt;
+    letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted);
+  }
+  .track .h {
+    margin-top: 6px; font-weight: 900; font-size: 13pt;
+    color: var(--navy-deep); letter-spacing: -0.3px; line-height: 1.05;
+  }
+  .track ul {
+    margin: 8px 0 0; padding: 0; list-style: none;
+  }
+  .track li {
+    font-size: 9pt; line-height: 1.4; color: var(--muted);
+    font-weight: 400; padding-left: 12px; position: relative;
+    margin-top: 3px;
+  }
+  .track li::before {
+    content: "·"; position: absolute; left: 0; top: -2px;
+    color: var(--orange); font-weight: 900; font-size: 14pt;
+  }
+
+  /* ─── Highlights ─── */
+  .highlights {
+    margin: 0 0.5in;
+    padding: 0.16in 0;
+    border-top: 1px solid var(--rule);
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 0.22in;
+  }
+  .hl .v {
+    font-weight: 900; font-size: 11pt; color: var(--navy-deep);
+    letter-spacing: -0.2px; line-height: 1.1;
+  }
+  .hl .b {
+    margin-top: 4px; font-size: 8.5pt; line-height: 1.4;
+    color: var(--muted); font-weight: 300;
+  }
+
+  /* ─── Footer ─── */
+  .foot {
+    margin-top: auto;
+    background: var(--navy-deep);
+    color: #fff;
+    padding: 0.22in 0.5in;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 4px solid var(--orange);
+  }
+  .foot .left .ask {
+    font-weight: 900; font-size: 12pt; letter-spacing: -0.3px;
+  }
+  .foot .left .sub {
+    margin-top: 3px; font-weight: 300; font-size: 9pt; color: rgba(255,255,255,0.78);
+  }
+  .foot .right { text-align: right; }
+  .foot .right .url {
+    font-weight: 800; font-size: 11pt; color: var(--orange);
+    letter-spacing: -0.2px;
+  }
+  .foot .right .mail {
+    margin-top: 3px; font-weight: 400; font-size: 9pt; color: rgba(255,255,255,0.85);
+  }
+
+  /* ─── Print rules ─── */
+  @page { size: letter; margin: 0; }
+  @media print {
+    html, body { background: #fff; margin: 0; }
+    .page { box-shadow: none; margin: 0; width: 8.5in; height: 11in; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <!-- BRAND -->
+  <header class="brand">
+    <img src="../public/images/pci/logo-white.webp" alt="Pacific Crest Institute" />
+    <div class="word">
+      Pacific Crest Institute
+      <small>San Diego, California</small>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="eyebrow">Test Prep &amp; Academics</div>
+    <h1>Scores that move.<br /><span class="accent">Real preparation.</span><br />No shortcuts.</h1>
+    <p class="lede">
+      Weekend courses for students serious about competition math, science
+      olympiads, AP exams, and the SAT/ACT — taught by instructors who&rsquo;ve
+      sat for the same tests and scored.
+    </p>
+  </section>
+
+  <!-- APPROACH -->
+  <section class="approach">
+    <h2>How we work</h2>
+    <p>
+      <span class="em">Small cohorts. Real instructors. No AI shortcuts.</span>
+      We measure your baseline, identify weak spots, and run the cycle of
+      practice → review → re-test until the scores hold. International and
+      bilingual students welcome — we support TOEFL, academic English, and
+      AP transition.
+    </p>
+  </section>
+
+  <!-- TRACKS -->
+  <section class="tracks">
+    <div class="tracks-head">
+      <h3>Four tracks. One student at a time.</h3>
+      <div class="count">Courses</div>
+    </div>
+    <div class="track-grid">
+
+      <div class="track">
+        <div class="n">01</div>
+        <div class="label">College entrance exams</div>
+        <div class="h">SAT, ACT &amp; TOEFL</div>
+        <ul>
+          <li>SAT preparation</li>
+          <li>ACT preparation</li>
+          <li>TOEFL preparation</li>
+          <li>Academic English &amp; vocabulary</li>
+        </ul>
+      </div>
+
+      <div class="track">
+        <div class="n">02</div>
+        <div class="label">AP exam preparation</div>
+        <div class="h">Advanced Placement</div>
+        <ul>
+          <li>AP Calculus AB / BC · AP Statistics</li>
+          <li>AP Biology · Chemistry · Physics 1 &amp; C</li>
+          <li>AP English Language &amp; Literature</li>
+          <li>AP US History, World History, CS Principles</li>
+        </ul>
+      </div>
+
+      <div class="track">
+        <div class="n">03</div>
+        <div class="label">Math olympiads</div>
+        <div class="h">Competition math</div>
+        <ul>
+          <li>AMC 8 / 10 / 12 preparation</li>
+          <li>AIME intensive training</li>
+          <li>USAMO foundations</li>
+          <li>MATHCOUNTS, Math Kangaroo</li>
+        </ul>
+      </div>
+
+      <div class="track">
+        <div class="n">04</div>
+        <div class="label">Science olympiads</div>
+        <div class="h">STEM competitions</div>
+        <ul>
+          <li>USAPhO / F=ma physics olympiad</li>
+          <li>USNCO chemistry olympiad</li>
+          <li>USABO biology olympiad</li>
+          <li>Research &amp; lab skills training</li>
+        </ul>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- HIGHLIGHTS -->
+  <section class="highlights">
+    <div class="hl">
+      <div class="v">Weekend schedule</div>
+      <div class="b">Classes run year-round on weekends, designed around the school week.</div>
+    </div>
+    <div class="hl">
+      <div class="v">Diagnostic teaching</div>
+      <div class="b">Instructors track your data, identify weak spots, and rebuild from there.</div>
+    </div>
+    <div class="hl">
+      <div class="v">International welcome</div>
+      <div class="b">Bilingual support for TOEFL, academic English, and AP transition.</div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="foot">
+    <div class="left">
+      <div class="ask">Enrolling now for the next cohort.</div>
+      <div class="sub">Stop by the booth, or reach us online.</div>
+    </div>
+    <div class="right">
+      <div class="url">pacificcrestinstitute.com</div>
+      <div class="mail">info@pacificcrestinstitute.com</div>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
