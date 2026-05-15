@@ -63,9 +63,12 @@ the warning stops.
      `[YOUR-PASSWORD]` with the password from above.
 
 2. Save PCI's connection settings to `.env.pci.local` (keeping HBA's
-   `.env.local` untouched) and point the migration runner at it:
+   `.env.local` untouched) and point the migration runner at it with
+   `--fresh` (this is a brand-new database, so every migration from
+   0001 onward must actually run — the baseline-skip rule is only
+   correct on the HBA DB where 0001-0038 were hand-applied):
    ```
-   npm run db:migrate -- --env=.env.pci.local
+   npm run db:migrate -- --env=.env.pci.local --fresh
    ```
    The runner creates `schema_migrations` and applies every numbered file
    in `db/migrations/` from scratch (since the table is empty and this is

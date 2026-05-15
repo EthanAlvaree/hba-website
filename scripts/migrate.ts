@@ -119,6 +119,11 @@ async function record(client: Client, m: Migration) {
 async function main() {
   loadEnvLocal()
   const statusOnly = process.argv.includes("--status")
+  // --fresh skips the baseline shortcut and applies every migration from
+  // 0001 onward. Use this on a brand-new database (e.g. a fresh Supabase
+  // project for a second deployment) — the baseline rule is only correct
+  // when 0001-0038 were already hand-applied to the target DB.
+  const fresh = process.argv.includes("--fresh")
 
   const connectionString =
     process.env.DATABASE_URL ?? process.env.HBA_DATABASE_URL
@@ -144,8 +149,10 @@ async function main() {
     let applied = await getApplied(client)
 
     // First run on a fresh tracking table: baseline the hand-applied
-    // migrations so they're recorded but never re-executed.
-    if (applied.size === 0) {
+    // migrations so they're recorded but never re-executed. Skipped when
+    // --fresh is set — that's the "brand-new database, apply everything
+    // from 0001" path used to bootstrap a second deployment.
+    if (applied.size === 0 && !fresh) {
       const baseline = migrations.filter(
         (m) => m.version <= BASELINE_THROUGH
       )
@@ -155,6 +162,10 @@ async function main() {
           `(0001-${BASELINE_THROUGH}) as already applied.`
       )
       applied = await getApplied(client)
+    } else if (applied.size === 0 && fresh) {
+      console.log(
+        "[migrate] --fresh: applying every migration from 0001 onward."
+      )
     }
 
     const pending = migrations.filter((m) => !applied.has(m.version))

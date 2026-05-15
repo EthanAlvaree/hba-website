@@ -43,3 +43,17 @@ made since via the admin UI. Everything numbered `0039`+ runs normally.
 
 The baseline cutoff is the `BASELINE_THROUGH` constant in
 `scripts/migrate.ts`.
+
+## Bootstrapping a fresh database
+
+For a brand-new Supabase project (e.g. a second deployment), the
+baseline rule is wrong — there's nothing to baseline. Pass `--fresh`
+to apply every migration from 0001 onward:
+
+```
+npm run db:migrate -- --env=.env.pci.local --fresh
+```
+
+The migrations are written idempotently (`create if not exists`,
+`insert ... on conflict`, guarded updates), so this produces the same
+end state every time and is safe to re-run if interrupted.
