@@ -992,8 +992,12 @@ export default function ApplicationsDashboard({
                       <div className="rounded-3xl border border-emerald-200 bg-emerald-50/60 p-5 text-sm text-emerald-900">
                         <p className="font-semibold">Enrolled.</p>
                         <p className="mt-1 text-emerald-800">
-                          A student record, profile, and parent links have been
-                          created from this application.
+                          The student record, profile (with the student role),
+                          and parent links were created from this application,
+                          the HBA Microsoft 365 account was provisioned, and the
+                          family was emailed their sign-in details plus the{" "}
+                          <span className="font-mono">/welcome</span> setup
+                          walkthrough.
                         </p>
                       </div>
                     )}

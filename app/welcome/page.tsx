@@ -79,7 +79,7 @@ export default function WelcomePage() {
               {
                 eyebrow: "Item 1",
                 title: "Your account info",
-                text: "Your school username and temporary password from the HBA office.",
+                text: "Your school email and temporary password — both are in the enrollment welcome email sent to your family.",
                 Icon: KeyIcon,
               },
               {
