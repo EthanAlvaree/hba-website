@@ -44,3 +44,8 @@ next-env.d.ts
 
 # unsorted images — kept locally for review, not deployed
 public/images/_unsorted/
+
+# Clip Studio Paint source files — editable .clip files are huge
+# (often 100+ MB) and not deliverables. Export to JPG/PNG into
+# image-originals/ instead and commit those.
+*.clip
