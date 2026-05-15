@@ -224,7 +224,7 @@ export default function PciArtInstitutePage() {
                     alt={m.name}
                     fill
                     sizes="(max-width: 768px) 100vw, 320px"
-                    className="object-cover grayscale contrast-110"
+                    className="object-cover"
                   />
                 </div>
                 <h3 className="mt-6 text-2xl lg:text-3xl font-black tracking-tight">
@@ -254,18 +254,29 @@ export default function PciArtInstitutePage() {
                 In partnership with Floating Island Productions.
               </h2>
             </div>
-            <div className="relative aspect-[3/4] w-full max-w-sm overflow-hidden shadow-2xl ring-1 ring-black/10">
-              <Image
-                src="/images/pci/book-cover-scott-shaws-sonic-days.webp"
-                alt="Scott Shaw's Sonic Days — a hardcover published by Floating Island Productions"
-                fill
-                sizes="(max-width: 1024px) 100vw, 380px"
-                className="object-cover"
-              />
+            <div className="grid grid-cols-2 gap-4 max-w-sm">
+              <div className="relative aspect-[3/4] overflow-hidden shadow-2xl ring-1 ring-black/10">
+                <Image
+                  src="/images/pci/book-cover-scott-shaws-sonic-days.webp"
+                  alt="Scott Shaw's Sonic Days — a hardcover published by Floating Island Productions"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 180px"
+                  className="object-cover"
+                />
+              </div>
+              <div className="relative aspect-[3/4] overflow-hidden shadow-2xl ring-1 ring-black/10">
+                <Image
+                  src="/images/pci/book-cover-shadow-files.webp"
+                  alt="The Shadow Files — a hardcover published by Floating Island Productions"
+                  fill
+                  sizes="(max-width: 1024px) 50vw, 180px"
+                  className="object-cover"
+                />
+              </div>
             </div>
             <p className="text-xs font-bold uppercase tracking-[0.24em] text-gray-500 max-w-sm">
-              Scott Shaw&rsquo;s Sonic Days — a recent hardcover from
-              Floating Island Productions.
+              Recent hardcovers from Floating Island Productions —
+              Scott Shaw&rsquo;s Sonic Days and The Shadow Files.
             </p>
           </div>
           <div className="lg:col-span-7 space-y-6 text-lg leading-relaxed text-gray-700 font-light">
