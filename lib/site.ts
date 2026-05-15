@@ -2,64 +2,117 @@
 //
 // Single source of truth for site-wide constants. Pages should import from
 // here rather than hardcoding the school name, contact info, social URLs,
-// etc. This is also what makes the codebase rebrandable in one file when
-// forking to a new project.
+// etc. This is the multi-tenant config layer: a SCHOOL_KEY env var
+// selects which school's config the running deployment uses.
+//
+// One codebase, two deployments. HBA's Vercel project sets SCHOOL_KEY=hba
+// (or leaves it unset — that's the default). PCI's Vercel project sets
+// SCHOOL_KEY=pci and gets a fully rebranded site from the same source.
+//
+// To add a third school: add a new entry to `configs` below. No code
+// changes anywhere else should be required for a config-only rebrand
+// because every runtime string flows through siteConfig.
 
-/** Brand color hex values, mirrored in app/globals.css `@theme` and used
- *  in places that need a raw color string (charts, calendar dots, OG
- *  image generators, inline SVG fills) rather than a Tailwind class. */
-export const brand = {
-  navy: "#1f3f66",
-  navyDeep: "#0f1f36",
-  orange: "#f37021",
-} as const
+export type SchoolKey = "hba" | "pci"
 
-export const siteConfig = {
+export type SiteConfig = {
   /** Full school name. */
-  name: "High Bluff Academy",
+  name: string
   /** Short / acronym form, used in tight headings and breadcrumbs. */
+  shortName: string
+  /** One-line tagline. */
+  tagline: string
+  /** Bare domain (no scheme). */
+  domain: string
+  /** Canonical https:// URL. Resolved from NEXT_PUBLIC_SITE_URL when
+   *  set (so preview deployments report the right URL); otherwise
+   *  derived from `domain`. Populated at module load. */
+  url: string
+
+  contact: {
+    phone: string
+    /** Digits only, for `tel:` links. */
+    phoneTel: string
+    admissionsEmail: string
+    infoEmail: string
+    /** Domain for school-account email addresses (without the @). */
+    emailDomain: string
+  }
+
+  address: {
+    streetLine1: string
+    locality: string
+    region: string
+    /** Two-letter region code (e.g. "CA"). */
+    regionCode: string
+    postalCode: string
+  }
+
+  /** College Board CEEB code. Optional — not every school has one. */
+  ceebCode?: string
+
+  social: {
+    instagram?: { handle: string; url: string }
+    facebook?: { handle: string; url: string }
+    tiktok?: { handle: string; url: string }
+    youtube?: { handle: string; url: string }
+    linkedin?: { handle: string; url: string }
+    yelp?: { handle: string; url: string }
+  }
+
+  external: {
+    /** Application / re-enrollment URL. Native (`/apply`) by default. */
+    enrollment: string
+    /** Hosted Stripe Payment Link URL for the registration fee. Shown
+     *  on the apply-wizard success view as a CTA. Family clicks → pays
+     *  on Stripe → Stripe records `client_reference_id=<application_id>`
+     *  on the payment so admins can reconcile in the Stripe dashboard.
+     *  Leave undefined to hide the CTA (e.g. PCI until its Stripe
+     *  account is set up). */
+    stripeRegistrationLink?: string
+  }
+
+  /** Brand hex values. Used by raw color contexts (charts, OG images,
+   *  inline SVG fills) AND injected as CSS vars at runtime by
+   *  components/ui/BrandStyle.tsx so Tailwind utilities like
+   *  `bg-brand-navy` resolve to the right school's hue. */
+  brand: {
+    navy: string
+    navyDeep: string
+    orange: string
+  }
+}
+
+// ============================================================================
+// Per-school configs
+// ============================================================================
+
+const hba: SiteConfig = {
+  name: "High Bluff Academy",
   shortName: "HBA",
-  /** One-line tagline, used in metadata, OG images, and hero sections. */
   tagline:
     "A college-preparatory private high school in Rancho Santa Fe, California.",
-
-  /** Canonical public origin. Override with NEXT_PUBLIC_SITE_URL when needed. */
-  url:
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    "https://highbluffacademy.com",
-  /** Bare domain (no scheme), used in plain-text contexts like the print
-   *  footer and the privacy / terms copy. */
   domain: "highbluffacademy.com",
+  url: "https://highbluffacademy.com", // overridden below if NEXT_PUBLIC_SITE_URL is set
 
-  /** Contact info — used by the footer, contact page, transcripts page,
-   *  international admissions page, and CTA blocks. */
   contact: {
-    /** General-inquiry phone number, formatted for display. */
     phone: "(858) 509-9101",
-    /** Same number, digits only — used inside `tel:` links. */
     phoneTel: "+18585099101",
-    /** Where admissions inquiries should land. */
     admissionsEmail: "admissions@highbluffacademy.com",
-    /** Generic info / general inquiries. */
     infoEmail: "info@highbluffacademy.com",
-    /** Domain for school-account email addresses (without the @). */
     emailDomain: "highbluffacademy.com",
   },
 
-  /** Mailing / physical address. */
   address: {
     streetLine1: "5531 Cancha de Golf, Ste 202",
     locality: "Rancho Santa Fe",
     region: "California",
-    /** Two-letter region code, for structured data and address formatting. */
     regionCode: "CA",
     postalCode: "92091",
   },
 
-  /** College Board CEEB code. Cited on programs / summer / admissions. */
   ceebCode: "053036",
 
-  /** Social profiles. URLs are full https://, handles are bare. */
   social: {
     instagram: {
       handle: "highbluffacademy",
@@ -87,14 +140,109 @@ export const siteConfig = {
     },
   },
 
-  /** External app / portal URLs. */
   external: {
-    /** GradeLink enrollment / re-enrollment link. */
-    enrollment: "https://secure.gradelink.com/2962/enrollment",
+    enrollment: "/apply",
+    stripeRegistrationLink: "https://buy.stripe.com/6oU3cwe2Sh037VnfdR6Vq00",
   },
-} as const
 
-export type SiteConfig = typeof siteConfig
+  brand: {
+    navy: "#1f3f66",
+    navyDeep: "#0f1f36",
+    orange: "#f37021",
+  },
+}
+
+// Placeholder PCI config. Replace the TODO_* fields when the actual
+// PCI data is ready. Brand colors are intentionally NOT cloned from
+// HBA — they're a distinctive coastal teal so any accidental PCI
+// deploy is immediately visually obvious, not silently wearing HBA's
+// look. Update to PCI's real palette once design is finalized.
+const pci: SiteConfig = {
+  name: "Pacific Coast International", // TODO_PCI confirm official name
+  shortName: "PCI",
+  tagline: "TODO_PCI: one-line tagline",
+  domain: "TODO_PCI.com",
+  url: "https://TODO_PCI.com", // overridden by NEXT_PUBLIC_SITE_URL
+
+  contact: {
+    phone: "TODO_PCI",
+    phoneTel: "+1000000000",
+    admissionsEmail: "admissions@TODO_PCI.com",
+    infoEmail: "info@TODO_PCI.com",
+    emailDomain: "TODO_PCI.com",
+  },
+
+  address: {
+    streetLine1: "TODO_PCI street",
+    locality: "TODO_PCI city",
+    region: "TODO_PCI region",
+    regionCode: "CA",
+    postalCode: "TODO",
+  },
+
+  // ceebCode intentionally omitted — fill in when known.
+
+  social: {
+    // TODO_PCI: add social URLs as they exist
+  },
+
+  external: {
+    enrollment: "/apply",
+  },
+
+  brand: {
+    // Coastal teal placeholder palette. Replaces the HBA-cloned values
+    // so an accidental PCI deploy is visually unmistakable. Swap to
+    // PCI's actual brand colors once the design pass lands.
+    navy: "#1f5f6b",
+    navyDeep: "#0e3a44",
+    orange: "#e08a3c",
+  },
+}
+
+const configs: Record<SchoolKey, SiteConfig> = { hba, pci }
+
+// ============================================================================
+// Resolution
+// ============================================================================
+
+function resolveSchoolKey(): SchoolKey {
+  const raw = process.env.SCHOOL_KEY?.trim().toLowerCase()
+  if (raw === "pci") return "pci"
+  // Default everything else (including the empty unset case) to HBA so
+  // existing deployments keep working without an env-var migration.
+  return "hba"
+}
+
+export const schoolKey: SchoolKey = resolveSchoolKey()
+
+export const siteConfig: SiteConfig = configs[schoolKey]
+
+// Apply env-var override for the active config's url.
+{
+  const fromEnv = process.env.NEXT_PUBLIC_SITE_URL?.trim()
+  if (fromEnv) {
+    siteConfig.url = fromEnv.replace(/\/$/, "")
+  }
+}
+
+// Loud warning at module load if PCI is the active school but the
+// placeholder TODO_* markers are still in place. The site will still
+// boot — these aren't crashes — but the operator should know
+// something is incomplete before users hit it.
+{
+  const flat = JSON.stringify(siteConfig)
+  if (schoolKey === "pci" && flat.includes("TODO_PCI")) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[lib/site] WARNING: SCHOOL_KEY=pci but PCI config still has TODO_PCI placeholders. Fill in lib/site.ts before promoting to production."
+    )
+  }
+}
+
+/** Convenience re-export so callers can keep `import { brand } …` syntax.
+ *  Equivalent to `siteConfig.brand`. */
+export const brand = siteConfig.brand
 
 /** Backwards-compat re-export — older imports from `@/lib/config` should be
  *  migrated to `@/lib/site`, but until then this avoids breaking anything. */

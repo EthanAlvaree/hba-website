@@ -188,14 +188,12 @@ export default function SummerProgramsPage() {
                         <td className="px-5 py-4 text-gray-700">{course.time}</td>
                         <td className="px-5 py-4 text-gray-900 font-medium">{course.price}</td>
                         <td className="px-5 py-4 text-right">
-                          <a
+                          <Link
                             href={ENROLLMENT_URL}
-                            target="_blank"
-                            rel="noopener noreferrer"
                             className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-brand-orange text-white text-xs font-semibold hover:brightness-110 transition"
                           >
                             Enroll
-                          </a>
+                          </Link>
                         </td>
                       </tr>
                     ))}
@@ -229,14 +227,12 @@ export default function SummerProgramsPage() {
                         <dd className="text-right">{course.time}</dd>
                       </div>
                     </dl>
-                    <a
+                    <Link
                       href={ENROLLMENT_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
                       className="mt-4 inline-flex w-full items-center justify-center px-4 py-2 rounded-full bg-brand-orange text-white text-xs font-semibold hover:brightness-110 transition"
                     >
                       Enroll
-                    </a>
+                    </Link>
                   </div>
                 ))}
               </div>
@@ -278,14 +274,12 @@ export default function SummerProgramsPage() {
             >
               Contact us
             </Link>
-            <a
+            <Link
               href={ENROLLMENT_URL}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
             >
               Start enrollment
-            </a>
+            </Link>
           </div>
         </div>
       </section>

@@ -40,18 +40,18 @@ const apCategories: { label: string; courses: string[] }[] = [
       "AP Environmental Science",
       "AP Physics 1 & 2",
       "AP Physics C: Mechanics",
-      "AP Physics C: Electricity & Magnetism",
+      "AP Physics C: Electricity and Magnetism",
     ],
   },
   {
     label: "AP English & History",
     courses: [
-      "AP English Language",
-      "AP English Literature",
+      "AP English Language and Composition",
+      "AP English Literature and Composition",
       "AP Seminar",
       "AP Research",
-      "AP U.S. History",
-      "AP World History",
+      "AP United States History",
+      "AP World History: Modern",
       "AP European History",
       "AP African American Studies",
     ],
@@ -59,12 +59,12 @@ const apCategories: { label: string; courses: string[] }[] = [
   {
     label: "AP Social Sciences, Languages & Arts",
     courses: [
-      "AP U.S. & Comparative Government",
+      "AP U.S. & Comparative Government and Politics",
       "AP Macroeconomics & Microeconomics",
       "AP Psychology",
       "AP Human Geography",
-      "AP Business Principles & Personal Finance",
-      "AP Spanish, French & Chinese Language",
+      "AP Business with Personal Finance",
+      "AP Spanish, French & Chinese Language and Culture",
       "AP Art History",
       "AP Music Theory",
     ],
@@ -90,9 +90,9 @@ const pathways: Pathway[] = [
       "AP Statistics",
       "AP Calculus BC",
       "AP Computer Science A",
-      "Honors Linear Algebra",
-      "Honors Multivariable Calculus",
-      "Honors Mathematics of Machine Learning",
+      "Linear Algebra (H)",
+      "Multivariable Calculus (H)",
+      "Mathematics of Machine Learning (H)",
     ],
     capstone: "AWS Cloud Practitioner certification",
     icon: CpuChipIcon,
@@ -105,7 +105,7 @@ const pathways: Pathway[] = [
     courses: [
       "AP Physics 1",
       "AP Physics C: Mechanics",
-      "AP Physics C: Electricity & Magnetism",
+      "AP Physics C: Electricity and Magnetism",
       "AP Calculus BC",
       "Intro to Robotic Engineering",
       "AP Computer Science A",
@@ -119,7 +119,7 @@ const pathways: Pathway[] = [
     tagline:
       "Foundations deeper than the standard three sciences for future physicians, biologists, and researchers.",
     courses: [
-      "Honors Chemistry",
+      "Chemistry: In the Earth System (H)",
       "AP Biology",
       "AP Chemistry",
       "AP Environmental Science",
@@ -163,11 +163,11 @@ const pathways: Pathway[] = [
     tagline:
       "Four years of language alongside the world's most consequential history and politics.",
     courses: [
-      "AP World History",
-      "AP Comparative Government & Politics",
+      "AP World History: Modern",
+      "AP Comparative Government and Politics",
       "AP Human Geography",
       "Four years of Spanish, French, or Chinese — through AP",
-      "Model UN seminar",
+      "Model UN",
     ],
     capstone: "Independent research paper on a contemporary global issue",
     icon: GlobeAltIcon,
@@ -314,12 +314,18 @@ export default function ProgramsPage() {
             AP course availability may vary based on student enrollment and demand.
           </p>
 
-          <div className="mt-8 text-center">
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               href="/programs/courses"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-white text-brand-navy font-semibold text-sm shadow-lg hover:bg-brand-orange hover:text-white transition"
             >
               See the full UC A–G course catalogue →
+            </Link>
+            <Link
+              href="/programs/graduation-requirements"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"
+            >
+              Graduation requirements →
             </Link>
           </div>
         </div>

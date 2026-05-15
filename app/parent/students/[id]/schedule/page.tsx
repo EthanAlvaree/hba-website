@@ -1,0 +1,90 @@
+import Link from "next/link"
+import { notFound, redirect } from "next/navigation"
+import { auth } from "@/auth"
+import {
+  getParentLinkForStudent,
+  getProfileByEmail,
+  getStudentDetail,
+} from "@/lib/sis"
+import { WeekSchedule, type ScheduleEntry } from "@/components/schedule/WeekSchedule"
+import PrintButton from "@/components/transcripts/PrintButton"
+
+export const dynamic = "force-dynamic"
+
+export default async function ParentStudentScheduleWeekPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const session = await auth()
+  if (!session?.user?.email) redirect("/admin/sign-in")
+
+  const profile = await getProfileByEmail(session.user.email)
+  if (!profile) redirect("/admin/sign-in")
+
+  const { id: studentId } = await params
+  const isAdmin = session.isAdmin === true
+
+  if (!isAdmin) {
+    if (!profile.roles.includes("parent")) redirect("/admin/sign-in")
+    const link = await getParentLinkForStudent(profile.id, studentId)
+    if (!link) notFound()
+    // Schedule visibility doesn't have its own parent_link flag — if you're
+    // listed as a parent on the student, you can see what classes they're in.
+  }
+
+  const student = await getStudentDetail(studentId)
+  if (!student) notFound()
+
+  const enrollments = student.enrollments.filter(
+    (e) => e.status === "enrolled" || e.status === "audit"
+  )
+
+  const entries: ScheduleEntry[] = enrollments
+    .filter((e) => e.section && e.section.period !== null)
+    .map((e) => ({
+      period: e.section!.period!,
+      course_name: e.section!.course?.name ?? "(deleted course)",
+      course_code: e.section!.course?.code ?? null,
+      section_code: e.section!.section_code,
+      room: e.section!.room,
+      href: `/parent/students/${studentId}/sections/${e.id}`,
+    }))
+
+  const displayName = student.preferred_name?.trim() || student.legal_first_name
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 print:hidden">
+        <Link
+          href={`/parent/students/${studentId}`}
+          className="text-sm font-semibold text-brand-navy underline-offset-4 hover:underline"
+        >
+          ← Back to student overview
+        </Link>
+        <PrintButton label="Print / save as PDF" />
+      </div>
+
+      <header className="space-y-2 print:border-b print:border-slate-300 print:pb-3">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-orange">
+          High Bluff Academy &middot; Weekly schedule
+        </p>
+        <h1 className="text-3xl font-extrabold text-brand-navy sm:text-4xl">
+          {displayName}&rsquo;s week
+        </h1>
+        <p className="text-sm text-slate-600">
+          {student.current_grade ? `Grade ${student.current_grade} · ` : ""}
+          {student.legal_first_name} {student.legal_last_name}
+        </p>
+      </header>
+
+      {entries.length === 0 ? (
+        <section className="rounded-[2rem] border border-dashed border-slate-300 bg-white px-8 py-12 text-center text-slate-600 shadow-sm">
+          No active enrollments with scheduled periods yet.
+        </section>
+      ) : (
+        <WeekSchedule entries={entries} />
+      )}
+    </div>
+  )
+}

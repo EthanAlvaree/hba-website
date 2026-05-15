@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   contactSubmissionDeleteSchema,
   contactSubmissionUpdateSchema,
@@ -14,7 +13,7 @@ import {
 async function assertAdminSession() {
   const session = await auth()
 
-  if (!isAllowedAdminEmail(session?.user?.email)) {
+  if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
 

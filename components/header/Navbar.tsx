@@ -59,6 +59,13 @@ export default function Navbar() {
           )}
 
           <Link
+            href="/admin/sign-in"
+            className="border border-white/40 text-white px-4 py-2 rounded-sm font-semibold text-sm hover:bg-white/10 transition-colors"
+            title="Sign in to the student, parent, faculty, or admin portal"
+          >
+            Sign in
+          </Link>
+          <Link
             href={siteConfig.external.enrollment}
             className="bg-brand-orange text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
           >

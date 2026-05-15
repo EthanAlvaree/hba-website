@@ -6,8 +6,9 @@ import { effectiveEnd } from "@/lib/events"
 import { categories } from "@/lib/categories"
 import { siteConfig } from "@/lib/site"
 
-export const dynamic = "force-static"
-export const revalidate = 3600
+// `force-dynamic` so admin edits to the DB-backed calendar surface in the
+// .ics feed without waiting for the next 1-hour revalidate window.
+export const dynamic = "force-dynamic"
 
 export async function GET() {
   const cal = ical({
@@ -18,7 +19,7 @@ export async function GET() {
     method: ICalCalendarMethod.PUBLISH,
   })
 
-  for (const ev of getAllEvents()) {
+  for (const ev of await getAllEvents()) {
     const start = new Date(ev.start + "T00:00:00")
     const end = new Date(effectiveEnd(ev) + "T00:00:00")
     cal.createEvent({

@@ -1,147 +1,59 @@
 // app/programs/courses/page.tsx
+//
+// Public course catalogue. Renders straight from the SIS `courses`
+// table (the single source of truth) — grouped into the eight
+// presentational categories from lib/course-categories. Inactive /
+// retired courses are filtered out automatically.
 
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { siteConfig } from "@/lib/site"
+import { listCourses, type CourseRecord } from "@/lib/sis"
+import {
+  courseCategories,
+  type CourseCategoryId,
+} from "@/lib/course-categories"
 
 export const metadata = {
   title: "Course catalogue — High Bluff Academy",
   description:
-    "The full High Bluff Academy course catalogue. Mathematics, science, language arts, social science, world languages, and electives — including 25+ AP and honors courses, all UC A–G aligned.",
+    "The full High Bluff Academy course catalogue. Mathematics, science, language arts, social science, world languages, and electives — including 30+ AP and honors courses, all UC A–G aligned.",
 }
 
-type Category = {
-  id: string
-  label: string
-  description: string
-  courses: string[]
+// Rendered per request so the catalogue always matches the live SIS —
+// adding or retiring a course in /admin/academics/courses shows up here
+// immediately.
+export const dynamic = "force-dynamic"
+
+// Stable per-category ordering: AP first, then honors, then by name.
+function sortForDisplay(a: CourseRecord, b: CourseRecord): number {
+  if (a.is_ap !== b.is_ap) return a.is_ap ? -1 : 1
+  if (a.is_honors !== b.is_honors) return a.is_honors ? -1 : 1
+  return a.name.localeCompare(b.name)
 }
 
-const categories: Category[] = [
-  {
-    id: "math",
-    label: "Mathematics",
-    description:
-      "From Algebra 1 through Multivariable Calculus, with honors and AP tracks at every level.",
-    courses: [
-      "Algebra 1 / Geometry / Algebra 2",
-      "Integrated Math 1, 2, 3",
-      "Integrated Math 1, 2, 3 Honors",
-      "Intro to Calculus / Honors Precalculus",
-      "AP Precalculus",
-      "AP Statistics",
-      "AP Calculus AB",
-      "AP Calculus BC",
-      "Honors Linear Algebra",
-      "Honors Multivariable Calculus",
-      "Honors Group Theory and Abstract Algebra",
-      "Honors Set Theory and Real Analysis",
-      "Honors Mathematics of Machine Learning",
-    ],
-  },
-  {
-    id: "science",
-    label: "Science",
-    description:
-      "NGSS-aligned lab science with honors and AP options.",
-    courses: [
-      "Biology: The Living Earth",
-      "Chemistry: In the Earth System",
-      "Honors Chemistry: In the Earth System",
-      "Physics of the Universe",
-      "AP Biology",
-      "AP Chemistry",
-      "AP Environmental Science",
-      "AP Physics 1",
-      "AP Physics 2",
-      "AP Physics C: Mechanics",
-      "AP Physics C: E&M",
-    ],
-  },
-  {
-    id: "computer-science",
-    label: "Computer Science",
-    description:
-      "From digital media and robotics to two AP computer science courses, including the rigorous Java-based AP CS A.",
-    courses: [
-      "Digital Art",
-      "Intro to Robotic Engineering",
-      "AP Computer Science Principles",
-      "AP Computer Science A",
-    ],
-  },
-  {
-    id: "social-science",
-    label: "Social science",
-    description:
-      "World and U.S. history, government, economics, psychology, and the full slate of AP humanities.",
-    courses: [
-      "World History",
-      "U.S. History",
-      "Economics",
-      "AP Business Principles & Personal Finance",
-      "AP Government & Politics — United States",
-      "AP Government & Politics — Comparative",
-      "AP World History",
-      "AP United States History",
-      "AP European History",
-      "AP African American Studies",
-      "AP Psychology",
-      "AP Human Geography",
-      "AP Macroeconomics",
-      "AP Microeconomics",
-    ],
-  },
-  {
-    id: "language-arts",
-    label: "English language arts",
-    description:
-      "Core English 9–12 and honors and AP literature and language. AP Seminar and AP Research together comprise the AP Capstone Diploma program — a College Board credential not offered at most high schools.",
-    courses: [
-      "English Support",
-      "English 9, 10, 11, 12",
-      "AP English Language & Composition",
-      "AP English Literature & Composition",
-      "AP Seminar (live instructor only)",
-      "AP Research (live instructor only)",
-    ],
-  },
-  {
-    id: "world-languages",
-    label: "World languages",
-    description:
-      "Four years of Spanish and French with live conversational practice with HBA teachers — not a recorded-only experience.",
-    courses: [
-      "Spanish 1, 2, 3, 4/AP",
-      "French 1, 2, 3, 4/AP",
-      "Chinese 1, 2, 3, 4/AP",
-    ],
-  },
-  {
-    id: "electives",
-    label: "Electives",
-    description:
-      "Visual and performing arts AP courses alongside introductory technology and ethnic studies electives.",
-    courses: [
-      "Studio Art",
-      "AP Art History",
-      "AP Music Theory",
-      "Logic and Philosophy",
-      "Cooking",
-      "PE Fitness",
-      "PE Golf",
-      "PE Hiking",
-    ],
-  },
-]
+export default async function CourseCataloguePage() {
+  const courses = await listCourses()
 
-export default function CourseCataloguePage() {
+  // Group active courses by department — which is exactly the
+  // course-category id.
+  const byCategory = new Map<CourseCategoryId, CourseRecord[]>()
+  for (const course of courses) {
+    if (!course.active) continue
+    const dept = course.department as CourseCategoryId | null
+    if (!dept) continue
+    const arr = byCategory.get(dept) ?? []
+    arr.push(course)
+    byCategory.set(dept, arr)
+  }
+  for (const arr of byCategory.values()) arr.sort(sortForDisplay)
+
   return (
     <main className="bg-gray-50 overflow-hidden">
       <PageHero
         title="Course catalogue"
-        subtitle="The full slate of courses offered at High Bluff Academy — every course satisfies UC A–G requirements."
+        subtitle="The full slate of courses offered at High Bluff Academy — every academic course satisfies UC A–G requirements."
         image="/images/programs/courses.webp"
       />
 
@@ -154,15 +66,15 @@ export default function CourseCataloguePage() {
             One catalogue. On campus, online, or hybrid.
           </h2>
           <p className="text-lg text-gray-600 font-light leading-relaxed">
-            HBA students choose from more than 60 courses across mathematics, science, language
-            arts, social science, world languages, and electives — including 25+ AP and honors
+            HBA students choose from more than 70 courses across mathematics, science, language
+            arts, social science, world languages, and electives — including 30+ AP and honors
             classes. The same catalogue serves our on-campus, hybrid, and online students.
             Courses noted as &ldquo;live instructor only&rdquo; are not available in self-paced
             format.
           </p>
 
           <div className="flex flex-wrap justify-center gap-3 pt-4 text-xs">
-            {categories.map((cat) => (
+            {courseCategories.map((cat) => (
               <a
                 key={cat.id}
                 href={`#${cat.id}`}
@@ -178,36 +90,48 @@ export default function CourseCataloguePage() {
       {/* CATEGORIES */}
       <section className="py-20 bg-gray-50">
         <div className="reveal max-w-7xl mx-auto px-6 lg:px-12 space-y-16">
-          {categories.map((cat) => (
-            <div key={cat.id} id={cat.id} className="scroll-mt-24">
-              <div className="grid gap-10 lg:grid-cols-12 items-start">
-                <div className="lg:col-span-4 space-y-3">
-                  <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
-                    {cat.label}
+          {courseCategories.map((cat) => {
+            const courses = byCategory.get(cat.id) ?? []
+            if (courses.length === 0) return null
+            return (
+              <div key={cat.id} id={cat.id} className="scroll-mt-24">
+                <div className="grid gap-10 lg:grid-cols-12 items-start">
+                  <div className="lg:col-span-4 space-y-3">
+                    <div className="inline-block px-4 py-1.5 bg-brand-orange/10 text-brand-orange font-bold tracking-widest text-xs uppercase rounded-full">
+                      {cat.label}
+                    </div>
+                    <h3 className="text-2xl lg:text-3xl font-extrabold text-brand-navy leading-tight">
+                      {cat.label}
+                    </h3>
+                    <p className="text-gray-600 font-light leading-relaxed">
+                      {cat.description}
+                    </p>
                   </div>
-                  <h3 className="text-2xl lg:text-3xl font-extrabold text-brand-navy leading-tight">
-                    {cat.label}
-                  </h3>
-                  <p className="text-gray-600 font-light leading-relaxed">
-                    {cat.description}
-                  </p>
-                </div>
 
-                <div className="lg:col-span-8">
-                  <div className="bg-white border border-gray-200 rounded-2xl p-6 lg:p-8 shadow-sm">
-                    <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2 text-sm text-gray-700">
-                      {cat.courses.map((c) => (
-                        <li key={c} className="leading-snug flex gap-2">
-                          <span className="text-brand-orange">•</span>
-                          <span>{c}</span>
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="lg:col-span-8">
+                    <div className="bg-white border border-gray-200 rounded-2xl p-6 lg:p-8 shadow-sm">
+                      <ul className="grid gap-x-6 gap-y-2 sm:grid-cols-2 text-sm text-gray-700">
+                        {courses.map((c) => (
+                          <li
+                            key={c.code}
+                            className="leading-snug flex gap-2 items-start"
+                          >
+                            <span className="text-brand-orange">•</span>
+                            <span>
+                              {c.name}
+                              {(c.code === "ENG-APSEM" || c.code === "ENG-APRES") && (
+                                <span className="text-xs text-gray-500"> (live instructor only)</span>
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
@@ -222,14 +146,12 @@ export default function CourseCataloguePage() {
             mix of on-campus, hybrid, and online options that fit your student best.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <a
+            <Link
               href={siteConfig.external.enrollment}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Apply now
-            </a>
+            </Link>
             <Link
               href="/programs/online"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"

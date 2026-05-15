@@ -48,6 +48,12 @@ Pages live under `app/` following the Next.js App Router convention (`app/about/
 - Pages feeling visually cohesive — same rhythm, same typography, same spacing — without enforcing that with a heavyweight token system.
 - Accessibility (semantic HTML, alt text, keyboard nav) and reasonable performance.
 
+## Contact/admin handoff
+
+If you are working on the contact page, contact form, Turnstile verification, Supabase contact submissions, Microsoft Graph email notifications, or the `/admin` contact-submissions dashboard, read `docs/contact-admin-rollout.md` first.
+
+That file documents the current architecture, rollout history, environment gotchas, and recent UX decisions so future sessions do not need to reconstruct them from git history.
+
 ## Useful commands
 
 ```

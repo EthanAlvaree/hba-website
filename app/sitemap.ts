@@ -7,7 +7,7 @@
 
 import type { MetadataRoute } from "next"
 import { siteConfig } from "@/lib/site"
-import { faculty } from "@/lib/faculty"
+import { getFacultyMembers } from "@/lib/faculty"
 
 const STATIC_ROUTES: { path: string; priority: number }[] = [
   // Top-priority entry points
@@ -21,6 +21,7 @@ const STATIC_ROUTES: { path: string; priority: number }[] = [
   { path: "/about/leadership", priority: 0.7 },
   { path: "/admissions/international", priority: 0.7 },
   { path: "/programs/courses", priority: 0.7 },
+  { path: "/programs/graduation-requirements", priority: 0.7 },
   { path: "/programs/online", priority: 0.7 },
   { path: "/student-life", priority: 0.7 },
   { path: "/student-life/athletics", priority: 0.6 },
@@ -48,7 +49,7 @@ const STATIC_ROUTES: { path: string; priority: number }[] = [
   { path: "/terms", priority: 0.2 },
 ]
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date()
 
   const staticEntries = STATIC_ROUTES.map(({ path, priority }) => ({
@@ -57,11 +58,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   }))
 
-  const facultyEntries = faculty.map((member) => ({
-    url: `${siteConfig.url}/faculty/${member.slug}`,
-    lastModified,
-    priority: 0.6,
-  }))
+  // Faculty bios live in the DB. Tolerate a failed fetch at build time
+  // (e.g. before the faculty_bios migration runs) — the sitemap still
+  // generates with the static routes.
+  let facultyEntries: MetadataRoute.Sitemap = []
+  try {
+    const faculty = await getFacultyMembers()
+    facultyEntries = faculty.map((member) => ({
+      url: `${siteConfig.url}/faculty/${member.slug}`,
+      lastModified,
+      priority: 0.6,
+    }))
+  } catch (error) {
+    console.error("sitemap: faculty fetch failed, omitting bios", error)
+  }
 
   return [...staticEntries, ...facultyEntries]
 }

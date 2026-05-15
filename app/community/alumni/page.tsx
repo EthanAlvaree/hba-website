@@ -63,14 +63,16 @@ export default function AlumniPage() {
               >
                 Update your info
               </a>
-              <a
-                href={siteConfig.social.instagram.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
-              >
-                Follow on Instagram
-              </a>
+              {siteConfig.social.instagram && (
+                <a
+                  href={siteConfig.social.instagram.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
+                >
+                  Follow on Instagram
+                </a>
+              )}
             </div>
           </div>
 
@@ -83,6 +85,34 @@ export default function AlumniPage() {
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-brand-navy/80 to-transparent" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* TRANSCRIPTS / RECORDS */}
+      <section className="py-16 bg-white">
+        <div className="reveal max-w-5xl mx-auto px-6 lg:px-12">
+          <div className="rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 px-8 py-10 shadow-sm grid gap-6 md:grid-cols-12 items-center">
+            <div className="md:col-span-8 space-y-3">
+              <div className="inline-block px-3 py-1 bg-brand-navy/10 text-brand-navy font-bold tracking-widest text-xs uppercase rounded-full">
+                Records &amp; transcripts
+              </div>
+              <h3 className="text-2xl lg:text-3xl font-extrabold text-brand-navy leading-tight">
+                Need a transcript for college, grad school, or an employer?
+              </h3>
+              <p className="text-sm text-gray-600 leading-relaxed font-light">
+                We can send sealed transcripts directly to the receiving institution
+                or to you. The request form takes a minute.
+              </p>
+            </div>
+            <div className="md:col-span-4 flex md:justify-end">
+              <a
+                href="/transcripts"
+                className="inline-flex items-center justify-center px-7 py-3 rounded-full bg-brand-navy text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+              >
+                Request a transcript
+              </a>
             </div>
           </div>
         </div>

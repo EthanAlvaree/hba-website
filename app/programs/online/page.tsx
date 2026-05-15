@@ -199,10 +199,8 @@ export default function OnlineHighSchoolPage() {
                   ))}
                 </ul>
 
-                <a
+                <Link
                   href={siteConfig.external.enrollment}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   className={`mt-8 inline-flex items-center justify-center px-6 py-3 rounded-full font-semibold text-sm transition ${
                     tier.featured
                       ? "bg-brand-orange text-white hover:brightness-110"
@@ -210,7 +208,7 @@ export default function OnlineHighSchoolPage() {
                   }`}
                 >
                   Apply now
-                </a>
+                </Link>
               </div>
             ))}
           </div>
@@ -253,14 +251,12 @@ export default function OnlineHighSchoolPage() {
             day. We’re happy to walk you through the right tier for your student’s goals.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <a
+            <Link
               href={siteConfig.external.enrollment}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Apply now
-            </a>
+            </Link>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"

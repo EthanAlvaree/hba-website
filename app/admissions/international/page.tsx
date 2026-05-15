@@ -270,14 +270,12 @@ export default function InternationalAdmissionsPage() {
             and can answer questions in English or Mandarin.
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-4">
-            <a
+            <Link
               href={siteConfig.external.enrollment}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Start application
-            </a>
+            </Link>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-white/40 text-white font-semibold text-sm hover:bg-white hover:text-brand-navy transition"

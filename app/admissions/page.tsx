@@ -1,6 +1,7 @@
 // app/admissions/page.tsx
 
 import Image from "next/image"
+import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import { siteConfig } from "@/lib/site"
@@ -71,19 +72,18 @@ export default function AdmissionsPage() {
             </div>
 
             <div className="mt-10 flex flex-wrap gap-4">
-              <a
+              <Link
                 href={siteConfig.external.enrollment}
-                target="_blank"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
                 Start online application
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
               >
                 Schedule a campus tour
-              </a>
+              </Link>
             </div>
           </div>
 
@@ -211,16 +211,27 @@ export default function AdmissionsPage() {
 
       {/* FINANCIAL AID */}
       <section className="py-20 bg-gray-50">
-        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center">
-          <h2 className="text-3xl font-bold text-brand-navy mb-4">Financial aid & support</h2>
-          <p className="text-lg text-gray-600 leading-relaxed font-light mb-6">
+        <div className="reveal max-w-4xl mx-auto px-6 lg:px-12 text-center space-y-6">
+          <h2 className="text-3xl font-bold text-brand-navy">Financial aid &amp; support</h2>
+          <p className="text-lg text-gray-600 leading-relaxed font-light">
             We recognize that an independent school education is a significant investment.
-            If financial assistance is needed, our team will work with your family to explore
-            available options and determine how we can best support your student’s success.
+            Need-based financial aid is available — we don&rsquo;t want cost to be the reason
+            a student misses out.
           </p>
-          <p className="text-sm text-gray-500">
-            Please contact our office to discuss financial aid opportunities and payment options.
-          </p>
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
+            <Link
+              href="/admissions/financial-aid"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-navy text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
+            >
+              How financial aid works →
+            </Link>
+            <a
+              href={`mailto:${siteConfig.contact.admissionsEmail}?subject=Financial%20aid%20inquiry`}
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
+            >
+              Email admissions
+            </a>
+          </div>
         </div>
       </section>
 
@@ -243,19 +254,18 @@ export default function AdmissionsPage() {
               <p><strong>Location:</strong> {siteConfig.address.locality}, {siteConfig.address.region}</p>
             </div>
             <div className="flex flex-wrap gap-4 pt-4">
-              <a
+              <Link
                 href="/contact"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
               >
                 Schedule a tour
-              </a>
-              <a
+              </Link>
+              <Link
                 href={siteConfig.external.enrollment}
-                target="_blank"
                 className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
               >
                 Start application
-              </a>
+              </Link>
             </div>
           </div>
 

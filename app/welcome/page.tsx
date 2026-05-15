@@ -9,6 +9,7 @@ import {
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
 import OnboardingFlow from "./OnboardingFlow"
+import { siteConfig } from "@/lib/site"
 
 export const metadata = {
   title: "Welcome to HBA — Set up your account",
@@ -79,7 +80,7 @@ export default function WelcomePage() {
               {
                 eyebrow: "Item 1",
                 title: "Your account info",
-                text: "Your school username and temporary password from the HBA office.",
+                text: "Your school email and temporary password — both are in the enrollment welcome email sent to your family.",
                 Icon: KeyIcon,
               },
               {
@@ -126,7 +127,7 @@ export default function WelcomePage() {
             <div className="font-mono text-base sm:text-xl lg:text-2xl font-semibold text-brand-navy text-center leading-tight break-words">
               firstname.lastname.
               <span className="text-brand-orange">YY</span>
-              <wbr />@highbluffacademy.com
+              <wbr />@{siteConfig.contact.emailDomain}
             </div>
 
             <div className="mt-6 pt-6 border-t border-brand-navy/10 grid gap-4 sm:grid-cols-3 text-xs sm:text-sm text-gray-600">
@@ -142,7 +143,7 @@ export default function WelcomePage() {
               </div>
               <div className="text-center">
                 <div className="font-mono font-semibold text-gray-900 mb-1 break-all">
-                  @highbluffacademy.com
+                  @{siteConfig.contact.emailDomain}
                 </div>
                 <div>Same for everyone</div>
               </div>
@@ -152,7 +153,7 @@ export default function WelcomePage() {
               <span className="font-semibold text-brand-navy">Example:</span> a
               senior graduating in 2027 named Jane Doe would use{" "}
               <span className="font-mono font-semibold text-brand-navy">
-                jane.doe.27@highbluffacademy.com
+                jane.doe.27@{siteConfig.contact.emailDomain}
               </span>
               .
             </p>
@@ -175,7 +176,7 @@ export default function WelcomePage() {
           </p>
           <div className="flex flex-wrap justify-center gap-4 pt-2">
             <a
-              href="mailto:admissions@highbluffacademy.com"
+              href={`mailto:${siteConfig.contact.admissionsEmail}`}
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Email the office

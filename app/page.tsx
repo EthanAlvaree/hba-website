@@ -113,12 +113,18 @@ export default function Home() {
             Schedule a campus visit and discover how our personalized approach helps
             students thrive.
           </p>
-          <div className="pt-4">
+          <div className="flex flex-wrap justify-center gap-4 pt-4">
             <Link
               href="/contact"
               className="inline-flex items-center justify-center px-8 py-3 rounded-full bg-brand-orange text-white font-semibold text-sm shadow-lg hover:brightness-110 transition"
             >
               Schedule a visit
+            </Link>
+            <Link
+              href="/apply"
+              className="inline-flex items-center justify-center px-8 py-3 rounded-full border border-brand-navy text-brand-navy font-semibold text-sm hover:bg-brand-navy hover:text-white transition"
+            >
+              Start an application
             </Link>
           </div>
         </div>

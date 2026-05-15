@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
-import { isAllowedAdminEmail } from "@/lib/admin"
 import {
   contactSubmissionStatusSchema,
   getContactSubmissionSummary,
@@ -51,7 +50,7 @@ export const dynamic = "force-dynamic"
 export default async function ContactSubmissionsPage({ searchParams }: ContactSubmissionsPageProps) {
   const session = await auth()
 
-  if (!isAllowedAdminEmail(session?.user?.email)) {
+  if (!session?.isAdmin) {
     redirect("/admin/sign-in")
   }
 

@@ -3,14 +3,6 @@
 import { useState } from "react"
 import Script from "next/script"
 
-declare global {
-  interface Window {
-    turnstile?: {
-      reset: () => void
-    }
-  }
-}
-
 type SubmissionState =
   | { type: "idle" }
   | { type: "error"; message: string }
@@ -177,7 +169,17 @@ export default function ContactForm() {
           </fieldset>
 
           <input type="hidden" name="submittedAt" value={submittedAt} />
-          <label className="hidden" aria-hidden="true">
+          <label
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              left: "-9999px",
+              top: 0,
+              height: 0,
+              width: 0,
+              overflow: "hidden",
+            }}
+          >
             Website
             <input name="website" autoComplete="off" tabIndex={-1} />
           </label>

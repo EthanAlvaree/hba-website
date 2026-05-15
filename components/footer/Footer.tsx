@@ -50,26 +50,38 @@ export default function Footer() {
               {contact.infoEmail}
             </p>
 
-            {/* Social Icons */}
+            {/* Social Icons — each renders only if the school has that network. */}
             <div className="flex flex-wrap gap-4 mt-5 text-2xl">
-              <Link href={social.instagram.url} target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
-                <FaInstagram />
-              </Link>
-              <Link href={social.facebook.url} target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
-                <FaFacebookF />
-              </Link>
-              <Link href={social.tiktok.url} target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
-                <FaTiktok />
-              </Link>
-              <Link href={social.youtube.url} target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
-                <FaYoutube />
-              </Link>
-              <Link href={social.linkedin.url} target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
-                <FaLinkedinIn />
-              </Link>
-              <Link href={social.yelp.url} target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
-                <FaYelp />
-              </Link>
+              {social.instagram && (
+                <Link href={social.instagram.url} target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
+                  <FaInstagram />
+                </Link>
+              )}
+              {social.facebook && (
+                <Link href={social.facebook.url} target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
+                  <FaFacebookF />
+                </Link>
+              )}
+              {social.tiktok && (
+                <Link href={social.tiktok.url} target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
+                  <FaTiktok />
+                </Link>
+              )}
+              {social.youtube && (
+                <Link href={social.youtube.url} target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
+                  <FaYoutube />
+                </Link>
+              )}
+              {social.linkedin && (
+                <Link href={social.linkedin.url} target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
+                  <FaLinkedinIn />
+                </Link>
+              )}
+              {social.yelp && (
+                <Link href={social.yelp.url} target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
+                  <FaYelp />
+                </Link>
+              )}
             </div>
           </div>
 
@@ -117,6 +129,7 @@ export default function Footer() {
               <h4 className="text-xl font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm text-gray-200">
                 <li><Link href="/admissions" className="hover:text-orange-300">Admissions</Link></li>
+                <li><Link href="/admissions/financial-aid" className="hover:text-orange-300">Financial aid</Link></li>
                 <li><Link href="/reviews" className="hover:text-orange-300">Reviews</Link></li>
                 <li><Link href="/about/college-acceptances" className="hover:text-orange-300">College acceptances</Link></li>
                 <li><Link href="/calendar" className="hover:text-orange-300">Academic calendar</Link></li>

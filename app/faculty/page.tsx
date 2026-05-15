@@ -4,7 +4,9 @@ import Image from "next/image"
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
-import { faculty, type FacultyMember } from "@/lib/faculty"
+import { getFacultyMembers, type FacultyMember } from "@/lib/faculty"
+
+export const dynamic = "force-dynamic"
 
 export const metadata = {
   title: "Faculty and staff — High Bluff Academy",
@@ -43,7 +45,8 @@ function FacultyCard({ member }: { member: FacultyMember }) {
   )
 }
 
-export default function FacultyPage() {
+export default async function FacultyPage() {
+  const faculty = await getFacultyMembers()
   const leadership = faculty.filter((m) => m.leadership)
   const teachers = faculty.filter((m) => !m.leadership)
 
