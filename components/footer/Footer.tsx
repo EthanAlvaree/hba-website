@@ -174,31 +174,36 @@ function PciFooter() {
     !address.streetLine1.startsWith("TODO_") &&
     !address.locality.startsWith("TODO_")
   const hasPhone = !contact.phone.startsWith("TODO_")
-  const logoRound = siteConfig.brand.logos?.round
+  // Prefer the color brand lockup over a placeholder circle. Fall back
+  // to a text mark if neither logo is configured for the active tenant.
+  const footerLogo =
+    siteConfig.brand.logos?.footerColor || siteConfig.brand.logos?.round
 
   return (
     <footer className="mt-20">
-      {/* Hero / aerial */}
-      <div className="w-full h-72 relative">
+      {/* Hero / aerial — same teal-on-dark fade as the home hero so the
+          header and footer feel like bookends. */}
+      <div className="relative isolate w-full h-72 overflow-hidden">
         <Image
           src="/images/pci/footer-hero.webp"
           alt={`${siteConfig.name}`}
           fill
           sizes="100vw"
-          className="object-cover"
+          className="object-cover -z-10"
         />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-br from-brand-navy-deep/90 via-brand-navy/75 to-black/85" />
       </div>
 
       <div className="bg-gradient-to-b from-brand-navy to-brand-navy-deep text-white">
       <div className="max-w-5xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-2 gap-10">
         <div>
-          {logoRound ? (
-            <div className="relative w-20 h-20 mb-4">
+          {footerLogo ? (
+            <div className="relative w-24 h-24 mb-4">
               <Image
-                src={logoRound}
-                alt={`${siteConfig.shortName} seal`}
+                src={footerLogo}
+                alt={`${siteConfig.shortName} logo`}
                 fill
-                sizes="80px"
+                sizes="96px"
                 className="object-contain"
               />
             </div>

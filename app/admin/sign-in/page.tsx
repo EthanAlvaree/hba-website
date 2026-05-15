@@ -2,6 +2,7 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth, signIn, signOut } from "@/auth"
 import { getProfileByEmail } from "@/lib/sis"
+import { siteConfig } from "@/lib/site"
 
 export default async function AdminSignInPage() {
   const session = await auth()
@@ -66,7 +67,7 @@ export default async function AdminSignInPage() {
         ) : (
           <>
             <h1 className="mt-4 text-4xl font-extrabold text-brand-navy">
-              Sign in with your HBA Microsoft account.
+              Sign in with your {siteConfig.shortName} Microsoft account.
             </h1>
             <p className="mt-4 text-base leading-relaxed text-slate-600">
               This dashboard is limited to approved school admin accounts.
@@ -100,9 +101,9 @@ export default async function AdminSignInPage() {
                 </Link>
               </p>
               <p className="mt-2 text-xs text-slate-500">
-                Walks you through your HBA email, installing Microsoft
-                Authenticator, and getting the Microsoft 365 apps on your phone
-                and computer. About 15 minutes.
+                Walks you through your {siteConfig.shortName} email, installing
+                Microsoft Authenticator, and getting the Microsoft 365 apps on
+                your phone and computer. About 15 minutes.
               </p>
             </div>
           </>

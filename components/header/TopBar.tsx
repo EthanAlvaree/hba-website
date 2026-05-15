@@ -1,8 +1,16 @@
 // components/header/TopBar.tsx
+//
+// Secondary nav strip above the main Navbar. Links are HBA-specific
+// (parent portal, alumni, school store) so the whole strip is hidden
+// on PCI. Add a PCI variant here if PCI ever needs an analogous
+// secondary nav.
 
 import Link from "next/link"
+import { schoolKey } from "@/lib/site"
 
 export default function TopBar() {
+  if (schoolKey === "pci") return null
+
   return (
     <div className="hidden lg:block bg-brand-navy text-white text-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-end gap-6 px-4 py-2">
