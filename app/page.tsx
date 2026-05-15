@@ -1,9 +1,19 @@
 // app/page.tsx
+//
+// Home route. Dispatches to PCI's clean-slate home page when
+// SCHOOL_KEY=pci; otherwise renders HBA's current home page inline.
 
 import Link from "next/link"
 import PageHero from "@/components/ui/PageHero"
+import { schoolKey } from "@/lib/site"
+import PciHomePage from "./_schools/pci/HomePage"
 
 export default function Home() {
+  if (schoolKey === "pci") return <PciHomePage />
+  return <HbaHome />
+}
+
+function HbaHome() {
   return (
     <main className="bg-gray-50 overflow-hidden">
       <PageHero

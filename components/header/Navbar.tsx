@@ -8,7 +8,7 @@ import { Bars3Icon } from "@heroicons/react/24/outline"
 import Dropdown from "./Dropdown"
 import MobileMenu from "./MobileMenu"
 import { navigation } from "@/lib/navigation"
-import { siteConfig } from "@/lib/site"
+import { schoolKey, siteConfig } from "@/lib/site"
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -21,18 +21,24 @@ export default function Navbar() {
           href="/"
           className="flex items-center gap-3 hover:opacity-90 transition-opacity"
         >
-          <div className="relative w-12 h-12">
-            <Image
-              src="/images/brand/hba-logo-white-spaced.webp"
-              alt="HBA Logo"
-              fill
-              sizes="(max-width: 768px) 180px, 220px"
-              className="object-contain"
-              priority
-            />
-          </div>
+          {siteConfig.brand.logos?.headerWhite ? (
+            <div className="relative w-12 h-12">
+              <Image
+                src={siteConfig.brand.logos.headerWhite}
+                alt={`${siteConfig.name} logo`}
+                fill
+                sizes="(max-width: 768px) 180px, 220px"
+                className="object-contain"
+                priority
+              />
+            </div>
+          ) : (
+            <span className="inline-flex items-center justify-center w-12 h-12 rounded-full border-2 border-white/70 text-base font-bold tracking-tight">
+              {siteConfig.shortName}
+            </span>
+          )}
           <span className="text-xl font-bold tracking-tight uppercase leading-none hidden sm:block">
-            High Bluff Academy
+            {siteConfig.name}
           </span>
         </Link>
 
@@ -65,12 +71,14 @@ export default function Navbar() {
           >
             Sign in
           </Link>
-          <Link
-            href={siteConfig.external.enrollment}
-            className="bg-brand-orange text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
-          >
-            Apply
-          </Link>
+          {schoolKey !== "pci" && (
+            <Link
+              href={siteConfig.external.enrollment}
+              className="bg-brand-orange text-white px-5 py-2 rounded-sm font-bold text-sm hover:bg-orange-600 transition-colors"
+            >
+              Apply
+            </Link>
+          )}
         </nav>
 
         {/* Mobile Trigger */}

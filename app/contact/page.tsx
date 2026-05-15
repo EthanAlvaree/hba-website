@@ -1,9 +1,15 @@
 import PageHero from "@/components/ui/PageHero"
 import Breadcrumbs from "@/components/layout/Breadcrumbs"
-import { siteConfig } from "@/lib/site"
+import { schoolKey, siteConfig } from "@/lib/site"
 import ContactForm from "./ContactForm"
+import PciContactPage from "@/app/_schools/pci/ContactPage"
 
 export default function ContactPage() {
+  if (schoolKey === "pci") return <PciContactPage />
+  return <HbaContact />
+}
+
+function HbaContact() {
   return (
     <main className="bg-gray-50 overflow-hidden">
       {/* HERO */}

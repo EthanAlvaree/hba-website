@@ -1,4 +1,10 @@
 // lib/navigation.ts
+//
+// Top-nav data — school-aware. HBA has the full nav with sub-columns;
+// PCI starts stripped down (just "Contact") until more PCI pages exist.
+// Update each school's nav as new pages land.
+
+import { schoolKey } from "@/lib/site"
 
 export type NavAudience = "all" | "students" | "parents" | "alumni"
 
@@ -23,7 +29,7 @@ export interface NavItem {
   audience?: NavAudience[]
 }
 
-export const navigation: NavItem[] = [
+const hbaNavigation: NavItem[] = [
   {
     title: "About",
     href: "/about",
@@ -134,3 +140,13 @@ export const navigation: NavItem[] = [
     ],
   },
 ]
+
+// PCI is brand-new — start with just Contact in the nav. The logo
+// click-through to "/" is the home link. Add items here as more PCI
+// pages come online.
+const pciNavigation: NavItem[] = [
+  { title: "Contact", href: "/contact" },
+]
+
+export const navigation: NavItem[] =
+  schoolKey === "pci" ? pciNavigation : hbaNavigation

@@ -80,6 +80,18 @@ export type SiteConfig = {
     navy: string
     navyDeep: string
     orange: string
+    /** Per-school logo asset paths. Leave any field undefined and
+     *  consumers fall back to a text mark (the school's `shortName`).
+     *  Add real image files at these paths and they light up
+     *  automatically. */
+    logos?: {
+      /** Used in the dark navbar — wide, white-on-transparent. */
+      headerWhite?: string
+      /** Used in the footer top-left — wide, color. */
+      footerColor?: string
+      /** Used in the footer rotor + favicons — square / circular. */
+      round?: string
+    }
   }
 }
 
@@ -149,6 +161,11 @@ const hba: SiteConfig = {
     navy: "#1f3f66",
     navyDeep: "#0f1f36",
     orange: "#f37021",
+    logos: {
+      headerWhite: "/images/brand/hba-logo-white-spaced.webp",
+      footerColor: "/images/brand/hba-logo-color.webp",
+      round: "/images/brand/hba-logo-round.webp",
+    },
   },
 }
 
@@ -158,18 +175,19 @@ const hba: SiteConfig = {
 // deploy is immediately visually obvious, not silently wearing HBA's
 // look. Update to PCI's real palette once design is finalized.
 const pci: SiteConfig = {
-  name: "Pacific Coast International", // TODO_PCI confirm official name
+  name: "Pacific Crest Institute",
   shortName: "PCI",
-  tagline: "TODO_PCI: one-line tagline",
-  domain: "TODO_PCI.com",
-  url: "https://TODO_PCI.com", // overridden by NEXT_PUBLIC_SITE_URL
+  tagline:
+    "Elite weekend programs in digital art and college test prep, for students whose passions deserve more than weekday hours allow.",
+  domain: "pacificcrestinstitute.com",
+  url: "https://pacificcrestinstitute.com", // overridden by NEXT_PUBLIC_SITE_URL
 
   contact: {
     phone: "TODO_PCI",
     phoneTel: "+1000000000",
-    admissionsEmail: "admissions@TODO_PCI.com",
-    infoEmail: "info@TODO_PCI.com",
-    emailDomain: "TODO_PCI.com",
+    admissionsEmail: "admissions@pacificcrestinstitute.com",
+    infoEmail: "info@pacificcrestinstitute.com",
+    emailDomain: "pacificcrestinstitute.com",
   },
 
   address: {
@@ -197,6 +215,13 @@ const pci: SiteConfig = {
     navy: "#1f5f6b",
     navyDeep: "#0e3a44",
     orange: "#e08a3c",
+    // Logo paths intentionally omitted until real PCI logo files are
+    // dropped into public/images/pci/. Consumers fall back to a text
+    // mark (the shortName "PCI") in the meantime. When the assets are
+    // ready, set: { headerWhite: "/images/pci/logo-white.webp",
+    // footerColor: "/images/pci/logo-color.webp", round:
+    // "/images/pci/logo-round.webp" }.
+    // logos: undefined,
   },
 }
 

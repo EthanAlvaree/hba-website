@@ -3,9 +3,14 @@
 import Image from "next/image"
 import Link from "next/link"
 import { FaInstagram, FaFacebookF, FaTiktok, FaYoutube, FaLinkedinIn, FaYelp } from "react-icons/fa"
-import { siteConfig } from "@/lib/site"
+import { schoolKey, siteConfig } from "@/lib/site"
 
 export default function Footer() {
+  if (schoolKey === "pci") return <PciFooter />
+  return <HbaFooter />
+}
+
+function HbaFooter() {
   const { address, contact, social } = siteConfig
 
   return (
@@ -155,6 +160,109 @@ export default function Footer() {
           © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
         </div>
 
+      </div>
+    </footer>
+  )
+}
+
+// Minimal PCI footer — clean slate. Expand as PCI's content matures.
+// Skips HBA-specific badges (WASC/UC), the campus aerial, and the long
+// resource/policy list since most of those pages don't exist on PCI.
+function PciFooter() {
+  const { address, contact, social } = siteConfig
+  const hasAddress =
+    !address.streetLine1.startsWith("TODO_") &&
+    !address.locality.startsWith("TODO_")
+  const hasPhone = !contact.phone.startsWith("TODO_")
+  const logoRound = siteConfig.brand.logos?.round
+
+  return (
+    <footer className="mt-20 bg-gradient-to-b from-brand-navy to-brand-navy-deep text-white">
+      <div className="max-w-5xl mx-auto px-6 py-14 grid grid-cols-1 md:grid-cols-2 gap-10">
+        <div>
+          {logoRound ? (
+            <div className="relative w-20 h-20 mb-4">
+              <Image
+                src={logoRound}
+                alt={`${siteConfig.shortName} seal`}
+                fill
+                sizes="80px"
+                className="object-contain"
+              />
+            </div>
+          ) : (
+            <div className="inline-flex w-20 h-20 mb-4 items-center justify-center rounded-full border-2 border-white/60 text-2xl font-bold tracking-tight">
+              {siteConfig.shortName}
+            </div>
+          )}
+          <h3 className="text-2xl font-bold">{siteConfig.name}</h3>
+          <p className="mt-3 text-sm leading-relaxed text-gray-200 max-w-md">
+            {siteConfig.tagline}
+          </p>
+        </div>
+
+        <div>
+          <h4 className="text-xl font-semibold mb-4">Contact</h4>
+          <p className="text-sm leading-relaxed text-gray-200">
+            {hasAddress && (
+              <>
+                {address.streetLine1}<br />
+                {address.locality}, {address.regionCode} {address.postalCode}<br />
+              </>
+            )}
+            {hasPhone && <>{contact.phone}<br /></>}
+            <Link
+              href={`mailto:${contact.infoEmail}`}
+              className="hover:text-orange-300 transition-colors"
+            >
+              {contact.infoEmail}
+            </Link>
+          </p>
+
+          <div className="flex flex-wrap gap-4 mt-5 text-2xl">
+            {social.instagram && (
+              <Link href={social.instagram.url} target="_blank" aria-label="Instagram" className="hover:text-orange-300 transition-colors">
+                <FaInstagram />
+              </Link>
+            )}
+            {social.facebook && (
+              <Link href={social.facebook.url} target="_blank" aria-label="Facebook" className="hover:text-orange-300 transition-colors">
+                <FaFacebookF />
+              </Link>
+            )}
+            {social.tiktok && (
+              <Link href={social.tiktok.url} target="_blank" aria-label="TikTok" className="hover:text-orange-300 transition-colors">
+                <FaTiktok />
+              </Link>
+            )}
+            {social.youtube && (
+              <Link href={social.youtube.url} target="_blank" aria-label="YouTube" className="hover:text-orange-300 transition-colors">
+                <FaYoutube />
+              </Link>
+            )}
+            {social.linkedin && (
+              <Link href={social.linkedin.url} target="_blank" aria-label="LinkedIn" className="hover:text-orange-300 transition-colors">
+                <FaLinkedinIn />
+              </Link>
+            )}
+            {social.yelp && (
+              <Link href={social.yelp.url} target="_blank" aria-label="Yelp" className="hover:text-orange-300 transition-colors">
+                <FaYelp />
+              </Link>
+            )}
+          </div>
+
+          <Link
+            href="/contact"
+            className="mt-6 inline-flex items-center rounded-full bg-brand-orange px-5 py-2 text-sm font-semibold text-white shadow-md hover:brightness-110 transition"
+          >
+            Get in touch →
+          </Link>
+        </div>
+      </div>
+
+      <div className="bg-brand-navy-deep py-6 text-center text-sm text-gray-300 border-t border-white/10">
+        © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
       </div>
     </footer>
   )
