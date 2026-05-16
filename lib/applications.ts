@@ -729,6 +729,7 @@ export async function listApplications(filters?: {
   view?: "active" | "archived" | "drafts" | "all"
   status?: ApplicationStatus | "all"
   enrollmentType?: ApplicationEnrollmentType | "all"
+  paid?: "all" | "paid" | "unpaid"
 }) {
   let query = getSupabase()
     .from("applications")
@@ -751,6 +752,12 @@ export async function listApplications(filters?: {
 
   if (filters?.enrollmentType && filters.enrollmentType !== "all") {
     query = query.eq("enrollment_type", filters.enrollmentType)
+  }
+
+  if (filters?.paid === "paid") {
+    query = query.not("fee_paid_at", "is", null)
+  } else if (filters?.paid === "unpaid") {
+    query = query.is("fee_paid_at", null)
   }
 
   const { data, error } = await query.returns<ApplicationRecord[]>()

@@ -72,7 +72,7 @@ export default async function ArchivedApplicationsPage({
     <ApplicationsDashboard
       adminEmail={adminEmail}
       currentPath={buildPath({ enrollmentType, sort })}
-      filters={{ status: "archived", enrollmentType, sort }}
+      filters={{ status: "archived", enrollmentType, sort, paid: "all" }}
       mode="archived"
       applications={sortApplications(applications, sort)}
       summary={summary}

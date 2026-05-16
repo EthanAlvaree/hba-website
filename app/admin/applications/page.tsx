@@ -15,11 +15,15 @@ import ApplicationsDashboard, {
   type ApplicationSortOption,
 } from "./ApplicationsDashboard"
 
+type PaidFilter = "all" | "paid" | "unpaid"
+const paidFilterValues: readonly PaidFilter[] = ["all", "paid", "unpaid"]
+
 type ApplicationsPageProps = {
   searchParams: Promise<{
     status?: string
     enrollment_type?: string
     sort?: string
+    paid?: string
   }>
 }
 
@@ -27,11 +31,13 @@ function buildPath(search: {
   status: ApplicationStatus | "all"
   enrollmentType: ApplicationEnrollmentType | "all"
   sort: ApplicationSortOption
+  paid: PaidFilter
 }) {
   const params = new URLSearchParams()
   if (search.status !== "all") params.set("status", search.status)
   if (search.enrollmentType !== "all") params.set("enrollment_type", search.enrollmentType)
   if (search.sort !== "newest") params.set("sort", search.sort)
+  if (search.paid !== "all") params.set("paid", search.paid)
   const query = params.toString()
   return query ? `/admin/applications?${query}` : "/admin/applications"
 }
@@ -61,11 +67,16 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
     ? (params.sort as ApplicationSortOption)
     : "newest"
 
+  const paid: PaidFilter = paidFilterValues.includes(params.paid as PaidFilter)
+    ? (params.paid as PaidFilter)
+    : "all"
+
   const [applications, summary] = await Promise.all([
     listApplications({
       view: "active",
       status,
       enrollmentType,
+      paid,
     }),
     getApplicationSummary(),
   ])
@@ -77,8 +88,8 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
   return (
     <ApplicationsDashboard
       adminEmail={adminEmail}
-      currentPath={buildPath({ status, enrollmentType, sort })}
-      filters={{ status, enrollmentType, sort }}
+      currentPath={buildPath({ status, enrollmentType, sort, paid })}
+      filters={{ status, enrollmentType, sort, paid }}
       mode="active"
       applications={sortApplications(applications, sort)}
       summary={summary}

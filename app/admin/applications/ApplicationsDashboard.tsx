@@ -23,10 +23,13 @@ export type ApplicationSortOption = (typeof applicationSortOptions)[number]
 
 type DashboardMode = "active" | "archived"
 
+type PaidFilter = "all" | "paid" | "unpaid"
+
 type DashboardFilters = {
   status: ApplicationStatus | "all"
   enrollmentType: ApplicationEnrollmentType | "all"
   sort: ApplicationSortOption
+  paid: PaidFilter
 }
 
 type ApplicationsDashboardProps = {
@@ -195,6 +198,9 @@ function buildDashboardHref(
   }
   if (next.sort !== "newest") {
     params.set("sort", next.sort)
+  }
+  if (mode === "active" && next.paid !== "all") {
+    params.set("paid", next.paid)
   }
   const qs = params.toString()
   return qs ? `${basePath}?${qs}` : basePath
@@ -415,6 +421,11 @@ export default function ApplicationsDashboard({
 }: ApplicationsDashboardProps) {
   const isArchivedView = mode === "archived"
   const queueTabs = getQueueTabs(mode, filters, summary)
+  // When the school requires a $350 registration fee via Stripe, the
+  // dashboard surfaces paid/unpaid state on each row and adds a Payment
+  // filter. PCI today has no Stripe link configured, so we hide both —
+  // every application is effectively "paid" by virtue of submission.
+  const hasStripeGate = Boolean(siteConfig.external.stripeRegistrationLink)
 
   return (
     <div className="space-y-6">
@@ -465,7 +476,13 @@ export default function ApplicationsDashboard({
       </nav>
 
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-          <form className="grid gap-4 md:grid-cols-[minmax(0,220px)_minmax(0,220px)_auto] md:items-end">
+          <form
+            className={`grid gap-4 md:items-end ${
+              hasStripeGate && !isArchivedView
+                ? "md:grid-cols-[minmax(0,180px)_minmax(0,180px)_minmax(0,180px)_auto]"
+                : "md:grid-cols-[minmax(0,220px)_minmax(0,220px)_auto]"
+            }`}
+          >
             {!isArchivedView && (
               <input type="hidden" name="status" value={filters.status} />
             )}
@@ -483,6 +500,21 @@ export default function ApplicationsDashboard({
                 <option value="full_time">Full-time</option>
               </select>
             </label>
+
+            {hasStripeGate && !isArchivedView && (
+              <label className="space-y-2 text-sm font-medium text-slate-700">
+                <span className="block">Payment</span>
+                <select
+                  name="paid"
+                  defaultValue={filters.paid}
+                  className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
+                >
+                  <option value="all">All payments</option>
+                  <option value="paid">Paid only</option>
+                  <option value="unpaid">Unpaid only</option>
+                </select>
+              </label>
+            )}
 
             <label className="space-y-2 text-sm font-medium text-slate-700">
               <span className="block">Sort order</span>
@@ -550,6 +582,23 @@ export default function ApplicationsDashboard({
                           >
                             {enrollmentTypeLabel}
                           </span>
+                          {hasStripeGate && (
+                            application.fee_paid_at ? (
+                              <span
+                                className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700"
+                                title={`Registration fee paid on ${formatTimestamp(application.fee_paid_at)}`}
+                              >
+                                Paid
+                              </span>
+                            ) : (
+                              <span
+                                className="rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-rose-700"
+                                title="Registration fee has not been paid. The family was redirected to Stripe at submit time but the webhook hasn't confirmed payment."
+                              >
+                                Unpaid
+                              </span>
+                            )
+                          )}
                           {application.internal_notes && (
                             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-700">
                               Has notes
