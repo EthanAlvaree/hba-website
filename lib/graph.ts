@@ -486,9 +486,10 @@ export async function sendApplicationSubmittedConfirmation(options: {
     subject,
     htmlBody: html,
     toRecipients: guardianEmails,
-    replyTo: applicationRecipients[0]
-      ? { address: applicationRecipients[0] }
-      : undefined,
+    // Send AS the admissions mailbox so the From line itself matches the
+    // body's "reply to this email" copy. Most clients also honor reply-to,
+    // but families look at From first.
+    fromMailbox: applicationRecipients[0],
   })
 }
 
@@ -674,9 +675,7 @@ export async function sendEnrollmentWelcomeToFamily(options: {
     subject,
     htmlBody: html,
     toRecipients: guardianEmails,
-    replyTo: applicationRecipients[0]
-      ? { address: applicationRecipients[0] }
-      : undefined,
+    fromMailbox: applicationRecipients[0],
   })
 }
 
@@ -715,9 +714,7 @@ export async function sendWithdrawalNotificationToFamily(options: {
     subject,
     htmlBody: html,
     toRecipients: options.parentEmails,
-    replyTo: applicationRecipients[0]
-      ? { address: applicationRecipients[0] }
-      : undefined,
+    fromMailbox: applicationRecipients[0],
   })
 }
 
@@ -760,11 +757,7 @@ export async function sendApplicationStatusUpdateToFamily(options: {
     subject,
     htmlBody: html,
     toRecipients: guardianEmails,
-    // The office address is on reply-to so families can respond directly to
-    // admissions instead of the no-reply sender.
-    replyTo: applicationRecipients[0]
-      ? { address: applicationRecipients[0] }
-      : undefined,
+    fromMailbox: applicationRecipients[0],
   })
 }
 
