@@ -852,7 +852,9 @@ export function normalizeNamePart(value: string): string {
 }
 
 /** Build the standard student UPN: first.last.YY@<domain>. YY is the 2-digit
- *  graduation year (enrollmentYear + 12 - entryGrade). Falls back to
+ *  graduation year. `enrollmentYear` is the calendar year of the fall the
+ *  student enters HBA; a 9th-grader entering fall 2026 graduates spring
+ *  2030, so gradYear = enrollmentYear + (13 - entryGrade). Falls back to
  *  first.last@<domain> when the grade can't be parsed — the admin can add
  *  the suffix on the enroll form. */
 export function studentUpnFromApplication(
@@ -876,7 +878,7 @@ export function studentUpnFromApplication(
   if (!Number.isFinite(grade) || grade < 1 || grade > 12) {
     return `${base}@${domain}`
   }
-  const gradYear = enrollmentYear + (12 - grade)
+  const gradYear = enrollmentYear + (13 - grade)
   return `${base}.${String(gradYear).slice(-2)}@${domain}`
 }
 

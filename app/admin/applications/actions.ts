@@ -15,16 +15,14 @@ import {
 } from "@/lib/applications"
 import {
   isFamilyNotifiableStatus,
-  provisionStudentM365Account,
   sendApplicationStatusUpdateToFamily,
-  sendEnrollmentWelcomeToFamily,
 } from "@/lib/graph"
 import {
   adminDeleteApplicationDocument,
   adminUploadApplicationDocument,
 } from "@/lib/application-storage"
-import { enrollAcceptedApplication, enrollApplicationSchema } from "@/lib/sis"
-import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
+import { enrollApplicationSchema } from "@/lib/sis"
+import { provisionAndEnrollFromApplication } from "@/lib/enrollment"
 
 const optionalText = z
   .string()
@@ -177,52 +175,10 @@ export async function enrollApplicationAction(formData: FormData) {
     throw new Error("Application not found.")
   }
 
-  // Provision the student's M365 account FIRST. If this throws (e.g. the
-  // Graph permission isn't consented yet), nothing else has run — the admin
-  // fixes the issue and re-submits. Both this and enrollAcceptedApplication
-  // reuse existing records, so the retry is safe.
-  const displayName =
-    [application.student_first_name, application.student_last_name]
-      .filter(Boolean)
-      .join(" ")
-      .trim() || parsed.data.student_hba_email
-  const provision = await provisionStudentM365Account({
-    upn: parsed.data.student_hba_email,
-    displayName,
-  })
-
-  const enrolled = await enrollAcceptedApplication(parsed.data)
-
-  // Best-effort: notify the family that the school account is ready (with the
-  // temp password when we just created it) and point them at /welcome. A
-  // Graph send failure here shouldn't roll back the enrollment — it can be
-  // re-sent manually from /admin/messaging.
-  let welcomeEmailSent = false
-  try {
-    await sendEnrollmentWelcomeToFamily({
-      application,
-      studentHbaEmail: parsed.data.student_hba_email,
-      tempPassword: provision.tempPassword,
-    })
-    welcomeEmailSent = true
-  } catch (err) {
-    console.error("[enroll] welcome email failed", err)
-  }
-
-  // The lifecycle peer of student.withdraw — captures who enrolled the
-  // student, which M365 account was provisioned, and whether the family
-  // notification actually went out. Useful for "when was X enrolled?" and
-  // "did the welcome email reach them?" without trawling logs.
-  await logAdminAuditEvent({
-    action: ADMIN_AUDIT_ACTIONS.student_enroll,
-    target_kind: "student",
-    target_id: enrolled.student.id,
-    details: {
-      application_id: application.id,
-      student_hba_email: parsed.data.student_hba_email,
-      m365_account_created: provision.created,
-      welcome_email_sent: welcomeEmailSent,
-    },
+  await provisionAndEnrollFromApplication({
+    application,
+    studentHbaEmail: parsed.data.student_hba_email,
+    registeredAt: parsed.data.registered_at_hba,
   })
 
   revalidateApplicationViews()

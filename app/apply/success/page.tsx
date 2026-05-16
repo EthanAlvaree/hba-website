@@ -12,6 +12,7 @@
 
 import Link from "next/link"
 import { markApplicationPaid } from "@/lib/applications"
+import { provisionAndEnrollFromApplication } from "@/lib/enrollment"
 import {
   sendApplicationNotification,
   sendApplicationSubmittedConfirmation,
@@ -59,6 +60,16 @@ async function tryMarkPaidFromSession(sessionId: string | undefined) {
         await sendApplicationSubmittedConfirmation({ application: result })
       } catch (err) {
         console.error("[apply/success] family confirmation failed", err)
+      }
+      // Same auto-enroll pass as the webhook. Best-effort; admin can
+      // manually enroll from the dashboard if anything here fails.
+      try {
+        await provisionAndEnrollFromApplication({
+          application: result,
+          actorEmail: "system:apply-success-fallback",
+        })
+      } catch (err) {
+        console.error("[apply/success] auto-enroll failed", err)
       }
     }
   } catch (err) {

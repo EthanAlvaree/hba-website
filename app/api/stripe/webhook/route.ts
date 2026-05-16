@@ -15,6 +15,7 @@
 
 import { NextResponse } from "next/server"
 import { markApplicationPaid } from "@/lib/applications"
+import { provisionAndEnrollFromApplication } from "@/lib/enrollment"
 import {
   sendApplicationNotification,
   sendApplicationSubmittedConfirmation,
@@ -125,6 +126,22 @@ export async function POST(request: Request) {
     await sendApplicationSubmittedConfirmation({ application })
   } catch (err) {
     console.error("[stripe-webhook] family confirmation failed", err)
+  }
+
+  // Auto-enroll on payment: provision the M365 account + create student /
+  // parent profiles + send the welcome email with temp password. Best-effort
+  // — if anything fails (collision, Graph permission, transient network),
+  // the application stays "paid + accepted" and the admin can finish via
+  // the dashboard Enroll button. We still return 200 because the payment
+  // event itself was processed successfully; a 5xx here would cause Stripe
+  // to redeliver and double-fire notifications.
+  try {
+    await provisionAndEnrollFromApplication({
+      application,
+      actorEmail: "system:stripe-webhook",
+    })
+  } catch (err) {
+    console.error("[stripe-webhook] auto-enroll failed", err)
   }
 
   return NextResponse.json({ ok: true, application_id: application.id })

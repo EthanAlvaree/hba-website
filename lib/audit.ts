@@ -86,6 +86,11 @@ export type AdminAuditEventInput = {
   target_kind?: string | null
   target_id?: string | null
   details?: Record<string, unknown> | null
+  /** Override actor email when there is no admin session — e.g. the Stripe
+   *  webhook auto-enrolling a student after payment. Conventional values:
+   *  "system:stripe-webhook", "system:cron:<name>". When omitted, the
+   *  current admin session supplies the actor. */
+  actorEmail?: string
 }
 
 export type AdminAuditRecord = {
@@ -106,16 +111,23 @@ export type AdminAuditRecord = {
 // (we read the current session + request headers).
 export async function logAdminAuditEvent(input: AdminAuditEventInput): Promise<void> {
   try {
-    const session = await auth()
-    const actorEmail = session?.user?.email?.toLowerCase() ?? null
+    let actorEmail = input.actorEmail?.toLowerCase() ?? null
+    if (!actorEmail) {
+      const session = await auth()
+      actorEmail = session?.user?.email?.toLowerCase() ?? null
+    }
     if (!actorEmail) return
 
     let actorProfileId: string | null = null
-    try {
-      const profile = await getProfileByEmail(actorEmail)
-      actorProfileId = profile?.id ?? null
-    } catch {
-      // Profile lookup is best-effort.
+    // Skip profile lookup for synthetic system actors (no profile row exists
+    // for "system:stripe-webhook" etc.); the actor_email is the canonical id.
+    if (!actorEmail.startsWith("system:")) {
+      try {
+        const profile = await getProfileByEmail(actorEmail)
+        actorProfileId = profile?.id ?? null
+      } catch {
+        // Profile lookup is best-effort.
+      }
     }
 
     let ip: string | null = null
