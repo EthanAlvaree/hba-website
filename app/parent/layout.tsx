@@ -6,6 +6,7 @@ import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 
 const parentNav: PortalNavItem[] = [
   { id: "home", label: "My children", href: "/parent" },
+  { id: "profile", label: "My profile", href: "/parent/profile" },
   { id: "conferences", label: "Conferences", href: "/parent/conferences" },
 ]
 

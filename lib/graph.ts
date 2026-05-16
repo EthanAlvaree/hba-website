@@ -493,6 +493,59 @@ export async function sendApplicationSubmittedConfirmation(options: {
   })
 }
 
+// Admin-triggered "please update your profile" nudge. Sends the parent
+// a short email pointing at /parent/profile (and child-update links if
+// they have any linked students). Used during migration / annual
+// data-freshness sweeps so admins don't have to chase families one by
+// one.
+export async function sendProfileUpdateRequestToParent(options: {
+  parentEmail: string
+  parentDisplayName: string | null
+  linkedStudentNames: string[]
+  noteFromAdmin?: string | null
+}) {
+  const { parentEmail, parentDisplayName, linkedStudentNames, noteFromAdmin } = options
+  const greetingName = parentDisplayName?.trim() || "there"
+
+  const kidsLine =
+    linkedStudentNames.length > 0
+      ? `<p>While you&rsquo;re there, please review and update info for ${linkedStudentNames
+          .map((n) => `<strong>${escapeHtml(n)}</strong>`)
+          .join(" and ")} as well — there are direct links on your profile page.</p>`
+      : ""
+
+  const noteBlock =
+    noteFromAdmin && noteFromAdmin.trim().length > 0
+      ? `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;color:#1f2937;">${escapeHtml(
+          noteFromAdmin.trim()
+        ).replace(/\n/g, "<br />")}</p>`
+      : ""
+
+  const profileUrl = `${siteConfig.url}/parent/profile`
+  const subject = `Quick favor: please review your ${siteConfig.shortName} contact info`
+
+  const html = [
+    `<p>Hi ${escapeHtml(greetingName)},</p>`,
+    `<p>We&rsquo;re keeping our ${escapeHtml(siteConfig.name)} records up to date — could you take a minute to review your contact info? We use this to reach you about school events, billing, and emergencies, and it&rsquo;s easy for it to drift over time.</p>`,
+    noteBlock,
+    `<p style="margin:24px 0;">`,
+    `<a href="${profileUrl}" style="display:inline-block;padding:12px 24px;background:${brand.orange};color:#fff;text-decoration:none;border-radius:999px;font-weight:600;">Open my profile</a>`,
+    `</p>`,
+    `<p style="color:#666;font-size:14px;">Or paste this link into your browser:<br /><a href="${profileUrl}">${escapeHtml(profileUrl)}</a></p>`,
+    kidsLine,
+    `<p style="color:#666;font-size:14px;">Sign in with the same Microsoft account you use for other ${escapeHtml(siteConfig.shortName)} email. Questions or trouble signing in — reply to this email and we&rsquo;ll sort it.</p>`,
+    `<p>Warmly,<br />The ${escapeHtml(siteConfig.name)} office</p>`,
+  ].join("")
+
+  const { applicationRecipients } = getGraphConfig()
+  await sendMail({
+    subject,
+    htmlBody: html,
+    toRecipients: [parentEmail],
+    fromMailbox: applicationRecipients[0],
+  })
+}
+
 // Admin-triggered nudge for an applied-but-unpaid family. Sends a short
 // message with the Stripe Payment Link pre-tagged with the application
 // id, so when they finish paying our existing webhook can match the

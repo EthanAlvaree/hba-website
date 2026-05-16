@@ -62,6 +62,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   profile_photo_m365_resync: "profile_photo.m365_resync",
   // Application lifecycle.
   application_payment_reminder_sent: "application.payment_reminder_sent",
+  profile_update_request_sent: "profile.update_request_sent",
   // Student lifecycle.
   student_enroll: "student.enroll",
   student_withdraw: "student.withdraw",

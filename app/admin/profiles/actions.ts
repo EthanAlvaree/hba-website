@@ -9,6 +9,7 @@ import {
   deleteProfile,
   getProfileById,
   getStudentByProfileId,
+  listStudentsLinkedToParent,
   profileActiveUpdateSchema,
   profileContactUpdateSchema,
   profileRoleSchema,
@@ -17,6 +18,7 @@ import {
   updateProfileContact,
   updateProfileRoles,
 } from "@/lib/sis"
+import { sendProfileUpdateRequestToParent } from "@/lib/graph"
 import { z } from "zod"
 import { seedTeacherQualificationsFromBios } from "@/lib/scheduler"
 import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
@@ -179,6 +181,82 @@ export async function updateProfileContactAction(formData: FormData) {
     redirect(redirectTo)
   }
   redirect("/admin/profiles")
+}
+
+const requestProfileUpdateSchema = z.object({
+  id: z.uuid(),
+  note: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+})
+
+// Admin nudge to a parent: "please review your contact info + your
+// student's demographics." Sends an email pointing at /parent/profile
+// (which lists the parent's linked students). Used for bulk migration
+// from legacy SIS data and for annual data-freshness sweeps.
+export async function requestProfileUpdateFromFamilyAction(formData: FormData) {
+  await assertAdmin()
+
+  const parsed = requestProfileUpdateSchema.safeParse({
+    id: formData.get("id"),
+    note: formData.get("note") ?? "",
+  })
+  if (!parsed.success) {
+    redirect(`/admin/profiles?error=${encodeURIComponent("Invalid request.")}`)
+  }
+
+  const profile = await getProfileById(parsed.data.id)
+  if (!profile) {
+    redirect(`/admin/profiles?error=${encodeURIComponent("Profile not found.")}`)
+  }
+  if (!profile.roles.includes("parent")) {
+    redirect(
+      `/admin/profiles?error=${encodeURIComponent("This profile isn't a parent — update requests only go to parent accounts.")}`
+    )
+  }
+
+  const linked = await listStudentsLinkedToParent(profile.id)
+  const studentNames = linked.map((l) => {
+    return (
+      l.preferred_name?.trim() ||
+      `${l.legal_first_name} ${l.legal_last_name}`.trim()
+    )
+  })
+
+  try {
+    await sendProfileUpdateRequestToParent({
+      parentEmail: profile.email,
+      parentDisplayName:
+        profile.display_name ??
+        [profile.first_name, profile.last_name].filter(Boolean).join(" ").trim() ??
+        null,
+      linkedStudentNames: studentNames,
+      noteFromAdmin: parsed.data.note,
+    })
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to send update request."
+    redirect(`/admin/profiles?error=${encodeURIComponent(message)}`)
+  }
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.profile_update_request_sent,
+    target_kind: "profile",
+    target_id: profile.id,
+    details: {
+      to: profile.email,
+      linked_students: studentNames,
+      had_custom_note: parsed.data.note !== null,
+    },
+  })
+
+  revalidateProfiles()
+  redirect(
+    `/admin/profiles?update_request_sent=${encodeURIComponent(profile.email)}`
+  )
 }
 
 export async function syncM365Action(formData: FormData) {

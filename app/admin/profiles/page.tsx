@@ -11,6 +11,7 @@ import {
 } from "@/lib/sis"
 import {
   deleteProfileAction,
+  requestProfileUpdateFromFamilyAction,
   saveProfileAction,
   updateProfileContactAction,
 } from "./actions"
@@ -45,6 +46,7 @@ type ProfilesPageProps = {
     student_created?: string
     error?: string
     role_ok?: string
+    update_request_sent?: string
   }>
 }
 
@@ -145,6 +147,14 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
           <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
             <p className="text-sm font-semibold text-emerald-900">
               Profile deleted.
+            </p>
+          </section>
+        )}
+
+        {raw.update_request_sent && (
+          <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
+            <p className="text-sm font-semibold text-emerald-900">
+              Update request sent to {raw.update_request_sent}.
             </p>
           </section>
         )}
@@ -496,6 +506,43 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                         Save contact info
                       </button>
                     </form>
+
+                    {profile.roles.includes("parent") && (
+                      <form
+                        action={requestProfileUpdateFromFamilyAction}
+                        className="space-y-3 border-t border-slate-200 pt-4"
+                      >
+                        <input type="hidden" name="id" value={profile.id} />
+                        <p className="text-sm font-semibold text-slate-900">
+                          Request profile update from family
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          Emails this parent a link to{" "}
+                          <code>/parent/profile</code> where they can review
+                          and update their own contact info, plus their
+                          children&rsquo;s demographics. Useful for migrating
+                          legacy SIS data and for annual data-freshness
+                          sweeps.
+                        </p>
+                        <label className="space-y-1 text-xs font-medium text-slate-700">
+                          <span className="block">
+                            Optional note (quoted verbatim in the email)
+                          </span>
+                          <textarea
+                            name="note"
+                            rows={2}
+                            placeholder="e.g. We're migrating to a new SIS — please confirm your info still looks right."
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-full border border-brand-orange/40 bg-brand-orange/10 px-4 py-2 text-xs font-semibold text-brand-orange transition hover:bg-brand-orange hover:text-white"
+                        >
+                          Send update request
+                        </button>
+                      </form>
+                    )}
 
                     {profile.roles.includes("parent") && (
                       <div className="space-y-2 border-t border-slate-200 pt-4">
