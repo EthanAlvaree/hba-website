@@ -656,6 +656,56 @@ const guardianSlots: GuardianSlot[] = [
   { prefix: "homestay", isPrimary: false, isHomestay: true },
 ]
 
+// Patches the contact fields that we treat as "freshest from the most
+// recent application": address + phones. Skips fields that are blank on
+// the incoming application (no clobbering a populated DB value with an
+// empty form input). Leaves names/email alone — those are handled by
+// findOrCreateProfile's fill-nulls semantics.
+async function refreshParentProfileFromApplication(
+  profile: ProfileRecord,
+  incoming: {
+    mobile_phone: string | null
+    work_phone: string | null
+    address_line1: string | null
+    address_line2: string | null
+    address_city: string | null
+    address_region: string | null
+    address_postal_code: string | null
+    address_country: string | null
+  }
+): Promise<void> {
+  const patch: Record<string, unknown> = {}
+  const maybeSet = (
+    key: keyof typeof incoming,
+    existing: string | null
+  ) => {
+    const next = incoming[key]
+    if (next && next !== existing) {
+      patch[key] = next
+    }
+  }
+  maybeSet("mobile_phone", profile.mobile_phone)
+  maybeSet("work_phone", profile.work_phone)
+  maybeSet("address_line1", profile.address_line1)
+  maybeSet("address_line2", profile.address_line2)
+  maybeSet("address_city", profile.address_city)
+  maybeSet("address_region", profile.address_region)
+  maybeSet("address_postal_code", profile.address_postal_code)
+  maybeSet("address_country", profile.address_country)
+
+  if (Object.keys(patch).length === 0) return
+
+  const { error } = await getSupabase()
+    .from("profiles")
+    .update(patch)
+    .eq("id", profile.id)
+  if (error) {
+    throw new Error(
+      `Failed to refresh parent profile ${profile.id} from application: ${error.message}`
+    )
+  }
+}
+
 async function ensureParentLinks(
   application: ApplicationRecord,
   studentId: string
@@ -690,20 +740,37 @@ async function ensureParentLinks(
         : null
     }
 
-    const { profile } = await findOrCreateProfile({
-      email,
-      role: "parent",
-      first_name: first,
-      last_name: last,
-      display_name: name || null,
-      mobile_phone: readGuardianField(application, slot.prefix, "mobile"),
-      work_phone: readGuardianField(application, slot.prefix, "work_phone"),
+    const guardianMobile = readGuardianField(application, slot.prefix, "mobile")
+    const guardianWorkPhone = readGuardianField(application, slot.prefix, "work_phone")
+    const guardianAddress = {
       address_line1: readAddr("address_line1"),
       address_line2: readAddr("address_line2"),
       address_city: readAddr("address_city"),
       address_region: readAddr("address_region"),
       address_postal_code: readAddr("address_postal_code"),
       address_country: readAddr("address_country"),
+    }
+
+    const { profile } = await findOrCreateProfile({
+      email,
+      role: "parent",
+      first_name: first,
+      last_name: last,
+      display_name: name || null,
+      mobile_phone: guardianMobile,
+      work_phone: guardianWorkPhone,
+      ...guardianAddress,
+    })
+
+    // Refresh address + phones from the new application — these are the
+    // fields most likely to be stale on the profile (move, new carrier).
+    // Name fields stay sticky: admin may have cleaned up a legal-name
+    // edit ("Jones-Smith" after marriage) that a casual sibling-app form
+    // shouldn't overwrite.
+    await refreshParentProfileFromApplication(profile, {
+      mobile_phone: guardianMobile,
+      work_phone: guardianWorkPhone,
+      ...guardianAddress,
     })
 
     const existing = await getParentLink(studentId, profile.id)
