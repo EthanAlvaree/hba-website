@@ -76,6 +76,7 @@ export type StudentRecord = {
 
   enrollment_type: ApplicationEnrollmentType | null
   current_grade: string | null
+  graduation_year: number | null
   status: StudentStatus
 
   registered_at_hba: string | null
@@ -113,7 +114,7 @@ const studentColumns =
   "dob, gender, pronouns, birthplace, primary_language, secondary_language, " +
   "english_proficiency, address_line1, address_line2, address_city, " +
   "address_region, address_postal_code, address_country, " +
-  "enrollment_type, current_grade, status, " +
+  "enrollment_type, current_grade, graduation_year, status, " +
   "registered_at_hba, graduated_at, withdrawn_at, withdrawn_reason, " +
   "internal_notes, assigned_to"
 
@@ -541,7 +542,13 @@ async function insertStudentFromApplication(args: {
       address_postal_code: application.student_address_postal_code,
       address_country: application.student_address_country,
       enrollment_type: application.enrollment_type,
-      current_grade: application.student_desired_grade ?? application.student_current_grade,
+      // student_current_grade is "the grade they're in right now" — the
+      // scheduler reads this as the just-finished/in-progress grade and
+      // adds +1 to pick courses for the upcoming term. Storing the
+      // desired_grade here would push the trajectory tree one year ahead
+      // (e.g. an 8→9 student would get prompted to pick 10th-grade courses).
+      current_grade: application.student_current_grade ?? application.student_desired_grade,
+      graduation_year: application.student_graduation_year,
       status: "active",
       registered_at_hba: registeredAt ?? new Date().toISOString().slice(0, 10),
     })

@@ -109,6 +109,13 @@ const baseFields = {
   student_english_proficiency: optionalString(40, "English proficiency"),
   student_current_grade: optionalString(20, "Current grade"),
   student_desired_grade: optionalString(20, "Desired grade"),
+  // Class-of year (graduating from 12th). Optional on draft; required
+  // on submit so the M365 UPN (f.l.YY) is unambiguous in mid-year /
+  // between-grades situations.
+  student_graduation_year: z
+    .union([z.coerce.number().int().min(1900).max(2100), z.literal("")])
+    .optional()
+    .transform((value) => (typeof value === "number" ? value : undefined)),
   student_personal_email: optionalEmail(),
   student_phone: optionalString(40, "Phone"),
   student_address_line1: optionalString(200, "Street address"),
@@ -208,6 +215,11 @@ export const applicationSubmitSchema = z
     student_desired_grade: requiredString(1, 20, "Please enter the student’s desired entry grade."),
     student_primary_language: requiredString(1, 80, "Please enter the student’s primary language."),
     student_english_proficiency: requiredString(1, 40, "Please indicate English proficiency."),
+    student_graduation_year: z.coerce
+      .number({ message: "Please enter the expected graduation year." })
+      .int("Please enter a 4-digit year.")
+      .min(new Date().getFullYear(), "Graduation year can't be in the past.")
+      .max(new Date().getFullYear() + 12, "Graduation year looks too far out — double-check."),
 
     // Required guardian 1 fields
     guardian1_name: requiredString(2, 200, "Please enter Guardian 1’s name."),
@@ -288,6 +300,10 @@ export const applicationDataUpdateSchema = z.object({
   student_english_proficiency: optionalEditedString(40),
   student_current_grade: optionalEditedString(20),
   student_desired_grade: optionalEditedString(20),
+  student_graduation_year: z
+    .union([z.coerce.number().int().min(1900).max(2100), z.literal(""), z.null()])
+    .optional()
+    .transform((value) => (typeof value === "number" ? value : null)),
   student_personal_email: optionalEditedEmail(),
   student_phone: optionalEditedString(40),
   student_address_line1: optionalEditedString(200),
@@ -404,6 +420,7 @@ export type ApplicationRecord = {
   student_english_proficiency: string | null
   student_current_grade: string | null
   student_desired_grade: string | null
+  student_graduation_year: number | null
   student_personal_email: string | null
   student_phone: string | null
   student_address_line1: string | null
@@ -511,6 +528,7 @@ const applicationSelectColumns =
   "student_preferred_name, student_dob, student_gender, student_pronouns, " +
   "student_birthplace, student_primary_language, student_secondary_language, " +
   "student_english_proficiency, student_current_grade, student_desired_grade, " +
+  "student_graduation_year, " +
   "student_personal_email, student_phone, " +
   "student_address_line1, student_address_line2, student_address_city, " +
   "student_address_region, student_address_postal_code, student_address_country, " +

@@ -40,6 +40,7 @@ type WizardState = {
   student_english_proficiency: string
   student_current_grade: string
   student_desired_grade: string
+  student_graduation_year: string
   student_personal_email: string
   student_phone: string
   student_address_line1: string
@@ -114,6 +115,7 @@ const emptyState: WizardState = {
   student_english_proficiency: "",
   student_current_grade: "",
   student_desired_grade: "",
+  student_graduation_year: "",
   student_personal_email: "",
   student_phone: "",
   student_address_line1: "",
@@ -184,6 +186,8 @@ function stateFromRecord(record: ApplicationRecord): WizardState {
     student_english_proficiency: record.student_english_proficiency ?? "",
     student_current_grade: record.student_current_grade ?? "",
     student_desired_grade: record.student_desired_grade ?? "",
+    student_graduation_year:
+      record.student_graduation_year != null ? String(record.student_graduation_year) : "",
     student_personal_email: record.student_personal_email ?? "",
     student_phone: record.student_phone ?? "",
     student_address_line1: record.student_address_line1 ?? "",
@@ -257,6 +261,7 @@ function buildApiPayload(state: WizardState, extras: Record<string, unknown>) {
     student_english_proficiency: state.student_english_proficiency,
     student_current_grade: state.student_current_grade,
     student_desired_grade: state.student_desired_grade,
+    student_graduation_year: state.student_graduation_year || undefined,
     student_personal_email: state.student_personal_email,
     student_phone: state.student_phone,
     student_address_line1: state.student_address_line1,
@@ -638,6 +643,19 @@ function validateStep(step: number, state: WizardState): FieldErrors {
     if (!state.student_dob.trim()) errors.student_dob = "Required."
     if (!state.student_current_grade) errors.student_current_grade = "Required."
     if (!state.student_desired_grade) errors.student_desired_grade = "Required."
+    if (!state.student_graduation_year.trim()) {
+      errors.student_graduation_year = "Required."
+    } else {
+      const gradYearNum = parseInt(state.student_graduation_year, 10)
+      const thisYear = new Date().getFullYear()
+      if (
+        !Number.isFinite(gradYearNum) ||
+        gradYearNum < thisYear ||
+        gradYearNum > thisYear + 12
+      ) {
+        errors.student_graduation_year = `Enter a 4-digit year between ${thisYear} and ${thisYear + 12}.`
+      }
+    }
     if (!state.student_primary_language.trim()) errors.student_primary_language = "Required."
     if (!state.student_english_proficiency) errors.student_english_proficiency = "Required."
   }
@@ -904,6 +922,7 @@ export default function ApplyWizard({
         allErrors.student_dob ||
         allErrors.student_current_grade ||
         allErrors.student_desired_grade ||
+        allErrors.student_graduation_year ||
         allErrors.student_primary_language ||
         allErrors.student_english_proficiency
       ) {
@@ -1415,6 +1434,16 @@ function Step1Student({
           options={gradeOptions}
           required
           error={errors.student_desired_grade}
+        />
+        <TextField
+          label="Expected graduation year (from 12th grade)"
+          name="student_graduation_year"
+          value={state.student_graduation_year}
+          onChange={(v) => setField("student_graduation_year", v)}
+          type="number"
+          required
+          placeholder="e.g. 2030"
+          error={errors.student_graduation_year}
         />
         <TextField
           label="Student personal email (optional)"
@@ -2445,6 +2474,7 @@ function buildReviewSummary(state: WizardState): Array<{ label: string; value: s
     { label: "Date of birth", value: state.student_dob },
     { label: "Current grade", value: state.student_current_grade },
     { label: "Desired entry grade", value: state.student_desired_grade },
+    { label: "Expected graduation year", value: state.student_graduation_year },
     { label: "Languages", value: [state.student_primary_language, state.student_secondary_language].filter(Boolean).join(", ") },
     { label: "Enrollment type", value: enrollmentLabel },
     {

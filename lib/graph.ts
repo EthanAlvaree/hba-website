@@ -845,17 +845,18 @@ export function normalizeNamePart(value: string): string {
 }
 
 /** Build the standard student UPN: first.last.YY@<domain>. YY is the 2-digit
- *  graduation year. `enrollmentYear` is the calendar year of the fall the
- *  student enters HBA; a 9th-grader entering fall 2026 graduates spring
- *  2030, so gradYear = enrollmentYear + (13 - entryGrade). Falls back to
- *  first.last@<domain> when the grade can't be parsed — the admin can add
- *  the suffix on the enroll form. */
+ *  graduation year. Prefers the explicit `student_graduation_year` on the
+ *  application when set — that's the unambiguous source. Otherwise derives
+ *  YY from desired_grade + enrollment year (a 9th-grader entering fall 2026
+ *  graduates spring 2030, so gradYear = enrollmentYear + (13 - entryGrade)).
+ *  Falls back to first.last@<domain> when there's nothing to derive from. */
 export function studentUpnFromApplication(
   application: {
     student_first_name: string | null
     student_last_name: string | null
     student_desired_grade: string | null
     student_current_grade: string | null
+    student_graduation_year?: number | null
   },
   enrollmentYear: number
 ): string {
@@ -863,6 +864,14 @@ export function studentUpnFromApplication(
   const last = normalizeNamePart(application.student_last_name ?? "")
   const base = [first, last].filter(Boolean).join(".") || "student"
   const domain = siteConfig.contact.emailDomain
+
+  if (
+    application.student_graduation_year &&
+    Number.isFinite(application.student_graduation_year)
+  ) {
+    return `${base}.${String(application.student_graduation_year).slice(-2)}@${domain}`
+  }
+
   const gradeText =
     application.student_desired_grade ?? application.student_current_grade ?? ""
   const gradeMatch = gradeText.match(/\d+/)
