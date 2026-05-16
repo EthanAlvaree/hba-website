@@ -37,6 +37,7 @@ import {
   setPostEnrollmentVerifiedAction,
   updateParentLinkAction,
   updateProfileContactAction,
+  deleteStudentAction,
   updateStudentAdminAction,
   updateStudentDemographicsAction,
   withdrawStudentAction,
@@ -1027,6 +1028,9 @@ export default async function StudentDetailPage({
         {student.status === "active" && (
           <WithdrawCard studentId={student.id} />
         )}
+        {student.status === "withdrawn" && (
+          <DeleteStudentCard studentId={student.id} />
+        )}
     </div>
   )
 }
@@ -1297,6 +1301,69 @@ function AddParentLinkCard({ studentId }: { studentId: string }) {
         </button>
       </form>
     </details>
+  )
+}
+
+function DeleteStudentCard({ studentId }: { studentId: string }) {
+  return (
+    <section className="rounded-[2rem] border border-rose-300 bg-rose-50 px-6 py-6 shadow-sm">
+      <h2 className="text-lg font-extrabold text-rose-900">
+        Permanently delete this student
+      </h2>
+      <p className="mt-1 text-sm text-rose-900/90">
+        Hard delete — removes the students row and cascades to parent_links,
+        post-enrollment data, schedule draft requests, and incidents. Refused
+        if any course-section enrollments still exist (drop those first or
+        re-run Withdraw with &ldquo;mark every active enrollment as
+        withdrawn&rdquo; ticked). Best used to clean up test data or after a
+        long records-retention window.
+      </p>
+      <details className="mt-4">
+        <summary className="cursor-pointer text-sm font-semibold text-rose-800 hover:underline">
+          Open the delete form
+        </summary>
+        <form
+          action={deleteStudentAction}
+          className="mt-4 space-y-3 rounded-2xl border border-rose-300 bg-white px-4 py-4"
+        >
+          <input type="hidden" name="id" value={studentId} />
+          <label className="flex items-start gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="delete_m365"
+              defaultChecked
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-rose-700 focus:ring-rose-600"
+            />
+            <span>
+              Also delete the M365 account (goes to Entra&rsquo;s recycle
+              bin — restorable for 30 days from Entra &rarr; Deleted users).
+            </span>
+          </label>
+          <label className="flex items-start gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="delete_profile"
+              defaultChecked
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-rose-700 focus:ring-rose-600"
+            />
+            <span>
+              Also delete the SIS profile row (skipped automatically if the
+              profile is still linked as a parent of any other student).
+            </span>
+          </label>
+          <p className="text-[11px] text-rose-700">
+            This cannot be undone from the SIS. The M365 recycle bin is the
+            only restore path.
+          </p>
+          <button
+            type="submit"
+            className="inline-flex items-center justify-center rounded-full bg-rose-800 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          >
+            Delete student forever
+          </button>
+        </form>
+      </details>
+    </section>
   )
 }
 

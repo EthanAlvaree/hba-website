@@ -7,6 +7,7 @@ import {
   addStudentTag,
   createParentLinkForStudent,
   createParentLinkSchema,
+  deleteStudent,
   parentLinkUpdateSchema,
   profileContactUpdateSchema,
   removeStudentTag,
@@ -340,6 +341,78 @@ export async function withdrawStudentAction(formData: FormData) {
   redirect(
     `/admin/students/${parsed.data.id}?withdrawn=1${familyEmailSent ? "&family_notified=1" : ""}`
   )
+}
+
+const deleteStudentSchema = z.object({
+  id: z.uuid(),
+  delete_m365: z.coerce.boolean().default(false),
+  delete_profile: z.coerce.boolean().default(false),
+})
+
+// Hard delete a withdrawn student. Optional M365 + profile cleanup —
+// admin opts in via checkboxes so the destructive parts are explicit.
+export async function deleteStudentAction(formData: FormData) {
+  await assertAdmin()
+  const parsed = deleteStudentSchema.safeParse({
+    id: formData.get("id"),
+    delete_m365: formData.get("delete_m365") === "on",
+    delete_profile: formData.get("delete_profile") === "on",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Invalid delete.")
+  }
+
+  // Try the M365 delete BEFORE the DB delete so we can read the UPN
+  // off the profile row. Best-effort: a Graph failure logs but does
+  // not block the DB cleanup — admin can finish removing the M365
+  // user manually from Entra if Graph hiccups.
+  let m365Deleted = false
+  let m365Error: string | null = null
+  let upnForLog: string | null = null
+  if (parsed.data.delete_m365) {
+    try {
+      const supabase = getServiceSupabase()
+      const { data: row } = await supabase
+        .from("students")
+        .select("profile_id, profile:profiles(email)")
+        .eq("id", parsed.data.id)
+        .maybeSingle<{
+          profile_id: string
+          profile: { email: string } | null
+        }>()
+      const upn = row?.profile?.email
+      if (upn) {
+        upnForLog = upn
+        const { deleteM365User } = await import("@/lib/graph")
+        m365Deleted = await deleteM365User(upn)
+      }
+    } catch (err) {
+      m365Error = err instanceof Error ? err.message : String(err)
+      console.error("deleteStudent: M365 delete failed:", m365Error)
+    }
+  }
+
+  const result = await deleteStudent({
+    id: parsed.data.id,
+    deleteProfile: parsed.data.delete_profile,
+  })
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.student_delete,
+    target_kind: "student",
+    target_id: parsed.data.id,
+    details: {
+      profile_deleted: result.profile_deleted,
+      profile_email: result.profile_email,
+      m365_deleted_attempted: parsed.data.delete_m365,
+      m365_deleted: m365Deleted,
+      m365_error: m365Error,
+      upn: upnForLog,
+    },
+  })
+
+  revalidatePath("/admin/students")
+  redirect("/admin/students?deleted=1")
 }
 
 export async function addStudentTagAction(formData: FormData) {

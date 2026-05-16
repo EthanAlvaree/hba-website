@@ -1036,6 +1036,26 @@ export function generateTempPassword(): string {
   return chars.join("")
 }
 
+/** Soft-delete an M365 user. Goes to the Azure recycle bin (default 30
+ *  days) — admins can restore from Entra → Deleted users if needed.
+ *  Returns true when the delete succeeded, false when the user wasn't
+ *  found (already gone — idempotent), throws otherwise. */
+export async function deleteM365User(upn: string): Promise<boolean> {
+  const accessToken = await getGraphAccessToken()
+  const response = await fetch(
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(upn)}`,
+    {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${accessToken}` },
+      cache: "no-store",
+    }
+  )
+  if (response.status === 204) return true
+  if (response.status === 404) return false
+  const body = await response.text().catch(() => "")
+  throw new Error(`Failed to delete M365 user ${upn}: ${response.status} ${body}`)
+}
+
 /** Ensure the student has an M365 account (created if absent) AND the Office
  *  365 A1 for Students license. Idempotent — safe to re-run after a partial
  *  failure: an existing account is reused and a missing license is filled in. */

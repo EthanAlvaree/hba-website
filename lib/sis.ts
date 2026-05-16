@@ -1755,6 +1755,115 @@ export async function withdrawStudent(
   return { student, enrollments_withdrawn: enrollmentsWithdrawn }
 }
 
+export type DeleteStudentResult = {
+  student_id: string
+  profile_deleted: boolean
+  profile_email: string | null
+  /** Returned so the caller can hand it to the Graph delete API. We don't
+   *  call Graph from here so this module stays DB-only. */
+  student_hba_email: string | null
+}
+
+// Hard delete a student record. Requires the student to already be in
+// 'withdrawn' status — a deliberate two-step gate so admins don't lose
+// data with one stray click. The students FK cascades clean up
+// parent_links, post-enrollment data, schedule draft requests, and
+// incidents. enrollments_id → students has on-delete-restrict, so
+// students with active course-section enrollments are refused; the
+// admin must drop those first (usually via withdraw_enrollments=true
+// during the withdraw step).
+//
+// When `deleteProfile` is true, also removes the student's @hba profile
+// row, BUT only if it isn't referenced as a parent on any other
+// student. (Wouldn't happen for a typical student, but a sibling
+// enrolling under the same M365 mail somehow would.)
+export async function deleteStudent(input: {
+  id: string
+  deleteProfile: boolean
+}): Promise<DeleteStudentResult> {
+  const supabase = getSupabase()
+
+  const { data: student, error: loadError } = await supabase
+    .from("students")
+    .select("id, profile_id, status, profile:profiles(email)")
+    .eq("id", input.id)
+    .maybeSingle<{
+      id: string
+      profile_id: string
+      status: StudentStatus
+      profile: { email: string } | null
+    }>()
+
+  if (loadError) {
+    throw new Error(`Failed to load student before delete: ${loadError.message}`)
+  }
+  if (!student) {
+    throw new Error("Student not found.")
+  }
+  if (student.status !== "withdrawn") {
+    throw new Error(
+      "Only withdrawn students can be deleted. Withdraw first, then come back to delete."
+    )
+  }
+
+  const studentHbaEmail = student.profile?.email ?? null
+  const profileId = student.profile_id
+
+  const { error: deleteError } = await supabase
+    .from("students")
+    .delete()
+    .eq("id", input.id)
+  if (deleteError) {
+    // Most likely failure: enrollments still exist (on-delete-restrict).
+    throw new Error(
+      `Failed to delete student: ${deleteError.message}. ` +
+        `If this mentions enrollments, drop or complete them first.`
+    )
+  }
+
+  let profileDeleted = false
+  if (input.deleteProfile && profileId) {
+    // Refuse if the profile is referenced as a parent on any other
+    // student — wouldn't be normal for an @hba student profile, but
+    // also wouldn't be recoverable, so we check.
+    const { count: parentLinkCount, error: countError } = await supabase
+      .from("parent_links")
+      .select("id", { count: "exact", head: true })
+      .eq("parent_profile_id", profileId)
+    if (countError) {
+      throw new Error(
+        `Failed to verify profile is safe to delete: ${countError.message}`
+      )
+    }
+    if ((parentLinkCount ?? 0) > 0) {
+      // Leave the profile in place — student delete already succeeded,
+      // surface this to the caller via the result rather than throwing.
+      return {
+        student_id: input.id,
+        profile_deleted: false,
+        profile_email: studentHbaEmail,
+        student_hba_email: studentHbaEmail,
+      }
+    }
+
+    const { error: profileError } = await supabase
+      .from("profiles")
+      .delete()
+      .eq("id", profileId)
+    if (profileError) {
+      throw new Error(`Failed to delete student profile: ${profileError.message}`)
+    }
+    profileDeleted = true
+  }
+
+  return {
+    student_id: input.id,
+    profile_deleted: profileDeleted,
+    profile_email: studentHbaEmail,
+    student_hba_email: studentHbaEmail,
+  }
+}
+
 // ============================================================================
 // Student tags
 // ============================================================================

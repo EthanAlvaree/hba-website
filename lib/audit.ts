@@ -65,6 +65,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   // Student lifecycle.
   student_enroll: "student.enroll",
   student_withdraw: "student.withdraw",
+  student_delete: "student.delete",
   student_record_create_manual: "student.record_create_manual",
   student_prereq_override_grant: "student.prereq_override_grant",
   student_prereq_override_revoke: "student.prereq_override_revoke",
