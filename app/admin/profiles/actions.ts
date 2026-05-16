@@ -35,12 +35,22 @@ function revalidateProfiles() {
   revalidatePath("/admin/profiles")
 }
 
+// Read an optional redirectTo from the form; only honour it when it's a
+// same-origin /admin path so we don't bounce off the dashboard.
+function readSafeRedirect(formData: FormData): string | null {
+  const raw = formData.get("redirectTo")
+  if (typeof raw !== "string") return null
+  if (!raw.startsWith("/admin/")) return null
+  return raw
+}
+
 // One save for the whole profile card: roles (incl. admin) + the active
 // flag, all in a single form. updateProfileRoles and updateProfileActive
 // each keep their own last-admin guards, so the DB still refuses to leave
 // zero active admins regardless of which field triggered it.
 export async function saveProfileAction(formData: FormData) {
   const session = await assertAdmin()
+  const redirectTo = readSafeRedirect(formData)
 
   const rawRoles = formData.getAll("roles").map(String)
   const parsedRoles: string[] = []
@@ -131,6 +141,7 @@ export async function saveProfileAction(formData: FormData) {
 
   revalidateProfiles()
   revalidatePath("/admin/students")
+  if (redirectTo) revalidatePath(redirectTo)
 
   if (wasAdmin && !willBeAdmin && isSelf) {
     // Self-demotion: sign out so the user doesn't keep a stale
@@ -139,8 +150,18 @@ export async function saveProfileAction(formData: FormData) {
   }
 
   if (createdStudentId) {
+    if (redirectTo) {
+      redirect(
+        `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}student_created=${encodeURIComponent(createdStudentId)}`
+      )
+    }
     redirect(
       `/admin/profiles?student_created=${encodeURIComponent(createdStudentId)}`
+    )
+  }
+  if (redirectTo) {
+    redirect(
+      `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}role_ok=1`
     )
   }
   redirect("/admin/profiles?role_ok=1")
@@ -176,9 +197,12 @@ export async function updateProfileContactAction(formData: FormData) {
   // join — easier to revalidate the whole students directory.
   revalidatePath("/admin/students")
 
-  const redirectTo = formData.get("redirectTo")
-  if (typeof redirectTo === "string" && redirectTo.startsWith("/admin/")) {
-    redirect(redirectTo)
+  const redirectTo = readSafeRedirect(formData)
+  if (redirectTo) {
+    revalidatePath(redirectTo)
+    redirect(
+      `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}contact_saved=1`
+    )
   }
   redirect("/admin/profiles")
 }
@@ -199,6 +223,7 @@ const requestProfileUpdateSchema = z.object({
 // from legacy SIS data and for annual data-freshness sweeps.
 export async function requestProfileUpdateFromFamilyAction(formData: FormData) {
   await assertAdmin()
+  const redirectTo = readSafeRedirect(formData)
 
   const parsed = requestProfileUpdateSchema.safeParse({
     id: formData.get("id"),
@@ -254,6 +279,12 @@ export async function requestProfileUpdateFromFamilyAction(formData: FormData) {
   })
 
   revalidateProfiles()
+  if (redirectTo) {
+    revalidatePath(redirectTo)
+    redirect(
+      `${redirectTo}${redirectTo.includes("?") ? "&" : "?"}update_request_sent=${encodeURIComponent(profile.email)}`
+    )
+  }
   redirect(
     `/admin/profiles?update_request_sent=${encodeURIComponent(profile.email)}`
   )
