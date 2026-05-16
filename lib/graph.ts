@@ -493,6 +493,60 @@ export async function sendApplicationSubmittedConfirmation(options: {
   })
 }
 
+// Admin-triggered nudge for an applied-but-unpaid family. Sends a short
+// message with the Stripe Payment Link pre-tagged with the application
+// id, so when they finish paying our existing webhook can match the
+// session back to the right row. Optional custom note from the admin is
+// quoted verbatim above the CTA.
+export async function sendApplicationPaymentReminder(options: {
+  application: ApplicationRecord
+  paymentUrl: string
+  noteToFamily?: string | null
+}) {
+  const { application, paymentUrl, noteToFamily } = options
+
+  const guardianEmails: string[] = []
+  if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
+  if (application.guardian2_email) guardianEmails.push(application.guardian2_email)
+  if (guardianEmails.length === 0) {
+    throw new Error("No guardian email on file; cannot send payment reminder.")
+  }
+
+  const studentName =
+    [application.student_first_name, application.student_last_name]
+      .filter(Boolean)
+      .join(" ") || "your student"
+  const parentName = application.guardian1_name?.trim() || "there"
+  const subject = `Registration fee for ${studentName} — payment link`
+
+  const noteBlock =
+    noteToFamily && noteToFamily.trim().length > 0
+      ? `<p style="margin:24px 0;padding:16px 20px;border-left:4px solid ${brand.navy};background:#f5f7fb;color:#1f2937;">${escapeHtml(
+          noteToFamily.trim()
+        ).replace(/\n/g, "<br />")}</p>`
+      : ""
+
+  const html = [
+    `<p>Hi ${escapeHtml(parentName)},</p>`,
+    `<p>Thanks again for applying to ${escapeHtml(siteConfig.name)} for <strong>${escapeHtml(studentName)}</strong>. The $350 registration fee hasn't come through yet — here's a direct link to complete it whenever you're ready:</p>`,
+    noteBlock,
+    `<p style="margin:24px 0;">`,
+    `<a href="${paymentUrl}" style="display:inline-block;padding:12px 24px;background:${brand.orange};color:#fff;text-decoration:none;border-radius:999px;font-weight:600;">Pay registration fee — $350</a>`,
+    `</p>`,
+    `<p style="color:#666;font-size:14px;">Or paste this link into your browser:<br /><a href="${paymentUrl}">${escapeHtml(paymentUrl)}</a></p>`,
+    `<p style="color:#666;font-size:14px;">Once the payment clears your application moves into our active review queue and your child's school account is provisioned automatically — usually within a minute. If anything looks off, reply to this email and we'll sort it.</p>`,
+    `<p>Warmly,<br />The ${escapeHtml(siteConfig.name)} admissions team</p>`,
+  ].join("")
+
+  const { applicationRecipients } = getGraphConfig()
+  await sendMail({
+    subject,
+    htmlBody: html,
+    toRecipients: guardianEmails,
+    fromMailbox: applicationRecipients[0],
+  })
+}
+
 // ============================================================================
 // Application status updates (family-facing)
 // ============================================================================

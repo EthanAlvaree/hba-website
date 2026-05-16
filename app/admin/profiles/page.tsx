@@ -4,6 +4,7 @@ import { auth } from "@/auth"
 import {
   listProfiles,
   listProfileIdsWithStudentRecord,
+  listStudentsLinkedToParent,
   profileListFilterSchema,
   type ProfileRecord,
   type ProfileRole,
@@ -88,6 +89,26 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
     .map((p) => p.id)
   const profileIdsWithStudent = await listProfileIdsWithStudentRecord(
     studentRoleProfileIds
+  )
+
+  // For every parent on the page, fetch their linked students so the card
+  // can render quick links into each child's /admin/students detail page.
+  // One round-trip per parent is fine on this page — the list is paginated
+  // server-side via filters and admins typically scroll a handful at once.
+  const parentRoleProfileIds = profiles
+    .filter((p) => p.roles.includes("parent"))
+    .map((p) => p.id)
+  const linkedStudentsByParent = new Map<
+    string,
+    Awaited<ReturnType<typeof listStudentsLinkedToParent>>
+  >()
+  await Promise.all(
+    parentRoleProfileIds.map(async (parentId) => {
+      linkedStudentsByParent.set(
+        parentId,
+        await listStudentsLinkedToParent(parentId)
+      )
+    })
   )
 
   const roleTabs: Array<{ label: string; value: ProfileRole | "all" }> = [
@@ -221,6 +242,7 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
             profiles.map((profile) => {
               const isSelf = profile.email.toLowerCase() === currentAdminEmail
               const studentId = profileIdsWithStudent.get(profile.id)
+              const linkedStudents = linkedStudentsByParent.get(profile.id) ?? []
               return (
                 <details
                   key={profile.id}
@@ -410,6 +432,63 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                           />
                         </label>
                       </div>
+
+                      <div className="space-y-2 border-t border-slate-100 pt-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+                          Mailing address
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+                            <span className="block">Street address</span>
+                            <input
+                              name="address_line1"
+                              defaultValue={profile.address_line1 ?? ""}
+                              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                            />
+                          </label>
+                          <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+                            <span className="block">Apartment / suite (optional)</span>
+                            <input
+                              name="address_line2"
+                              defaultValue={profile.address_line2 ?? ""}
+                              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                            />
+                          </label>
+                          <label className="space-y-1 text-xs font-medium text-slate-700">
+                            <span className="block">City</span>
+                            <input
+                              name="address_city"
+                              defaultValue={profile.address_city ?? ""}
+                              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                            />
+                          </label>
+                          <label className="space-y-1 text-xs font-medium text-slate-700">
+                            <span className="block">State / region</span>
+                            <input
+                              name="address_region"
+                              defaultValue={profile.address_region ?? ""}
+                              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                            />
+                          </label>
+                          <label className="space-y-1 text-xs font-medium text-slate-700">
+                            <span className="block">Postal code</span>
+                            <input
+                              name="address_postal_code"
+                              defaultValue={profile.address_postal_code ?? ""}
+                              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                            />
+                          </label>
+                          <label className="space-y-1 text-xs font-medium text-slate-700">
+                            <span className="block">Country</span>
+                            <input
+                              name="address_country"
+                              defaultValue={profile.address_country ?? ""}
+                              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                            />
+                          </label>
+                        </div>
+                      </div>
+
                       <button
                         type="submit"
                         className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
@@ -417,6 +496,64 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                         Save contact info
                       </button>
                     </form>
+
+                    {profile.roles.includes("parent") && (
+                      <div className="space-y-2 border-t border-slate-200 pt-4">
+                        <p className="text-sm font-semibold text-slate-900">
+                          Linked students
+                        </p>
+                        {linkedStudents.length === 0 ? (
+                          <p className="text-xs text-slate-500">
+                            No students currently linked to this parent. Links
+                            are created automatically when an application is
+                            enrolled, or manually via{" "}
+                            <Link
+                              href="/admin/students/import-parents"
+                              className="font-semibold text-brand-navy underline hover:text-brand-orange"
+                            >
+                              import parents
+                            </Link>
+                            .
+                          </p>
+                        ) : (
+                          <ul className="space-y-2">
+                            {linkedStudents.map((link) => {
+                              const display =
+                                link.preferred_name?.trim() ||
+                                `${link.legal_first_name} ${link.legal_last_name}`.trim()
+                              return (
+                                <li
+                                  key={link.student_id}
+                                  className="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2"
+                                >
+                                  <Link
+                                    href={`/admin/students/${link.student_id}`}
+                                    className="text-sm font-semibold text-brand-navy hover:text-brand-orange"
+                                  >
+                                    {display} →
+                                  </Link>
+                                  {link.relationship && (
+                                    <span className="text-xs text-slate-600">
+                                      ({link.relationship})
+                                    </span>
+                                  )}
+                                  {link.is_primary && (
+                                    <span className="rounded-full border border-brand-orange/30 bg-brand-orange/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-brand-orange">
+                                      Primary
+                                    </span>
+                                  )}
+                                  {link.status !== "active" && (
+                                    <span className="rounded-full border border-slate-300 bg-white px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600">
+                                      {link.status}
+                                    </span>
+                                  )}
+                                </li>
+                              )
+                            })}
+                          </ul>
+                        )}
+                      </div>
+                    )}
 
                     {profile.roles.includes("faculty") && (
                       <div className="space-y-2 border-t border-slate-200 pt-4">

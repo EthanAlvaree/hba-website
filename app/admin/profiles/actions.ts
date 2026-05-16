@@ -155,6 +155,12 @@ export async function updateProfileContactAction(formData: FormData) {
     personal_email: formData.get("personal_email") ?? "",
     mobile_phone: formData.get("mobile_phone") ?? "",
     work_phone: formData.get("work_phone") ?? "",
+    address_line1: formData.get("address_line1") ?? "",
+    address_line2: formData.get("address_line2") ?? "",
+    address_city: formData.get("address_city") ?? "",
+    address_region: formData.get("address_region") ?? "",
+    address_postal_code: formData.get("address_postal_code") ?? "",
+    address_country: formData.get("address_country") ?? "",
   })
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Contact update failed.")

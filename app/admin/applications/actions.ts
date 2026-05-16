@@ -15,6 +15,7 @@ import {
 } from "@/lib/applications"
 import {
   isFamilyNotifiableStatus,
+  sendApplicationPaymentReminder,
   sendApplicationStatusUpdateToFamily,
 } from "@/lib/graph"
 import {
@@ -23,6 +24,8 @@ import {
 } from "@/lib/application-storage"
 import { enrollApplicationSchema } from "@/lib/sis"
 import { provisionAndEnrollFromApplication } from "@/lib/enrollment"
+import { siteConfig } from "@/lib/site"
+import { ADMIN_AUDIT_ACTIONS, logAdminAuditEvent } from "@/lib/audit"
 
 const optionalText = z
   .string()
@@ -152,6 +155,73 @@ export async function deleteApplicationAction(formData: FormData) {
   }
 
   await deleteApplication(parsed.data.id)
+  revalidateApplicationViews()
+  redirectBackToQueue(redirectTo)
+}
+
+const sendPaymentReminderSchema = z.object({
+  id: z.uuid(),
+  note: z
+    .string()
+    .trim()
+    .max(2000)
+    .optional()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+})
+
+// "Send payment link" button on unpaid application rows in the dashboard.
+// Sends the family a fresh nudge with the Stripe Payment Link pre-tagged
+// with this application's id, so the existing checkout.session.completed
+// webhook can match the eventual payment back to this row. Idempotent
+// from the system's perspective — admin can resend if the family asks.
+export async function sendApplicationPaymentReminderAction(formData: FormData) {
+  await assertAdmin()
+  const redirectTo = formData.get("redirectTo")
+
+  const parsed = sendPaymentReminderSchema.safeParse({
+    id: formData.get("id"),
+    note: formData.get("note_to_family") ?? "",
+  })
+  if (!parsed.success) {
+    throw new Error(parsed.error.issues[0]?.message ?? "Send failed.")
+  }
+
+  const application = await getApplicationById(parsed.data.id)
+  if (!application) {
+    throw new Error("Application not found.")
+  }
+  if (application.fee_paid_at) {
+    throw new Error("This application is already marked paid — no reminder sent.")
+  }
+
+  const stripeLink = siteConfig.external.stripeRegistrationLink
+  if (!stripeLink) {
+    throw new Error(
+      "No Stripe Payment Link is configured for this deployment. Set siteConfig.external.stripeRegistrationLink to enable reminders."
+    )
+  }
+  const paymentUrl = `${stripeLink}?client_reference_id=${encodeURIComponent(
+    application.id
+  )}`
+
+  await sendApplicationPaymentReminder({
+    application,
+    paymentUrl,
+    noteToFamily: parsed.data.note,
+  })
+
+  await logAdminAuditEvent({
+    action: ADMIN_AUDIT_ACTIONS.application_payment_reminder_sent,
+    target_kind: "application",
+    target_id: application.id,
+    details: {
+      to: [application.guardian1_email, application.guardian2_email].filter(
+        Boolean
+      ),
+      had_custom_note: parsed.data.note !== null,
+    },
+  })
+
   revalidateApplicationViews()
   redirectBackToQueue(redirectTo)
 }

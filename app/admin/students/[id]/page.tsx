@@ -642,6 +642,14 @@ export default async function StudentDetailPage({
                     <span className="text-xs text-slate-500">
                       {link.parent?.email ?? "—"}
                     </span>
+                    {link.parent && (
+                      <Link
+                        href={`/admin/profiles?search=${encodeURIComponent(link.parent.email)}`}
+                        className="ml-auto text-[11px] font-semibold uppercase tracking-[0.16em] text-brand-navy hover:text-brand-orange"
+                      >
+                        Parent profile →
+                      </Link>
+                    )}
                   </div>
 
                   {link.parent && (

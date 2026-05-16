@@ -42,6 +42,12 @@ export type ProfileRecord = {
   personal_email: string | null
   mobile_phone: string | null
   work_phone: string | null
+  address_line1: string | null
+  address_line2: string | null
+  address_city: string | null
+  address_region: string | null
+  address_postal_code: string | null
+  address_country: string | null
   active: boolean
   photo_path: string | null
 }
@@ -105,8 +111,9 @@ export type ParentLinkRecord = {
 
 const profileColumns =
   "id, created_at, updated_at, entra_oid, email, first_name, middle_name, " +
-  "last_name, display_name, roles, personal_email, mobile_phone, work_phone, active, " +
-  "photo_path"
+  "last_name, display_name, roles, personal_email, mobile_phone, work_phone, " +
+  "address_line1, address_line2, address_city, address_region, " +
+  "address_postal_code, address_country, active, photo_path"
 
 const studentColumns =
   "id, created_at, updated_at, profile_id, application_id, " +
@@ -179,6 +186,12 @@ type FindOrCreateProfileInput = {
   mobile_phone?: string | null
   work_phone?: string | null
   personal_email?: string | null
+  address_line1?: string | null
+  address_line2?: string | null
+  address_city?: string | null
+  address_region?: string | null
+  address_postal_code?: string | null
+  address_country?: string | null
 }
 
 // Returns the profile row, creating it if missing. If the profile exists but
@@ -204,6 +217,16 @@ export async function findOrCreateProfile(
     if (!existing.work_phone && input.work_phone) patch.work_phone = input.work_phone
     if (!existing.personal_email && input.personal_email) {
       patch.personal_email = input.personal_email
+    }
+    if (!existing.address_line1 && input.address_line1) patch.address_line1 = input.address_line1
+    if (!existing.address_line2 && input.address_line2) patch.address_line2 = input.address_line2
+    if (!existing.address_city && input.address_city) patch.address_city = input.address_city
+    if (!existing.address_region && input.address_region) patch.address_region = input.address_region
+    if (!existing.address_postal_code && input.address_postal_code) {
+      patch.address_postal_code = input.address_postal_code
+    }
+    if (!existing.address_country && input.address_country) {
+      patch.address_country = input.address_country
     }
 
     if (Object.keys(patch).length === 0) {
@@ -235,6 +258,12 @@ export async function findOrCreateProfile(
       mobile_phone: input.mobile_phone ?? null,
       work_phone: input.work_phone ?? null,
       personal_email: input.personal_email ?? null,
+      address_line1: input.address_line1 ?? null,
+      address_line2: input.address_line2 ?? null,
+      address_city: input.address_city ?? null,
+      address_region: input.address_region ?? null,
+      address_postal_code: input.address_postal_code ?? null,
+      address_country: input.address_country ?? null,
     })
     .select(profileColumns)
     .single<ProfileRecord>()
@@ -290,6 +319,59 @@ export async function getStudentById(
     throw new Error(`Failed to look up student: ${error.message}`)
   }
   return data
+}
+
+/** Students this parent profile is linked to (via parent_links). Used by
+ *  /admin/profiles to render "Linked students" on the parent profile
+ *  card so the admin can jump to each child's detail page. */
+export async function listStudentsLinkedToParent(
+  parentProfileId: string
+): Promise<
+  Array<{
+    student_id: string
+    relationship: string | null
+    is_primary: boolean
+    legal_first_name: string
+    legal_last_name: string
+    preferred_name: string | null
+    status: StudentStatus
+  }>
+> {
+  type Row = {
+    relationship: string | null
+    is_primary: boolean
+    student: {
+      id: string
+      legal_first_name: string
+      legal_last_name: string
+      preferred_name: string | null
+      status: StudentStatus
+    } | null
+  }
+  const { data, error } = await getSupabase()
+    .from("parent_links")
+    .select(
+      `relationship, is_primary,
+       student:students(id, legal_first_name, legal_last_name, preferred_name, status)`
+    )
+    .eq("parent_profile_id", parentProfileId)
+    .returns<Row[]>()
+  if (error) {
+    throw new Error(`Failed to list students linked to parent: ${error.message}`)
+  }
+  return (data ?? [])
+    .filter((row): row is Row & { student: NonNullable<Row["student"]> } =>
+      Boolean(row.student)
+    )
+    .map((row) => ({
+      student_id: row.student.id,
+      relationship: row.relationship,
+      is_primary: row.is_primary,
+      legal_first_name: row.student.legal_first_name,
+      legal_last_name: row.student.legal_last_name,
+      preferred_name: row.student.preferred_name,
+      status: row.student.status,
+    }))
 }
 
 /** Bulk variant: which of the supplied profile IDs already have an
@@ -588,6 +670,26 @@ async function ensureParentLinks(
     const name = readGuardianField(application, slot.prefix, "name") ?? ""
     const { first, last } = splitName(name)
 
+    // Resolve guardian address. The application form supports a
+    // "same as student" checkbox for guardian1 and guardian2 (not for
+    // homestay, since homestay is by definition a separate household).
+    // When that's set we copy from the student address fields.
+    const sameAsStudent =
+      slot.prefix !== "homestay" &&
+      Boolean(
+        application[
+          `${slot.prefix}_address_same_as_student` as keyof ApplicationRecord
+        ]
+      )
+    const addrPrefix = sameAsStudent ? "student" : slot.prefix
+    const readAddr = (field: string) => {
+      const key = `${addrPrefix}_${field}` as keyof ApplicationRecord
+      const value = application[key]
+      return typeof value === "string" && value.trim().length > 0
+        ? value.trim()
+        : null
+    }
+
     const { profile } = await findOrCreateProfile({
       email,
       role: "parent",
@@ -596,6 +698,12 @@ async function ensureParentLinks(
       display_name: name || null,
       mobile_phone: readGuardianField(application, slot.prefix, "mobile"),
       work_phone: readGuardianField(application, slot.prefix, "work_phone"),
+      address_line1: readAddr("address_line1"),
+      address_line2: readAddr("address_line2"),
+      address_city: readAddr("address_city"),
+      address_region: readAddr("address_region"),
+      address_postal_code: readAddr("address_postal_code"),
+      address_country: readAddr("address_country"),
     })
 
     const existing = await getParentLink(studentId, profile.id)
@@ -2181,6 +2289,48 @@ export const profileContactUpdateSchema = z.object({
     .optional()
     .nullable()
     .transform((value) => (value && value.length > 0 ? value : null)),
+  address_line1: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  address_line2: z
+    .string()
+    .trim()
+    .max(200)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  address_city: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  address_region: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  address_postal_code: z
+    .string()
+    .trim()
+    .max(40)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
+  address_country: z
+    .string()
+    .trim()
+    .max(120)
+    .optional()
+    .nullable()
+    .transform((value) => (value && value.length > 0 ? value : null)),
 })
 export type ProfileContactUpdateInput = z.infer<typeof profileContactUpdateSchema>
 
@@ -2197,6 +2347,12 @@ export async function updateProfileContact(
       personal_email: rest.personal_email,
       mobile_phone: rest.mobile_phone,
       work_phone: rest.work_phone,
+      address_line1: rest.address_line1,
+      address_line2: rest.address_line2,
+      address_city: rest.address_city,
+      address_region: rest.address_region,
+      address_postal_code: rest.address_postal_code,
+      address_country: rest.address_country,
     })
     .eq("id", id)
     .select(profileColumns)

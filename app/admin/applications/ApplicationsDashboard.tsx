@@ -10,6 +10,7 @@ import {
   deleteApplicationAction,
   deleteApplicationDocumentAdminAction,
   enrollApplicationAction,
+  sendApplicationPaymentReminderAction,
   updateApplicationAction,
   updateApplicationDataAction,
   uploadApplicationDocumentAdminAction,
@@ -822,6 +823,45 @@ export default function ApplicationsDashboard({
                         </p>
                       </div>
                     </div>
+
+                    {hasStripeGate && !application.fee_paid_at && (
+                      <form
+                        action={sendApplicationPaymentReminderAction}
+                        className="space-y-3 rounded-3xl border border-rose-200 bg-rose-50/60 p-5"
+                      >
+                        <input type="hidden" name="id" value={application.id} />
+                        <input type="hidden" name="redirectTo" value={currentPath} />
+                        <div>
+                          <p className="text-sm font-semibold text-rose-900">
+                            Registration fee unpaid
+                          </p>
+                          <p className="text-xs text-rose-800">
+                            The family submitted but the $350 fee hasn&rsquo;t
+                            cleared. Send a fresh payment link — it&rsquo;s
+                            the same Stripe link as Submit, tagged so the
+                            webhook can match the eventual payment back to
+                            this application.
+                          </p>
+                        </div>
+                        <label className="space-y-1 text-xs font-medium text-rose-900">
+                          <span className="block">
+                            Optional note to family (quoted verbatim in the email)
+                          </span>
+                          <textarea
+                            name="note_to_family"
+                            rows={2}
+                            placeholder="e.g. We noticed your payment didn't come through — please try this link or reply if you'd like an alternative."
+                            className="w-full rounded-2xl border border-rose-200 bg-white px-3 py-2 text-sm text-slate-900 focus:border-rose-400 focus:outline-none"
+                          />
+                        </label>
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-full bg-rose-700 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+                        >
+                          Send payment link to family
+                        </button>
+                      </form>
+                    )}
 
                     <AdminEditApplicationData
                       application={application}
