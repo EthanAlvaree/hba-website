@@ -186,6 +186,16 @@ async function sendMail(options: SendMailOptions) {
       },
       body: JSON.stringify({
         message: {
+          // Pin From: to the sender mailbox explicitly. Without this,
+          // Graph defaults the From header to the underlying mailbox's
+          // UPN — which for shared mailboxes is often the .onmicrosoft.com
+          // domain even when the primary SMTP is on a verified domain,
+          // and inboxes (Gmail / Outlook) flag the From/UPN mismatch as
+          // spammy. Setting `from` explicitly to the same address we're
+          // sending via aligns From with the Authentication-Results domain.
+          from: {
+            emailAddress: { address: sender },
+          },
           subject: options.subject,
           body: { contentType: "HTML", content: options.htmlBody },
           toRecipients: options.toRecipients.map((email) => ({
