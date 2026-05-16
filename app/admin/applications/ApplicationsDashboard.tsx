@@ -354,6 +354,14 @@ function StudentCard({ application }: { application: ApplicationRecord }) {
         }
       />
       <DetailRow
+        label="Graduation year"
+        value={
+          application.student_graduation_year != null
+            ? String(application.student_graduation_year)
+            : ""
+        }
+      />
+      <DetailRow
         label="Student email"
         value={application.student_personal_email ?? ""}
       />
@@ -1104,10 +1112,10 @@ function AdminEditApplicationData({
   redirectTo: string
 }) {
   return (
-    <details className="rounded-3xl border border-brand-navy/15 bg-white">
-      <summary className="cursor-pointer list-none px-5 py-4 text-sm font-semibold text-brand-navy">
-        Edit application data (fix typos, fill omissions)
-      </summary>
+    <section className="rounded-3xl border border-brand-navy/15 bg-white">
+      <div className="px-5 py-4 text-sm font-semibold text-brand-navy">
+        Application data — edit any field, then save at the bottom.
+      </div>
 
       <form
         action={updateApplicationDataAction}
@@ -1146,6 +1154,16 @@ function AdminEditApplicationData({
             <TextField name="student_english_proficiency" label="English proficiency" defaultValue={application.student_english_proficiency} />
             <TextField name="student_current_grade" label="Current grade" defaultValue={application.student_current_grade} />
             <TextField name="student_desired_grade" label="Desired entry grade" defaultValue={application.student_desired_grade} />
+            <TextField
+              name="student_graduation_year"
+              label="Expected graduation year"
+              type="number"
+              defaultValue={
+                application.student_graduation_year != null
+                  ? String(application.student_graduation_year)
+                  : ""
+              }
+            />
             <TextField name="student_personal_email" label="Student personal email" type="email" defaultValue={application.student_personal_email} />
             <TextField name="student_phone" label="Student phone" type="tel" defaultValue={application.student_phone} />
           </div>
@@ -1228,7 +1246,7 @@ function AdminEditApplicationData({
           Save application data
         </button>
       </form>
-    </details>
+    </section>
   )
 }
 

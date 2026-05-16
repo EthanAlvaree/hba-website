@@ -8,7 +8,11 @@ import {
   type ProfileRecord,
   type ProfileRole,
 } from "@/lib/sis"
-import { deleteProfileAction, saveProfileAction } from "./actions"
+import {
+  deleteProfileAction,
+  saveProfileAction,
+  updateProfileContactAction,
+} from "./actions"
 import { ConfirmAction } from "./ConfirmAction"
 
 // Order the role checkboxes the way the office thinks about them, not the
@@ -335,6 +339,82 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                         className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
                       >
                         Save
+                      </button>
+                    </form>
+
+                    <form
+                      action={updateProfileContactAction}
+                      className="space-y-4 border-t border-slate-200 pt-4"
+                    >
+                      <input type="hidden" name="id" value={profile.id} />
+                      <p className="text-sm font-semibold text-slate-900">Contact info</p>
+                      <p className="text-xs text-slate-500">
+                        Name, phones, and personal email. Sign-in email
+                        ({profile.email}) is fixed by Microsoft and can&rsquo;t
+                        be changed here.
+                      </p>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <label className="space-y-1 text-xs font-medium text-slate-700">
+                          <span className="block">First name</span>
+                          <input
+                            name="first_name"
+                            defaultValue={profile.first_name ?? ""}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+                        <label className="space-y-1 text-xs font-medium text-slate-700">
+                          <span className="block">Last name</span>
+                          <input
+                            name="last_name"
+                            defaultValue={profile.last_name ?? ""}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+                        <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+                          <span className="block">
+                            Display name (overrides first + last when set)
+                          </span>
+                          <input
+                            name="display_name"
+                            defaultValue={profile.display_name ?? ""}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+                        <label className="space-y-1 text-xs font-medium text-slate-700">
+                          <span className="block">Mobile phone</span>
+                          <input
+                            name="mobile_phone"
+                            type="tel"
+                            defaultValue={profile.mobile_phone ?? ""}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+                        <label className="space-y-1 text-xs font-medium text-slate-700">
+                          <span className="block">Work phone</span>
+                          <input
+                            name="work_phone"
+                            type="tel"
+                            defaultValue={profile.work_phone ?? ""}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+                        <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+                          <span className="block">
+                            Personal email (separate from sign-in email)
+                          </span>
+                          <input
+                            name="personal_email"
+                            type="email"
+                            defaultValue={profile.personal_email ?? ""}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+                      </div>
+                      <button
+                        type="submit"
+                        className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-5 py-2.5 text-sm font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+                      >
+                        Save contact info
                       </button>
                     </form>
 
