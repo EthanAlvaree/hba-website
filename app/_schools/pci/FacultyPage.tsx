@@ -31,7 +31,7 @@ function PersonCircle({ person }: { person: PciPerson }) {
           alt={person.name}
           fill
           sizes="(max-width: 1024px) 160px, 176px"
-          className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
       <h3 className="mt-5 text-lg font-black tracking-tight text-brand-navy-deep">
