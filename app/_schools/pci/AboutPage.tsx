@@ -83,7 +83,7 @@ export default function PciAboutPage() {
                     alt={p.name}
                     fill
                     sizes="(max-width: 1024px) 96px, 112px"
-                    className="object-cover object-top transition-transform duration-500 group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
                 <p className="mt-3 text-sm font-black tracking-tight text-brand-navy-deep">
