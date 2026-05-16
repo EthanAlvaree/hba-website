@@ -7,6 +7,7 @@ import {
   addStudentTag,
   createParentLinkForStudent,
   createParentLinkSchema,
+  deleteProfile,
   deleteStudent,
   parentLinkUpdateSchema,
   profileContactUpdateSchema,
@@ -347,6 +348,7 @@ const deleteStudentSchema = z.object({
   id: z.uuid(),
   delete_m365: z.coerce.boolean().default(false),
   delete_profile: z.coerce.boolean().default(false),
+  delete_orphan_parents: z.coerce.boolean().default(false),
 })
 
 // Hard delete a withdrawn student. Optional M365 + profile cleanup —
@@ -357,9 +359,28 @@ export async function deleteStudentAction(formData: FormData) {
     id: formData.get("id"),
     delete_m365: formData.get("delete_m365") === "on",
     delete_profile: formData.get("delete_profile") === "on",
+    delete_orphan_parents: formData.get("delete_orphan_parents") === "on",
   })
   if (!parsed.success) {
     throw new Error(parsed.error.issues[0]?.message ?? "Invalid delete.")
+  }
+
+  const supabase = getServiceSupabase()
+
+  // Snapshot the parent profile ids BEFORE deleting the student.
+  // parent_links cascades on student delete, so by the time deleteStudent
+  // returns these would be gone and we couldn't tell which parents had
+  // been linked. We re-check "is this parent orphan now?" after the
+  // student delete by calling deleteProfile, which itself refuses to
+  // remove a profile that still has student records or parent_links.
+  let parentProfileIdsToTry: string[] = []
+  if (parsed.data.delete_orphan_parents) {
+    const { data: links } = await supabase
+      .from("parent_links")
+      .select("parent_profile_id")
+      .eq("student_id", parsed.data.id)
+      .returns<Array<{ parent_profile_id: string }>>()
+    parentProfileIdsToTry = (links ?? []).map((l) => l.parent_profile_id)
   }
 
   // Try the M365 delete BEFORE the DB delete so we can read the UPN
@@ -371,7 +392,6 @@ export async function deleteStudentAction(formData: FormData) {
   let upnForLog: string | null = null
   if (parsed.data.delete_m365) {
     try {
-      const supabase = getServiceSupabase()
       const { data: row } = await supabase
         .from("students")
         .select("profile_id, profile:profiles(email)")
@@ -397,6 +417,28 @@ export async function deleteStudentAction(formData: FormData) {
     deleteProfile: parsed.data.delete_profile,
   })
 
+  // Cascade-delete parent profiles that were ONLY linked to this student.
+  // deleteProfile internally refuses if any other student record or
+  // parent_link still references the profile (and refuses for the last
+  // admin), so a parent with a sibling still enrolled is safely skipped.
+  const parentProfileDeleteOutcomes: Array<{
+    profile_id: string
+    deleted: boolean
+    skipped_reason?: string
+  }> = []
+  for (const parentId of parentProfileIdsToTry) {
+    try {
+      await deleteProfile(parentId)
+      parentProfileDeleteOutcomes.push({ profile_id: parentId, deleted: true })
+    } catch (err) {
+      parentProfileDeleteOutcomes.push({
+        profile_id: parentId,
+        deleted: false,
+        skipped_reason: err instanceof Error ? err.message : String(err),
+      })
+    }
+  }
+
   await logAdminAuditEvent({
     action: ADMIN_AUDIT_ACTIONS.student_delete,
     target_kind: "student",
@@ -408,10 +450,13 @@ export async function deleteStudentAction(formData: FormData) {
       m365_deleted: m365Deleted,
       m365_error: m365Error,
       upn: upnForLog,
+      orphan_parent_cleanup_attempted: parsed.data.delete_orphan_parents,
+      orphan_parent_outcomes: parentProfileDeleteOutcomes,
     },
   })
 
   revalidatePath("/admin/students")
+  revalidatePath("/admin/profiles")
   redirect("/admin/students?deleted=1")
 }
 

@@ -89,13 +89,11 @@ export default async function StudentPortalPage({ searchParams }: PageProps) {
     targetStudentId = raw.as
     previewing = true
   } else if (isAdmin) {
-    return (
-      <EmptyState
-        title="Preview the student portal"
-        body="To preview the portal as a specific student, open a student from the directory and click 'Preview portal'."
-        cta={{ label: "Open the students directory", href: "/admin/students" }}
-      />
-    )
+    // Admin clicked the cross-portal "Student portal" link without picking
+    // a student. Send them straight to the directory where the per-row
+    // "Preview portal" button is the real entry point — saves a click on
+    // an otherwise dead-end placeholder page.
+    redirect("/admin/students")
   }
 
   if (!targetStudentId) {
@@ -315,29 +313,3 @@ function PreviewBanner({
   )
 }
 
-function EmptyState({
-  title,
-  body,
-  cta,
-}: {
-  title: string
-  body: string
-  cta?: { label: string; href: string }
-}) {
-  return (
-    <div className="space-y-4">
-      <header className="space-y-2">
-        <h1 className="text-3xl font-extrabold text-brand-navy">{title}</h1>
-        <p className="text-sm text-slate-600">{body}</p>
-      </header>
-      {cta && (
-        <Link
-          href={cta.href}
-          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
-        >
-          {cta.label}
-        </Link>
-      )}
-    </div>
-  )
-}

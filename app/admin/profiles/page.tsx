@@ -630,51 +630,49 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                       </div>
                     )}
 
-                    {!profile.active && (
-                      <div className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50/50 px-4 py-3">
-                        <div>
-                          <p className="text-sm font-semibold text-rose-900">Hard delete</p>
-                          <p className="text-xs text-rose-800">
-                            Permanently removes this profile row. Refused if
-                            the profile has a student record, parent_links,
-                            or is the only active admin. Course sections
-                            taught by this profile have the teacher cleared
-                            automatically.
-                          </p>
-                        </div>
-                        <ConfirmAction
-                          action={deleteProfileAction}
-                          fields={{ id: profile.id }}
-                          triggerLabel="Delete forever"
-                          title={isSelf ? "Delete your own profile?" : "Delete this profile?"}
-                          confirmLabel={isSelf ? "Delete and sign out" : "Delete forever"}
-                          variant="danger"
-                          description={
-                            isSelf ? (
-                              <>
-                                <p>
-                                  This permanently removes{" "}
-                                  <strong>{profile.email}</strong> from the
-                                  profiles table.
-                                </p>
-                                <p className="mt-2">
-                                  Because that&rsquo;s your own profile,
-                                  you&rsquo;ll be signed out immediately and
-                                  won&rsquo;t be able to sign back in unless
-                                  the M365 mailbox seeds a fresh profile.
-                                </p>
-                              </>
-                            ) : (
+                    <div className="space-y-3 rounded-2xl border border-rose-200 bg-rose-50/50 px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold text-rose-900">Hard delete</p>
+                        <p className="text-xs text-rose-800">
+                          Permanently removes this profile row. Refused if
+                          the profile is linked as a parent to any student,
+                          has its own student record, or is the only active
+                          admin. Course sections taught by this profile have
+                          the teacher cleared automatically.
+                        </p>
+                      </div>
+                      <ConfirmAction
+                        action={deleteProfileAction}
+                        fields={{ id: profile.id }}
+                        triggerLabel="Delete forever"
+                        title={isSelf ? "Delete your own profile?" : "Delete this profile?"}
+                        confirmLabel={isSelf ? "Delete and sign out" : "Delete forever"}
+                        variant="danger"
+                        description={
+                          isSelf ? (
+                            <>
                               <p>
                                 This permanently removes{" "}
                                 <strong>{profile.email}</strong> from the
-                                profiles table. This action cannot be undone.
+                                profiles table.
                               </p>
-                            )
-                          }
-                        />
-                      </div>
-                    )}
+                              <p className="mt-2">
+                                Because that&rsquo;s your own profile,
+                                you&rsquo;ll be signed out immediately and
+                                won&rsquo;t be able to sign back in unless
+                                the M365 mailbox seeds a fresh profile.
+                              </p>
+                            </>
+                          ) : (
+                            <p>
+                              This permanently removes{" "}
+                              <strong>{profile.email}</strong> from the
+                              profiles table. This action cannot be undone.
+                            </p>
+                          )
+                        }
+                      />
+                    </div>
 
                     {studentId && (
                       <div className="flex justify-end border-t border-slate-200 pt-4">

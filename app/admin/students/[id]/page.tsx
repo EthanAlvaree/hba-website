@@ -1351,6 +1351,18 @@ function DeleteStudentCard({ studentId }: { studentId: string }) {
               profile is still linked as a parent of any other student).
             </span>
           </label>
+          <label className="flex items-start gap-2 text-sm text-slate-700">
+            <input
+              type="checkbox"
+              name="delete_orphan_parents"
+              defaultChecked
+              className="mt-0.5 h-4 w-4 rounded border-slate-300 text-rose-700 focus:ring-rose-600"
+            />
+            <span>
+              Also delete any parent profiles that have no other children at
+              HBA (siblings keep their parent profiles automatically).
+            </span>
+          </label>
           <p className="text-[11px] text-rose-700">
             This cannot be undone from the SIS. The M365 recycle bin is the
             only restore path.

@@ -2266,11 +2266,12 @@ export async function deleteProfile(profileId: string): Promise<void> {
     throw new Error(`Failed to load profile before delete: ${profileError.message}`)
   }
 
-  if (profile.active) {
-    throw new Error(
-      "Deactivate this profile first (untoggle Active and save), then try delete again. The deactivation step is an intentional safety check."
-    )
-  }
+  // We used to require profile.active === false as a sanity gate, but
+  // the FK guards below (student record, parent_links, last-admin) are
+  // the load-bearing checks — anything that gets past them is genuinely
+  // orphan and safe to remove. Forcing a deactivate-then-delete dance
+  // just added clicks for the common case of cleaning up a parent
+  // profile after their last student was deleted.
 
   if (profile.roles.includes("admin")) {
     const adminCount = await countActiveAdminProfiles()
