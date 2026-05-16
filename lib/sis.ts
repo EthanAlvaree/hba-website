@@ -2424,90 +2424,47 @@ export async function updateProfileActive(
 
 // Inline edit of contact details for a profile (used both by the profiles
 // directory and the parent-edit form on the student detail page).
+//
+// Each field transform preserves undefined-vs-null so partial forms (a
+// "name + phone only" editor) can submit only the fields they show and
+// updateProfileContact below will skip the missing keys instead of
+// wiping populated columns the form didn't expose. Explicit blanks
+// (user cleared the input) still come through as null and overwrite.
+const optionalProfileField = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .nullable()
+    .transform((value) => {
+      if (value === undefined) return undefined
+      if (value === null || value.length === 0) return null
+      return value
+    })
+
 export const profileContactUpdateSchema = z.object({
   id: z.uuid(),
-  first_name: z
-    .string()
-    .trim()
-    .max(80)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  last_name: z
-    .string()
-    .trim()
-    .max(80)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  display_name: z
-    .string()
-    .trim()
-    .max(160)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
+  first_name: optionalProfileField(80),
+  last_name: optionalProfileField(80),
+  display_name: optionalProfileField(160),
   personal_email: z
     .union([z.email(), z.literal("")])
     .optional()
     .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  mobile_phone: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  work_phone: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  address_line1: z
-    .string()
-    .trim()
-    .max(200)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  address_line2: z
-    .string()
-    .trim()
-    .max(200)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  address_city: z
-    .string()
-    .trim()
-    .max(120)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  address_region: z
-    .string()
-    .trim()
-    .max(120)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  address_postal_code: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
-  address_country: z
-    .string()
-    .trim()
-    .max(120)
-    .optional()
-    .nullable()
-    .transform((value) => (value && value.length > 0 ? value : null)),
+    .transform((value) => {
+      if (value === undefined) return undefined
+      if (value === null || value.length === 0) return null
+      return value
+    }),
+  mobile_phone: optionalProfileField(40),
+  work_phone: optionalProfileField(40),
+  address_line1: optionalProfileField(200),
+  address_line2: optionalProfileField(200),
+  address_city: optionalProfileField(120),
+  address_region: optionalProfileField(120),
+  address_postal_code: optionalProfileField(40),
+  address_country: optionalProfileField(120),
 })
 export type ProfileContactUpdateInput = z.infer<typeof profileContactUpdateSchema>
 
@@ -2515,22 +2472,26 @@ export async function updateProfileContact(
   input: ProfileContactUpdateInput
 ): Promise<ProfileRecord> {
   const { id, ...rest } = input
+  // Only patch fields the caller explicitly included. The schema's
+  // .optional() transform turns missing keys into undefined; we drop
+  // those from the update payload so a small "edit name + phone"
+  // form can't accidentally wipe address fields it didn't show.
+  // Explicit nulls (user blanked the input) are still written.
+  const patch: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(rest)) {
+    if (value !== undefined) patch[key] = value
+  }
+  if (Object.keys(patch).length === 0) {
+    const existing = await getProfileById(id)
+    if (!existing) {
+      throw new Error("Profile not found.")
+    }
+    return existing
+  }
+
   const { data, error } = await getSupabase()
     .from("profiles")
-    .update({
-      first_name: rest.first_name,
-      last_name: rest.last_name,
-      display_name: rest.display_name,
-      personal_email: rest.personal_email,
-      mobile_phone: rest.mobile_phone,
-      work_phone: rest.work_phone,
-      address_line1: rest.address_line1,
-      address_line2: rest.address_line2,
-      address_city: rest.address_city,
-      address_region: rest.address_region,
-      address_postal_code: rest.address_postal_code,
-      address_country: rest.address_country,
-    })
+    .update(patch)
     .eq("id", id)
     .select(profileColumns)
     .single<ProfileRecord>()

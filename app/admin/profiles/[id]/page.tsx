@@ -72,8 +72,16 @@ export default async function ProfileDetailPage({ params, searchParams }: PagePr
   const isSelf = profile.email.toLowerCase() === currentAdminEmail
   const detailPath = `/admin/profiles/${profile.id}`
 
-  // Quick links into related pages.
+  // For students, the student detail page is the canonical rich view —
+  // photo, tags, parent_links, enrollments, post-enrollment file, all
+  // of it. Showing this thinner profile-only page in addition just
+  // forces an extra click. Redirect there directly. Admin/faculty/parent
+  // profiles stay on this page.
   const linkedStudentRecord = await getStudentByProfileId(profile.id)
+  if (linkedStudentRecord) {
+    redirect(`/admin/students/${linkedStudentRecord.id}`)
+  }
+
   const linkedStudents = profile.roles.includes("parent")
     ? await listStudentsLinkedToParent(profile.id)
     : []
@@ -149,37 +157,25 @@ export default async function ProfileDetailPage({ params, searchParams }: PagePr
         </section>
       )}
 
-      {/* Quick-jump cards for related areas */}
-      {(linkedStudentRecord || profile.roles.includes("faculty")) && (
+      {/* Faculty-only quick links to the dedicated bio + teaching editors */}
+      {profile.roles.includes("faculty") && (
         <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
-            Jump to
+            Faculty editors
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
-            {linkedStudentRecord && (
-              <Link
-                href={`/admin/students/${linkedStudentRecord.id}`}
-                className="inline-flex items-center justify-center rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:brightness-110"
-              >
-                Student detail →
-              </Link>
-            )}
-            {profile.roles.includes("faculty") && (
-              <>
-                <Link
-                  href={`/admin/profiles/${profile.id}/bio`}
-                  className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
-                >
-                  Public bio →
-                </Link>
-                <Link
-                  href={`/admin/profiles/${profile.id}/teaching`}
-                  className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
-                >
-                  Teaching preferences →
-                </Link>
-              </>
-            )}
+            <Link
+              href={`/admin/profiles/${profile.id}/bio`}
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              Public bio →
+            </Link>
+            <Link
+              href={`/admin/profiles/${profile.id}/teaching`}
+              className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+            >
+              Teaching preferences →
+            </Link>
           </div>
         </section>
       )}

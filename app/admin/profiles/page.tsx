@@ -221,10 +221,19 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
               .filter(Boolean)
               .join(" · ")
 
+            // Student profiles route directly to /admin/students/[id]
+            // (the canonical rich detail page). Everyone else lands on
+            // /admin/profiles/[id]. Student profiles that haven't been
+            // promoted to a student record yet still go to the profile
+            // page so admin can add the student role / create the record.
+            const detailHref = studentId
+              ? `/admin/students/${studentId}`
+              : `/admin/profiles/${profile.id}`
+
             return (
               <Link
                 key={profile.id}
-                href={`/admin/profiles/${profile.id}`}
+                href={detailHref}
                 className="block rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:border-brand-navy/30 hover:shadow-md sm:px-6"
               >
                 <div className="grid gap-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_auto] lg:items-center">
@@ -265,16 +274,8 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                   <p className="truncate text-xs text-slate-500">{subtleSummary}</p>
 
                   <div className="flex items-center justify-end gap-2">
-                    {studentId && (
-                      <span
-                        className="inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold text-slate-700"
-                        title="This profile is also a student record"
-                      >
-                        Student →
-                      </span>
-                    )}
                     <span className="inline-flex items-center rounded-full bg-brand-navy px-4 py-1.5 text-xs font-semibold text-white">
-                      Open profile →
+                      {studentId ? "Open student →" : "Open profile →"}
                     </span>
                   </div>
                 </div>

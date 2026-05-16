@@ -42,6 +42,7 @@ import {
   updateStudentDemographicsAction,
   withdrawStudentAction,
 } from "../actions"
+import { saveProfileAction } from "@/app/admin/profiles/actions"
 import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 import ProfilePhotoCard from "./ProfilePhotoCard"
 
@@ -199,6 +200,8 @@ export default async function StudentDetailPage({
     parent_link_added?: string
     parent_link_error?: string
     ah_error?: string
+    profile_saved?: string
+    role_ok?: string
   }>
 }) {
   const session = await auth()
@@ -568,38 +571,12 @@ export default async function StudentDetailPage({
           <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
             <h3 className="text-lg font-extrabold text-brand-navy">Profile</h3>
             {student.profile ? (
-              <div className="mt-4 space-y-3">
-                <DetailRow label="HBA email" value={student.profile.email} />
-                <DetailRow label="Display name" value={student.profile.display_name} />
-                <DetailRow
-                  label="Roles"
-                  value={student.profile.roles.join(", ") || "—"}
-                />
-                <DetailRow
-                  label="Entra OID"
-                  value={
-                    student.profile.entra_oid ? (
-                      <code className="font-mono text-xs">{student.profile.entra_oid}</code>
-                    ) : (
-                      <span className="text-slate-400">
-                        Not yet (set on first M365 sign-in)
-                      </span>
-                    )
-                  }
-                />
-                <DetailRow
-                  label="Active"
-                  value={student.profile.active ? "Yes" : "No"}
-                />
-                <DetailRow
-                  label="Personal email"
-                  value={student.profile.personal_email}
-                />
-                <DetailRow
-                  label="Mobile"
-                  value={student.profile.mobile_phone}
-                />
-              </div>
+              <StudentProfileCard
+                profile={student.profile}
+                studentId={student.id}
+                profileSaved={rawSearch.profile_saved === "1"}
+                rolesSaved={rawSearch.role_ok === "1"}
+              />
             ) : (
               <p className="mt-4 text-sm text-slate-600">
                 No profile attached. This shouldn&rsquo;t happen &mdash; flag it
@@ -1301,6 +1278,164 @@ function AddParentLinkCard({ studentId }: { studentId: string }) {
         </button>
       </form>
     </details>
+  )
+}
+
+type StudentProfileSlice = NonNullable<
+  Awaited<ReturnType<typeof getStudentDetail>>
+>["profile"]
+
+const studentProfileRoleOrder = ["student", "parent", "faculty", "admin"] as const
+
+function StudentProfileCard({
+  profile,
+  studentId,
+  profileSaved,
+  rolesSaved,
+}: {
+  profile: NonNullable<StudentProfileSlice>
+  studentId: string
+  profileSaved: boolean
+  rolesSaved: boolean
+}) {
+  const redirectTo = `/admin/students/${studentId}`
+  return (
+    <div className="mt-4 space-y-5">
+      <div className="space-y-1">
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          Identity
+        </p>
+        <div className="grid gap-1 text-sm">
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+              HBA email
+            </span>
+            <span className="font-mono text-sm text-slate-800">{profile.email}</span>
+          </div>
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+              Entra OID
+            </span>
+            {profile.entra_oid ? (
+              <code className="font-mono text-xs text-slate-700">
+                {profile.entra_oid}
+              </code>
+            ) : (
+              <span className="text-xs text-slate-400">
+                Not yet (set on first M365 sign-in)
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {(profileSaved || rolesSaved) && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-medium text-emerald-800">
+          {rolesSaved ? "Roles & active state saved." : "Profile contact saved."}
+        </div>
+      )}
+
+      <form action={saveProfileAction} className="space-y-3 border-t border-slate-100 pt-4">
+        <input type="hidden" name="id" value={profile.id} />
+        <input type="hidden" name="redirectTo" value={redirectTo} />
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          Roles &amp; active
+        </p>
+        <div className="flex flex-wrap gap-2">
+          {studentProfileRoleOrder.map((role) => (
+            <label
+              key={role}
+              className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-700"
+            >
+              <input
+                type="checkbox"
+                name="roles"
+                value={role}
+                defaultChecked={profile.roles.includes(role)}
+                className="h-3.5 w-3.5 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+              />
+              <span className="capitalize">{role}</span>
+            </label>
+          ))}
+        </div>
+        <label className="flex items-center gap-2 text-xs text-slate-700">
+          <input
+            type="checkbox"
+            name="active"
+            defaultChecked={profile.active}
+            className="h-3.5 w-3.5 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+          />
+          <span className="font-semibold text-slate-900">Account is active</span>
+          <span className="text-slate-500">· inactive profiles can&rsquo;t sign in</span>
+        </label>
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:brightness-110"
+        >
+          Save roles &amp; active
+        </button>
+      </form>
+
+      <form
+        action={updateProfileContactAction}
+        className="space-y-3 border-t border-slate-100 pt-4"
+      >
+        <input type="hidden" name="id" value={profile.id} />
+        <input type="hidden" name="student_id" value={studentId} />
+        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+          Profile contact (display name, alt email, phones)
+        </p>
+        <p className="text-[11px] text-slate-500">
+          Legal name and the student&rsquo;s residence are edited above
+          under <strong>Student</strong>. These fields are the SIS-level
+          profile copy: a Microsoft display name override, a personal
+          (non-HBA) backup email, and contact phones.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+            <span className="block">Display name (overrides M365 default)</span>
+            <input
+              name="display_name"
+              defaultValue={profile.display_name ?? ""}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">Mobile phone</span>
+            <input
+              name="mobile_phone"
+              type="tel"
+              defaultValue={profile.mobile_phone ?? ""}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700">
+            <span className="block">Work phone</span>
+            <input
+              name="work_phone"
+              type="tel"
+              defaultValue={profile.work_phone ?? ""}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+          <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+            <span className="block">Personal email (alt to HBA email)</span>
+            <input
+              name="personal_email"
+              type="email"
+              defaultValue={profile.personal_email ?? ""}
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+        </div>
+        <button
+          type="submit"
+          className="inline-flex items-center justify-center rounded-full border border-brand-navy/30 bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition hover:bg-brand-navy hover:text-white"
+        >
+          Save profile contact
+        </button>
+      </form>
+    </div>
   )
 }
 

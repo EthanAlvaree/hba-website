@@ -132,7 +132,7 @@ export async function updateProfileContactAction(formData: FormData) {
   const studentId = formData.get("student_id")
   if (typeof studentId === "string" && studentId.length > 0) {
     revalidateStudent(studentId)
-    redirect(`/admin/students/${studentId}`)
+    redirect(`/admin/students/${studentId}?profile_saved=1`)
   }
   revalidatePath("/admin/profiles")
   redirect("/admin/profiles")
