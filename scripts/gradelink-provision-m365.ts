@@ -561,16 +561,23 @@ async function main() {
   }
   console.log(`[provision] Pending M365 accounts: ${pending.length}`)
 
-  // Skip students already in the creds file (idempotent re-run).
+  // Skip students whose creds entry has a real temp password —
+  // those are done. Placeholder ("NEEDS MANUAL RESET …") entries get
+  // re-attempted, since the most likely reason to re-run is that the
+  // Graph permission gap got fixed and we want to reset + record
+  // proper passwords for them now.
   const existingCreds = loadExistingCreds()
-  const alreadyProvisioned = new Set(
-    existingCreds.map((c) => c.gradelink_student_id)
+  const goodCreds = existingCreds.filter(
+    (c) => !c.temp_password.includes("NEEDS MANUAL RESET")
   )
-  const todo = pending.filter(
-    (p) => !alreadyProvisioned.has(p.gradelink_student_id)
+  const placeholderCreds = existingCreds.filter((c) =>
+    c.temp_password.includes("NEEDS MANUAL RESET")
   )
-  console.log(`  already provisioned (from creds file): ${alreadyProvisioned.size}`)
-  console.log(`  to do this run                       : ${todo.length}`)
+  const done = new Set(goodCreds.map((c) => c.gradelink_student_id))
+  const todo = pending.filter((p) => !done.has(p.gradelink_student_id))
+  console.log(`  already provisioned (real password) : ${goodCreds.length}`)
+  console.log(`  placeholder (needs password reset)  : ${placeholderCreds.length}`)
+  console.log(`  to do this run                      : ${todo.length}`)
 
   if (!commit) {
     console.log(`\nDry run — would attempt:`)
@@ -633,8 +640,13 @@ async function main() {
     await client.end()
   }
 
-  const allCreds = [...existingCreds, ...newCreds]
-  saveCreds(allCreds)
+  // Merge: new records win over old ones with the same gradelink_student_id.
+  // Lets a re-run replace a placeholder with the real password after the
+  // Graph permission is added.
+  const merged = new Map<string, CredentialRecord>()
+  for (const c of existingCreds) merged.set(c.gradelink_student_id, c)
+  for (const c of newCreds) merged.set(c.gradelink_student_id, c)
+  saveCreds(Array.from(merged.values()))
   console.log(`\nProvisioned ${newCreds.length} new accounts (${failures} failures).`)
   console.log(`Credentials saved to: ${path.relative(process.cwd(), CREDS_PATH)}`)
 }
