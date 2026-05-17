@@ -63,6 +63,7 @@ export const ADMIN_AUDIT_ACTIONS = {
   // Application lifecycle.
   application_payment_reminder_sent: "application.payment_reminder_sent",
   profile_update_request_sent: "profile.update_request_sent",
+  contact_submission_reply_sent: "contact_submission.reply_sent",
   // Student lifecycle.
   student_enroll: "student.enroll",
   student_withdraw: "student.withdraw",

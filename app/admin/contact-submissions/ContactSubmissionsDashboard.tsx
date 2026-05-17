@@ -7,8 +7,10 @@ import {
 } from "@/lib/contact-submissions"
 import {
   deleteArchivedContactSubmissionAction,
+  replyContactSubmissionAction,
   updateContactSubmissionAction,
 } from "./actions"
+import { siteConfig } from "@/lib/site"
 
 export const submissionSortOptions = ["oldest", "newest", "tour", "name"] as const
 
@@ -485,6 +487,72 @@ export default function ContactSubmissionsDashboard({
                     </div>
 
                     <div className="space-y-4">
+                      <form
+                        action={replyContactSubmissionAction}
+                        className="space-y-3 rounded-3xl border border-brand-navy/15 bg-white p-5"
+                      >
+                        <input type="hidden" name="id" value={submission.id} />
+                        <input type="hidden" name="redirectTo" value={currentPath} />
+
+                        <div>
+                          <p className="text-sm font-semibold text-brand-navy">
+                            Reply to {submission.name}
+                          </p>
+                          <p className="text-xs text-slate-500">
+                            Sends from{" "}
+                            <code className="rounded bg-slate-100 px-1 py-0.5 text-[11px] text-slate-700">
+                              {siteConfig.contact.infoEmail}
+                            </code>{" "}
+                            (the office shared mailbox — replies land there, not in
+                            your personal inbox). Your faculty-bio signature is
+                            appended automatically so the family sees who wrote.
+                          </p>
+                        </div>
+
+                        <label className="space-y-1 text-xs font-medium text-slate-700">
+                          <span className="block">Subject</span>
+                          <input
+                            name="subject"
+                            required
+                            maxLength={200}
+                            defaultValue={`Re: your ${siteConfig.shortName} inquiry`}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+
+                        <label className="space-y-1 text-xs font-medium text-slate-700">
+                          <span className="block">Message</span>
+                          <textarea
+                            name="body"
+                            required
+                            rows={6}
+                            placeholder={`Hi ${submission.name.split(" ")[0]},\n\nThanks for reaching out about HBA…`}
+                            className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+                          />
+                        </label>
+
+                        <label className="flex items-start gap-2 text-xs text-slate-700">
+                          <input
+                            type="checkbox"
+                            name="advance_status"
+                            defaultChecked
+                            className="mt-0.5 h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
+                          />
+                          <span>
+                            Also move this submission to <em>In follow-up</em>{" "}
+                            (only applies when status is currently{" "}
+                            <em>Needs response</em>).
+                          </span>
+                        </label>
+
+                        <button
+                          type="submit"
+                          className="inline-flex items-center justify-center rounded-full bg-brand-navy px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+                        >
+                          Send reply
+                        </button>
+                      </form>
+
                       <form action={updateContactSubmissionAction} className="space-y-4 rounded-3xl border border-slate-200 bg-slate-50/80 p-5">
                         <input type="hidden" name="id" value={submission.id} />
                         <input type="hidden" name="redirectTo" value={currentPath} />

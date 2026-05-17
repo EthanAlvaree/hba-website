@@ -512,6 +512,54 @@ export async function sendApplicationSubmittedConfirmation(options: {
   })
 }
 
+// Admin reply to an inbound contact-form submission. Sends AS the
+// shared info@ mailbox so the original sender's reply lands back in
+// the office inbox (not the admin's personal one). The admin's
+// signature is appended so the family sees who specifically wrote
+// back, even though the From: line is the office shared account.
+export async function sendContactSubmissionReply(options: {
+  toEmail: string
+  toName: string
+  /** The admin's original message body — plain text; we wrap each
+   *  newline in a <br /> for HTML render. No rich formatting. */
+  body: string
+  /** Subject is admin-controllable, defaults to "Re: your message". */
+  subject: string
+  /** Optional original-message quote shown below the admin's reply
+   *  so the family has context without flipping back to their thread. */
+  originalMessage?: string | null
+  /** Logged-in admin's email — drives the signature lookup. */
+  actorEmail?: string | null
+}) {
+  const { toEmail, toName, body, subject, originalMessage, actorEmail } = options
+  const { renderAdminSignatureHtml } = await import("@/lib/email-signature")
+  const signatureHtml = await renderAdminSignatureHtml(actorEmail)
+
+  const greeting = toName?.trim() ? `Hi ${escapeHtml(toName.trim())},` : "Hi there,"
+
+  const quote = originalMessage?.trim()
+    ? [
+        `<hr style="border:none;border-top:1px solid #e2e8f0;margin:32px 0 12px" />`,
+        `<p style="color:#888;font-size:11px;margin:0 0 6px;">On your original inquiry to ${escapeHtml(siteConfig.shortName)}, you wrote:</p>`,
+        `<blockquote style="margin:0;padding:8px 12px;border-left:3px solid #cbd5e1;color:#475569;font-size:13px;line-height:1.5;white-space:pre-wrap;">${escapeHtml(originalMessage.trim())}</blockquote>`,
+      ].join("")
+    : ""
+
+  const html = [
+    `<p>${greeting}</p>`,
+    `<p style="white-space:pre-wrap;line-height:1.5;color:#1f2937;">${escapeHtml(body).replace(/\n/g, "<br />")}</p>`,
+    quote,
+  ].join("")
+
+  await sendMail({
+    subject,
+    htmlBody: html,
+    toRecipients: [toEmail],
+    fromMailbox: siteConfig.contact.infoEmail,
+    signatureHtml,
+  })
+}
+
 // Admin-triggered "please update your profile" nudge. Sends the parent
 // a short email pointing at /parent/profile (and child-update links if
 // they have any linked students). Used during migration / annual

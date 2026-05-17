@@ -172,6 +172,22 @@ export async function listContactSubmissions(filters?: {
   return data
 }
 
+export async function getContactSubmissionById(id: string) {
+  const { data, error } = await getSupabase()
+    .from("contact_submissions")
+    .select(
+      "id, created_at, name, email, phone, student_name, message, schedule_tour, how_did_you_hear, status, assigned_to, notes, source, spam_provider, spam_verified, archived_at"
+    )
+    .eq("id", id)
+    .maybeSingle<ContactSubmissionRecord>()
+
+  if (error) {
+    throw new Error(`Failed to load contact submission: ${error.message}`)
+  }
+
+  return data
+}
+
 export async function getContactSubmissionSummary() {
   const { data, error } = await getSupabase()
     .from("contact_submissions")
