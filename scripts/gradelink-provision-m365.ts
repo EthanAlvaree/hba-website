@@ -92,29 +92,98 @@ type DeletedUser = {
   displayName: string
 }
 
-/** Look in /directory/deletedItems for a user matching the UPN. Returns
- *  null if not found. */
-async function findDeletedUserByUpn(
-  upn: string,
+/** Build every UPN variant a deleted account might have. Old HBA
+ *  accounts pre-date the firstname.lastname.YY@ convention — many
+ *  use firstname.lastnameYY@ (no second period) and some have no
+ *  grad year at all (firstname.lastname@). We check ALL three when
+ *  looking in the deleted bin. */
+function upnCandidatesFor(canonical: string): string[] {
+  const lower = canonical.toLowerCase()
+  const m = lower.match(/^([a-z0-9]+)\.([a-z0-9]+)\.(\d{2})@(.+)$/)
+  if (!m) return [lower]
+  const [, first, last, yy, domain] = m
+  return [
+    lower, // first.last.YY@domain  (canonical)
+    `${first}.${last}${yy}@${domain}`, // first.lastYY@domain (no 2nd period)
+    `${first}.${last}@${domain}`, // first.last@domain (no grad year)
+  ]
+}
+
+let cachedDeletedList: DeletedUser[] | null = null
+
+async function loadDeletedList(token: string): Promise<DeletedUser[]> {
+  if (cachedDeletedList) return cachedDeletedList
+  const out: DeletedUser[] = []
+  let url:
+    | string
+    | null =
+    `https://graph.microsoft.com/v1.0/directory/deletedItems/microsoft.graph.user?$select=id,userPrincipalName,displayName&$top=999`
+  while (url) {
+    const res: Response = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+    })
+    if (!res.ok) {
+      const body = await res.text().catch(() => "")
+      throw new Error(`deletedItems list failed: ${res.status} ${body}`)
+    }
+    const data = (await res.json()) as {
+      value: DeletedUser[]
+      "@odata.nextLink"?: string
+    }
+    out.push(...data.value)
+    url = data["@odata.nextLink"] ?? null
+  }
+  cachedDeletedList = out
+  return out
+}
+
+/** Look in /directory/deletedItems for a user whose UPN matches any of
+ *  the canonical patterns. Returns the deleted item + the matched UPN
+ *  variant so the caller knows whether a UPN rename is needed. */
+async function findDeletedUserForCanonical(
+  canonical: string,
   token: string
-): Promise<DeletedUser | null> {
-  // deletedItems filter on userPrincipalName has historically been
-  // flaky; safer to list all deleted users and filter client-side.
-  // The deleted list is small for any normal tenant.
+): Promise<{ user: DeletedUser; matched_upn: string } | null> {
+  const candidates = new Set(upnCandidatesFor(canonical))
+  const list = await loadDeletedList(token)
+  for (const u of list) {
+    const upn = (u.userPrincipalName ?? "").toLowerCase()
+    if (candidates.has(upn)) {
+      return { user: u, matched_upn: upn }
+    }
+  }
+  return null
+}
+
+/** Rename a user's UPN + mailNickname to the canonical pattern. Used
+ *  after restoring an old account with a non-canonical UPN like
+ *  audrey.brennan28@ — we want it to become audrey.brennan.28@. */
+async function renameUpn(
+  userId: string,
+  newUpn: string,
+  token: string
+): Promise<void> {
+  const localPart = newUpn.split("@")[0] ?? newUpn
   const res = await fetch(
-    `https://graph.microsoft.com/v1.0/directory/deletedItems/microsoft.graph.user?$select=id,userPrincipalName,displayName&$top=999`,
-    { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" }
+    `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(userId)}`,
+    {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+      body: JSON.stringify({
+        userPrincipalName: newUpn,
+        mailNickname: localPart,
+      }),
+    }
   )
   if (!res.ok) {
     const body = await res.text().catch(() => "")
-    throw new Error(`deletedItems list failed: ${res.status} ${body}`)
+    throw new Error(`UPN rename failed: ${res.status} ${body}`)
   }
-  const data = (await res.json()) as { value: DeletedUser[] }
-  const want = upn.toLowerCase()
-  return (
-    data.value.find((u) => (u.userPrincipalName ?? "").toLowerCase() === want) ??
-    null
-  )
 }
 
 /** Restore a soft-deleted user. Returns the restored object. */
@@ -139,12 +208,19 @@ async function restoreDeletedUser(
 
 /** Once a restored user is back, force a temp password + license check.
  *  We don't know the prior password and admins typically want a fresh
- *  one anyway so the family gets the same welcome-email flow. */
+ *  one anyway so the family gets the same welcome-email flow.
+ *
+ *  Returns true on success, false on 403 (Graph app missing the
+ *  `User-PasswordProfile.ReadWrite.All` application permission that
+ *  changing an existing user's password requires — distinct from
+ *  `User.ReadWrite.All` which is enough to CREATE a user with a
+ *  password but not enough to RESET one afterwards). Other failures
+ *  still throw. */
 async function resetPasswordAndForceChange(
   userId: string,
   newPassword: string,
   token: string
-): Promise<void> {
+): Promise<boolean> {
   const res = await fetch(
     `https://graph.microsoft.com/v1.0/users/${encodeURIComponent(userId)}`,
     {
@@ -163,10 +239,12 @@ async function resetPasswordAndForceChange(
       }),
     }
   )
+  if (res.status === 403) return false
   if (!res.ok) {
     const body = await res.text().catch(() => "")
     throw new Error(`password reset failed: ${res.status} ${body}`)
   }
+  return true
 }
 
 async function fetchUserEntraOid(
@@ -184,6 +262,26 @@ async function fetchUserEntraOid(
   }
   const { id } = (await res.json()) as { id: string }
   return id
+}
+
+/** After a brand-new account creation, M365's directory takes a few
+ *  seconds (sometimes up to ~30s) before /users/{upn} returns the
+ *  new user. Poll with backoff so we don't drop the entra_oid + temp
+ *  password we just generated. */
+async function fetchUserEntraOidWithRetry(
+  upn: string,
+  token: string,
+  maxAttempts = 8
+): Promise<string | null> {
+  let waitMs = 2000
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    const oid = await fetchUserEntraOid(upn, token)
+    if (oid) return oid
+    if (attempt === maxAttempts) return null
+    await new Promise((r) => setTimeout(r, waitMs))
+    waitMs = Math.min(waitMs * 1.5, 8000)
+  }
+  return null
 }
 
 // ============================================================================
@@ -217,34 +315,77 @@ async function provisionOne(
   pending: Pending,
   token: string,
   pgClient: Client
-): Promise<CredentialRecord | { error: string }> {
+): Promise<
+  | CredentialRecord
+  | { error: string; orphan_credential?: CredentialRecord }
+> {
   const upn = pending.desired_email.toLowerCase()
   const displayName = `${pending.legal_first_name} ${pending.legal_last_name}`.trim()
 
-  // 1) Already exists? If so, just claim it (no password reset). This is
-  // the idempotent re-run case.
+  // 1) Already exists? Two sub-cases:
+  //   - Idempotent re-run after a previous successful provision: the
+  //     creds file already has this student, so the caller skipped it
+  //     and we never get here.
+  //   - "Phantom" account from a previous run where Graph created the
+  //     user but the directory hadn't caught up in time so we lost
+  //     the password. Reset to a new temp password and treat as a
+  //     fresh provision.
   const existingOid = await fetchUserEntraOid(upn, token)
   if (existingOid) {
-    return await persistSisRow(pgClient, pending, upn, existingOid, null, "created")
+    const tempPassword = generateTempPassword()
+    const reset = await resetPasswordAndForceChange(existingOid, tempPassword, token)
+    return await persistSisRow(
+      pgClient,
+      pending,
+      upn,
+      existingOid,
+      reset ? tempPassword : null,
+      "created"
+    )
   }
 
-  // 2) Check the deleted bin.
-  const deleted = await findDeletedUserByUpn(upn, token)
-  if (deleted) {
-    await restoreDeletedUser(deleted.id, token)
+  // 2) Check the deleted bin — search ALL UPN variants the student
+  // might have been deleted under (canonical, old no-period, old
+  // no-year). If we find one, restore + rename to canonical + reset
+  // password.
+  const deletedMatch = await findDeletedUserForCanonical(upn, token)
+  if (deletedMatch) {
+    await restoreDeletedUser(deletedMatch.user.id, token)
+    // If the deleted UPN wasn't the canonical pattern, rename it now.
+    if (deletedMatch.matched_upn !== upn) {
+      await renameUpn(deletedMatch.user.id, upn, token)
+    }
     const tempPassword = generateTempPassword()
-    await resetPasswordAndForceChange(deleted.id, tempPassword, token)
+    await resetPasswordAndForceChange(deletedMatch.user.id, tempPassword, token)
     const oid = await fetchUserEntraOid(upn, token)
     if (!oid) {
-      return { error: `restored ${upn} but couldn't fetch entra_oid` }
+      return { error: `restored ${deletedMatch.matched_upn} but couldn't fetch entra_oid after rename to ${upn}` }
     }
     return await persistSisRow(pgClient, pending, upn, oid, tempPassword, "restored")
   }
 
-  // 3) Create fresh via the existing helper.
+  // 3) Create fresh via the existing helper, then poll for the
+  // directory to catch up before writing the SIS row.
   const result = await provisionStudentM365Account({ upn, displayName })
-  const oid = await fetchUserEntraOid(upn, token)
-  if (!oid) return { error: `created ${upn} but couldn't fetch entra_oid` }
+  const oid = await fetchUserEntraOidWithRetry(upn, token)
+  if (!oid) {
+    // Worst case: account exists in M365 with the temp password we
+    // just generated, but Graph can't see it yet. Save the credential
+    // anyway so we don't lose the password — next run picks up the
+    // entra_oid and writes the SIS row.
+    return {
+      orphan_credential: {
+        gradelink_student_id: pending.gradelink_student_id,
+        full_name: pending.full_name,
+        upn,
+        entra_oid: "",
+        temp_password: result.tempPassword ?? "(unknown)",
+        flow: "created" as const,
+        provisioned_at: new Date().toISOString(),
+      },
+      error: `created ${upn} but Graph directory hasn't caught up after 8 retries — temp password saved`,
+    }
+  }
   return await persistSisRow(
     pgClient,
     pending,
@@ -349,7 +490,9 @@ async function persistSisRow(
     full_name: pending.full_name,
     upn,
     entra_oid: entraOid,
-    temp_password: tempPassword ?? "(no-new-password — preexisting account)",
+    temp_password:
+      tempPassword ??
+      "(NEEDS MANUAL RESET — Graph app needs User-PasswordProfile.ReadWrite.All permission. Reset in Entra admin center, then paste the password into this field.)",
     flow,
     provisioned_at: new Date().toISOString(),
   }
@@ -465,7 +608,17 @@ async function main() {
       try {
         const result = await provisionOne(p, token, client)
         if ("error" in result) {
-          console.log(`FAIL ${result.error}`)
+          // Even on error, save any orphan credential (account created
+          // in M365 but SIS write failed — we don't want to lose the
+          // password).
+          if ("orphan_credential" in result && result.orphan_credential) {
+            newCreds.push(result.orphan_credential)
+            console.log(
+              `PARTIAL ${result.error} — credential saved for next-run claim`
+            )
+          } else {
+            console.log(`FAIL ${result.error}`)
+          }
           failures += 1
           continue
         }
