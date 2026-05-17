@@ -10,7 +10,9 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:migrate:status": "tsx scripts/migrate.ts --status",
     "db:sql": "tsx scripts/db-sql.ts",
-    "gradelink:match": "tsx scripts/gradelink-match-active.ts"
+    "gradelink:match": "tsx scripts/gradelink-match-active.ts",
+    "gradelink:approvals": "tsx scripts/gradelink-build-approvals.ts",
+    "gradelink:verify": "tsx scripts/gradelink-verify-approvals.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
