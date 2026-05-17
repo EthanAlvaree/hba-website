@@ -2150,10 +2150,22 @@ export async function syncProfilesFromM365(rows: M365SyncRow[]): Promise<M365Syn
 // Profile directory + role management (admin)
 // ============================================================================
 
+export const PROFILE_LIST_PAGE_SIZE = 100
+
+export const profileSortSchema = z.enum([
+  "name_asc",
+  "name_desc",
+  "recently_added",
+  "recently_updated",
+])
+export type ProfileSort = z.infer<typeof profileSortSchema>
+
 export const profileListFilterSchema = z.object({
   role: z.union([profileRoleSchema, z.literal("all")]).optional().default("all"),
   search: z.string().trim().max(200).optional().default(""),
   include_inactive: z.coerce.boolean().optional().default(false),
+  sort: profileSortSchema.optional().default("name_asc"),
+  page: z.coerce.number().int().min(1).optional().default(1),
 })
 export type ProfileListFilter = z.infer<typeof profileListFilterSchema>
 
@@ -2163,12 +2175,13 @@ export type ProfileRoleCounts = {
   faculty: number
   student: number
   parent: number
+  shared_mailbox: number
 }
 
 // Counts profiles per role for the /admin/profiles role-tabs pill
 // badges. Respects the "include inactive" toggle so the displayed
 // counts always match whatever the directory list is filtered to.
-// One round-trip with five count queries in parallel — cheaper than
+// One round-trip with six count queries in parallel — cheaper than
 // pulling every profile row just to bucket it client-side.
 export async function getProfileRoleCounts(opts: {
   include_inactive: boolean
@@ -2179,12 +2192,13 @@ export async function getProfileRoleCounts(opts: {
     if (!opts.include_inactive) q = q.eq("active", true)
     return q
   }
-  const [all, admin, faculty, student, parent] = await Promise.all([
+  const [all, admin, faculty, student, parent, sharedMailbox] = await Promise.all([
     base(),
     base().contains("roles", ["admin"]),
     base().contains("roles", ["faculty"]),
     base().contains("roles", ["student"]),
     base().contains("roles", ["parent"]),
+    base().contains("roles", ["shared_mailbox"]),
   ])
   return {
     all: all.count ?? 0,
@@ -2192,40 +2206,75 @@ export async function getProfileRoleCounts(opts: {
     faculty: faculty.count ?? 0,
     student: student.count ?? 0,
     parent: parent.count ?? 0,
+    shared_mailbox: sharedMailbox.count ?? 0,
   }
 }
 
-export async function listProfiles(filter: ProfileListFilter): Promise<ProfileRecord[]> {
+export type ListProfilesResult = {
+  profiles: ProfileRecord[]
+  total: number // matching the current filter (across all pages)
+  page: number
+  page_size: number
+}
+
+export async function listProfiles(
+  filter: ProfileListFilter
+): Promise<ListProfilesResult> {
   let query = getSupabase()
     .from("profiles")
-    .select(profileColumns)
-    .order("last_name", { ascending: true, nullsFirst: false })
-    .order("first_name", { ascending: true, nullsFirst: false })
-    .order("email", { ascending: true })
+    .select(profileColumns, { count: "exact" })
+
+  switch (filter.sort) {
+    case "name_desc":
+      query = query
+        .order("last_name", { ascending: false, nullsFirst: true })
+        .order("first_name", { ascending: false, nullsFirst: true })
+        .order("email", { ascending: false })
+      break
+    case "recently_added":
+      query = query.order("created_at", { ascending: false })
+      break
+    case "recently_updated":
+      query = query.order("updated_at", { ascending: false })
+      break
+    case "name_asc":
+    default:
+      query = query
+        .order("last_name", { ascending: true, nullsFirst: false })
+        .order("first_name", { ascending: true, nullsFirst: false })
+        .order("email", { ascending: true })
+      break
+  }
 
   if (!filter.include_inactive) {
     query = query.eq("active", true)
   }
 
   if (filter.role !== "all") {
-    // Postgres array-contains operator. roles @> '{admin}' matches when admin
-    // is one of the profile's roles.
     query = query.contains("roles", [filter.role])
   }
 
   if (filter.search.length > 0) {
-    // Case-insensitive match across email + name fields.
     const pattern = `%${filter.search}%`
     query = query.or(
       `email.ilike.${pattern},first_name.ilike.${pattern},last_name.ilike.${pattern},display_name.ilike.${pattern}`
     )
   }
 
-  const { data, error } = await query.returns<ProfileRecord[]>()
+  const from = (filter.page - 1) * PROFILE_LIST_PAGE_SIZE
+  const to = from + PROFILE_LIST_PAGE_SIZE - 1
+  query = query.range(from, to)
+
+  const { data, error, count } = await query.returns<ProfileRecord[]>()
   if (error) {
     throw new Error(`Failed to list profiles: ${error.message}`)
   }
-  return data
+  return {
+    profiles: data,
+    total: count ?? 0,
+    page: filter.page,
+    page_size: PROFILE_LIST_PAGE_SIZE,
+  }
 }
 
 export const profileRolesUpdateSchema = z.object({

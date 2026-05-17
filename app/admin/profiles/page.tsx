@@ -1,10 +1,8 @@
 // app/admin/profiles/page.tsx
 //
-// Directory of every profile in the SIS. Used to be a heavy expand-in-place
-// list with all editing forms inline; that got crowded once profiles grew a
-// contact section, address, linked-students, etc. The directory is now a
-// compact roster — name, email, role chips, Active pill, and an "Open
-// profile" button per row. All editing lives on /admin/profiles/[id].
+// Directory of every profile in the SIS. Compact roster — name, email,
+// role chips, Active pill, and an "Open profile" button per row. All
+// editing lives on /admin/profiles/[id].
 
 import Link from "next/link"
 import { redirect } from "next/navigation"
@@ -14,11 +12,13 @@ import {
   listProfiles,
   listProfileIdsWithStudentRecord,
   profileListFilterSchema,
+  PROFILE_LIST_PAGE_SIZE,
   type ProfileRecord,
   type ProfileRole,
 } from "@/lib/sis"
 import Avatar from "@/components/ui/Avatar"
 import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
+import { ProfileFiltersForm } from "./ProfileFiltersForm"
 
 const roleLabels: Record<ProfileRole, string> = {
   admin: "Admin",
@@ -43,6 +43,8 @@ type ProfilesPageProps = {
     role?: string
     search?: string
     include_inactive?: string
+    sort?: string
+    page?: string
     deleted?: string
     student_created?: string
     error?: string
@@ -55,11 +57,15 @@ function buildPath(filters: {
   role: ProfileRole | "all"
   search: string
   include_inactive: boolean
+  sort: string
+  page?: number
 }) {
   const params = new URLSearchParams()
   if (filters.role !== "all") params.set("role", filters.role)
   if (filters.search.length > 0) params.set("search", filters.search)
   if (filters.include_inactive) params.set("include_inactive", "on")
+  if (filters.sort && filters.sort !== "name_asc") params.set("sort", filters.sort)
+  if (filters.page && filters.page > 1) params.set("page", String(filters.page))
   const qs = params.toString()
   return qs ? `/admin/profiles?${qs}` : "/admin/profiles"
 }
@@ -81,15 +87,16 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
     role: raw.role ?? "all",
     search: raw.search ?? "",
     include_inactive: raw.include_inactive === "on",
+    sort: raw.sort ?? "name_asc",
+    page: raw.page ?? "1",
   })
 
-  const [profiles, roleCounts] = await Promise.all([
+  const [listResult, roleCounts] = await Promise.all([
     listProfiles(parsed),
     getProfileRoleCounts({ include_inactive: parsed.include_inactive }),
   ])
+  const { profiles, total, page, page_size } = listResult
 
-  // Map of student-role profile id → students row id, used to render a
-  // direct "→ student" link on those rows.
   const studentRoleProfileIds = profiles
     .filter((p) => p.roles.includes("student"))
     .map((p) => p.id)
@@ -107,7 +114,16 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
     { label: "Faculty", value: "faculty", count: roleCounts.faculty },
     { label: "Students", value: "student", count: roleCounts.student },
     { label: "Parents", value: "parent", count: roleCounts.parent },
+    {
+      label: "Shared mailboxes",
+      value: "shared_mailbox",
+      count: roleCounts.shared_mailbox,
+    },
   ]
+
+  const totalPages = Math.max(1, Math.ceil(total / page_size))
+  const firstShown = total === 0 ? 0 : (page - 1) * page_size + 1
+  const lastShown = Math.min(total, page * page_size)
 
   return (
     <div className="space-y-6">
@@ -168,7 +184,7 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
       )}
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {roleTabs.map((tab) => {
             const active = tab.value === parsed.role
             return (
@@ -178,6 +194,7 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                   role: tab.value,
                   search: parsed.search,
                   include_inactive: parsed.include_inactive,
+                  sort: parsed.sort,
                 })}
                 className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
                   active
@@ -193,40 +210,48 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                       : "bg-slate-100 text-slate-600"
                   }`}
                 >
-                  {tab.count}
+                  {tab.count.toLocaleString()}
                 </span>
               </Link>
             )
           })}
         </div>
 
-        <form className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
-          <label className="space-y-2 text-sm font-medium text-slate-700">
-            <span className="block">Search</span>
-            <input
-              name="search"
-              defaultValue={parsed.search}
-              placeholder="Email, first name, last name, or display name"
-              className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900"
-            />
-          </label>
-          {parsed.role !== "all" && <input type="hidden" name="role" value={parsed.role} />}
-          <label className="flex items-center gap-2 text-sm text-slate-700">
-            <input
-              type="checkbox"
-              name="include_inactive"
-              defaultChecked={parsed.include_inactive}
-              className="h-4 w-4 rounded border-slate-300 text-brand-orange focus:ring-brand-orange"
-            />
-            <span>Include inactive</span>
-          </label>
-          <button
-            type="submit"
-            className="inline-flex items-center justify-center rounded-full bg-brand-orange px-6 py-3 text-sm font-semibold text-white transition hover:brightness-110"
-          >
-            Search
-          </button>
-        </form>
+        <ProfileFiltersForm
+          defaultSearch={parsed.search}
+          defaultIncludeInactive={parsed.include_inactive}
+          defaultSort={parsed.sort}
+        />
+      </section>
+
+      {/* Result count + pagination header */}
+      <section className="flex flex-wrap items-center justify-between gap-3 px-2 text-sm text-slate-600">
+        <p>
+          {total === 0 ? (
+            <span>No profiles match these filters.</span>
+          ) : (
+            <span>
+              Showing <strong className="text-slate-900">{firstShown.toLocaleString()}</strong>–
+              <strong className="text-slate-900">{lastShown.toLocaleString()}</strong> of{" "}
+              <strong className="text-slate-900">{total.toLocaleString()}</strong>
+            </span>
+          )}
+        </p>
+        {totalPages > 1 && (
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            buildPageHref={(p) =>
+              buildPath({
+                role: parsed.role,
+                search: parsed.search,
+                include_inactive: parsed.include_inactive,
+                sort: parsed.sort,
+                page: p,
+              })
+            }
+          />
+        )}
       </section>
 
       <section className="space-y-2">
@@ -245,11 +270,6 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
               .filter(Boolean)
               .join(" · ")
 
-            // Student profiles route directly to /admin/students/[id]
-            // (the canonical rich detail page). Everyone else lands on
-            // /admin/profiles/[id]. Student profiles that haven't been
-            // promoted to a student record yet still go to the profile
-            // page so admin can add the student role / create the record.
             const detailHref = studentId
               ? `/admin/students/${studentId}`
               : `/admin/profiles/${profile.id}`
@@ -319,6 +339,70 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
           })
         )}
       </section>
+
+      {/* Bottom pagination — same controls so admin doesn't have to scroll back up */}
+      {totalPages > 1 && (
+        <section className="flex justify-center">
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            buildPageHref={(p) =>
+              buildPath({
+                role: parsed.role,
+                search: parsed.search,
+                include_inactive: parsed.include_inactive,
+                sort: parsed.sort,
+                page: p,
+              })
+            }
+          />
+        </section>
+      )}
+    </div>
+  )
+}
+
+function Pagination({
+  page,
+  totalPages,
+  buildPageHref,
+}: {
+  page: number
+  totalPages: number
+  buildPageHref: (page: number) => string
+}) {
+  const prev = page > 1 ? page - 1 : null
+  const next = page < totalPages ? page + 1 : null
+
+  return (
+    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1 shadow-sm">
+      {prev !== null ? (
+        <Link
+          href={buildPageHref(prev)}
+          className="rounded-full px-3 py-1.5 text-sm font-semibold text-brand-navy hover:bg-slate-100"
+        >
+          ← Prev
+        </Link>
+      ) : (
+        <span className="rounded-full px-3 py-1.5 text-sm text-slate-300">
+          ← Prev
+        </span>
+      )}
+      <span className="text-xs text-slate-500">
+        Page <strong className="text-slate-900">{page}</strong> of {totalPages}
+      </span>
+      {next !== null ? (
+        <Link
+          href={buildPageHref(next)}
+          className="rounded-full px-3 py-1.5 text-sm font-semibold text-brand-navy hover:bg-slate-100"
+        >
+          Next →
+        </Link>
+      ) : (
+        <span className="rounded-full px-3 py-1.5 text-sm text-slate-300">
+          Next →
+        </span>
+      )}
     </div>
   )
 }
