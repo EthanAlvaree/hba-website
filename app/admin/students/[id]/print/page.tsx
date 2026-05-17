@@ -12,7 +12,6 @@ import { notFound, redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
   getStudentDetail,
-  listStudentTags,
   type StudentDetailEnrollment,
   type StudentDetailParentLink,
 } from "@/lib/sis"
@@ -80,8 +79,6 @@ export default async function StudentPrintPage({
   const { id } = await params
   const student = await getStudentDetail(id)
   if (!student) notFound()
-
-  const tags = await listStudentTags(id)
 
   const fullLegalName = [
     student.legal_first_name,
@@ -195,9 +192,6 @@ export default async function StudentPrintPage({
               label="Registered at HBA"
               value={formatDate(student.registered_at_hba)}
             />
-            {tags.length > 0 && (
-              <Field label="Tags" value={tags.join(", ")} />
-            )}
           </dl>
           {address && (
             <div className="mt-4 grid gap-1 sm:grid-cols-[160px_1fr]">
