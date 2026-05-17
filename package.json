@@ -9,7 +9,8 @@
     "lint": "eslint",
     "db:migrate": "tsx scripts/migrate.ts",
     "db:migrate:status": "tsx scripts/migrate.ts --status",
-    "db:sql": "tsx scripts/db-sql.ts"
+    "db:sql": "tsx scripts/db-sql.ts",
+    "gradelink:match": "tsx scripts/gradelink-match-active.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
@@ -37,6 +38,7 @@
     "@types/pg": "^8.11.10",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "csv-parse": "^6.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "pg": "^8.13.1",

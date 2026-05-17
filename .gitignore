@@ -49,3 +49,14 @@ public/images/_unsorted/
 # (often 100+ MB) and not deliverables. Export to JPG/PNG into
 # image-originals/ instead and commit those.
 *.clip
+
+# Gradelink migration source data — contains student PII (names,
+# addresses, phones, parents). Stays on Ethan's machine only.
+hba gradelink migration/
+
+# Scratch outputs from migration recon / matching scripts. These
+# echo back the same PII so they also stay local.
+scripts/.recon-*.txt
+scripts/.gradelink-*.md
+scripts/.gradelink-*.csv
+scripts/.gradelink-*.json
