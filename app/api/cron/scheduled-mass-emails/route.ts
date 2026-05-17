@@ -23,11 +23,13 @@ export const maxDuration = 300
 
 type Row = {
   id: string
-  /** Stored as a comma-separated list of Audience values (with an
-   *  "extras" sentinel when individual recipients were added). The
-   *  schedule UI joins audiences into this single text column; the
-   *  cron splits them back out below. */
+  /** Stored as a comma-separated list of Audience values. The schedule
+   *  UI joins audiences into this single text column; the cron splits
+   *  them back out below. */
   cohort_audience: string
+  /** Persisted from the messaging composer's individual-recipients
+   *  textarea. text[] column added in migration 0048. */
+  cohort_extra_emails: string[] | null
   cohort_grade: string | null
   cohort_section_id: string | null
   subject: string
@@ -108,7 +110,7 @@ export async function GET(request: Request) {
     .lte("scheduled_for", now)
     .eq("status", "pending")
     .select(
-      "id, cohort_audience, cohort_grade, cohort_section_id, subject, body, sender_email, sender_label, created_by_email, created_by_profile_id, scheduled_for"
+      "id, cohort_audience, cohort_extra_emails, cohort_grade, cohort_section_id, subject, body, sender_email, sender_label, created_by_email, created_by_profile_id, scheduled_for"
     )
     .returns<Row[]>()
 
@@ -126,11 +128,7 @@ export async function GET(request: Request) {
     const htmlBody = buildMassEmailHtml(row.body, senderLabel)
     const result = await dispatchMassEmail({
       audiences: parseAudiences(row.cohort_audience),
-      // The scheduled flow doesn't persist the per-row extra_emails
-      // list yet — admins composing a delayed send shouldn't expect
-      // individual recipients to survive across the schedule wait.
-      // Audiences re-resolve at dispatch, so the cohort stays fresh.
-      extra_emails: [],
+      extra_emails: row.cohort_extra_emails ?? [],
       grade: row.cohort_grade,
       section_id: row.cohort_section_id,
       subject: row.subject,

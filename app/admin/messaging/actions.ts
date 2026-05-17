@@ -329,21 +329,15 @@ export async function scheduleMassEmailAction(
   }
 
   const sender = getMassEmailSender()
-  // Audiences list + extras flag get crammed into cohort_audience as a
-  // comma-separated string — no schema change for the existing text col.
-  // Extra individual emails get stashed in cohort_section_id-adjacent
-  // storage isn't quite right, so we surface them through cohort_audience
-  // as a marker only. (The cron re-resolves the cohort at dispatch
-  // time; admins composing a scheduled message who add explicit
-  // recipients should expect those to still go out as long as the cron
-  // can re-resolve them.)
+  // Audiences land in the existing single-text cohort_audience column
+  // (comma-separated). cohort_extra_emails is a text[] (migration 0048)
+  // so individual recipients survive the schedule wait — the cron just
+  // reads them back as-is.
   const { data, error } = await getServiceSupabase()
     .from("scheduled_mass_emails")
     .insert({
-      cohort_audience: [
-        ...audiences,
-        ...(extraEmails.length > 0 ? ["extras"] : []),
-      ].join(","),
+      cohort_audience: audiences.join(","),
+      cohort_extra_emails: extraEmails.length > 0 ? extraEmails : null,
       cohort_grade: grade,
       cohort_section_id: sectionId,
       subject,

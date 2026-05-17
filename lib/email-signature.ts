@@ -36,6 +36,31 @@ function escapeHtml(s: string): string {
     .replaceAll("'", "&#39;")
 }
 
+function renderSocialIconsHtml(iconBase: string): string {
+  const { social } = siteConfig
+  const icons: Array<{ href: string; alt: string; file: string }> = []
+  if (social.facebook) icons.push({ href: social.facebook.url, alt: "Facebook", file: "facebook.png" })
+  if (social.instagram) icons.push({ href: social.instagram.url, alt: "Instagram", file: "instagram.png" })
+  if (social.tiktok) icons.push({ href: social.tiktok.url, alt: "TikTok", file: "tiktok.png" })
+  if (social.youtube) icons.push({ href: social.youtube.url, alt: "YouTube", file: "youtube.png" })
+  if (social.linkedin) icons.push({ href: social.linkedin.url, alt: "LinkedIn", file: "linkedin.png" })
+  if (social.yelp) icons.push({ href: social.yelp.url, alt: "Yelp", file: "yelp.png" })
+  if (icons.length === 0) return ""
+
+  const cells = icons
+    .map(
+      (icon, i) =>
+        `<td style="padding-right:${i === icons.length - 1 ? "0" : "8px"}">
+          <a href="${icon.href}" target="_blank" rel="noopener noreferrer">
+            <img src="${iconBase}/${icon.file}" alt="${icon.alt}" width="24" style="width:24px;height:24px;display:block;border:0" />
+          </a>
+        </td>`
+    )
+    .join("")
+
+  return `<table align="center" style="border-collapse:collapse"><tbody><tr>${cells}</tr></tbody></table>`
+}
+
 function renderSignatureHtml(args: {
   name: string
   title: string
@@ -97,6 +122,7 @@ at ${escapeHtml(siteConfig.name)}</span>
                 <img src="${logoUrl}" alt="${escapeHtml(siteConfig.name)} logo" width="165" style="width:165px;height:auto;margin:0 auto;display:block;border:0" />
               </a>
             </td></tr>
+            <tr><td style="padding-top:15px">${renderSocialIconsHtml(iconBase)}</td></tr>
           </tbody></table>
         </td>
       </tr>

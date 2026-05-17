@@ -10,6 +10,7 @@ import {
   type MassEmailResult,
   type ScheduleMassEmailResult,
 } from "./actions"
+import { RecipientChipInput } from "./RecipientChipInput"
 
 type SectionOption = { id: string; label: string }
 
@@ -28,7 +29,9 @@ export function MessagingClient({
   const [audiences, setAudiences] = useState<Set<string>>(new Set(["parents"]))
   const [grade, setGrade] = useState<string>("")
   const [sectionId, setSectionId] = useState<string>("")
-  const [extraEmails, setExtraEmails] = useState<string>("")
+  const [extraEmails, setExtraEmails] = useState<string[]>([])
+  const [extraLabels, setExtraLabels] = useState<Record<string, string>>({})
+  const extraEmailsValue = extraEmails.join("\n")
 
   const toggleAudience = (value: string) => {
     setAudiences((prev) => {
@@ -154,13 +157,14 @@ export function MessagingClient({
         </div>
 
         <div className="mt-5">
-          <Field label="Add individual recipients (one per line or comma-separated)">
-            <textarea
-              value={extraEmails}
-              onChange={(e) => setExtraEmails(e.target.value)}
-              rows={3}
-              placeholder="e.g.&#10;parent@example.com&#10;student@gmail.com, prospect@…"
-              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+          <Field label="Add individual recipients">
+            <RecipientChipInput
+              emails={extraEmails}
+              labels={extraLabels}
+              onChange={(emails, labels) => {
+                setExtraEmails(emails)
+                setExtraLabels(labels)
+              }}
             />
           </Field>
         </div>
@@ -171,7 +175,7 @@ export function MessagingClient({
           ))}
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
-          <input type="hidden" name="extra_emails" value={extraEmails} />
+          <input type="hidden" name="extra_emails" value={extraEmailsValue} />
           <button
             type="submit"
             disabled={cohortPending}
@@ -210,7 +214,7 @@ export function MessagingClient({
           ))}
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
-          <input type="hidden" name="extra_emails" value={extraEmails} />
+          <input type="hidden" name="extra_emails" value={extraEmailsValue} />
 
           <Field label="Subject">
             <input
@@ -273,7 +277,7 @@ export function MessagingClient({
             ))}
             <input type="hidden" name="grade" value={grade} />
             <input type="hidden" name="section_id" value={sectionId} />
-            <input type="hidden" name="extra_emails" value={extraEmails} />
+            <input type="hidden" name="extra_emails" value={extraEmailsValue} />
             <input type="hidden" name="subject" value={subject} />
             <input type="hidden" name="body" value={body} />
             <Field label="Send at (Pacific time)">
@@ -330,7 +334,7 @@ export function MessagingClient({
           audiences={Array.from(audiences)}
           grade={grade}
           sectionId={sectionId}
-          extraEmails={extraEmails}
+          extraEmails={extraEmailsValue}
           subjectValue={subject}
           bodyValue={body}
           sending={sendPending}
