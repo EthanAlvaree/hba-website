@@ -2114,6 +2114,44 @@ export const profileListFilterSchema = z.object({
 })
 export type ProfileListFilter = z.infer<typeof profileListFilterSchema>
 
+export type ProfileRoleCounts = {
+  all: number
+  admin: number
+  faculty: number
+  student: number
+  parent: number
+}
+
+// Counts profiles per role for the /admin/profiles role-tabs pill
+// badges. Respects the "include inactive" toggle so the displayed
+// counts always match whatever the directory list is filtered to.
+// One round-trip with five count queries in parallel — cheaper than
+// pulling every profile row just to bucket it client-side.
+export async function getProfileRoleCounts(opts: {
+  include_inactive: boolean
+}): Promise<ProfileRoleCounts> {
+  const supabase = getSupabase()
+  const base = () => {
+    let q = supabase.from("profiles").select("id", { count: "exact", head: true })
+    if (!opts.include_inactive) q = q.eq("active", true)
+    return q
+  }
+  const [all, admin, faculty, student, parent] = await Promise.all([
+    base(),
+    base().contains("roles", ["admin"]),
+    base().contains("roles", ["faculty"]),
+    base().contains("roles", ["student"]),
+    base().contains("roles", ["parent"]),
+  ])
+  return {
+    all: all.count ?? 0,
+    admin: admin.count ?? 0,
+    faculty: faculty.count ?? 0,
+    student: student.count ?? 0,
+    parent: parent.count ?? 0,
+  }
+}
+
 export async function listProfiles(filter: ProfileListFilter): Promise<ProfileRecord[]> {
   let query = getSupabase()
     .from("profiles")

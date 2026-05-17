@@ -10,12 +10,15 @@ import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import {
+  getProfileRoleCounts,
   listProfiles,
   listProfileIdsWithStudentRecord,
   profileListFilterSchema,
   type ProfileRecord,
   type ProfileRole,
 } from "@/lib/sis"
+import Avatar from "@/components/ui/Avatar"
+import { initialsFor, profilePhotoUrl } from "@/lib/profile-photos"
 
 const roleLabels: Record<ProfileRole, string> = {
   admin: "Admin",
@@ -78,7 +81,10 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
     include_inactive: raw.include_inactive === "on",
   })
 
-  const profiles = await listProfiles(parsed)
+  const [profiles, roleCounts] = await Promise.all([
+    listProfiles(parsed),
+    getProfileRoleCounts({ include_inactive: parsed.include_inactive }),
+  ])
 
   // Map of student-role profile id → students row id, used to render a
   // direct "→ student" link on those rows.
@@ -89,12 +95,16 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
     studentRoleProfileIds
   )
 
-  const roleTabs: Array<{ label: string; value: ProfileRole | "all" }> = [
-    { label: "All", value: "all" },
-    { label: "Admins", value: "admin" },
-    { label: "Faculty", value: "faculty" },
-    { label: "Students", value: "student" },
-    { label: "Parents", value: "parent" },
+  const roleTabs: Array<{
+    label: string
+    value: ProfileRole | "all"
+    count: number
+  }> = [
+    { label: "All", value: "all", count: roleCounts.all },
+    { label: "Admins", value: "admin", count: roleCounts.admin },
+    { label: "Faculty", value: "faculty", count: roleCounts.faculty },
+    { label: "Students", value: "student", count: roleCounts.student },
+    { label: "Parents", value: "parent", count: roleCounts.parent },
   ]
 
   return (
@@ -157,23 +167,35 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
 
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-center gap-3">
-          {roleTabs.map((tab) => (
-            <Link
-              key={tab.value}
-              href={buildPath({
-                role: tab.value,
-                search: parsed.search,
-                include_inactive: parsed.include_inactive,
-              })}
-              className={`inline-flex items-center rounded-full border px-4 py-2 text-sm font-semibold transition ${
-                tab.value === parsed.role
-                  ? "border-brand-navy bg-brand-navy text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
-              }`}
-            >
-              {tab.label}
-            </Link>
-          ))}
+          {roleTabs.map((tab) => {
+            const active = tab.value === parsed.role
+            return (
+              <Link
+                key={tab.value}
+                href={buildPath({
+                  role: tab.value,
+                  search: parsed.search,
+                  include_inactive: parsed.include_inactive,
+                })}
+                className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition ${
+                  active
+                    ? "border-brand-navy bg-brand-navy text-white"
+                    : "border-slate-200 bg-white text-slate-700 hover:border-slate-400"
+                }`}
+              >
+                <span>{tab.label}</span>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-xs font-bold ${
+                    active
+                      ? "bg-white/20 text-white"
+                      : "bg-slate-100 text-slate-600"
+                  }`}
+                >
+                  {tab.count}
+                </span>
+              </Link>
+            )
+          })}
         </div>
 
         <form className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-end">
@@ -236,7 +258,18 @@ export default async function ProfilesAdminPage({ searchParams }: ProfilesPagePr
                 href={detailHref}
                 className="block rounded-2xl border border-slate-200 bg-white px-5 py-3 shadow-sm transition hover:border-brand-navy/30 hover:shadow-md sm:px-6"
               >
-                <div className="grid gap-2 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.4fr)_auto] lg:items-center">
+                <div className="grid gap-3 lg:grid-cols-[auto_minmax(0,2fr)_minmax(0,1.4fr)_auto] lg:items-center">
+                  <Avatar
+                    photoUrl={profilePhotoUrl(profile.photo_path)}
+                    initials={initialsFor({
+                      first_name: profile.first_name,
+                      last_name: profile.last_name,
+                      display_name: profile.display_name,
+                      email: profile.email,
+                    })}
+                    alt={profileDisplay(profile)}
+                    size="md"
+                  />
                   <div className="min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base font-semibold text-slate-900">
