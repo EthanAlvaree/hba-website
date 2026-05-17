@@ -164,6 +164,25 @@ export async function getProfileByEmail(email: string) {
   return data
 }
 
+// Lookup by the Entra Object ID — the immutable identifier Microsoft
+// assigns when an account is created. UPNs / email addresses can be
+// renamed, but the OID never changes for the lifetime of the account,
+// so this is the right handle for "find the SIS row that corresponds
+// to this M365 user even if their email was just renamed."
+export async function getProfileByEntraOid(entraOid: string | null | undefined) {
+  if (!entraOid) return null
+  const { data, error } = await getSupabase()
+    .from("profiles")
+    .select(profileColumns)
+    .eq("entra_oid", entraOid)
+    .maybeSingle<ProfileRecord>()
+
+  if (error) {
+    throw new Error(`Failed to look up profile by entra_oid: ${error.message}`)
+  }
+  return data
+}
+
 export async function getProfileById(id: string) {
   const { data, error } = await getSupabase()
     .from("profiles")
@@ -2039,19 +2058,27 @@ export type M365SyncResult = {
 }
 
 // Upserts a single M365 user into the profiles table. Strategy:
-//   - If no profile exists for this email: insert with role defaulted to
-//     'admin' for bootstrap-list emails, else empty. Empty-role profiles
-//     get backfilled to 'faculty' on first sign-in (the existing
-//     bootstrapProfileForSignIn logic handles that). Students get role
-//     'student' set explicitly by enrollAcceptedApplication, so we don't
-//     guess from M365 alone.
-//   - If a profile exists: never touch the roles array. Patch entra_oid
-//     when null. Patch first/last/display name when null. Always sync the
-//     active flag from M365's accountEnabled (so disabled M365 accounts
-//     can't sign in here either).
+//   - Look up the existing profile by entra_oid FIRST — that ID is
+//     immutable across M365 email/UPN renames, so it's the only
+//     reliable handle when an admin renames hongyu.chen@… to
+//     hongyu.chen.26@… in M365. (Lookup by email would miss the
+//     rename and trigger a duplicate-entra_oid insert collision.)
+//   - Fall back to email lookup for legacy profiles that predate
+//     entra_oid being populated (the bootstrap-list rows).
+//   - If still not found: insert. Empty roles to start; admins
+//     promote from /admin/profiles. Bootstrap-list emails get
+//     'admin' assigned on their first sign-in via
+//     bootstrapProfileForSignIn; students get 'student' via
+//     enrollAcceptedApplication.
+//   - If found: never touch the roles array. Patch entra_oid + name
+//     fields when null. Sync email when M365 has a newer one. Always
+//     sync the active flag from M365's accountEnabled.
 async function upsertProfileFromM365(row: M365SyncRow): Promise<"created" | "updated" | "skipped"> {
   const supabase = getSupabase()
-  const existing = await getProfileByEmail(row.email)
+
+  const existing =
+    (await getProfileByEntraOid(row.entra_oid)) ??
+    (await getProfileByEmail(row.email))
 
   if (!existing) {
     // New M365 profiles start with no roles. Admins promote from /admin/profiles.
@@ -2073,6 +2100,13 @@ async function upsertProfileFromM365(row: M365SyncRow): Promise<"created" | "upd
 
   const patch: Record<string, unknown> = {}
   if (!existing.entra_oid && row.entra_oid) patch.entra_oid = row.entra_oid
+  // When the admin renames the M365 UPN (eg. hongyu.chen@ →
+  // hongyu.chen.26@), the entra_oid lookup above finds the existing
+  // SIS profile but its email is now stale. Bring it in line — that's
+  // the whole point of doing this lookup by entra_oid first.
+  if (existing.email.toLowerCase() !== row.email.toLowerCase()) {
+    patch.email = row.email
+  }
   if (!existing.display_name && row.display_name) patch.display_name = row.display_name
   if (!existing.first_name && row.first_name) patch.first_name = row.first_name
   if (!existing.last_name && row.last_name) patch.last_name = row.last_name
