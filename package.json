@@ -17,7 +17,8 @@
     "gradelink:import-inactive": "tsx scripts/gradelink-import-inactive.ts",
     "gradelink:import-parents": "tsx scripts/gradelink-import-parents.ts",
     "gradelink:import-transcripts": "tsx scripts/gradelink-import-transcripts.ts",
-    "gradelink:import-transfer": "tsx scripts/gradelink-import-transfer-credit.ts"
+    "gradelink:import-transfer": "tsx scripts/gradelink-import-transfer-credit.ts",
+    "gradelink:provision-m365": "tsx scripts/gradelink-provision-m365.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
