@@ -25,9 +25,19 @@ export function MessagingClient({
   // Single source of truth for cohort filters lives in component state. Both
   // the preview and send actions read these via hidden inputs in their
   // respective forms.
-  const [audience, setAudience] = useState<string>("parents")
+  const [audiences, setAudiences] = useState<Set<string>>(new Set(["parents"]))
   const [grade, setGrade] = useState<string>("")
   const [sectionId, setSectionId] = useState<string>("")
+  const [extraEmails, setExtraEmails] = useState<string>("")
+
+  const toggleAudience = (value: string) => {
+    setAudiences((prev) => {
+      const next = new Set(prev)
+      if (next.has(value)) next.delete(value)
+      else next.add(value)
+      return next
+    })
+  }
 
   const [cohortState, cohortPreviewAction, cohortPending] = useActionState<
     MassEmailResult | null,
@@ -69,21 +79,49 @@ export function MessagingClient({
     <div className="space-y-6">
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <h2 className="text-lg font-extrabold text-brand-navy">1. Pick a cohort</h2>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <Field label="Audience">
-            <select
-              value={audience}
-              onChange={(e) => setAudience(e.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-            >
-              <option value="parents">Parents</option>
-              <option value="students">Students</option>
-              <option value="active_families">Active families (parents + students)</option>
-              <option value="faculty">Faculty + admins</option>
-              <option value="all_school">All school (parents + students + faculty + admins)</option>
-            </select>
-          </Field>
-          <Field label="Grade (optional)">
+        <p className="mt-1 text-sm text-slate-600">
+          Tick any combination — recipients across all checked audiences
+          are merged and deduped. Grade / section filters narrow the
+          student-side audiences. The individual recipients box lets you
+          add specific addresses on top.
+        </p>
+
+        <div className="mt-4 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Audiences
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: "parents", label: "All parents" },
+              { value: "students_hba", label: "All students (HBA emails)" },
+              { value: "students_personal", label: "All students (personal emails)" },
+              { value: "faculty", label: "All staff (faculty + admins)" },
+            ].map((opt) => {
+              const checked = audiences.has(opt.value)
+              return (
+                <label
+                  key={opt.value}
+                  className={`flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-semibold transition cursor-pointer ${
+                    checked
+                      ? "border-brand-navy bg-brand-navy text-white"
+                      : "border-slate-200 bg-white text-slate-700 hover:border-brand-navy"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={checked}
+                    onChange={() => toggleAudience(opt.value)}
+                    className="sr-only"
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <Field label="Grade (optional, applies to student-side audiences)">
             <select
               value={grade}
               onChange={(e) => setGrade(e.target.value)}
@@ -99,7 +137,7 @@ export function MessagingClient({
               )}
             </select>
           </Field>
-          <Field label="Section (optional)">
+          <Field label="Section (optional, applies to student-side audiences)">
             <select
               value={sectionId}
               onChange={(e) => setSectionId(e.target.value)}
@@ -115,10 +153,25 @@ export function MessagingClient({
           </Field>
         </div>
 
+        <div className="mt-5">
+          <Field label="Add individual recipients (one per line or comma-separated)">
+            <textarea
+              value={extraEmails}
+              onChange={(e) => setExtraEmails(e.target.value)}
+              rows={3}
+              placeholder="e.g.&#10;parent@example.com&#10;student@gmail.com, prospect@…"
+              className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+            />
+          </Field>
+        </div>
+
         <form action={cohortPreviewAction} className="mt-4 flex flex-wrap items-center gap-3">
-          <input type="hidden" name="audience" value={audience} />
+          {Array.from(audiences).map((a) => (
+            <input key={a} type="hidden" name="audiences" value={a} />
+          ))}
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
+          <input type="hidden" name="extra_emails" value={extraEmails} />
           <button
             type="submit"
             disabled={cohortPending}
@@ -152,9 +205,12 @@ export function MessagingClient({
             action. The send action only fires from the preview modal so
             the admin always sees the rendered email before it ships. */}
         <form action={emailPreviewAction} className="mt-4 space-y-3">
-          <input type="hidden" name="audience" value={audience} />
+          {Array.from(audiences).map((a) => (
+            <input key={a} type="hidden" name="audiences" value={a} />
+          ))}
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
+          <input type="hidden" name="extra_emails" value={extraEmails} />
 
           <Field label="Subject">
             <input
@@ -212,9 +268,12 @@ export function MessagingClient({
             Or schedule this message for later
           </summary>
           <form action={scheduleActionFn} className="mt-3 space-y-3">
-            <input type="hidden" name="audience" value={audience} />
+            {Array.from(audiences).map((a) => (
+              <input key={a} type="hidden" name="audiences" value={a} />
+            ))}
             <input type="hidden" name="grade" value={grade} />
             <input type="hidden" name="section_id" value={sectionId} />
+            <input type="hidden" name="extra_emails" value={extraEmails} />
             <input type="hidden" name="subject" value={subject} />
             <input type="hidden" name="body" value={body} />
             <Field label="Send at (Pacific time)">
@@ -268,9 +327,10 @@ export function MessagingClient({
           sampleRecipients={emailPreview.sample_recipients}
           senderEmail={emailPreview.sender_email}
           senderLabel={emailPreview.sender_label}
-          audience={audience}
+          audiences={Array.from(audiences)}
           grade={grade}
           sectionId={sectionId}
+          extraEmails={extraEmails}
           subjectValue={subject}
           bodyValue={body}
           sending={sendPending}
@@ -289,9 +349,10 @@ function PreviewModal({
   sampleRecipients,
   senderEmail,
   senderLabel,
-  audience,
+  audiences,
   grade,
   sectionId,
+  extraEmails,
   subjectValue,
   bodyValue,
   sending,
@@ -304,9 +365,10 @@ function PreviewModal({
   sampleRecipients: string[]
   senderEmail: string
   senderLabel: string
-  audience: string
+  audiences: string[]
   grade: string
   sectionId: string
+  extraEmails: string
   subjectValue: string
   bodyValue: string
   sending: boolean
@@ -361,9 +423,12 @@ function PreviewModal({
           action={sendAction}
           className="border-t border-slate-200 px-6 py-4"
         >
-          <input type="hidden" name="audience" value={audience} />
+          {audiences.map((a) => (
+            <input key={a} type="hidden" name="audiences" value={a} />
+          ))}
           <input type="hidden" name="grade" value={grade} />
           <input type="hidden" name="section_id" value={sectionId} />
+          <input type="hidden" name="extra_emails" value={extraEmails} />
           <input type="hidden" name="subject" value={subjectValue} />
           <input type="hidden" name="body" value={bodyValue} />
 

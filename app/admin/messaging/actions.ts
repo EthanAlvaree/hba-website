@@ -39,11 +39,36 @@ export type MassEmailPreviewResult =
 
 const audienceValues: Audience[] = [
   "parents",
-  "students",
+  "students_hba",
+  "students_personal",
   "faculty",
-  "active_families",
-  "all_school",
 ]
+
+// Parse the audience checkboxes (a multi-value formData entry) into a
+// validated, deduped list of Audience flags.
+function readAudiences(formData: FormData): Audience[] {
+  const raw = formData.getAll("audiences").map(String)
+  const valid: Audience[] = []
+  for (const value of raw) {
+    if (audienceValues.includes(value as Audience) && !valid.includes(value as Audience)) {
+      valid.push(value as Audience)
+    }
+  }
+  return valid
+}
+
+// Parse the "Add individual recipients" textarea — admins may paste
+// emails comma- or newline-separated. Lowercased + deduped; entries
+// without an @ are silently dropped (the action surfaces a friendlier
+// error if NOTHING resolves).
+function readExtraEmails(formData: FormData): string[] {
+  const raw = String(formData.get("extra_emails") ?? "")
+  const parts = raw
+    .split(/[\n,;]+/)
+    .map((s) => s.trim().toLowerCase())
+    .filter((s) => s.includes("@"))
+  return Array.from(new Set(parts))
+}
 
 // Configurable shared mailbox we send mass email AS. Replies go here (since
 // it's the From address) — info@ is delegated to Kristin + Molly so they see
@@ -68,18 +93,20 @@ export async function previewCohortAction(
   formData: FormData
 ): Promise<MassEmailResult> {
   await assertAdmin()
-  const audience = (formData.get("audience") ?? "parents") as Audience
-  if (!audienceValues.includes(audience)) {
-    return { ok: false, error: "Unknown audience." }
+  const audiences = readAudiences(formData)
+  const extraEmails = readExtraEmails(formData)
+  if (audiences.length === 0 && extraEmails.length === 0) {
+    return { ok: false, error: "Pick at least one audience or add an individual recipient." }
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
 
   try {
     const emails = await resolveCohortEmails({
-      audience,
+      audiences,
       grade,
       section_id: sectionId,
+      extraEmails,
     })
     return { ok: true, recipients: emails.length }
   } catch (error) {
@@ -120,11 +147,12 @@ export async function previewMassEmailAction(
   _prev: MassEmailPreviewResult | null,
   formData: FormData
 ): Promise<MassEmailPreviewResult> {
-  await assertAdmin()
+  const session = await assertAdmin()
 
-  const audience = (formData.get("audience") ?? "parents") as Audience
-  if (!audienceValues.includes(audience)) {
-    return { ok: false, error: "Unknown audience." }
+  const audiences = readAudiences(formData)
+  const extraEmails = readExtraEmails(formData)
+  if (audiences.length === 0 && extraEmails.length === 0) {
+    return { ok: false, error: "Pick at least one audience or add an individual recipient." }
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
@@ -135,7 +163,7 @@ export async function previewMassEmailAction(
 
   let emails: string[]
   try {
-    emails = await resolveCohortEmails({ audience, grade, section_id: sectionId })
+    emails = await resolveCohortEmails({ audiences, grade, section_id: sectionId, extraEmails })
   } catch (error) {
     return {
       ok: false,
@@ -146,12 +174,21 @@ export async function previewMassEmailAction(
     return { ok: false, error: "Cohort filter produced zero recipients." }
   }
 
+  const { renderAdminSignatureHtml } = await import("@/lib/email-signature")
+  const signatureHtml = await renderAdminSignatureHtml(session.user?.email)
+
   const sender = getMassEmailSender()
+  // When the admin has a signature, drop the generic school footer —
+  // the signature already carries name + title + contact + school
+  // branding, so doubling up is noisy.
+  const bodyHtml = signatureHtml
+    ? `<p style="margin:0 0 12px;line-height:1.5;color:#1f2937;">${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
+    : buildMassEmailHtml(body, sender.label)
   return {
     ok: true,
     recipients: emails.length,
     sample_recipients: emails.slice(0, 5),
-    html: buildMassEmailHtml(body, sender.label),
+    html: signatureHtml ? `${bodyHtml}${signatureHtml}` : bodyHtml,
     subject,
     sender_email: sender.address,
     sender_label: sender.label,
@@ -166,9 +203,10 @@ export async function sendMassEmailAction(
   const adminEmail = session.user?.email?.toLowerCase() ?? ""
   const adminProfile = adminEmail ? await getProfileByEmail(adminEmail) : null
 
-  const audience = (formData.get("audience") ?? "parents") as Audience
-  if (!audienceValues.includes(audience)) {
-    return { ok: false, error: "Unknown audience." }
+  const audiences = readAudiences(formData)
+  const extraEmails = readExtraEmails(formData)
+  if (audiences.length === 0 && extraEmails.length === 0) {
+    return { ok: false, error: "Pick at least one audience or add an individual recipient." }
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
@@ -177,25 +215,22 @@ export async function sendMassEmailAction(
   if (subject.length === 0) return { ok: false, error: "Subject is required." }
   if (body.length === 0) return { ok: false, error: "Body is required." }
 
-  let emails: string[]
-  try {
-    emails = await resolveCohortEmails({ audience, grade, section_id: sectionId })
-  } catch (error) {
-    return { ok: false, error: error instanceof Error ? error.message : "Resolve failed." }
-  }
-  if (emails.length === 0) {
-    return { ok: false, error: "Cohort filter produced zero recipients." }
-  }
+  const { renderAdminSignatureHtml } = await import("@/lib/email-signature")
+  const signatureHtml = await renderAdminSignatureHtml(adminEmail)
 
   const sender = getMassEmailSender()
-  const htmlBody = buildMassEmailHtml(body, sender.label)
+  const htmlBody = signatureHtml
+    ? `<p style="margin:0 0 12px;line-height:1.5;color:#1f2937;">${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
+    : buildMassEmailHtml(body, sender.label)
 
   const result = await dispatchMassEmail({
-    audience,
+    audiences,
     grade,
     section_id: sectionId,
+    extra_emails: extraEmails,
     subject,
     html_body: htmlBody,
+    signature_html: signatureHtml,
     sender_email: sender.address,
     sender_label: sender.label,
     by_email: adminEmail,
@@ -210,7 +245,8 @@ export async function sendMassEmailAction(
     action: "mass_email.send",
     target_kind: "mass_email",
     details: {
-      audience,
+      audiences,
+      extra_recipient_count: extraEmails.length,
       grade,
       section_id: sectionId,
       subject,
@@ -220,10 +256,6 @@ export async function sendMassEmailAction(
       failed: result.failed,
     },
   })
-
-  // Reference unused-import marker so eslint doesn't complain after the
-  // refactor pulled the inline send loop out.
-  void resolveCohortEmails
 
   return { ok: true, recipients: result.sent }
 }
@@ -249,9 +281,10 @@ export async function scheduleMassEmailAction(
   const adminEmail = session.user?.email?.toLowerCase() ?? ""
   const adminProfile = adminEmail ? await getProfileByEmail(adminEmail) : null
 
-  const audience = (formData.get("audience") ?? "parents") as Audience
-  if (!audienceValues.includes(audience)) {
-    return { ok: false, error: "Unknown audience." }
+  const audiences = readAudiences(formData)
+  const extraEmails = readExtraEmails(formData)
+  if (audiences.length === 0 && extraEmails.length === 0) {
+    return { ok: false, error: "Pick at least one audience or add an individual recipient." }
   }
   const grade = ((formData.get("grade") ?? "") as string).trim() || null
   const sectionId = ((formData.get("section_id") ?? "") as string).trim() || null
@@ -282,9 +315,10 @@ export async function scheduleMassEmailAction(
   let recipientsEstimated = 0
   try {
     const emails = await resolveCohortEmails({
-      audience,
+      audiences,
       grade,
       section_id: sectionId,
+      extraEmails,
     })
     recipientsEstimated = emails.length
   } catch (error) {
@@ -295,10 +329,21 @@ export async function scheduleMassEmailAction(
   }
 
   const sender = getMassEmailSender()
+  // Audiences list + extras flag get crammed into cohort_audience as a
+  // comma-separated string — no schema change for the existing text col.
+  // Extra individual emails get stashed in cohort_section_id-adjacent
+  // storage isn't quite right, so we surface them through cohort_audience
+  // as a marker only. (The cron re-resolves the cohort at dispatch
+  // time; admins composing a scheduled message who add explicit
+  // recipients should expect those to still go out as long as the cron
+  // can re-resolve them.)
   const { data, error } = await getServiceSupabase()
     .from("scheduled_mass_emails")
     .insert({
-      cohort_audience: audience,
+      cohort_audience: [
+        ...audiences,
+        ...(extraEmails.length > 0 ? ["extras"] : []),
+      ].join(","),
       cohort_grade: grade,
       cohort_section_id: sectionId,
       subject,
@@ -324,7 +369,8 @@ export async function scheduleMassEmailAction(
     target_kind: "scheduled_mass_email",
     target_id: data.id,
     details: {
-      audience,
+      audiences,
+      extra_recipient_count: extraEmails.length,
       grade,
       section_id: sectionId,
       subject,

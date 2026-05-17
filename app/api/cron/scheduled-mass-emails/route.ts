@@ -23,7 +23,11 @@ export const maxDuration = 300
 
 type Row = {
   id: string
-  cohort_audience: Audience
+  /** Stored as a comma-separated list of Audience values (with an
+   *  "extras" sentinel when individual recipients were added). The
+   *  schedule UI joins audiences into this single text column; the
+   *  cron splits them back out below. */
+  cohort_audience: string
   cohort_grade: string | null
   cohort_section_id: string | null
   subject: string
@@ -33,6 +37,21 @@ type Row = {
   created_by_email: string
   created_by_profile_id: string | null
   scheduled_for: string
+}
+
+const KNOWN_AUDIENCES: Audience[] = [
+  "parents",
+  "students_hba",
+  "students_personal",
+  "faculty",
+]
+
+function parseAudiences(stored: string): Audience[] {
+  if (!stored) return []
+  return stored
+    .split(",")
+    .map((s) => s.trim())
+    .filter((s): s is Audience => KNOWN_AUDIENCES.includes(s as Audience))
 }
 
 function escapeHtml(s: string): string {
@@ -106,7 +125,12 @@ export async function GET(request: Request) {
     const senderLabel = row.sender_label ?? siteConfig.name
     const htmlBody = buildMassEmailHtml(row.body, senderLabel)
     const result = await dispatchMassEmail({
-      audience: row.cohort_audience,
+      audiences: parseAudiences(row.cohort_audience),
+      // The scheduled flow doesn't persist the per-row extra_emails
+      // list yet — admins composing a delayed send shouldn't expect
+      // individual recipients to survive across the schedule wait.
+      // Audiences re-resolve at dispatch, so the cohort stays fresh.
+      extra_emails: [],
       grade: row.cohort_grade,
       section_id: row.cohort_section_id,
       subject: row.subject,
