@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
-import { runM365Sync } from "@/lib/m365-sync"
 import {
   createStudentFromExistingProfile,
   deleteProfile,
@@ -289,51 +288,6 @@ export async function requestProfileUpdateFromFamilyAction(formData: FormData) {
   redirect(
     `/admin/profiles?update_request_sent=${encodeURIComponent(profile.email)}`
   )
-}
-
-export async function syncM365Action(formData: FormData) {
-  await assertAdmin()
-  const force = formData.get("force_photo_resync") === "1"
-
-  const result = await runM365Sync({ forcePhotoResync: force })
-
-  if (!result.ok) {
-    await logAdminAuditEvent({
-      action: ADMIN_AUDIT_ACTIONS.m365_sync_manual,
-      target_kind: "m365_sync",
-      details: { ok: false, step: result.step, message: result.message },
-    })
-    redirect(`/admin/tools?sync_error=${encodeURIComponent(result.message)}`)
-  }
-
-  await logAdminAuditEvent({
-    action: ADMIN_AUDIT_ACTIONS.m365_sync_manual,
-    target_kind: "m365_sync",
-    details: {
-      ok: true,
-      forced_photo_resync: force,
-      created: result.created,
-      updated: result.updated,
-      skipped: result.skipped,
-      filtered: result.filtered,
-      photos_pulled: result.photos_pulled,
-      photos_failed: result.photos_failed,
-    },
-  })
-
-  revalidateProfiles()
-
-  const params = new URLSearchParams({
-    sync_ok: "1",
-    created: String(result.created),
-    updated: String(result.updated),
-    skipped: String(result.skipped),
-    filtered: String(result.filtered),
-    photos_pulled: String(result.photos_pulled),
-    photos_failed: String(result.photos_failed),
-  })
-  if (force) params.set("forced", "1")
-  redirect(`/admin/tools?${params.toString()}`)
 }
 
 export async function seedQualificationsFromBiosAction() {

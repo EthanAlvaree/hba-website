@@ -2,35 +2,20 @@
 //
 // One-shot, run-occasionally operations that used to clutter the
 // Profiles page. Sync from M365, push photos from a zip, copy
-// code-side defaults into DB rows. Each tool is idempotent and
-// reports a result banner via search params after a run.
+// code-side defaults into DB rows. Each tool is idempotent.
 
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { auth } from "@/auth"
 import { siteConfig } from "@/lib/site"
-import {
-  seedQualificationsFromBiosAction,
-  syncM365Action,
-} from "../profiles/actions"
-import {
-  SyncM365PrimaryButton,
-  SyncM365WithPhotosButton,
-  SyncRunningHint,
-} from "./SyncM365Button"
+import { listRecentM365SyncRuns, type M365SyncRunRow } from "@/lib/m365-sync"
+import { seedQualificationsFromBiosAction } from "../profiles/actions"
+import { SyncM365Buttons } from "./SyncM365Button"
 
 export const dynamic = "force-dynamic"
 
 type PageProps = {
   searchParams: Promise<{
-    sync_ok?: string
-    created?: string
-    updated?: string
-    skipped?: string
-    filtered?: string
-    photos_pulled?: string
-    photos_failed?: string
-    sync_error?: string
     bio_seed_ok?: string
     bio_seed_error?: string
     bios_matched?: string
@@ -44,11 +29,39 @@ type PageProps = {
   }>
 }
 
+function formatTimestamp(value: string | null): string {
+  if (!value) return "—"
+  return new Intl.DateTimeFormat("en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "America/Los_Angeles",
+  }).format(new Date(value))
+}
+
+function statusPill(status: M365SyncRunRow["status"]): string {
+  switch (status) {
+    case "queued":
+      return "border-amber-200 bg-amber-50 text-amber-800"
+    case "running":
+      return "border-sky-200 bg-sky-50 text-sky-800"
+    case "done":
+      return "border-emerald-200 bg-emerald-50 text-emerald-800"
+    case "failed":
+      return "border-rose-200 bg-rose-50 text-rose-800"
+    case "cancelled":
+      return "border-slate-300 bg-slate-100 text-slate-700"
+  }
+}
+
 export default async function AdminToolsPage({ searchParams }: PageProps) {
   const session = await auth()
   if (!session?.isAdmin) redirect("/admin/sign-in")
 
   const raw = await searchParams
+  const recentRuns = await listRecentM365SyncRuns(10)
+  const activeRun = recentRuns.find(
+    (r) => r.status === "queued" || r.status === "running"
+  )
 
   return (
     <div className="space-y-6">
@@ -64,7 +77,7 @@ export default async function AdminToolsPage({ searchParams }: PageProps) {
       {/* M365 sync ------------------------------------------------------- */}
       <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-6 shadow-sm">
         <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
+          <div className="max-w-2xl">
             <h2 className="text-lg font-extrabold text-brand-navy">
               Sync from Microsoft 365
             </h2>
@@ -76,62 +89,77 @@ export default async function AdminToolsPage({ searchParams }: PageProps) {
               their first sign-in. Disabled M365 accounts are deactivated
               here too.
             </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Runs in the background in batches of 25 — safe to navigate
+              away. You&rsquo;ll be redirected to a live status page with
+              a progress bar.
+            </p>
           </div>
-          <div className="flex flex-col items-stretch gap-2 sm:items-end">
-            <form action={syncM365Action}>
-              <SyncM365PrimaryButton />
-              <SyncRunningHint>
-                Pulling M365 users — please don&rsquo;t navigate away. This
-                usually takes 5–20 seconds.
-              </SyncRunningHint>
-            </form>
-            <form action={syncM365Action} className="text-right">
-              <input type="hidden" name="force_photo_resync" value="1" />
-              <SyncM365WithPhotosButton />
-              <SyncRunningHint>
-                Photo re-sync runs a Graph round-trip per user — can take
-                1–2 minutes for a full tenant. Please stay on this page.
-              </SyncRunningHint>
-            </form>
-          </div>
+          {activeRun ? (
+            <Link
+              href={`/admin/tools/m365-syncs/${activeRun.id}`}
+              className="inline-flex items-center justify-center rounded-full bg-sky-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+            >
+              View running sync →
+            </Link>
+          ) : (
+            <SyncM365Buttons />
+          )}
         </div>
       </section>
 
-      {raw.sync_ok === "1" && (
-        <section className="rounded-[2rem] border border-emerald-200 bg-emerald-50/60 px-6 py-4 shadow-sm">
-          <p className="text-sm font-semibold text-emerald-900">
-            M365 sync complete.
-          </p>
-          <p className="mt-1 text-sm text-emerald-800">
-            Created {raw.created ?? 0} new profile(s), updated{" "}
-            {raw.updated ?? 0}, left {raw.skipped ?? 0} unchanged. Filtered{" "}
-            {raw.filtered ?? 0} non-HBA / mailbox-less account(s).
-            {raw.photos_pulled && Number(raw.photos_pulled) > 0 && (
-              <>
-                {" "}Pulled <strong>{raw.photos_pulled}</strong> profile
-                photo(s) from M365.
-              </>
-            )}
-            {raw.photos_failed && Number(raw.photos_failed) > 0 && (
-              <>
-                {" "}
-                <span className="text-amber-800">
-                  {raw.photos_failed} photo(s) failed — see server logs.
-                </span>
-              </>
-            )}
-          </p>
-        </section>
-      )}
-
-      {raw.sync_error && (
-        <section className="rounded-[2rem] border border-rose-200 bg-rose-50 px-6 py-4 shadow-sm">
-          <p className="text-sm font-semibold text-rose-900">
-            M365 sync failed.
-          </p>
-          <p className="mt-1 text-sm text-rose-800 whitespace-pre-wrap">
-            {raw.sync_error}
-          </p>
+      {/* Recent runs ---------------------------------------------------- */}
+      {recentRuns.length > 0 && (
+        <section className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-slate-500">
+            Recent M365 syncs
+          </h3>
+          <ul className="mt-3 divide-y divide-slate-100">
+            {recentRuns.map((run) => {
+              const total = run.total_users ?? 0
+              const pct =
+                total > 0
+                  ? Math.round((run.processed_users / total) * 100)
+                  : run.status === "done"
+                    ? 100
+                    : 0
+              return (
+                <li
+                  key={run.id}
+                  className="flex flex-wrap items-center gap-3 py-3 text-sm"
+                >
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] ${statusPill(run.status)}`}
+                  >
+                    {run.status}
+                  </span>
+                  <Link
+                    href={`/admin/tools/m365-syncs/${run.id}`}
+                    className="font-mono text-xs text-brand-navy hover:underline"
+                  >
+                    {run.id.slice(0, 8)}
+                  </Link>
+                  <span className="text-xs text-slate-500">
+                    {formatTimestamp(run.created_at)}
+                  </span>
+                  <span className="text-xs text-slate-600">
+                    by{" "}
+                    <code className="rounded bg-slate-100 px-1 py-0.5 text-[10px]">
+                      {run.started_by_email}
+                    </code>
+                  </span>
+                  <span className="ml-auto text-xs text-slate-600">
+                    {run.processed_users}/{total} · {pct}%
+                  </span>
+                  {run.force_photo_resync && (
+                    <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-800">
+                      Photo resync
+                    </span>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
         </section>
       )}
 

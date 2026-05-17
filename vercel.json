@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/api/cron/m365-sync",
-      "schedule": "0 9 * * *"
+      "schedule": "* * * * *"
     },
     {
       "path": "/api/cron/parent-digest",
