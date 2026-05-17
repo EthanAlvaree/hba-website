@@ -222,7 +222,7 @@ const requestProfileUpdateSchema = z.object({
 // (which lists the parent's linked students). Used for bulk migration
 // from legacy SIS data and for annual data-freshness sweeps.
 export async function requestProfileUpdateFromFamilyAction(formData: FormData) {
-  await assertAdmin()
+  const session = await assertAdmin()
   const redirectTo = readSafeRedirect(formData)
 
   const parsed = requestProfileUpdateSchema.safeParse({
@@ -260,6 +260,7 @@ export async function requestProfileUpdateFromFamilyAction(formData: FormData) {
         null,
       linkedStudentNames: studentNames,
       noteFromAdmin: parsed.data.note,
+      actorEmail: session.user?.email ?? null,
     })
   } catch (error) {
     const message =

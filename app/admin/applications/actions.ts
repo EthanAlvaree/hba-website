@@ -74,7 +74,7 @@ function redirectBackToQueue(redirectTo: FormDataEntryValue | null) {
 }
 
 export async function updateApplicationAction(formData: FormData) {
-  await assertAdmin()
+  const session = await assertAdmin()
   const redirectTo = formData.get("redirectTo")
 
   const parsed = applicationUpdateFormSchema.safeParse({
@@ -131,6 +131,7 @@ export async function updateApplicationAction(formData: FormData) {
         noteToFamily: noteToFamilyText,
         requestedDocuments:
           updated.status === "info_requested" ? requestedDocCodes : [],
+        actorEmail: session.user?.email ?? null,
       })
     } catch (error) {
       // Log only — never fail the status change because the email server hiccuped.
@@ -177,7 +178,7 @@ const sendPaymentReminderSchema = z.object({
 // webhook can match the eventual payment back to this row. Idempotent
 // from the system's perspective — admin can resend if the family asks.
 export async function sendApplicationPaymentReminderAction(formData: FormData) {
-  await assertAdmin()
+  const session = await assertAdmin()
   const redirectTo = formData.get("redirectTo")
 
   const parsed = sendPaymentReminderSchema.safeParse({
@@ -210,6 +211,7 @@ export async function sendApplicationPaymentReminderAction(formData: FormData) {
     application,
     paymentUrl,
     noteToFamily: parsed.data.note,
+    actorEmail: session.user?.email ?? null,
   })
 
   await logAdminAuditEvent({

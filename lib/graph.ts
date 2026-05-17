@@ -169,6 +169,10 @@ type SendMailOptions = {
     /** Raw bytes; the mailer base64-encodes for the Graph payload. */
     content: Buffer | string
   }>
+  /** Optional HTML signature to append to the body. The per-admin
+   *  signature lookup (lib/email-signature.ts → renderAdminSignatureHtml)
+   *  passes through here; callers can also pass arbitrary HTML. */
+  signatureHtml?: string | null
 }
 
 async function sendMail(options: SendMailOptions) {
@@ -197,7 +201,12 @@ async function sendMail(options: SendMailOptions) {
             emailAddress: { address: sender },
           },
           subject: options.subject,
-          body: { contentType: "HTML", content: options.htmlBody },
+          body: {
+            contentType: "HTML",
+            content: options.signatureHtml
+              ? `${options.htmlBody}${options.signatureHtml}`
+              : options.htmlBody,
+          },
           toRecipients: options.toRecipients.map((email) => ({
             emailAddress: { address: email },
           })),
@@ -513,8 +522,13 @@ export async function sendProfileUpdateRequestToParent(options: {
   parentDisplayName: string | null
   linkedStudentNames: string[]
   noteFromAdmin?: string | null
+  /** Logged-in admin's email — used to look up + append their HTML
+   *  signature so the family sees who specifically reached out. */
+  actorEmail?: string | null
 }) {
-  const { parentEmail, parentDisplayName, linkedStudentNames, noteFromAdmin } = options
+  const { parentEmail, parentDisplayName, linkedStudentNames, noteFromAdmin, actorEmail } = options
+  const { renderAdminSignatureHtml } = await import("@/lib/email-signature")
+  const signatureHtml = await renderAdminSignatureHtml(actorEmail)
   const greetingName = parentDisplayName?.trim() || "there"
 
   const kidsLine =
@@ -553,6 +567,7 @@ export async function sendProfileUpdateRequestToParent(options: {
     htmlBody: html,
     toRecipients: [parentEmail],
     fromMailbox: applicationRecipients[0],
+    signatureHtml,
   })
 }
 
@@ -565,8 +580,11 @@ export async function sendApplicationPaymentReminder(options: {
   application: ApplicationRecord
   paymentUrl: string
   noteToFamily?: string | null
+  actorEmail?: string | null
 }) {
-  const { application, paymentUrl, noteToFamily } = options
+  const { application, paymentUrl, noteToFamily, actorEmail } = options
+  const { renderAdminSignatureHtml } = await import("@/lib/email-signature")
+  const signatureHtml = await renderAdminSignatureHtml(actorEmail)
 
   const guardianEmails: string[] = []
   if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
@@ -607,6 +625,7 @@ export async function sendApplicationPaymentReminder(options: {
     htmlBody: html,
     toRecipients: guardianEmails,
     fromMailbox: applicationRecipients[0],
+    signatureHtml,
   })
 }
 
@@ -845,8 +864,9 @@ export async function sendApplicationStatusUpdateToFamily(options: {
    *  to info_requested. Empty array (or omitted) for other transitions.
    *  See DOCUMENT_LABELS in this file for the canonical list. */
   requestedDocuments?: string[]
+  actorEmail?: string | null
 }) {
-  const { application, newStatus, noteToFamily, requestedDocuments } = options
+  const { application, newStatus, noteToFamily, requestedDocuments, actorEmail } = options
 
   const guardianEmails: string[] = []
   if (application.guardian1_email) guardianEmails.push(application.guardian1_email)
@@ -869,12 +889,16 @@ export async function sendApplicationStatusUpdateToFamily(options: {
     requestedDocuments
   )
 
+  const { renderAdminSignatureHtml } = await import("@/lib/email-signature")
+  const signatureHtml = await renderAdminSignatureHtml(actorEmail)
+
   const { applicationRecipients } = getGraphConfig()
   await sendMail({
     subject,
     htmlBody: html,
     toRecipients: guardianEmails,
     fromMailbox: applicationRecipients[0],
+    signatureHtml,
   })
 }
 
