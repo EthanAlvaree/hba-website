@@ -502,7 +502,15 @@ function AdminEditApplicationData({
           <AddressFields prefix="guardian1" application={application} />
         </FormSection>
 
-        <FormSection title="Guardian 2 (optional)">
+        <CollapsibleFormSection
+          title="Guardian 2 (optional)"
+          openWhenAnyTruthy={[
+            application.guardian2_name,
+            application.guardian2_email,
+            application.guardian2_mobile,
+          ]}
+          closedLabel="+ Add a second guardian"
+        >
           <div className="grid gap-3 sm:grid-cols-2">
             <TextField name="guardian2_name" label="Full name" defaultValue={application.guardian2_name} />
             <TextField name="guardian2_relationship" label="Relationship" defaultValue={application.guardian2_relationship} />
@@ -517,9 +525,13 @@ function AdminEditApplicationData({
             defaultChecked={application.guardian2_address_same_as_student}
           />
           <AddressFields prefix="guardian2" application={application} />
-        </FormSection>
+        </CollapsibleFormSection>
 
-        <FormSection title="Homestay (optional)">
+        <CollapsibleFormSection
+          title="Homestay (optional)"
+          openWhenAnyTruthy={[application.has_homestay ? "true" : null, application.homestay_name, application.homestay_email]}
+          closedLabel="+ Add a homestay family"
+        >
           <CheckboxRow
             name="has_homestay"
             label="Has homestay family"
@@ -534,7 +546,7 @@ function AdminEditApplicationData({
           </div>
 
           <AddressFields prefix="homestay" application={application} />
-        </FormSection>
+        </CollapsibleFormSection>
 
         <FormSection title="Source + notes">
           <div className="grid gap-3">
@@ -686,6 +698,46 @@ function FormSection({
       </legend>
       {children}
     </fieldset>
+  )
+}
+
+// Same as FormSection but collapses when none of the underlying fields
+// have a value. Avoids the "empty Guardian 2 form expanded by default"
+// noise on most applications. Inputs stay rendered inside the closed
+// <details> so a form submit still includes them as empty values — no
+// client-side reveal logic needed.
+function CollapsibleFormSection({
+  title,
+  closedLabel,
+  openWhenAnyTruthy,
+  children,
+}: {
+  title: string
+  closedLabel: string
+  openWhenAnyTruthy: Array<string | null | undefined | false>
+  children: React.ReactNode
+}) {
+  const hasData = openWhenAnyTruthy.some(
+    (value) => typeof value === "string" && value.trim().length > 0
+  )
+  return (
+    <details
+      open={hasData}
+      className="group space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4"
+    >
+      <summary className="flex cursor-pointer items-center justify-between gap-2 list-none">
+        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+          {title}
+        </span>
+        <span className="text-xs font-semibold text-brand-navy group-open:hidden">
+          {closedLabel}
+        </span>
+        <span className="hidden text-xs font-semibold text-slate-500 group-open:inline">
+          Collapse
+        </span>
+      </summary>
+      <div className="space-y-3 pt-2">{children}</div>
+    </details>
   )
 }
 

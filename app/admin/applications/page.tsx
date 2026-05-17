@@ -24,6 +24,7 @@ type ApplicationsPageProps = {
     enrollment_type?: string
     sort?: string
     paid?: string
+    deleted?: string
   }>
 }
 
@@ -86,14 +87,21 @@ export default async function ApplicationsPage({ searchParams }: ApplicationsPag
   )
 
   return (
-    <ApplicationsDashboard
-      adminEmail={adminEmail}
-      currentPath={buildPath({ status, enrollmentType, sort, paid })}
-      filters={{ status, enrollmentType, sort, paid }}
-      mode="active"
-      applications={sortApplications(applications, sort)}
-      summary={summary}
-      documentsByApp={documentsByApp}
-    />
+    <div className="space-y-4">
+      {params.deleted === "1" && (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-900">
+          Application deleted.
+        </div>
+      )}
+      <ApplicationsDashboard
+        adminEmail={adminEmail}
+        currentPath={buildPath({ status, enrollmentType, sort, paid })}
+        filters={{ status, enrollmentType, sort, paid }}
+        mode="active"
+        applications={sortApplications(applications, sort)}
+        summary={summary}
+        documentsByApp={documentsByApp}
+      />
+    </div>
   )
 }

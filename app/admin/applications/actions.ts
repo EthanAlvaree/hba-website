@@ -144,7 +144,6 @@ export async function updateApplicationAction(formData: FormData) {
 
 export async function deleteApplicationAction(formData: FormData) {
   await assertAdmin()
-  const redirectTo = formData.get("redirectTo")
 
   const parsed = applicationDeleteFormSchema.safeParse({
     id: formData.get("id"),
@@ -156,7 +155,10 @@ export async function deleteApplicationAction(formData: FormData) {
 
   await deleteApplication(parsed.data.id)
   revalidateApplicationViews()
-  redirectBackToQueue(redirectTo)
+  // Always redirect to the directory after delete — the detail page
+  // the form was submitted from is now 404 because the row is gone.
+  revalidatePath(`/admin/applications/${parsed.data.id}`)
+  redirect("/admin/applications?deleted=1")
 }
 
 const sendPaymentReminderSchema = z.object({
