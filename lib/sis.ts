@@ -18,7 +18,16 @@ import { isHbaEmail } from "@/lib/admin"
 // Enums + shared types
 // ============================================================================
 
-export const profileRoleSchema = z.enum(["student", "parent", "faculty", "admin"])
+export const profileRoleSchema = z.enum([
+  "student",
+  "parent",
+  "faculty",
+  "admin",
+  // Shared inbox account (e.g. info@, admissions@, registrar@). Lives
+  // in the directory under its own filter; excluded from student /
+  // faculty / admin lists. DB check constraint mirrors this list.
+  "shared_mailbox",
+])
 export type ProfileRole = z.infer<typeof profileRoleSchema>
 
 export const studentStatusSchema = z.enum(["active", "graduated", "withdrawn"])

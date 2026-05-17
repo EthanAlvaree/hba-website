@@ -12,7 +12,8 @@
     "db:sql": "tsx scripts/db-sql.ts",
     "gradelink:match": "tsx scripts/gradelink-match-active.ts",
     "gradelink:approvals": "tsx scripts/gradelink-build-approvals.ts",
-    "gradelink:verify": "tsx scripts/gradelink-verify-approvals.ts"
+    "gradelink:verify": "tsx scripts/gradelink-verify-approvals.ts",
+    "gradelink:import-active": "tsx scripts/gradelink-import-active.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",

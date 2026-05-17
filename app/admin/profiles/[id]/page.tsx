@@ -26,13 +26,20 @@ import { ConfirmAction } from "../ConfirmAction"
 
 export const dynamic = "force-dynamic"
 
-const roleOrder: ProfileRole[] = ["student", "parent", "faculty", "admin"]
+const roleOrder: ProfileRole[] = [
+  "student",
+  "parent",
+  "faculty",
+  "admin",
+  "shared_mailbox",
+]
 
 const roleLabels: Record<ProfileRole, string> = {
   admin: "Admin",
   faculty: "Faculty",
   student: "Student",
   parent: "Parent",
+  shared_mailbox: "Shared mailbox",
 }
 
 const roleBadgeClass: Record<ProfileRole, string> = {
@@ -40,6 +47,7 @@ const roleBadgeClass: Record<ProfileRole, string> = {
   faculty: "border border-sky-200 bg-sky-50 text-sky-700",
   student: "border border-emerald-200 bg-emerald-50 text-emerald-700",
   parent: "border border-violet-200 bg-violet-50 text-violet-700",
+  shared_mailbox: "border border-slate-300 bg-slate-100 text-slate-700",
 }
 
 function profileDisplay(profile: ProfileRecord): string {
