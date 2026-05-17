@@ -867,18 +867,27 @@ export async function updateApplicationStatus(input: ApplicationAdminUpdate) {
 }
 
 export async function deleteApplication(id: string) {
+  // Used to require status='archived' as a sanity gate, but the
+  // detail page now calls this directly from a Confirm modal and an
+  // archived-only restriction forced admin through a redundant
+  // Archive-then-Delete dance for test cleanup. The confirmation
+  // modal is the safety affordance; this is a clean hard delete.
+  //
+  // Cascades: enrollment+student records reference applications via
+  // application_id with on-delete-set-null, so an enrolled student
+  // survives this delete (their student row stays, just loses the
+  // back-pointer to the original application).
   const { error, count } = await getSupabase()
     .from("applications")
     .delete({ count: "exact" })
     .eq("id", id)
-    .eq("status", "archived")
 
   if (error) {
     throw new Error(`Failed to delete application: ${error.message}`)
   }
 
   if (!count) {
-    throw new Error("Archived application not found.")
+    throw new Error("Application not found.")
   }
 }
 
