@@ -13,7 +13,11 @@
     "gradelink:match": "tsx scripts/gradelink-match-active.ts",
     "gradelink:approvals": "tsx scripts/gradelink-build-approvals.ts",
     "gradelink:verify": "tsx scripts/gradelink-verify-approvals.ts",
-    "gradelink:import-active": "tsx scripts/gradelink-import-active.ts"
+    "gradelink:import-active": "tsx scripts/gradelink-import-active.ts",
+    "gradelink:import-inactive": "tsx scripts/gradelink-import-inactive.ts",
+    "gradelink:import-parents": "tsx scripts/gradelink-import-parents.ts",
+    "gradelink:import-transcripts": "tsx scripts/gradelink-import-transcripts.ts",
+    "gradelink:import-transfer": "tsx scripts/gradelink-import-transfer-credit.ts"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.20",
