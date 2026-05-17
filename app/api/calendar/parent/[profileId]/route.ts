@@ -133,24 +133,6 @@ export async function GET(
     .returns<Array<{ student_id: string }>>()
   const studentIds = (linkedStudents ?? []).map((l) => l.student_id)
 
-  // Pull every tag for every linked student in one shot, then bucket
-  // by student. We attach these as VEVENT CATEGORIES on each
-  // student-specific event so calendar apps with category support
-  // (Outlook, Apple) can color-code or filter by activity.
-  const tagsByStudent = new Map<string, string[]>()
-  if (studentIds.length > 0) {
-    const { data: tagRows } = await supabase
-      .from("student_tags")
-      .select("student_id, tag")
-      .in("student_id", studentIds)
-      .returns<Array<{ student_id: string; tag: string }>>()
-    for (const row of tagRows ?? []) {
-      const arr = tagsByStudent.get(row.student_id) ?? []
-      arr.push(row.tag)
-      tagsByStudent.set(row.student_id, arr)
-    }
-  }
-
   const { data: slots } = studentIds.length > 0
     ? await supabase
         .from("conference_slots")
@@ -195,9 +177,6 @@ export async function GET(
       ? slot.student.preferred_name?.trim() ||
         `${slot.student.legal_first_name} ${slot.student.legal_last_name}`
       : "Student"
-    const studentTags = slot.booked_for_student_id
-      ? tagsByStudent.get(slot.booked_for_student_id) ?? []
-      : []
     cal.createEvent({
       id: `conference-${slot.id}`,
       start: new Date(slot.start_at),
@@ -208,10 +187,7 @@ export async function GET(
         (slot.parent_notes ? `\n\nNotes:\n${slot.parent_notes}` : "") +
         `\n\nManage at ${siteConfig.url}/parent/conferences`,
       location: siteConfig.name,
-      categories: [
-        { name: "Conferences" },
-        ...studentTags.map((t) => ({ name: t })),
-      ],
+      categories: [{ name: "Conferences" }],
     })
   }
 
@@ -288,7 +264,6 @@ export async function GET(
           e.section.teacher.email
         : null
       const courseName = e.section.course?.name ?? "Class"
-      const studentTags = tagsByStudent.get(e.student_id) ?? []
 
       for (const meeting of meetings) {
         const firstDay = firstWeekdayOnOrAfter(termStart, meeting.day)
@@ -306,10 +281,7 @@ export async function GET(
               ? `${courseName} with ${teacherName}${e.section.room ? ` · Room ${e.section.room}` : ""}`
               : courseName,
           location: e.section.room ?? siteConfig.name,
-          categories: [
-            { name: "Classes" },
-            ...studentTags.map((t) => ({ name: t })),
-          ],
+          categories: [{ name: "Classes" }],
           repeating: {
             freq: ICalEventRepeatingFreq.WEEKLY,
             byDay: [WEEKDAY_TO_ICAL[meeting.day]],

@@ -4,14 +4,12 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { auth, signOut } from "@/auth"
 import {
-  addStudentTag,
   createParentLinkForStudent,
   createParentLinkSchema,
   deleteProfile,
   deleteStudent,
   parentLinkUpdateSchema,
   profileContactUpdateSchema,
-  removeStudentTag,
   studentAdminUpdateSchema,
   studentDemographicsUpdateSchema,
   updateParentLink,
@@ -458,30 +456,6 @@ export async function deleteStudentAction(formData: FormData) {
   revalidatePath("/admin/students")
   revalidatePath("/admin/profiles")
   redirect("/admin/students?deleted=1")
-}
-
-export async function addStudentTagAction(formData: FormData) {
-  const session = await assertAdmin()
-  const studentId = String(formData.get("student_id") ?? "").trim()
-  const tag = String(formData.get("tag") ?? "").trim()
-  if (!studentId || !tag) {
-    redirect(`/admin/students/${studentId || ""}`)
-  }
-  await addStudentTag(studentId, tag, session.user?.email ?? null)
-  revalidateStudent(studentId)
-  redirect(`/admin/students/${studentId}`)
-}
-
-export async function removeStudentTagAction(formData: FormData) {
-  await assertAdmin()
-  const studentId = String(formData.get("student_id") ?? "").trim()
-  const tag = String(formData.get("tag") ?? "").trim()
-  if (!studentId || !tag) {
-    redirect(`/admin/students/${studentId || ""}`)
-  }
-  await removeStudentTag(studentId, tag)
-  revalidateStudent(studentId)
-  redirect(`/admin/students/${studentId}`)
 }
 
 export async function signOutStudentsAdminAction() {

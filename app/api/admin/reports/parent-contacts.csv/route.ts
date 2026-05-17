@@ -6,7 +6,6 @@
 //   ?grade=K|1|2|...|12                     — filter to one grade
 //   ?primary_only=1                          — only is_primary=true rows
 //   ?comms_only=1                            — only can_receive_communications=true
-//   ?tag=soccer                              — limit to students with this tag
 //
 // The "comms_only" preset is what the office wants in an emergency
 // (school closure, weather, etc.) — every parent who's opted in to
@@ -15,7 +14,6 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { csvResponse, csvRows } from "@/lib/csv"
-import { listStudentIdsByTag } from "@/lib/sis"
 import { getServiceSupabase } from "@/lib/supabase-server"
 
 export const dynamic = "force-dynamic"
@@ -47,41 +45,6 @@ export async function GET(request: Request) {
   const grade = url.searchParams.get("grade")
   const primaryOnly = url.searchParams.get("primary_only") === "1"
   const commsOnly = url.searchParams.get("comms_only") === "1"
-  const tag = url.searchParams.get("tag")?.trim() || null
-
-  // Tag filter: resolve to a student-id list up front, then intersect.
-  // An unknown tag (no matching students) short-circuits to an empty CSV
-  // — preferable to silently returning the unfiltered set.
-  let taggedStudentIds: string[] | null = null
-  if (tag) {
-    taggedStudentIds = await listStudentIdsByTag(tag)
-    if (taggedStudentIds.length === 0) {
-      const stamp = new Date().toISOString().slice(0, 10)
-      return csvResponse(
-        csvRows(
-          [
-            "student_last",
-            "student_first",
-            "student_preferred",
-            "student_grade",
-            "student_status",
-            "parent_email",
-            "parent_first",
-            "parent_last",
-            "parent_phone",
-            "is_primary",
-            "is_homestay",
-            "is_emergency_contact",
-            "can_view_grades",
-            "can_view_attendance",
-            "can_receive_communications",
-          ],
-          []
-        ),
-        `parent-contacts-tag-${tag}-${stamp}.csv`
-      )
-    }
-  }
 
   const supabase = getServiceSupabase()
   let query = supabase
@@ -104,9 +67,6 @@ export async function GET(request: Request) {
   }
   if (commsOnly) {
     query = query.eq("can_receive_communications", true)
-  }
-  if (taggedStudentIds) {
-    query = query.in("student_id", taggedStudentIds)
   }
 
   const { data, error } = await query.returns<
@@ -205,7 +165,6 @@ export async function GET(request: Request) {
     commsOnly ? "comms-only" : null,
     primaryOnly ? "primary-only" : null,
     grade ? `grade-${grade}` : null,
-    tag ? `tag-${tag}` : null,
     status !== "active" ? `status-${status}` : null,
   ]
     .filter(Boolean)
