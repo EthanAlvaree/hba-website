@@ -363,6 +363,16 @@ function StudentCard({ application }: { application: ApplicationRecord }) {
         }
       />
       <DetailRow
+        label="Student status"
+        value={
+          application.student_is_international === true
+            ? "International (F-1)"
+            : application.student_is_international === false
+              ? "Domestic"
+              : ""
+        }
+      />
+      <DetailRow
         label="Student email"
         value={application.student_personal_email ?? ""}
       />
@@ -1203,6 +1213,22 @@ function AdminEditApplicationData({
                   ? String(application.student_graduation_year)
                   : ""
               }
+            />
+            <SelectField
+              name="student_is_international"
+              label="Student status (tuition + visa)"
+              defaultValue={
+                application.student_is_international === true
+                  ? "international"
+                  : application.student_is_international === false
+                    ? "domestic"
+                    : ""
+              }
+              options={[
+                { value: "", label: "Not set" },
+                { value: "domestic", label: "Domestic" },
+                { value: "international", label: "International (F-1)" },
+              ]}
             />
             <TextField name="student_personal_email" label="Student personal email" type="email" defaultValue={application.student_personal_email} />
             <TextField name="student_phone" label="Student phone" type="tel" defaultValue={application.student_phone} />

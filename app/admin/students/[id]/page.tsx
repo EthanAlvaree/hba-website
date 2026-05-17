@@ -240,6 +240,8 @@ export default async function StudentDetailPage({
   // Status badges derived from authoritative structured data, so admin
   // doesn't have to maintain a separate "tags" list and we don't end up
   // with stale freeform labels. Source of truth in each case:
+  //   - Domestic/International: students.is_international (set on the
+  //     application form). Drives tuition + F-1 paperwork.
   //   - ESL: applications/students.english_proficiency
   //   - Homestay: any parent_links row flagged is_homestay
   //   - IEP / 504: post_enrollment_data has_iep / has_504 booleans
@@ -354,6 +356,22 @@ export default async function StudentDetailPage({
                 {student.current_grade && (
                   <span className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700">
                     Grade {student.current_grade}
+                  </span>
+                )}
+                {student.is_international === true && (
+                  <span
+                    className="rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-indigo-700"
+                    title="International student (F-1 visa, international tuition rate)"
+                  >
+                    International
+                  </span>
+                )}
+                {student.is_international === false && (
+                  <span
+                    className="rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-700"
+                    title="Domestic student (no F-1, domestic tuition rate)"
+                  >
+                    Domestic
                   </span>
                 )}
                 {isEsl && (
@@ -501,6 +519,24 @@ export default async function StudentDetailPage({
                       <option value="summer">Summer</option>
                       <option value="part_time">Part-time</option>
                       <option value="full_time">Full-time</option>
+                    </select>
+                  </label>
+                  <label className="space-y-1 text-sm font-medium text-slate-700">
+                    <span className="block">Student status (tuition + visa)</span>
+                    <select
+                      name="is_international"
+                      defaultValue={
+                        student.is_international === true
+                          ? "international"
+                          : student.is_international === false
+                            ? "domestic"
+                            : ""
+                      }
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+                    >
+                      <option value="">Not set</option>
+                      <option value="domestic">Domestic</option>
+                      <option value="international">International (F-1)</option>
                     </select>
                   </label>
                   <label className="space-y-1 text-sm font-medium text-slate-700 sm:col-span-2">

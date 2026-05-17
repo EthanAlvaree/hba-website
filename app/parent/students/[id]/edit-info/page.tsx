@@ -201,6 +201,24 @@ export default async function ParentEditStudentInfoPage({
                 <option value="full_time">Full-time</option>
               </select>
             </label>
+            <label className="space-y-1 text-xs font-medium text-slate-700 sm:col-span-2">
+              <span className="block">Student status (tuition + visa)</span>
+              <select
+                name="is_international"
+                defaultValue={
+                  student.is_international === true
+                    ? "international"
+                    : student.is_international === false
+                      ? "domestic"
+                      : ""
+                }
+                className="w-full rounded-2xl border border-slate-200 px-3 py-2 text-sm text-slate-900"
+              >
+                <option value="">Not set</option>
+                <option value="domestic">Domestic (US citizen / permanent resident)</option>
+                <option value="international">International (F-1 visa)</option>
+              </select>
+            </label>
           </div>
         </fieldset>
 

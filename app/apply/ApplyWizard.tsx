@@ -41,6 +41,7 @@ type WizardState = {
   student_current_grade: string
   student_desired_grade: string
   student_graduation_year: string
+  student_is_international: "" | "domestic" | "international"
   student_personal_email: string
   student_phone: string
   student_address_line1: string
@@ -116,6 +117,7 @@ const emptyState: WizardState = {
   student_current_grade: "",
   student_desired_grade: "",
   student_graduation_year: "",
+  student_is_international: "",
   student_personal_email: "",
   student_phone: "",
   student_address_line1: "",
@@ -188,6 +190,12 @@ function stateFromRecord(record: ApplicationRecord): WizardState {
     student_desired_grade: record.student_desired_grade ?? "",
     student_graduation_year:
       record.student_graduation_year != null ? String(record.student_graduation_year) : "",
+    student_is_international:
+      record.student_is_international === true
+        ? "international"
+        : record.student_is_international === false
+          ? "domestic"
+          : "",
     student_personal_email: record.student_personal_email ?? "",
     student_phone: record.student_phone ?? "",
     student_address_line1: record.student_address_line1 ?? "",
@@ -262,6 +270,7 @@ function buildApiPayload(state: WizardState, extras: Record<string, unknown>) {
     student_current_grade: state.student_current_grade,
     student_desired_grade: state.student_desired_grade,
     student_graduation_year: state.student_graduation_year || undefined,
+    student_is_international: state.student_is_international || undefined,
     student_personal_email: state.student_personal_email,
     student_phone: state.student_phone,
     student_address_line1: state.student_address_line1,
@@ -656,6 +665,9 @@ function validateStep(step: number, state: WizardState): FieldErrors {
         errors.student_graduation_year = `Enter a 4-digit year between ${thisYear} and ${thisYear + 12}.`
       }
     }
+    if (!state.student_is_international) {
+      errors.student_is_international = "Required."
+    }
     if (!state.student_primary_language.trim()) errors.student_primary_language = "Required."
     if (!state.student_english_proficiency) errors.student_english_proficiency = "Required."
   }
@@ -923,6 +935,7 @@ export default function ApplyWizard({
         allErrors.student_current_grade ||
         allErrors.student_desired_grade ||
         allErrors.student_graduation_year ||
+        allErrors.student_is_international ||
         allErrors.student_primary_language ||
         allErrors.student_english_proficiency
       ) {
@@ -1444,6 +1457,18 @@ function Step1Student({
           required
           placeholder="e.g. 2030"
           error={errors.student_graduation_year}
+        />
+        <SelectField
+          label="Student status (tuition + visa)"
+          name="student_is_international"
+          value={state.student_is_international}
+          onChange={(v) => setField("student_is_international", v as "" | "domestic" | "international")}
+          options={[
+            { value: "domestic", label: "Domestic (US citizen / permanent resident — no F-1 needed)" },
+            { value: "international", label: "International (will need an F-1 visa to attend)" },
+          ]}
+          required
+          error={errors.student_is_international}
         />
         <TextField
           label="Student personal email (optional)"
@@ -2475,6 +2500,15 @@ function buildReviewSummary(state: WizardState): Array<{ label: string; value: s
     { label: "Current grade", value: state.student_current_grade },
     { label: "Desired entry grade", value: state.student_desired_grade },
     { label: "Expected graduation year", value: state.student_graduation_year },
+    {
+      label: "Student status",
+      value:
+        state.student_is_international === "domestic"
+          ? "Domestic"
+          : state.student_is_international === "international"
+            ? "International (F-1)"
+            : "",
+    },
     { label: "Languages", value: [state.student_primary_language, state.student_secondary_language].filter(Boolean).join(", ") },
     { label: "Enrollment type", value: enrollmentLabel },
     {

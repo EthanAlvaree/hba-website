@@ -116,6 +116,18 @@ const baseFields = {
     .union([z.coerce.number().int().min(1900).max(2100), z.literal("")])
     .optional()
     .transform((value) => (typeof value === "number" ? value : undefined)),
+  // Domestic / international flag. Optional on draft; required on
+  // submit so we know which tuition table to apply and whether to
+  // collect F-1 / passport docs. Form sends "domestic" or
+  // "international" strings; mapped to boolean here.
+  student_is_international: z
+    .union([z.literal("domestic"), z.literal("international"), z.literal("")])
+    .optional()
+    .transform((value) => {
+      if (value === "international") return true
+      if (value === "domestic") return false
+      return undefined
+    }),
   student_personal_email: optionalEmail(),
   student_phone: optionalString(40, "Phone"),
   student_address_line1: optionalString(200, "Street address"),
@@ -220,6 +232,11 @@ export const applicationSubmitSchema = z
       .int("Please enter a 4-digit year.")
       .min(new Date().getFullYear(), "Graduation year can't be in the past.")
       .max(new Date().getFullYear() + 12, "Graduation year looks too far out — double-check."),
+    student_is_international: z
+      .union([z.literal("domestic"), z.literal("international")], {
+        message: "Please choose Domestic or International.",
+      })
+      .transform((value) => value === "international"),
 
     // Required guardian 1 fields
     guardian1_name: requiredString(2, 200, "Please enter Guardian 1’s name."),
@@ -304,6 +321,14 @@ export const applicationDataUpdateSchema = z.object({
     .union([z.coerce.number().int().min(1900).max(2100), z.literal(""), z.null()])
     .optional()
     .transform((value) => (typeof value === "number" ? value : null)),
+  student_is_international: z
+    .union([z.literal("domestic"), z.literal("international"), z.literal(""), z.null()])
+    .optional()
+    .transform((value) => {
+      if (value === "international") return true
+      if (value === "domestic") return false
+      return null
+    }),
   student_personal_email: optionalEditedEmail(),
   student_phone: optionalEditedString(40),
   student_address_line1: optionalEditedString(200),
@@ -421,6 +446,7 @@ export type ApplicationRecord = {
   student_current_grade: string | null
   student_desired_grade: string | null
   student_graduation_year: number | null
+  student_is_international: boolean | null
   student_personal_email: string | null
   student_phone: string | null
   student_address_line1: string | null
@@ -528,7 +554,7 @@ const applicationSelectColumns =
   "student_preferred_name, student_dob, student_gender, student_pronouns, " +
   "student_birthplace, student_primary_language, student_secondary_language, " +
   "student_english_proficiency, student_current_grade, student_desired_grade, " +
-  "student_graduation_year, " +
+  "student_graduation_year, student_is_international, " +
   "student_personal_email, student_phone, " +
   "student_address_line1, student_address_line2, student_address_city, " +
   "student_address_region, student_address_postal_code, student_address_country, " +

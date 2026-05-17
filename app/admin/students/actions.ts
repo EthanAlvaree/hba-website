@@ -91,6 +91,7 @@ export async function updateStudentDemographicsAction(formData: FormData) {
     secondary_language: formData.get("secondary_language") ?? "",
     english_proficiency: formData.get("english_proficiency") ?? "",
     enrollment_type: formData.get("enrollment_type") ?? "",
+    is_international: formData.get("is_international") ?? "",
     address_line1: formData.get("address_line1") ?? "",
     address_line2: formData.get("address_line2") ?? "",
     address_city: formData.get("address_city") ?? "",
